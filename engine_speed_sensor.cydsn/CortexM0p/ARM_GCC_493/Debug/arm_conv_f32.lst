@@ -1,0 +1,1330 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_conv_f32.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_fmul
+  18              		.global	__aeabi_fadd
+  19              		.section	.text.arm_conv_f32,"ax",%progbits
+  20              		.align	2
+  21              		.global	arm_conv_f32
+  22              		.code	16
+  23              		.thumb_func
+  24              		.type	arm_conv_f32, %function
+  25              	arm_conv_f32:
+  26              	.LFB82:
+  27              		.file 1 "Source\\FilteringFunctions\\arm_conv_f32.c"
+   1:Source\FilteringFunctions/arm_conv_f32.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_conv_f32.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_conv_f32.c ****  * Title:        arm_conv_f32.c
+   4:Source\FilteringFunctions/arm_conv_f32.c ****  * Description:  Convolution of floating-point sequences
+   5:Source\FilteringFunctions/arm_conv_f32.c ****  *
+   6:Source\FilteringFunctions/arm_conv_f32.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_conv_f32.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_conv_f32.c ****  *
+   9:Source\FilteringFunctions/arm_conv_f32.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_conv_f32.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_conv_f32.c **** /*
+  12:Source\FilteringFunctions/arm_conv_f32.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  14:Source\FilteringFunctions/arm_conv_f32.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  16:Source\FilteringFunctions/arm_conv_f32.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_conv_f32.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_conv_f32.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  20:Source\FilteringFunctions/arm_conv_f32.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  22:Source\FilteringFunctions/arm_conv_f32.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_conv_f32.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_conv_f32.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_conv_f32.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_conv_f32.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_conv_f32.c ****  */
+  28:Source\FilteringFunctions/arm_conv_f32.c **** 
+  29:Source\FilteringFunctions/arm_conv_f32.c **** #include "arm_math.h"
+  30:Source\FilteringFunctions/arm_conv_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 2
+
+
+  31:Source\FilteringFunctions/arm_conv_f32.c **** /**
+  32:Source\FilteringFunctions/arm_conv_f32.c ****  * @ingroup groupFilters
+  33:Source\FilteringFunctions/arm_conv_f32.c ****  */
+  34:Source\FilteringFunctions/arm_conv_f32.c **** 
+  35:Source\FilteringFunctions/arm_conv_f32.c **** /**
+  36:Source\FilteringFunctions/arm_conv_f32.c ****  * @defgroup Conv Convolution
+  37:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  38:Source\FilteringFunctions/arm_conv_f32.c ****  * Convolution is a mathematical operation that operates on two finite length vectors to generate a
+  39:Source\FilteringFunctions/arm_conv_f32.c ****  * Convolution is similar to correlation and is frequently used in filtering and data analysis.
+  40:Source\FilteringFunctions/arm_conv_f32.c ****  * The CMSIS DSP library contains functions for convolving Q7, Q15, Q31, and floating-point data ty
+  41:Source\FilteringFunctions/arm_conv_f32.c ****  * The library also provides fast versions of the Q15 and Q31 functions on Cortex-M4 and Cortex-M3.
+  42:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  43:Source\FilteringFunctions/arm_conv_f32.c ****  * \par Algorithm
+  44:Source\FilteringFunctions/arm_conv_f32.c ****  * Let <code>a[n]</code> and <code>b[n]</code> be sequences of length <code>srcALen</code> and <cod
+  45:Source\FilteringFunctions/arm_conv_f32.c ****  * Then the convolution
+  46:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  47:Source\FilteringFunctions/arm_conv_f32.c ****  * <pre>
+  48:Source\FilteringFunctions/arm_conv_f32.c ****  *                   c[n] = a[n] * b[n]
+  49:Source\FilteringFunctions/arm_conv_f32.c ****  * </pre>
+  50:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  51:Source\FilteringFunctions/arm_conv_f32.c ****  * \par
+  52:Source\FilteringFunctions/arm_conv_f32.c ****  * is defined as
+  53:Source\FilteringFunctions/arm_conv_f32.c ****  * \image html ConvolutionEquation.gif
+  54:Source\FilteringFunctions/arm_conv_f32.c ****  * \par
+  55:Source\FilteringFunctions/arm_conv_f32.c ****  * Note that <code>c[n]</code> is of length <code>srcALen + srcBLen - 1</code> and is defined over 
+  56:Source\FilteringFunctions/arm_conv_f32.c ****  * <code>pSrcA</code> points to the first input vector of length <code>srcALen</code> and
+  57:Source\FilteringFunctions/arm_conv_f32.c ****  * <code>pSrcB</code> points to the second input vector of length <code>srcBLen</code>.
+  58:Source\FilteringFunctions/arm_conv_f32.c ****  * The output result is written to <code>pDst</code> and the calling function must allocate <code>s
+  59:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  60:Source\FilteringFunctions/arm_conv_f32.c ****  * \par
+  61:Source\FilteringFunctions/arm_conv_f32.c ****  * Conceptually, when two signals <code>a[n]</code> and <code>b[n]</code> are convolved,
+  62:Source\FilteringFunctions/arm_conv_f32.c ****  * the signal <code>b[n]</code> slides over <code>a[n]</code>.
+  63:Source\FilteringFunctions/arm_conv_f32.c ****  * For each offset \c n, the overlapping portions of a[n] and b[n] are multiplied and summed togeth
+  64:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  65:Source\FilteringFunctions/arm_conv_f32.c ****  * \par
+  66:Source\FilteringFunctions/arm_conv_f32.c ****  * Note that convolution is a commutative operation:
+  67:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  68:Source\FilteringFunctions/arm_conv_f32.c ****  * <pre>
+  69:Source\FilteringFunctions/arm_conv_f32.c ****  *                   a[n] * b[n] = b[n] * a[n].
+  70:Source\FilteringFunctions/arm_conv_f32.c ****  * </pre>
+  71:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  72:Source\FilteringFunctions/arm_conv_f32.c ****  * \par
+  73:Source\FilteringFunctions/arm_conv_f32.c ****  * This means that switching the A and B arguments to the convolution functions has no effect.
+  74:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  75:Source\FilteringFunctions/arm_conv_f32.c ****  * <b>Fixed-Point Behavior</b>
+  76:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  77:Source\FilteringFunctions/arm_conv_f32.c ****  * \par
+  78:Source\FilteringFunctions/arm_conv_f32.c ****  * Convolution requires summing up a large number of intermediate products.
+  79:Source\FilteringFunctions/arm_conv_f32.c ****  * As such, the Q7, Q15, and Q31 functions run a risk of overflow and saturation.
+  80:Source\FilteringFunctions/arm_conv_f32.c ****  * Refer to the function specific documentation below for further details of the particular algorit
+  81:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  82:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  83:Source\FilteringFunctions/arm_conv_f32.c ****  * <b>Fast Versions</b>
+  84:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  85:Source\FilteringFunctions/arm_conv_f32.c ****  * \par
+  86:Source\FilteringFunctions/arm_conv_f32.c ****  * Fast versions are supported for Q31 and Q15.  Cycles for Fast versions are less compared to Q31 
+  87:Source\FilteringFunctions/arm_conv_f32.c ****  * the input signals should be scaled down to avoid intermediate overflows.
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 3
+
+
+  88:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  89:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  90:Source\FilteringFunctions/arm_conv_f32.c ****  * <b>Opt Versions</b>
+  91:Source\FilteringFunctions/arm_conv_f32.c ****  *
+  92:Source\FilteringFunctions/arm_conv_f32.c ****  * \par
+  93:Source\FilteringFunctions/arm_conv_f32.c ****  * Opt versions are supported for Q15 and Q7.  Design uses internal scratch buffer for getting good
+  94:Source\FilteringFunctions/arm_conv_f32.c ****  * These versions are optimised in cycles and consumes more memory(Scratch memory) compared to Q15 
+  95:Source\FilteringFunctions/arm_conv_f32.c ****  */
+  96:Source\FilteringFunctions/arm_conv_f32.c **** 
+  97:Source\FilteringFunctions/arm_conv_f32.c **** /**
+  98:Source\FilteringFunctions/arm_conv_f32.c ****  * @addtogroup Conv
+  99:Source\FilteringFunctions/arm_conv_f32.c ****  * @{
+ 100:Source\FilteringFunctions/arm_conv_f32.c ****  */
+ 101:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 102:Source\FilteringFunctions/arm_conv_f32.c **** /**
+ 103:Source\FilteringFunctions/arm_conv_f32.c ****  * @brief Convolution of floating-point sequences.
+ 104:Source\FilteringFunctions/arm_conv_f32.c ****  * @param[in] *pSrcA points to the first input sequence.
+ 105:Source\FilteringFunctions/arm_conv_f32.c ****  * @param[in] srcALen length of the first input sequence.
+ 106:Source\FilteringFunctions/arm_conv_f32.c ****  * @param[in] *pSrcB points to the second input sequence.
+ 107:Source\FilteringFunctions/arm_conv_f32.c ****  * @param[in] srcBLen length of the second input sequence.
+ 108:Source\FilteringFunctions/arm_conv_f32.c ****  * @param[out] *pDst points to the location where the output result is written.  Length srcALen+src
+ 109:Source\FilteringFunctions/arm_conv_f32.c ****  * @return none.
+ 110:Source\FilteringFunctions/arm_conv_f32.c ****  */
+ 111:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 112:Source\FilteringFunctions/arm_conv_f32.c **** void arm_conv_f32(
+ 113:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t * pSrcA,
+ 114:Source\FilteringFunctions/arm_conv_f32.c ****   uint32_t srcALen,
+ 115:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t * pSrcB,
+ 116:Source\FilteringFunctions/arm_conv_f32.c ****   uint32_t srcBLen,
+ 117:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t * pDst)
+ 118:Source\FilteringFunctions/arm_conv_f32.c **** {
+  28              		.loc 1 118 0
+  29              		.cfi_startproc
+  30 0000 80B5     		push	{r7, lr}
+  31              		.cfi_def_cfa_offset 8
+  32              		.cfi_offset 7, -8
+  33              		.cfi_offset 14, -4
+  34 0002 8AB0     		sub	sp, sp, #40
+  35              		.cfi_def_cfa_offset 48
+  36 0004 00AF     		add	r7, sp, #0
+  37              		.cfi_def_cfa_register 7
+  38 0006 F860     		str	r0, [r7, #12]
+  39 0008 B960     		str	r1, [r7, #8]
+  40 000a 7A60     		str	r2, [r7, #4]
+  41 000c 3B60     		str	r3, [r7]
+ 119:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 120:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 121:Source\FilteringFunctions/arm_conv_f32.c **** #if defined (ARM_MATH_DSP)
+ 122:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 123:Source\FilteringFunctions/arm_conv_f32.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+ 124:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 125:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t *pIn1;                               /* inputA pointer */
+ 126:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t *pIn2;                               /* inputB pointer */
+ 127:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t *pOut = pDst;                        /* output pointer */
+ 128:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t *px;                                 /* Intermediate inputA pointer */
+ 129:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t *py;                                 /* Intermediate inputB pointer */
+ 130:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t *pSrc1, *pSrc2;                      /* Intermediate pointers */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 4
+
+
+ 131:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t sum, acc0, acc1, acc2, acc3;         /* Accumulator */
+ 132:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t x0, x1, x2, x3, c0;                  /* Temporary variables to hold state and coefficie
+ 133:Source\FilteringFunctions/arm_conv_f32.c ****   uint32_t j, k, count, blkCnt, blockSize1, blockSize2, blockSize3;     /* loop counters */
+ 134:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 135:Source\FilteringFunctions/arm_conv_f32.c ****   /* The algorithm implementation is based on the lengths of the inputs. */
+ 136:Source\FilteringFunctions/arm_conv_f32.c ****   /* srcB is always made to slide across srcA. */
+ 137:Source\FilteringFunctions/arm_conv_f32.c ****   /* So srcBLen is always considered as shorter or equal to srcALen */
+ 138:Source\FilteringFunctions/arm_conv_f32.c ****   if (srcALen >= srcBLen)
+ 139:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ 140:Source\FilteringFunctions/arm_conv_f32.c ****     /* Initialization of inputA pointer */
+ 141:Source\FilteringFunctions/arm_conv_f32.c ****     pIn1 = pSrcA;
+ 142:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 143:Source\FilteringFunctions/arm_conv_f32.c ****     /* Initialization of inputB pointer */
+ 144:Source\FilteringFunctions/arm_conv_f32.c ****     pIn2 = pSrcB;
+ 145:Source\FilteringFunctions/arm_conv_f32.c ****   }
+ 146:Source\FilteringFunctions/arm_conv_f32.c ****   else
+ 147:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ 148:Source\FilteringFunctions/arm_conv_f32.c ****     /* Initialization of inputA pointer */
+ 149:Source\FilteringFunctions/arm_conv_f32.c ****     pIn1 = pSrcB;
+ 150:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 151:Source\FilteringFunctions/arm_conv_f32.c ****     /* Initialization of inputB pointer */
+ 152:Source\FilteringFunctions/arm_conv_f32.c ****     pIn2 = pSrcA;
+ 153:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 154:Source\FilteringFunctions/arm_conv_f32.c ****     /* srcBLen is always considered as shorter or equal to srcALen */
+ 155:Source\FilteringFunctions/arm_conv_f32.c ****     j = srcBLen;
+ 156:Source\FilteringFunctions/arm_conv_f32.c ****     srcBLen = srcALen;
+ 157:Source\FilteringFunctions/arm_conv_f32.c ****     srcALen = j;
+ 158:Source\FilteringFunctions/arm_conv_f32.c ****   }
+ 159:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 160:Source\FilteringFunctions/arm_conv_f32.c ****   /* conv(x,y) at n = x[n] * y[0] + x[n-1] * y[1] + x[n-2] * y[2] + ...+ x[n-N+1] * y[N -1] */
+ 161:Source\FilteringFunctions/arm_conv_f32.c ****   /* The function is internally
+ 162:Source\FilteringFunctions/arm_conv_f32.c ****    * divided into three stages according to the number of multiplications that has to be
+ 163:Source\FilteringFunctions/arm_conv_f32.c ****    * taken place between inputA samples and inputB samples. In the first stage of the
+ 164:Source\FilteringFunctions/arm_conv_f32.c ****    * algorithm, the multiplications increase by one for every iteration.
+ 165:Source\FilteringFunctions/arm_conv_f32.c ****    * In the second stage of the algorithm, srcBLen number of multiplications are done.
+ 166:Source\FilteringFunctions/arm_conv_f32.c ****    * In the third stage of the algorithm, the multiplications decrease by one
+ 167:Source\FilteringFunctions/arm_conv_f32.c ****    * for every iteration. */
+ 168:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 169:Source\FilteringFunctions/arm_conv_f32.c ****   /* The algorithm is implemented in three stages.
+ 170:Source\FilteringFunctions/arm_conv_f32.c ****      The loop counters of each stage is initiated here. */
+ 171:Source\FilteringFunctions/arm_conv_f32.c ****   blockSize1 = srcBLen - 1u;
+ 172:Source\FilteringFunctions/arm_conv_f32.c ****   blockSize2 = srcALen - (srcBLen - 1u);
+ 173:Source\FilteringFunctions/arm_conv_f32.c ****   blockSize3 = blockSize1;
+ 174:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 175:Source\FilteringFunctions/arm_conv_f32.c ****   /* --------------------------
+ 176:Source\FilteringFunctions/arm_conv_f32.c ****    * initializations of stage1
+ 177:Source\FilteringFunctions/arm_conv_f32.c ****    * -------------------------*/
+ 178:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 179:Source\FilteringFunctions/arm_conv_f32.c ****   /* sum = x[0] * y[0]
+ 180:Source\FilteringFunctions/arm_conv_f32.c ****    * sum = x[0] * y[1] + x[1] * y[0]
+ 181:Source\FilteringFunctions/arm_conv_f32.c ****    * ....
+ 182:Source\FilteringFunctions/arm_conv_f32.c ****    * sum = x[0] * y[srcBlen - 1] + x[1] * y[srcBlen - 2] +...+ x[srcBLen - 1] * y[0]
+ 183:Source\FilteringFunctions/arm_conv_f32.c ****    */
+ 184:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 185:Source\FilteringFunctions/arm_conv_f32.c ****   /* In this stage the MAC operations are increased by 1 for every iteration.
+ 186:Source\FilteringFunctions/arm_conv_f32.c ****      The count variable holds the number of MAC operations performed */
+ 187:Source\FilteringFunctions/arm_conv_f32.c ****   count = 1u;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 5
+
+
+ 188:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 189:Source\FilteringFunctions/arm_conv_f32.c ****   /* Working pointer of inputA */
+ 190:Source\FilteringFunctions/arm_conv_f32.c ****   px = pIn1;
+ 191:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 192:Source\FilteringFunctions/arm_conv_f32.c ****   /* Working pointer of inputB */
+ 193:Source\FilteringFunctions/arm_conv_f32.c ****   py = pIn2;
+ 194:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 195:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 196:Source\FilteringFunctions/arm_conv_f32.c ****   /* ------------------------
+ 197:Source\FilteringFunctions/arm_conv_f32.c ****    * Stage1 process
+ 198:Source\FilteringFunctions/arm_conv_f32.c ****    * ----------------------*/
+ 199:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 200:Source\FilteringFunctions/arm_conv_f32.c ****   /* The first stage starts here */
+ 201:Source\FilteringFunctions/arm_conv_f32.c ****   while (blockSize1 > 0u)
+ 202:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ 203:Source\FilteringFunctions/arm_conv_f32.c ****     /* Accumulator is made zero for every iteration */
+ 204:Source\FilteringFunctions/arm_conv_f32.c ****     sum = 0.0f;
+ 205:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 206:Source\FilteringFunctions/arm_conv_f32.c ****     /* Apply loop unrolling and compute 4 MACs simultaneously. */
+ 207:Source\FilteringFunctions/arm_conv_f32.c ****     k = count >> 2u;
+ 208:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 209:Source\FilteringFunctions/arm_conv_f32.c ****     /* First part of the processing with loop unrolling.  Compute 4 MACs at a time.
+ 210:Source\FilteringFunctions/arm_conv_f32.c ****      ** a second loop below computes MACs for the remaining 1 to 3 samples. */
+ 211:Source\FilteringFunctions/arm_conv_f32.c ****     while (k > 0u)
+ 212:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 213:Source\FilteringFunctions/arm_conv_f32.c ****       /* x[0] * y[srcBLen - 1] */
+ 214:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 215:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 216:Source\FilteringFunctions/arm_conv_f32.c ****       /* x[1] * y[srcBLen - 2] */
+ 217:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 218:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 219:Source\FilteringFunctions/arm_conv_f32.c ****       /* x[2] * y[srcBLen - 3] */
+ 220:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 221:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 222:Source\FilteringFunctions/arm_conv_f32.c ****       /* x[3] * y[srcBLen - 4] */
+ 223:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 224:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 225:Source\FilteringFunctions/arm_conv_f32.c ****       /* Decrement the loop counter */
+ 226:Source\FilteringFunctions/arm_conv_f32.c ****       k--;
+ 227:Source\FilteringFunctions/arm_conv_f32.c ****     }
+ 228:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 229:Source\FilteringFunctions/arm_conv_f32.c ****     /* If the count is not a multiple of 4, compute any remaining MACs here.
+ 230:Source\FilteringFunctions/arm_conv_f32.c ****      ** No loop unrolling is used. */
+ 231:Source\FilteringFunctions/arm_conv_f32.c ****     k = count % 0x4u;
+ 232:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 233:Source\FilteringFunctions/arm_conv_f32.c ****     while (k > 0u)
+ 234:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 235:Source\FilteringFunctions/arm_conv_f32.c ****       /* Perform the multiply-accumulate */
+ 236:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 237:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 238:Source\FilteringFunctions/arm_conv_f32.c ****       /* Decrement the loop counter */
+ 239:Source\FilteringFunctions/arm_conv_f32.c ****       k--;
+ 240:Source\FilteringFunctions/arm_conv_f32.c ****     }
+ 241:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 242:Source\FilteringFunctions/arm_conv_f32.c ****     /* Store the result in the accumulator in the destination buffer. */
+ 243:Source\FilteringFunctions/arm_conv_f32.c ****     *pOut++ = sum;
+ 244:Source\FilteringFunctions/arm_conv_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 6
+
+
+ 245:Source\FilteringFunctions/arm_conv_f32.c ****     /* Update the inputA and inputB pointers for next MAC calculation */
+ 246:Source\FilteringFunctions/arm_conv_f32.c ****     py = pIn2 + count;
+ 247:Source\FilteringFunctions/arm_conv_f32.c ****     px = pIn1;
+ 248:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 249:Source\FilteringFunctions/arm_conv_f32.c ****     /* Increment the MAC count */
+ 250:Source\FilteringFunctions/arm_conv_f32.c ****     count++;
+ 251:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 252:Source\FilteringFunctions/arm_conv_f32.c ****     /* Decrement the loop counter */
+ 253:Source\FilteringFunctions/arm_conv_f32.c ****     blockSize1--;
+ 254:Source\FilteringFunctions/arm_conv_f32.c ****   }
+ 255:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 256:Source\FilteringFunctions/arm_conv_f32.c ****   /* --------------------------
+ 257:Source\FilteringFunctions/arm_conv_f32.c ****    * Initializations of stage2
+ 258:Source\FilteringFunctions/arm_conv_f32.c ****    * ------------------------*/
+ 259:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 260:Source\FilteringFunctions/arm_conv_f32.c ****   /* sum = x[0] * y[srcBLen-1] + x[1] * y[srcBLen-2] +...+ x[srcBLen-1] * y[0]
+ 261:Source\FilteringFunctions/arm_conv_f32.c ****    * sum = x[1] * y[srcBLen-1] + x[2] * y[srcBLen-2] +...+ x[srcBLen] * y[0]
+ 262:Source\FilteringFunctions/arm_conv_f32.c ****    * ....
+ 263:Source\FilteringFunctions/arm_conv_f32.c ****    * sum = x[srcALen-srcBLen-2] * y[srcBLen-1] + x[srcALen] * y[srcBLen-2] +...+ x[srcALen-1] * y[0
+ 264:Source\FilteringFunctions/arm_conv_f32.c ****    */
+ 265:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 266:Source\FilteringFunctions/arm_conv_f32.c ****   /* Working pointer of inputA */
+ 267:Source\FilteringFunctions/arm_conv_f32.c ****   px = pIn1;
+ 268:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 269:Source\FilteringFunctions/arm_conv_f32.c ****   /* Working pointer of inputB */
+ 270:Source\FilteringFunctions/arm_conv_f32.c ****   pSrc2 = pIn2 + (srcBLen - 1u);
+ 271:Source\FilteringFunctions/arm_conv_f32.c ****   py = pSrc2;
+ 272:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 273:Source\FilteringFunctions/arm_conv_f32.c ****   /* count is index by which the pointer pIn1 to be incremented */
+ 274:Source\FilteringFunctions/arm_conv_f32.c ****   count = 0u;
+ 275:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 276:Source\FilteringFunctions/arm_conv_f32.c ****   /* -------------------
+ 277:Source\FilteringFunctions/arm_conv_f32.c ****    * Stage2 process
+ 278:Source\FilteringFunctions/arm_conv_f32.c ****    * ------------------*/
+ 279:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 280:Source\FilteringFunctions/arm_conv_f32.c ****   /* Stage2 depends on srcBLen as in this stage srcBLen number of MACS are performed.
+ 281:Source\FilteringFunctions/arm_conv_f32.c ****    * So, to loop unroll over blockSize2,
+ 282:Source\FilteringFunctions/arm_conv_f32.c ****    * srcBLen should be greater than or equal to 4 */
+ 283:Source\FilteringFunctions/arm_conv_f32.c ****   if (srcBLen >= 4u)
+ 284:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ 285:Source\FilteringFunctions/arm_conv_f32.c ****     /* Loop unroll over blockSize2, by 4 */
+ 286:Source\FilteringFunctions/arm_conv_f32.c ****     blkCnt = blockSize2 >> 2u;
+ 287:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 288:Source\FilteringFunctions/arm_conv_f32.c ****     while (blkCnt > 0u)
+ 289:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 290:Source\FilteringFunctions/arm_conv_f32.c ****       /* Set all accumulators to zero */
+ 291:Source\FilteringFunctions/arm_conv_f32.c ****       acc0 = 0.0f;
+ 292:Source\FilteringFunctions/arm_conv_f32.c ****       acc1 = 0.0f;
+ 293:Source\FilteringFunctions/arm_conv_f32.c ****       acc2 = 0.0f;
+ 294:Source\FilteringFunctions/arm_conv_f32.c ****       acc3 = 0.0f;
+ 295:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 296:Source\FilteringFunctions/arm_conv_f32.c ****       /* read x[0], x[1], x[2] samples */
+ 297:Source\FilteringFunctions/arm_conv_f32.c ****       x0 = *(px++);
+ 298:Source\FilteringFunctions/arm_conv_f32.c ****       x1 = *(px++);
+ 299:Source\FilteringFunctions/arm_conv_f32.c ****       x2 = *(px++);
+ 300:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 301:Source\FilteringFunctions/arm_conv_f32.c ****       /* Apply loop unrolling and compute 4 MACs simultaneously. */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 7
+
+
+ 302:Source\FilteringFunctions/arm_conv_f32.c ****       k = srcBLen >> 2u;
+ 303:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 304:Source\FilteringFunctions/arm_conv_f32.c ****       /* First part of the processing with loop unrolling.  Compute 4 MACs at a time.
+ 305:Source\FilteringFunctions/arm_conv_f32.c ****        ** a second loop below computes MACs for the remaining 1 to 3 samples. */
+ 306:Source\FilteringFunctions/arm_conv_f32.c ****       do
+ 307:Source\FilteringFunctions/arm_conv_f32.c ****       {
+ 308:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read y[srcBLen - 1] sample */
+ 309:Source\FilteringFunctions/arm_conv_f32.c ****         c0 = *(py--);
+ 310:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 311:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read x[3] sample */
+ 312:Source\FilteringFunctions/arm_conv_f32.c ****         x3 = *(px);
+ 313:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 314:Source\FilteringFunctions/arm_conv_f32.c ****         /* Perform the multiply-accumulate */
+ 315:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc0 +=  x[0] * y[srcBLen - 1] */
+ 316:Source\FilteringFunctions/arm_conv_f32.c ****         acc0 += x0 * c0;
+ 317:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 318:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc1 +=  x[1] * y[srcBLen - 1] */
+ 319:Source\FilteringFunctions/arm_conv_f32.c ****         acc1 += x1 * c0;
+ 320:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 321:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc2 +=  x[2] * y[srcBLen - 1] */
+ 322:Source\FilteringFunctions/arm_conv_f32.c ****         acc2 += x2 * c0;
+ 323:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 324:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc3 +=  x[3] * y[srcBLen - 1] */
+ 325:Source\FilteringFunctions/arm_conv_f32.c ****         acc3 += x3 * c0;
+ 326:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 327:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read y[srcBLen - 2] sample */
+ 328:Source\FilteringFunctions/arm_conv_f32.c ****         c0 = *(py--);
+ 329:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 330:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read x[4] sample */
+ 331:Source\FilteringFunctions/arm_conv_f32.c ****         x0 = *(px + 1u);
+ 332:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 333:Source\FilteringFunctions/arm_conv_f32.c ****         /* Perform the multiply-accumulate */
+ 334:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc0 +=  x[1] * y[srcBLen - 2] */
+ 335:Source\FilteringFunctions/arm_conv_f32.c ****         acc0 += x1 * c0;
+ 336:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc1 +=  x[2] * y[srcBLen - 2] */
+ 337:Source\FilteringFunctions/arm_conv_f32.c ****         acc1 += x2 * c0;
+ 338:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc2 +=  x[3] * y[srcBLen - 2] */
+ 339:Source\FilteringFunctions/arm_conv_f32.c ****         acc2 += x3 * c0;
+ 340:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc3 +=  x[4] * y[srcBLen - 2] */
+ 341:Source\FilteringFunctions/arm_conv_f32.c ****         acc3 += x0 * c0;
+ 342:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 343:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read y[srcBLen - 3] sample */
+ 344:Source\FilteringFunctions/arm_conv_f32.c ****         c0 = *(py--);
+ 345:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 346:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read x[5] sample */
+ 347:Source\FilteringFunctions/arm_conv_f32.c ****         x1 = *(px + 2u);
+ 348:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 349:Source\FilteringFunctions/arm_conv_f32.c ****         /* Perform the multiply-accumulates */
+ 350:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc0 +=  x[2] * y[srcBLen - 3] */
+ 351:Source\FilteringFunctions/arm_conv_f32.c ****         acc0 += x2 * c0;
+ 352:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc1 +=  x[3] * y[srcBLen - 2] */
+ 353:Source\FilteringFunctions/arm_conv_f32.c ****         acc1 += x3 * c0;
+ 354:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc2 +=  x[4] * y[srcBLen - 2] */
+ 355:Source\FilteringFunctions/arm_conv_f32.c ****         acc2 += x0 * c0;
+ 356:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc3 +=  x[5] * y[srcBLen - 2] */
+ 357:Source\FilteringFunctions/arm_conv_f32.c ****         acc3 += x1 * c0;
+ 358:Source\FilteringFunctions/arm_conv_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 8
+
+
+ 359:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read y[srcBLen - 4] sample */
+ 360:Source\FilteringFunctions/arm_conv_f32.c ****         c0 = *(py--);
+ 361:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 362:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read x[6] sample */
+ 363:Source\FilteringFunctions/arm_conv_f32.c ****         x2 = *(px + 3u);
+ 364:Source\FilteringFunctions/arm_conv_f32.c ****         px += 4u;
+ 365:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 366:Source\FilteringFunctions/arm_conv_f32.c ****         /* Perform the multiply-accumulates */
+ 367:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc0 +=  x[3] * y[srcBLen - 4] */
+ 368:Source\FilteringFunctions/arm_conv_f32.c ****         acc0 += x3 * c0;
+ 369:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc1 +=  x[4] * y[srcBLen - 4] */
+ 370:Source\FilteringFunctions/arm_conv_f32.c ****         acc1 += x0 * c0;
+ 371:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc2 +=  x[5] * y[srcBLen - 4] */
+ 372:Source\FilteringFunctions/arm_conv_f32.c ****         acc2 += x1 * c0;
+ 373:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc3 +=  x[6] * y[srcBLen - 4] */
+ 374:Source\FilteringFunctions/arm_conv_f32.c ****         acc3 += x2 * c0;
+ 375:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 376:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 377:Source\FilteringFunctions/arm_conv_f32.c ****       } while (--k);
+ 378:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 379:Source\FilteringFunctions/arm_conv_f32.c ****       /* If the srcBLen is not a multiple of 4, compute any remaining MACs here.
+ 380:Source\FilteringFunctions/arm_conv_f32.c ****        ** No loop unrolling is used. */
+ 381:Source\FilteringFunctions/arm_conv_f32.c ****       k = srcBLen % 0x4u;
+ 382:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 383:Source\FilteringFunctions/arm_conv_f32.c ****       while (k > 0u)
+ 384:Source\FilteringFunctions/arm_conv_f32.c ****       {
+ 385:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read y[srcBLen - 5] sample */
+ 386:Source\FilteringFunctions/arm_conv_f32.c ****         c0 = *(py--);
+ 387:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 388:Source\FilteringFunctions/arm_conv_f32.c ****         /* Read x[7] sample */
+ 389:Source\FilteringFunctions/arm_conv_f32.c ****         x3 = *(px++);
+ 390:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 391:Source\FilteringFunctions/arm_conv_f32.c ****         /* Perform the multiply-accumulates */
+ 392:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc0 +=  x[4] * y[srcBLen - 5] */
+ 393:Source\FilteringFunctions/arm_conv_f32.c ****         acc0 += x0 * c0;
+ 394:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc1 +=  x[5] * y[srcBLen - 5] */
+ 395:Source\FilteringFunctions/arm_conv_f32.c ****         acc1 += x1 * c0;
+ 396:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc2 +=  x[6] * y[srcBLen - 5] */
+ 397:Source\FilteringFunctions/arm_conv_f32.c ****         acc2 += x2 * c0;
+ 398:Source\FilteringFunctions/arm_conv_f32.c ****         /* acc3 +=  x[7] * y[srcBLen - 5] */
+ 399:Source\FilteringFunctions/arm_conv_f32.c ****         acc3 += x3 * c0;
+ 400:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 401:Source\FilteringFunctions/arm_conv_f32.c ****         /* Reuse the present samples for the next MAC */
+ 402:Source\FilteringFunctions/arm_conv_f32.c ****         x0 = x1;
+ 403:Source\FilteringFunctions/arm_conv_f32.c ****         x1 = x2;
+ 404:Source\FilteringFunctions/arm_conv_f32.c ****         x2 = x3;
+ 405:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 406:Source\FilteringFunctions/arm_conv_f32.c ****         /* Decrement the loop counter */
+ 407:Source\FilteringFunctions/arm_conv_f32.c ****         k--;
+ 408:Source\FilteringFunctions/arm_conv_f32.c ****       }
+ 409:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 410:Source\FilteringFunctions/arm_conv_f32.c ****       /* Store the result in the accumulator in the destination buffer. */
+ 411:Source\FilteringFunctions/arm_conv_f32.c ****       *pOut++ = acc0;
+ 412:Source\FilteringFunctions/arm_conv_f32.c ****       *pOut++ = acc1;
+ 413:Source\FilteringFunctions/arm_conv_f32.c ****       *pOut++ = acc2;
+ 414:Source\FilteringFunctions/arm_conv_f32.c ****       *pOut++ = acc3;
+ 415:Source\FilteringFunctions/arm_conv_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 9
+
+
+ 416:Source\FilteringFunctions/arm_conv_f32.c ****       /* Increment the pointer pIn1 index, count by 4 */
+ 417:Source\FilteringFunctions/arm_conv_f32.c ****       count += 4u;
+ 418:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 419:Source\FilteringFunctions/arm_conv_f32.c ****       /* Update the inputA and inputB pointers for next MAC calculation */
+ 420:Source\FilteringFunctions/arm_conv_f32.c ****       px = pIn1 + count;
+ 421:Source\FilteringFunctions/arm_conv_f32.c ****       py = pSrc2;
+ 422:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 423:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 424:Source\FilteringFunctions/arm_conv_f32.c ****       /* Decrement the loop counter */
+ 425:Source\FilteringFunctions/arm_conv_f32.c ****       blkCnt--;
+ 426:Source\FilteringFunctions/arm_conv_f32.c ****     }
+ 427:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 428:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 429:Source\FilteringFunctions/arm_conv_f32.c ****     /* If the blockSize2 is not a multiple of 4, compute any remaining output samples here.
+ 430:Source\FilteringFunctions/arm_conv_f32.c ****      ** No loop unrolling is used. */
+ 431:Source\FilteringFunctions/arm_conv_f32.c ****     blkCnt = blockSize2 % 0x4u;
+ 432:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 433:Source\FilteringFunctions/arm_conv_f32.c ****     while (blkCnt > 0u)
+ 434:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 435:Source\FilteringFunctions/arm_conv_f32.c ****       /* Accumulator is made zero for every iteration */
+ 436:Source\FilteringFunctions/arm_conv_f32.c ****       sum = 0.0f;
+ 437:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 438:Source\FilteringFunctions/arm_conv_f32.c ****       /* Apply loop unrolling and compute 4 MACs simultaneously. */
+ 439:Source\FilteringFunctions/arm_conv_f32.c ****       k = srcBLen >> 2u;
+ 440:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 441:Source\FilteringFunctions/arm_conv_f32.c ****       /* First part of the processing with loop unrolling.  Compute 4 MACs at a time.
+ 442:Source\FilteringFunctions/arm_conv_f32.c ****        ** a second loop below computes MACs for the remaining 1 to 3 samples. */
+ 443:Source\FilteringFunctions/arm_conv_f32.c ****       while (k > 0u)
+ 444:Source\FilteringFunctions/arm_conv_f32.c ****       {
+ 445:Source\FilteringFunctions/arm_conv_f32.c ****         /* Perform the multiply-accumulates */
+ 446:Source\FilteringFunctions/arm_conv_f32.c ****         sum += *px++ * *py--;
+ 447:Source\FilteringFunctions/arm_conv_f32.c ****         sum += *px++ * *py--;
+ 448:Source\FilteringFunctions/arm_conv_f32.c ****         sum += *px++ * *py--;
+ 449:Source\FilteringFunctions/arm_conv_f32.c ****         sum += *px++ * *py--;
+ 450:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 451:Source\FilteringFunctions/arm_conv_f32.c ****         /* Decrement the loop counter */
+ 452:Source\FilteringFunctions/arm_conv_f32.c ****         k--;
+ 453:Source\FilteringFunctions/arm_conv_f32.c ****       }
+ 454:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 455:Source\FilteringFunctions/arm_conv_f32.c ****       /* If the srcBLen is not a multiple of 4, compute any remaining MACs here.
+ 456:Source\FilteringFunctions/arm_conv_f32.c ****        ** No loop unrolling is used. */
+ 457:Source\FilteringFunctions/arm_conv_f32.c ****       k = srcBLen % 0x4u;
+ 458:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 459:Source\FilteringFunctions/arm_conv_f32.c ****       while (k > 0u)
+ 460:Source\FilteringFunctions/arm_conv_f32.c ****       {
+ 461:Source\FilteringFunctions/arm_conv_f32.c ****         /* Perform the multiply-accumulate */
+ 462:Source\FilteringFunctions/arm_conv_f32.c ****         sum += *px++ * *py--;
+ 463:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 464:Source\FilteringFunctions/arm_conv_f32.c ****         /* Decrement the loop counter */
+ 465:Source\FilteringFunctions/arm_conv_f32.c ****         k--;
+ 466:Source\FilteringFunctions/arm_conv_f32.c ****       }
+ 467:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 468:Source\FilteringFunctions/arm_conv_f32.c ****       /* Store the result in the accumulator in the destination buffer. */
+ 469:Source\FilteringFunctions/arm_conv_f32.c ****       *pOut++ = sum;
+ 470:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 471:Source\FilteringFunctions/arm_conv_f32.c ****       /* Increment the MAC count */
+ 472:Source\FilteringFunctions/arm_conv_f32.c ****       count++;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 10
+
+
+ 473:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 474:Source\FilteringFunctions/arm_conv_f32.c ****       /* Update the inputA and inputB pointers for next MAC calculation */
+ 475:Source\FilteringFunctions/arm_conv_f32.c ****       px = pIn1 + count;
+ 476:Source\FilteringFunctions/arm_conv_f32.c ****       py = pSrc2;
+ 477:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 478:Source\FilteringFunctions/arm_conv_f32.c ****       /* Decrement the loop counter */
+ 479:Source\FilteringFunctions/arm_conv_f32.c ****       blkCnt--;
+ 480:Source\FilteringFunctions/arm_conv_f32.c ****     }
+ 481:Source\FilteringFunctions/arm_conv_f32.c ****   }
+ 482:Source\FilteringFunctions/arm_conv_f32.c ****   else
+ 483:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ 484:Source\FilteringFunctions/arm_conv_f32.c ****     /* If the srcBLen is not a multiple of 4,
+ 485:Source\FilteringFunctions/arm_conv_f32.c ****      * the blockSize2 loop cannot be unrolled by 4 */
+ 486:Source\FilteringFunctions/arm_conv_f32.c ****     blkCnt = blockSize2;
+ 487:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 488:Source\FilteringFunctions/arm_conv_f32.c ****     while (blkCnt > 0u)
+ 489:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 490:Source\FilteringFunctions/arm_conv_f32.c ****       /* Accumulator is made zero for every iteration */
+ 491:Source\FilteringFunctions/arm_conv_f32.c ****       sum = 0.0f;
+ 492:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 493:Source\FilteringFunctions/arm_conv_f32.c ****       /* srcBLen number of MACS should be performed */
+ 494:Source\FilteringFunctions/arm_conv_f32.c ****       k = srcBLen;
+ 495:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 496:Source\FilteringFunctions/arm_conv_f32.c ****       while (k > 0u)
+ 497:Source\FilteringFunctions/arm_conv_f32.c ****       {
+ 498:Source\FilteringFunctions/arm_conv_f32.c ****         /* Perform the multiply-accumulate */
+ 499:Source\FilteringFunctions/arm_conv_f32.c ****         sum += *px++ * *py--;
+ 500:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 501:Source\FilteringFunctions/arm_conv_f32.c ****         /* Decrement the loop counter */
+ 502:Source\FilteringFunctions/arm_conv_f32.c ****         k--;
+ 503:Source\FilteringFunctions/arm_conv_f32.c ****       }
+ 504:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 505:Source\FilteringFunctions/arm_conv_f32.c ****       /* Store the result in the accumulator in the destination buffer. */
+ 506:Source\FilteringFunctions/arm_conv_f32.c ****       *pOut++ = sum;
+ 507:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 508:Source\FilteringFunctions/arm_conv_f32.c ****       /* Increment the MAC count */
+ 509:Source\FilteringFunctions/arm_conv_f32.c ****       count++;
+ 510:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 511:Source\FilteringFunctions/arm_conv_f32.c ****       /* Update the inputA and inputB pointers for next MAC calculation */
+ 512:Source\FilteringFunctions/arm_conv_f32.c ****       px = pIn1 + count;
+ 513:Source\FilteringFunctions/arm_conv_f32.c ****       py = pSrc2;
+ 514:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 515:Source\FilteringFunctions/arm_conv_f32.c ****       /* Decrement the loop counter */
+ 516:Source\FilteringFunctions/arm_conv_f32.c ****       blkCnt--;
+ 517:Source\FilteringFunctions/arm_conv_f32.c ****     }
+ 518:Source\FilteringFunctions/arm_conv_f32.c ****   }
+ 519:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 520:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 521:Source\FilteringFunctions/arm_conv_f32.c ****   /* --------------------------
+ 522:Source\FilteringFunctions/arm_conv_f32.c ****    * Initializations of stage3
+ 523:Source\FilteringFunctions/arm_conv_f32.c ****    * -------------------------*/
+ 524:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 525:Source\FilteringFunctions/arm_conv_f32.c ****   /* sum += x[srcALen-srcBLen+1] * y[srcBLen-1] + x[srcALen-srcBLen+2] * y[srcBLen-2] +...+ x[srcAL
+ 526:Source\FilteringFunctions/arm_conv_f32.c ****    * sum += x[srcALen-srcBLen+2] * y[srcBLen-1] + x[srcALen-srcBLen+3] * y[srcBLen-2] +...+ x[srcAL
+ 527:Source\FilteringFunctions/arm_conv_f32.c ****    * ....
+ 528:Source\FilteringFunctions/arm_conv_f32.c ****    * sum +=  x[srcALen-2] * y[srcBLen-1] + x[srcALen-1] * y[srcBLen-2]
+ 529:Source\FilteringFunctions/arm_conv_f32.c ****    * sum +=  x[srcALen-1] * y[srcBLen-1]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 11
+
+
+ 530:Source\FilteringFunctions/arm_conv_f32.c ****    */
+ 531:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 532:Source\FilteringFunctions/arm_conv_f32.c ****   /* In this stage the MAC operations are decreased by 1 for every iteration.
+ 533:Source\FilteringFunctions/arm_conv_f32.c ****      The blockSize3 variable holds the number of MAC operations performed */
+ 534:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 535:Source\FilteringFunctions/arm_conv_f32.c ****   /* Working pointer of inputA */
+ 536:Source\FilteringFunctions/arm_conv_f32.c ****   pSrc1 = (pIn1 + srcALen) - (srcBLen - 1u);
+ 537:Source\FilteringFunctions/arm_conv_f32.c ****   px = pSrc1;
+ 538:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 539:Source\FilteringFunctions/arm_conv_f32.c ****   /* Working pointer of inputB */
+ 540:Source\FilteringFunctions/arm_conv_f32.c ****   pSrc2 = pIn2 + (srcBLen - 1u);
+ 541:Source\FilteringFunctions/arm_conv_f32.c ****   py = pSrc2;
+ 542:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 543:Source\FilteringFunctions/arm_conv_f32.c ****   /* -------------------
+ 544:Source\FilteringFunctions/arm_conv_f32.c ****    * Stage3 process
+ 545:Source\FilteringFunctions/arm_conv_f32.c ****    * ------------------*/
+ 546:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 547:Source\FilteringFunctions/arm_conv_f32.c ****   while (blockSize3 > 0u)
+ 548:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ 549:Source\FilteringFunctions/arm_conv_f32.c ****     /* Accumulator is made zero for every iteration */
+ 550:Source\FilteringFunctions/arm_conv_f32.c ****     sum = 0.0f;
+ 551:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 552:Source\FilteringFunctions/arm_conv_f32.c ****     /* Apply loop unrolling and compute 4 MACs simultaneously. */
+ 553:Source\FilteringFunctions/arm_conv_f32.c ****     k = blockSize3 >> 2u;
+ 554:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 555:Source\FilteringFunctions/arm_conv_f32.c ****     /* First part of the processing with loop unrolling.  Compute 4 MACs at a time.
+ 556:Source\FilteringFunctions/arm_conv_f32.c ****      ** a second loop below computes MACs for the remaining 1 to 3 samples. */
+ 557:Source\FilteringFunctions/arm_conv_f32.c ****     while (k > 0u)
+ 558:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 559:Source\FilteringFunctions/arm_conv_f32.c ****       /* sum += x[srcALen - srcBLen + 1] * y[srcBLen - 1] */
+ 560:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 561:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 562:Source\FilteringFunctions/arm_conv_f32.c ****       /* sum += x[srcALen - srcBLen + 2] * y[srcBLen - 2] */
+ 563:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 564:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 565:Source\FilteringFunctions/arm_conv_f32.c ****       /* sum += x[srcALen - srcBLen + 3] * y[srcBLen - 3] */
+ 566:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 567:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 568:Source\FilteringFunctions/arm_conv_f32.c ****       /* sum += x[srcALen - srcBLen + 4] * y[srcBLen - 4] */
+ 569:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 570:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 571:Source\FilteringFunctions/arm_conv_f32.c ****       /* Decrement the loop counter */
+ 572:Source\FilteringFunctions/arm_conv_f32.c ****       k--;
+ 573:Source\FilteringFunctions/arm_conv_f32.c ****     }
+ 574:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 575:Source\FilteringFunctions/arm_conv_f32.c ****     /* If the blockSize3 is not a multiple of 4, compute any remaining MACs here.
+ 576:Source\FilteringFunctions/arm_conv_f32.c ****      ** No loop unrolling is used. */
+ 577:Source\FilteringFunctions/arm_conv_f32.c ****     k = blockSize3 % 0x4u;
+ 578:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 579:Source\FilteringFunctions/arm_conv_f32.c ****     while (k > 0u)
+ 580:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 581:Source\FilteringFunctions/arm_conv_f32.c ****       /* Perform the multiply-accumulates */
+ 582:Source\FilteringFunctions/arm_conv_f32.c ****       /* sum +=  x[srcALen-1] * y[srcBLen-1] */
+ 583:Source\FilteringFunctions/arm_conv_f32.c ****       sum += *px++ * *py--;
+ 584:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 585:Source\FilteringFunctions/arm_conv_f32.c ****       /* Decrement the loop counter */
+ 586:Source\FilteringFunctions/arm_conv_f32.c ****       k--;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 12
+
+
+ 587:Source\FilteringFunctions/arm_conv_f32.c ****     }
+ 588:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 589:Source\FilteringFunctions/arm_conv_f32.c ****     /* Store the result in the accumulator in the destination buffer. */
+ 590:Source\FilteringFunctions/arm_conv_f32.c ****     *pOut++ = sum;
+ 591:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 592:Source\FilteringFunctions/arm_conv_f32.c ****     /* Update the inputA and inputB pointers for next MAC calculation */
+ 593:Source\FilteringFunctions/arm_conv_f32.c ****     px = ++pSrc1;
+ 594:Source\FilteringFunctions/arm_conv_f32.c ****     py = pSrc2;
+ 595:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 596:Source\FilteringFunctions/arm_conv_f32.c ****     /* Decrement the loop counter */
+ 597:Source\FilteringFunctions/arm_conv_f32.c ****     blockSize3--;
+ 598:Source\FilteringFunctions/arm_conv_f32.c ****   }
+ 599:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 600:Source\FilteringFunctions/arm_conv_f32.c **** #else
+ 601:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 602:Source\FilteringFunctions/arm_conv_f32.c ****   /* Run the below code for Cortex-M0 */
+ 603:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 604:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t *pIn1 = pSrcA;                       /* inputA pointer */
+  42              		.loc 1 604 0
+  43 000e FB68     		ldr	r3, [r7, #12]
+  44 0010 BB61     		str	r3, [r7, #24]
+ 605:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t *pIn2 = pSrcB;                       /* inputB pointer */
+  45              		.loc 1 605 0
+  46 0012 7B68     		ldr	r3, [r7, #4]
+  47 0014 7B61     		str	r3, [r7, #20]
+ 606:Source\FilteringFunctions/arm_conv_f32.c ****   float32_t sum;                                 /* Accumulator */
+ 607:Source\FilteringFunctions/arm_conv_f32.c ****   uint32_t i, j;                                 /* loop counters */
+ 608:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 609:Source\FilteringFunctions/arm_conv_f32.c ****   /* Loop to calculate convolution for output length number of times */
+ 610:Source\FilteringFunctions/arm_conv_f32.c ****   for (i = 0u; i < ((srcALen + srcBLen) - 1u); i++)
+  48              		.loc 1 610 0
+  49 0016 0023     		mov	r3, #0
+  50 0018 3B62     		str	r3, [r7, #32]
+  51 001a 35E0     		b	.L2
+  52              	.L6:
+ 611:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ 612:Source\FilteringFunctions/arm_conv_f32.c ****     /* Initialize sum with zero to carry out MAC operations */
+ 613:Source\FilteringFunctions/arm_conv_f32.c ****     sum = 0.0f;
+  53              		.loc 1 613 0
+  54 001c 0023     		mov	r3, #0
+  55 001e 7B62     		str	r3, [r7, #36]
+ 614:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 615:Source\FilteringFunctions/arm_conv_f32.c ****     /* Loop to perform MAC operations according to convolution equation */
+ 616:Source\FilteringFunctions/arm_conv_f32.c ****     for (j = 0u; j <= i; j++)
+  56              		.loc 1 616 0
+  57 0020 0023     		mov	r3, #0
+  58 0022 FB61     		str	r3, [r7, #28]
+  59 0024 23E0     		b	.L3
+  60              	.L5:
+ 617:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 618:Source\FilteringFunctions/arm_conv_f32.c ****       /* Check the array limitations */
+ 619:Source\FilteringFunctions/arm_conv_f32.c ****       if ((((i - j) < srcBLen) && (j < srcALen)))
+  61              		.loc 1 619 0
+  62 0026 3A6A     		ldr	r2, [r7, #32]
+  63 0028 FB69     		ldr	r3, [r7, #28]
+  64 002a D21A     		sub	r2, r2, r3
+  65 002c 3B68     		ldr	r3, [r7]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 13
+
+
+  66 002e 9A42     		cmp	r2, r3
+  67 0030 1AD2     		bcs	.L4
+  68              		.loc 1 619 0 is_stmt 0 discriminator 1
+  69 0032 FA69     		ldr	r2, [r7, #28]
+  70 0034 BB68     		ldr	r3, [r7, #8]
+  71 0036 9A42     		cmp	r2, r3
+  72 0038 16D2     		bcs	.L4
+ 620:Source\FilteringFunctions/arm_conv_f32.c ****       {
+ 621:Source\FilteringFunctions/arm_conv_f32.c ****         /* z[i] += x[i-j] * y[j] */
+ 622:Source\FilteringFunctions/arm_conv_f32.c ****         sum += pIn1[j] * pIn2[i - j];
+  73              		.loc 1 622 0 is_stmt 1
+  74 003a FB69     		ldr	r3, [r7, #28]
+  75 003c 9B00     		lsl	r3, r3, #2
+  76 003e BA69     		ldr	r2, [r7, #24]
+  77 0040 D318     		add	r3, r2, r3
+  78 0042 1968     		ldr	r1, [r3]
+  79 0044 3A6A     		ldr	r2, [r7, #32]
+  80 0046 FB69     		ldr	r3, [r7, #28]
+  81 0048 D31A     		sub	r3, r2, r3
+  82 004a 9B00     		lsl	r3, r3, #2
+  83 004c 7A69     		ldr	r2, [r7, #20]
+  84 004e D318     		add	r3, r2, r3
+  85 0050 1B68     		ldr	r3, [r3]
+  86 0052 081C     		add	r0, r1, #0
+  87 0054 191C     		add	r1, r3, #0
+  88 0056 FFF7FEFF 		bl	__aeabi_fmul
+  89 005a 031C     		add	r3, r0, #0
+  90 005c 786A     		ldr	r0, [r7, #36]
+  91 005e 191C     		add	r1, r3, #0
+  92 0060 FFF7FEFF 		bl	__aeabi_fadd
+  93 0064 031C     		add	r3, r0, #0
+  94 0066 7B62     		str	r3, [r7, #36]
+  95              	.L4:
+ 616:Source\FilteringFunctions/arm_conv_f32.c ****     {
+  96              		.loc 1 616 0 discriminator 2
+  97 0068 FB69     		ldr	r3, [r7, #28]
+  98 006a 0133     		add	r3, r3, #1
+  99 006c FB61     		str	r3, [r7, #28]
+ 100              	.L3:
+ 616:Source\FilteringFunctions/arm_conv_f32.c ****     {
+ 101              		.loc 1 616 0 is_stmt 0 discriminator 1
+ 102 006e FA69     		ldr	r2, [r7, #28]
+ 103 0070 3B6A     		ldr	r3, [r7, #32]
+ 104 0072 9A42     		cmp	r2, r3
+ 105 0074 D7D9     		bls	.L5
+ 623:Source\FilteringFunctions/arm_conv_f32.c ****       }
+ 624:Source\FilteringFunctions/arm_conv_f32.c ****     }
+ 625:Source\FilteringFunctions/arm_conv_f32.c ****     /* Store the output in the destination buffer */
+ 626:Source\FilteringFunctions/arm_conv_f32.c ****     pDst[i] = sum;
+ 106              		.loc 1 626 0 is_stmt 1 discriminator 2
+ 107 0076 3B6A     		ldr	r3, [r7, #32]
+ 108 0078 9B00     		lsl	r3, r3, #2
+ 109 007a 3A6B     		ldr	r2, [r7, #48]
+ 110 007c D318     		add	r3, r2, r3
+ 111 007e 7A6A     		ldr	r2, [r7, #36]
+ 112 0080 1A60     		str	r2, [r3]
+ 610:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 14
+
+
+ 113              		.loc 1 610 0 discriminator 2
+ 114 0082 3B6A     		ldr	r3, [r7, #32]
+ 115 0084 0133     		add	r3, r3, #1
+ 116 0086 3B62     		str	r3, [r7, #32]
+ 117              	.L2:
+ 610:Source\FilteringFunctions/arm_conv_f32.c ****   {
+ 118              		.loc 1 610 0 is_stmt 0 discriminator 1
+ 119 0088 BA68     		ldr	r2, [r7, #8]
+ 120 008a 3B68     		ldr	r3, [r7]
+ 121 008c D318     		add	r3, r2, r3
+ 122 008e 5A1E     		sub	r2, r3, #1
+ 123 0090 3B6A     		ldr	r3, [r7, #32]
+ 124 0092 9A42     		cmp	r2, r3
+ 125 0094 C2D8     		bhi	.L6
+ 627:Source\FilteringFunctions/arm_conv_f32.c ****   }
+ 628:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 629:Source\FilteringFunctions/arm_conv_f32.c **** #endif /*   #if defined (ARM_MATH_DSP)        */
+ 630:Source\FilteringFunctions/arm_conv_f32.c **** 
+ 631:Source\FilteringFunctions/arm_conv_f32.c **** }
+ 126              		.loc 1 631 0 is_stmt 1
+ 127 0096 BD46     		mov	sp, r7
+ 128 0098 0AB0     		add	sp, sp, #40
+ 129              		@ sp needed
+ 130 009a 80BD     		pop	{r7, pc}
+ 131              		.cfi_endproc
+ 132              	.LFE82:
+ 133              		.size	arm_conv_f32, .-arm_conv_f32
+ 134              		.text
+ 135              	.Letext0:
+ 136              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 137              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 138              		.file 4 ".\\Include/arm_math.h"
+ 139              		.section	.debug_info,"",%progbits
+ 140              	.Ldebug_info0:
+ 141 0000 52010000 		.4byte	0x152
+ 142 0004 0400     		.2byte	0x4
+ 143 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 144 000a 04       		.byte	0x4
+ 145 000b 01       		.uleb128 0x1
+ 146 000c 06010000 		.4byte	.LASF24
+ 147 0010 01       		.byte	0x1
+ 148 0011 9D000000 		.4byte	.LASF25
+ 149 0015 19000000 		.4byte	.LASF26
+ 150 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 151 001d 00000000 		.4byte	0
+ 152 0021 00000000 		.4byte	.Ldebug_line0
+ 153 0025 02       		.uleb128 0x2
+ 154 0026 01       		.byte	0x1
+ 155 0027 06       		.byte	0x6
+ 156 0028 E4010000 		.4byte	.LASF0
+ 157 002c 02       		.uleb128 0x2
+ 158 002d 01       		.byte	0x1
+ 159 002e 08       		.byte	0x8
+ 160 002f 65000000 		.4byte	.LASF1
+ 161 0033 02       		.uleb128 0x2
+ 162 0034 02       		.byte	0x2
+ 163 0035 05       		.byte	0x5
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 15
+
+
+ 164 0036 BC010000 		.4byte	.LASF2
+ 165 003a 02       		.uleb128 0x2
+ 166 003b 02       		.byte	0x2
+ 167 003c 07       		.byte	0x7
+ 168 003d 85000000 		.4byte	.LASF3
+ 169 0041 02       		.uleb128 0x2
+ 170 0042 04       		.byte	0x4
+ 171 0043 05       		.byte	0x5
+ 172 0044 CF010000 		.4byte	.LASF4
+ 173 0048 03       		.uleb128 0x3
+ 174 0049 D7000000 		.4byte	.LASF9
+ 175 004d 02       		.byte	0x2
+ 176 004e 41       		.byte	0x41
+ 177 004f 53000000 		.4byte	0x53
+ 178 0053 02       		.uleb128 0x2
+ 179 0054 04       		.byte	0x4
+ 180 0055 07       		.byte	0x7
+ 181 0056 73000000 		.4byte	.LASF5
+ 182 005a 02       		.uleb128 0x2
+ 183 005b 08       		.byte	0x8
+ 184 005c 05       		.byte	0x5
+ 185 005d A1010000 		.4byte	.LASF6
+ 186 0061 02       		.uleb128 0x2
+ 187 0062 08       		.byte	0x8
+ 188 0063 07       		.byte	0x7
+ 189 0064 EF000000 		.4byte	.LASF7
+ 190 0068 04       		.uleb128 0x4
+ 191 0069 04       		.byte	0x4
+ 192 006a 05       		.byte	0x5
+ 193 006b 696E7400 		.ascii	"int\000"
+ 194 006f 02       		.uleb128 0x2
+ 195 0070 04       		.byte	0x4
+ 196 0071 07       		.byte	0x7
+ 197 0072 E2000000 		.4byte	.LASF8
+ 198 0076 03       		.uleb128 0x3
+ 199 0077 C6010000 		.4byte	.LASF10
+ 200 007b 03       		.byte	0x3
+ 201 007c 2D       		.byte	0x2d
+ 202 007d 48000000 		.4byte	0x48
+ 203 0081 02       		.uleb128 0x2
+ 204 0082 04       		.byte	0x4
+ 205 0083 07       		.byte	0x7
+ 206 0084 98010000 		.4byte	.LASF11
+ 207 0088 02       		.uleb128 0x2
+ 208 0089 01       		.byte	0x1
+ 209 008a 08       		.byte	0x8
+ 210 008b AF010000 		.4byte	.LASF12
+ 211 008f 02       		.uleb128 0x2
+ 212 0090 08       		.byte	0x8
+ 213 0091 04       		.byte	0x4
+ 214 0092 C6000000 		.4byte	.LASF13
+ 215 0096 02       		.uleb128 0x2
+ 216 0097 04       		.byte	0x4
+ 217 0098 04       		.byte	0x4
+ 218 0099 5F000000 		.4byte	.LASF14
+ 219 009d 02       		.uleb128 0x2
+ 220 009e 08       		.byte	0x8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 16
+
+
+ 221 009f 04       		.byte	0x4
+ 222 00a0 D8010000 		.4byte	.LASF15
+ 223 00a4 05       		.uleb128 0x5
+ 224 00a5 CD000000 		.4byte	.LASF16
+ 225 00a9 04       		.byte	0x4
+ 226 00aa A501     		.2byte	0x1a5
+ 227 00ac 96000000 		.4byte	0x96
+ 228 00b0 06       		.uleb128 0x6
+ 229 00b1 04       		.byte	0x4
+ 230 00b2 A4000000 		.4byte	0xa4
+ 231 00b6 07       		.uleb128 0x7
+ 232 00b7 0C000000 		.4byte	.LASF27
+ 233 00bb 01       		.byte	0x1
+ 234 00bc 70       		.byte	0x70
+ 235 00bd 00000000 		.4byte	.LFB82
+ 236 00c1 9C000000 		.4byte	.LFE82-.LFB82
+ 237 00c5 01       		.uleb128 0x1
+ 238 00c6 9C       		.byte	0x9c
+ 239 00c7 08       		.uleb128 0x8
+ 240 00c8 00000000 		.4byte	.LASF17
+ 241 00cc 01       		.byte	0x1
+ 242 00cd 71       		.byte	0x71
+ 243 00ce B0000000 		.4byte	0xb0
+ 244 00d2 02       		.uleb128 0x2
+ 245 00d3 91       		.byte	0x91
+ 246 00d4 5C       		.sleb128 -36
+ 247 00d5 08       		.uleb128 0x8
+ 248 00d6 B4010000 		.4byte	.LASF18
+ 249 00da 01       		.byte	0x1
+ 250 00db 72       		.byte	0x72
+ 251 00dc 76000000 		.4byte	0x76
+ 252 00e0 02       		.uleb128 0x2
+ 253 00e1 91       		.byte	0x91
+ 254 00e2 58       		.sleb128 -40
+ 255 00e3 08       		.uleb128 0x8
+ 256 00e4 06000000 		.4byte	.LASF19
+ 257 00e8 01       		.byte	0x1
+ 258 00e9 73       		.byte	0x73
+ 259 00ea B0000000 		.4byte	0xb0
+ 260 00ee 02       		.uleb128 0x2
+ 261 00ef 91       		.byte	0x91
+ 262 00f0 54       		.sleb128 -44
+ 263 00f1 08       		.uleb128 0x8
+ 264 00f2 F0010000 		.4byte	.LASF20
+ 265 00f6 01       		.byte	0x1
+ 266 00f7 74       		.byte	0x74
+ 267 00f8 76000000 		.4byte	0x76
+ 268 00fc 02       		.uleb128 0x2
+ 269 00fd 91       		.byte	0x91
+ 270 00fe 50       		.sleb128 -48
+ 271 00ff 08       		.uleb128 0x8
+ 272 0100 98000000 		.4byte	.LASF21
+ 273 0104 01       		.byte	0x1
+ 274 0105 75       		.byte	0x75
+ 275 0106 B0000000 		.4byte	0xb0
+ 276 010a 02       		.uleb128 0x2
+ 277 010b 91       		.byte	0x91
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 17
+
+
+ 278 010c 00       		.sleb128 0
+ 279 010d 09       		.uleb128 0x9
+ 280 010e F8010000 		.4byte	.LASF22
+ 281 0112 01       		.byte	0x1
+ 282 0113 5C02     		.2byte	0x25c
+ 283 0115 B0000000 		.4byte	0xb0
+ 284 0119 02       		.uleb128 0x2
+ 285 011a 91       		.byte	0x91
+ 286 011b 68       		.sleb128 -24
+ 287 011c 09       		.uleb128 0x9
+ 288 011d FD010000 		.4byte	.LASF23
+ 289 0121 01       		.byte	0x1
+ 290 0122 5D02     		.2byte	0x25d
+ 291 0124 B0000000 		.4byte	0xb0
+ 292 0128 02       		.uleb128 0x2
+ 293 0129 91       		.byte	0x91
+ 294 012a 64       		.sleb128 -28
+ 295 012b 0A       		.uleb128 0xa
+ 296 012c 73756D00 		.ascii	"sum\000"
+ 297 0130 01       		.byte	0x1
+ 298 0131 5E02     		.2byte	0x25e
+ 299 0133 A4000000 		.4byte	0xa4
+ 300 0137 02       		.uleb128 0x2
+ 301 0138 91       		.byte	0x91
+ 302 0139 74       		.sleb128 -12
+ 303 013a 0A       		.uleb128 0xa
+ 304 013b 6900     		.ascii	"i\000"
+ 305 013d 01       		.byte	0x1
+ 306 013e 5F02     		.2byte	0x25f
+ 307 0140 76000000 		.4byte	0x76
+ 308 0144 02       		.uleb128 0x2
+ 309 0145 91       		.byte	0x91
+ 310 0146 70       		.sleb128 -16
+ 311 0147 0A       		.uleb128 0xa
+ 312 0148 6A00     		.ascii	"j\000"
+ 313 014a 01       		.byte	0x1
+ 314 014b 5F02     		.2byte	0x25f
+ 315 014d 76000000 		.4byte	0x76
+ 316 0151 02       		.uleb128 0x2
+ 317 0152 91       		.byte	0x91
+ 318 0153 6C       		.sleb128 -20
+ 319 0154 00       		.byte	0
+ 320 0155 00       		.byte	0
+ 321              		.section	.debug_abbrev,"",%progbits
+ 322              	.Ldebug_abbrev0:
+ 323 0000 01       		.uleb128 0x1
+ 324 0001 11       		.uleb128 0x11
+ 325 0002 01       		.byte	0x1
+ 326 0003 25       		.uleb128 0x25
+ 327 0004 0E       		.uleb128 0xe
+ 328 0005 13       		.uleb128 0x13
+ 329 0006 0B       		.uleb128 0xb
+ 330 0007 03       		.uleb128 0x3
+ 331 0008 0E       		.uleb128 0xe
+ 332 0009 1B       		.uleb128 0x1b
+ 333 000a 0E       		.uleb128 0xe
+ 334 000b 55       		.uleb128 0x55
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 18
+
+
+ 335 000c 17       		.uleb128 0x17
+ 336 000d 11       		.uleb128 0x11
+ 337 000e 01       		.uleb128 0x1
+ 338 000f 10       		.uleb128 0x10
+ 339 0010 17       		.uleb128 0x17
+ 340 0011 00       		.byte	0
+ 341 0012 00       		.byte	0
+ 342 0013 02       		.uleb128 0x2
+ 343 0014 24       		.uleb128 0x24
+ 344 0015 00       		.byte	0
+ 345 0016 0B       		.uleb128 0xb
+ 346 0017 0B       		.uleb128 0xb
+ 347 0018 3E       		.uleb128 0x3e
+ 348 0019 0B       		.uleb128 0xb
+ 349 001a 03       		.uleb128 0x3
+ 350 001b 0E       		.uleb128 0xe
+ 351 001c 00       		.byte	0
+ 352 001d 00       		.byte	0
+ 353 001e 03       		.uleb128 0x3
+ 354 001f 16       		.uleb128 0x16
+ 355 0020 00       		.byte	0
+ 356 0021 03       		.uleb128 0x3
+ 357 0022 0E       		.uleb128 0xe
+ 358 0023 3A       		.uleb128 0x3a
+ 359 0024 0B       		.uleb128 0xb
+ 360 0025 3B       		.uleb128 0x3b
+ 361 0026 0B       		.uleb128 0xb
+ 362 0027 49       		.uleb128 0x49
+ 363 0028 13       		.uleb128 0x13
+ 364 0029 00       		.byte	0
+ 365 002a 00       		.byte	0
+ 366 002b 04       		.uleb128 0x4
+ 367 002c 24       		.uleb128 0x24
+ 368 002d 00       		.byte	0
+ 369 002e 0B       		.uleb128 0xb
+ 370 002f 0B       		.uleb128 0xb
+ 371 0030 3E       		.uleb128 0x3e
+ 372 0031 0B       		.uleb128 0xb
+ 373 0032 03       		.uleb128 0x3
+ 374 0033 08       		.uleb128 0x8
+ 375 0034 00       		.byte	0
+ 376 0035 00       		.byte	0
+ 377 0036 05       		.uleb128 0x5
+ 378 0037 16       		.uleb128 0x16
+ 379 0038 00       		.byte	0
+ 380 0039 03       		.uleb128 0x3
+ 381 003a 0E       		.uleb128 0xe
+ 382 003b 3A       		.uleb128 0x3a
+ 383 003c 0B       		.uleb128 0xb
+ 384 003d 3B       		.uleb128 0x3b
+ 385 003e 05       		.uleb128 0x5
+ 386 003f 49       		.uleb128 0x49
+ 387 0040 13       		.uleb128 0x13
+ 388 0041 00       		.byte	0
+ 389 0042 00       		.byte	0
+ 390 0043 06       		.uleb128 0x6
+ 391 0044 0F       		.uleb128 0xf
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 19
+
+
+ 392 0045 00       		.byte	0
+ 393 0046 0B       		.uleb128 0xb
+ 394 0047 0B       		.uleb128 0xb
+ 395 0048 49       		.uleb128 0x49
+ 396 0049 13       		.uleb128 0x13
+ 397 004a 00       		.byte	0
+ 398 004b 00       		.byte	0
+ 399 004c 07       		.uleb128 0x7
+ 400 004d 2E       		.uleb128 0x2e
+ 401 004e 01       		.byte	0x1
+ 402 004f 3F       		.uleb128 0x3f
+ 403 0050 19       		.uleb128 0x19
+ 404 0051 03       		.uleb128 0x3
+ 405 0052 0E       		.uleb128 0xe
+ 406 0053 3A       		.uleb128 0x3a
+ 407 0054 0B       		.uleb128 0xb
+ 408 0055 3B       		.uleb128 0x3b
+ 409 0056 0B       		.uleb128 0xb
+ 410 0057 27       		.uleb128 0x27
+ 411 0058 19       		.uleb128 0x19
+ 412 0059 11       		.uleb128 0x11
+ 413 005a 01       		.uleb128 0x1
+ 414 005b 12       		.uleb128 0x12
+ 415 005c 06       		.uleb128 0x6
+ 416 005d 40       		.uleb128 0x40
+ 417 005e 18       		.uleb128 0x18
+ 418 005f 9642     		.uleb128 0x2116
+ 419 0061 19       		.uleb128 0x19
+ 420 0062 00       		.byte	0
+ 421 0063 00       		.byte	0
+ 422 0064 08       		.uleb128 0x8
+ 423 0065 05       		.uleb128 0x5
+ 424 0066 00       		.byte	0
+ 425 0067 03       		.uleb128 0x3
+ 426 0068 0E       		.uleb128 0xe
+ 427 0069 3A       		.uleb128 0x3a
+ 428 006a 0B       		.uleb128 0xb
+ 429 006b 3B       		.uleb128 0x3b
+ 430 006c 0B       		.uleb128 0xb
+ 431 006d 49       		.uleb128 0x49
+ 432 006e 13       		.uleb128 0x13
+ 433 006f 02       		.uleb128 0x2
+ 434 0070 18       		.uleb128 0x18
+ 435 0071 00       		.byte	0
+ 436 0072 00       		.byte	0
+ 437 0073 09       		.uleb128 0x9
+ 438 0074 34       		.uleb128 0x34
+ 439 0075 00       		.byte	0
+ 440 0076 03       		.uleb128 0x3
+ 441 0077 0E       		.uleb128 0xe
+ 442 0078 3A       		.uleb128 0x3a
+ 443 0079 0B       		.uleb128 0xb
+ 444 007a 3B       		.uleb128 0x3b
+ 445 007b 05       		.uleb128 0x5
+ 446 007c 49       		.uleb128 0x49
+ 447 007d 13       		.uleb128 0x13
+ 448 007e 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 20
+
+
+ 449 007f 18       		.uleb128 0x18
+ 450 0080 00       		.byte	0
+ 451 0081 00       		.byte	0
+ 452 0082 0A       		.uleb128 0xa
+ 453 0083 34       		.uleb128 0x34
+ 454 0084 00       		.byte	0
+ 455 0085 03       		.uleb128 0x3
+ 456 0086 08       		.uleb128 0x8
+ 457 0087 3A       		.uleb128 0x3a
+ 458 0088 0B       		.uleb128 0xb
+ 459 0089 3B       		.uleb128 0x3b
+ 460 008a 05       		.uleb128 0x5
+ 461 008b 49       		.uleb128 0x49
+ 462 008c 13       		.uleb128 0x13
+ 463 008d 02       		.uleb128 0x2
+ 464 008e 18       		.uleb128 0x18
+ 465 008f 00       		.byte	0
+ 466 0090 00       		.byte	0
+ 467 0091 00       		.byte	0
+ 468              		.section	.debug_aranges,"",%progbits
+ 469 0000 1C000000 		.4byte	0x1c
+ 470 0004 0200     		.2byte	0x2
+ 471 0006 00000000 		.4byte	.Ldebug_info0
+ 472 000a 04       		.byte	0x4
+ 473 000b 00       		.byte	0
+ 474 000c 0000     		.2byte	0
+ 475 000e 0000     		.2byte	0
+ 476 0010 00000000 		.4byte	.LFB82
+ 477 0014 9C000000 		.4byte	.LFE82-.LFB82
+ 478 0018 00000000 		.4byte	0
+ 479 001c 00000000 		.4byte	0
+ 480              		.section	.debug_ranges,"",%progbits
+ 481              	.Ldebug_ranges0:
+ 482 0000 00000000 		.4byte	.LFB82
+ 483 0004 9C000000 		.4byte	.LFE82
+ 484 0008 00000000 		.4byte	0
+ 485 000c 00000000 		.4byte	0
+ 486              		.section	.debug_line,"",%progbits
+ 487              	.Ldebug_line0:
+ 488 0000 9D010000 		.section	.debug_str,"MS",%progbits,1
+ 488      02004F01 
+ 488      00000201 
+ 488      FB0E0D00 
+ 488      01010101 
+ 489              	.LASF17:
+ 490 0000 70537263 		.ascii	"pSrcA\000"
+ 490      4100
+ 491              	.LASF19:
+ 492 0006 70537263 		.ascii	"pSrcB\000"
+ 492      4200
+ 493              	.LASF27:
+ 494 000c 61726D5F 		.ascii	"arm_conv_f32\000"
+ 494      636F6E76 
+ 494      5F663332 
+ 494      00
+ 495              	.LASF26:
+ 496 0019 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 21
+
+
+ 496      73657273 
+ 496      5C666E65 
+ 496      7665735C 
+ 496      446F6375 
+ 497 0046 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 497      655F7370 
+ 497      6565645F 
+ 497      73656E73 
+ 497      6F722E63 
+ 498              	.LASF14:
+ 499 005f 666C6F61 		.ascii	"float\000"
+ 499      7400
+ 500              	.LASF1:
+ 501 0065 756E7369 		.ascii	"unsigned char\000"
+ 501      676E6564 
+ 501      20636861 
+ 501      7200
+ 502              	.LASF5:
+ 503 0073 6C6F6E67 		.ascii	"long unsigned int\000"
+ 503      20756E73 
+ 503      69676E65 
+ 503      6420696E 
+ 503      7400
+ 504              	.LASF3:
+ 505 0085 73686F72 		.ascii	"short unsigned int\000"
+ 505      7420756E 
+ 505      7369676E 
+ 505      65642069 
+ 505      6E7400
+ 506              	.LASF21:
+ 507 0098 70447374 		.ascii	"pDst\000"
+ 507      00
+ 508              	.LASF25:
+ 509 009d 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_conv_f32.c\000"
+ 509      63655C46 
+ 509      696C7465 
+ 509      72696E67 
+ 509      46756E63 
+ 510              	.LASF13:
+ 511 00c6 646F7562 		.ascii	"double\000"
+ 511      6C6500
+ 512              	.LASF16:
+ 513 00cd 666C6F61 		.ascii	"float32_t\000"
+ 513      7433325F 
+ 513      7400
+ 514              	.LASF9:
+ 515 00d7 5F5F7569 		.ascii	"__uint32_t\000"
+ 515      6E743332 
+ 515      5F7400
+ 516              	.LASF8:
+ 517 00e2 756E7369 		.ascii	"unsigned int\000"
+ 517      676E6564 
+ 517      20696E74 
+ 517      00
+ 518              	.LASF7:
+ 519 00ef 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 519      206C6F6E 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 22
+
+
+ 519      6720756E 
+ 519      7369676E 
+ 519      65642069 
+ 520              	.LASF24:
+ 521 0106 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 521      4320342E 
+ 521      392E3320 
+ 521      32303135 
+ 521      30333033 
+ 522 0139 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 522      20726576 
+ 522      6973696F 
+ 522      6E203232 
+ 522      31323230 
+ 523 016c 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 523      30202D66 
+ 523      66756E63 
+ 523      74696F6E 
+ 523      2D736563 
+ 524              	.LASF11:
+ 525 0198 73697A65 		.ascii	"sizetype\000"
+ 525      74797065 
+ 525      00
+ 526              	.LASF6:
+ 527 01a1 6C6F6E67 		.ascii	"long long int\000"
+ 527      206C6F6E 
+ 527      6720696E 
+ 527      7400
+ 528              	.LASF12:
+ 529 01af 63686172 		.ascii	"char\000"
+ 529      00
+ 530              	.LASF18:
+ 531 01b4 73726341 		.ascii	"srcALen\000"
+ 531      4C656E00 
+ 532              	.LASF2:
+ 533 01bc 73686F72 		.ascii	"short int\000"
+ 533      7420696E 
+ 533      7400
+ 534              	.LASF10:
+ 535 01c6 75696E74 		.ascii	"uint32_t\000"
+ 535      33325F74 
+ 535      00
+ 536              	.LASF4:
+ 537 01cf 6C6F6E67 		.ascii	"long int\000"
+ 537      20696E74 
+ 537      00
+ 538              	.LASF15:
+ 539 01d8 6C6F6E67 		.ascii	"long double\000"
+ 539      20646F75 
+ 539      626C6500 
+ 540              	.LASF0:
+ 541 01e4 7369676E 		.ascii	"signed char\000"
+ 541      65642063 
+ 541      68617200 
+ 542              	.LASF20:
+ 543 01f0 73726342 		.ascii	"srcBLen\000"
+ 543      4C656E00 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc8Nd34A.s 			page 23
+
+
+ 544              	.LASF22:
+ 545 01f8 70496E31 		.ascii	"pIn1\000"
+ 545      00
+ 546              	.LASF23:
+ 547 01fd 70496E32 		.ascii	"pIn2\000"
+ 547      00
+ 548              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

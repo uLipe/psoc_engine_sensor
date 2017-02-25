@@ -1,0 +1,1654 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_sqrt_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__clzsi2
+  18              		.global	__aeabi_i2f
+  19              		.global	__aeabi_fmul
+  20              		.global	__aeabi_f2iz
+  21              		.global	__aeabi_lmul
+  22              		.section	.text.arm_sqrt_q31,"ax",%progbits
+  23              		.align	2
+  24              		.global	arm_sqrt_q31
+  25              		.code	16
+  26              		.thumb_func
+  27              		.type	arm_sqrt_q31, %function
+  28              	arm_sqrt_q31:
+  29              	.LFB82:
+  30              		.file 1 "Source\\FastMathFunctions\\arm_sqrt_q31.c"
+   1:Source\FastMathFunctions/arm_sqrt_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\FastMathFunctions/arm_sqrt_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\FastMathFunctions/arm_sqrt_q31.c ****  * Title:        arm_sqrt_q31.c
+   4:Source\FastMathFunctions/arm_sqrt_q31.c ****  * Description:  Q31 square root function
+   5:Source\FastMathFunctions/arm_sqrt_q31.c ****  *
+   6:Source\FastMathFunctions/arm_sqrt_q31.c ****  * $Date:        27. January 2017
+   7:Source\FastMathFunctions/arm_sqrt_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\FastMathFunctions/arm_sqrt_q31.c ****  *
+   9:Source\FastMathFunctions/arm_sqrt_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\FastMathFunctions/arm_sqrt_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\FastMathFunctions/arm_sqrt_q31.c **** /*
+  12:Source\FastMathFunctions/arm_sqrt_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FastMathFunctions/arm_sqrt_q31.c ****  *
+  14:Source\FastMathFunctions/arm_sqrt_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FastMathFunctions/arm_sqrt_q31.c ****  *
+  16:Source\FastMathFunctions/arm_sqrt_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FastMathFunctions/arm_sqrt_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\FastMathFunctions/arm_sqrt_q31.c ****  * You may obtain a copy of the License at
+  19:Source\FastMathFunctions/arm_sqrt_q31.c ****  *
+  20:Source\FastMathFunctions/arm_sqrt_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FastMathFunctions/arm_sqrt_q31.c ****  *
+  22:Source\FastMathFunctions/arm_sqrt_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FastMathFunctions/arm_sqrt_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FastMathFunctions/arm_sqrt_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FastMathFunctions/arm_sqrt_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\FastMathFunctions/arm_sqrt_q31.c ****  * limitations under the License.
+  27:Source\FastMathFunctions/arm_sqrt_q31.c ****  */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 2
+
+
+  28:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  29:Source\FastMathFunctions/arm_sqrt_q31.c **** #include "arm_math.h"
+  30:Source\FastMathFunctions/arm_sqrt_q31.c **** #include "arm_common_tables.h"
+  31:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  32:Source\FastMathFunctions/arm_sqrt_q31.c **** /**
+  33:Source\FastMathFunctions/arm_sqrt_q31.c ****  * @ingroup groupFastMath
+  34:Source\FastMathFunctions/arm_sqrt_q31.c ****  */
+  35:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  36:Source\FastMathFunctions/arm_sqrt_q31.c **** /**
+  37:Source\FastMathFunctions/arm_sqrt_q31.c ****  * @addtogroup SQRT
+  38:Source\FastMathFunctions/arm_sqrt_q31.c ****  * @{
+  39:Source\FastMathFunctions/arm_sqrt_q31.c ****  */
+  40:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  41:Source\FastMathFunctions/arm_sqrt_q31.c **** /**
+  42:Source\FastMathFunctions/arm_sqrt_q31.c ****  * @brief Q31 square root function.
+  43:Source\FastMathFunctions/arm_sqrt_q31.c ****  * @param[in]   in    input value.  The range of the input value is [0 +1) or 0x00000000 to 0x7FFFF
+  44:Source\FastMathFunctions/arm_sqrt_q31.c ****  * @param[out]  *pOut square root of input value.
+  45:Source\FastMathFunctions/arm_sqrt_q31.c ****  * @return The function returns ARM_MATH_SUCCESS if the input value is positive
+  46:Source\FastMathFunctions/arm_sqrt_q31.c ****  * and ARM_MATH_ARGUMENT_ERROR if the input is negative.  For
+  47:Source\FastMathFunctions/arm_sqrt_q31.c ****  * negative inputs, the function returns *pOut = 0.
+  48:Source\FastMathFunctions/arm_sqrt_q31.c ****  */
+  49:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  50:Source\FastMathFunctions/arm_sqrt_q31.c **** arm_status arm_sqrt_q31(
+  51:Source\FastMathFunctions/arm_sqrt_q31.c ****   q31_t in,
+  52:Source\FastMathFunctions/arm_sqrt_q31.c ****   q31_t * pOut)
+  53:Source\FastMathFunctions/arm_sqrt_q31.c **** {
+  31              		.loc 1 53 0
+  32              		.cfi_startproc
+  33 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  34              		.cfi_def_cfa_offset 20
+  35              		.cfi_offset 4, -20
+  36              		.cfi_offset 5, -16
+  37              		.cfi_offset 6, -12
+  38              		.cfi_offset 7, -8
+  39              		.cfi_offset 14, -4
+  40 0002 C5B0     		sub	sp, sp, #276
+  41              		.cfi_def_cfa_offset 296
+  42 0004 00AF     		add	r7, sp, #0
+  43              		.cfi_def_cfa_register 7
+  44 0006 EC23     		mov	r3, #236
+  45 0008 FB18     		add	r3, r7, r3
+  46 000a 1860     		str	r0, [r3]
+  47 000c E823     		mov	r3, #232
+  48 000e FB18     		add	r3, r7, r3
+  49 0010 1960     		str	r1, [r3]
+  54:Source\FastMathFunctions/arm_sqrt_q31.c ****   q31_t number, temp1, bits_val1, var1, signBits1, half;
+  55:Source\FastMathFunctions/arm_sqrt_q31.c ****   float32_t temp_float1;
+  56:Source\FastMathFunctions/arm_sqrt_q31.c ****   union
+  57:Source\FastMathFunctions/arm_sqrt_q31.c ****   {
+  58:Source\FastMathFunctions/arm_sqrt_q31.c ****       q31_t fracval;
+  59:Source\FastMathFunctions/arm_sqrt_q31.c ****       float32_t floatval;
+  60:Source\FastMathFunctions/arm_sqrt_q31.c ****   } tempconv;
+  61:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  62:Source\FastMathFunctions/arm_sqrt_q31.c ****   number = in;
+  50              		.loc 1 62 0
+  51 0012 EC23     		mov	r3, #236
+  52 0014 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 3
+
+
+  53 0016 1B68     		ldr	r3, [r3]
+  54 0018 8622     		mov	r2, #134
+  55 001a 5200     		lsl	r2, r2, #1
+  56 001c BA18     		add	r2, r7, r2
+  57 001e 1360     		str	r3, [r2]
+  63:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  64:Source\FastMathFunctions/arm_sqrt_q31.c ****   /* If the input is a positive number then compute the signBits. */
+  65:Source\FastMathFunctions/arm_sqrt_q31.c ****   if (number > 0)
+  58              		.loc 1 65 0
+  59 0020 8623     		mov	r3, #134
+  60 0022 5B00     		lsl	r3, r3, #1
+  61 0024 FB18     		add	r3, r7, r3
+  62 0026 1B68     		ldr	r3, [r3]
+  63 0028 002B     		cmp	r3, #0
+  64 002a 00DC     		bgt	.LCB33
+  65 002c 58E2     		b	.L2	@long jump
+  66              	.LCB33:
+  66:Source\FastMathFunctions/arm_sqrt_q31.c ****   {
+  67:Source\FastMathFunctions/arm_sqrt_q31.c ****     signBits1 = __CLZ(number) - 1;
+  67              		.loc 1 67 0
+  68 002e 8623     		mov	r3, #134
+  69 0030 5B00     		lsl	r3, r3, #1
+  70 0032 FB18     		add	r3, r7, r3
+  71 0034 1B68     		ldr	r3, [r3]
+  72 0036 181C     		mov	r0, r3
+  73 0038 FFF7FEFF 		bl	__clzsi2
+  74 003c 031C     		mov	r3, r0
+  75 003e 013B     		sub	r3, r3, #1
+  76 0040 7A1D     		add	r2, r7, #5
+  77 0042 FF32     		add	r2, r2, #255
+  78 0044 1360     		str	r3, [r2]
+  68:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  69:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* Shift by the number of signBits1 */
+  70:Source\FastMathFunctions/arm_sqrt_q31.c ****     if ((signBits1 % 2) == 0)
+  79              		.loc 1 70 0
+  80 0046 7B1D     		add	r3, r7, #5
+  81 0048 FF33     		add	r3, r3, #255
+  82 004a 1A68     		ldr	r2, [r3]
+  83 004c 0123     		mov	r3, #1
+  84 004e 1340     		and	r3, r2
+  85 0050 0DD1     		bne	.L3
+  71:Source\FastMathFunctions/arm_sqrt_q31.c ****     {
+  72:Source\FastMathFunctions/arm_sqrt_q31.c ****       number = number << signBits1;
+  86              		.loc 1 72 0
+  87 0052 8623     		mov	r3, #134
+  88 0054 5B00     		lsl	r3, r3, #1
+  89 0056 FB18     		add	r3, r7, r3
+  90 0058 1A68     		ldr	r2, [r3]
+  91 005a 7B1D     		add	r3, r7, #5
+  92 005c FF33     		add	r3, r3, #255
+  93 005e 1B68     		ldr	r3, [r3]
+  94 0060 9A40     		lsl	r2, r2, r3
+  95 0062 131C     		mov	r3, r2
+  96 0064 8622     		mov	r2, #134
+  97 0066 5200     		lsl	r2, r2, #1
+  98 0068 BA18     		add	r2, r7, r2
+  99 006a 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 4
+
+
+ 100 006c 0CE0     		b	.L4
+ 101              	.L3:
+  73:Source\FastMathFunctions/arm_sqrt_q31.c ****     }
+  74:Source\FastMathFunctions/arm_sqrt_q31.c ****     else
+  75:Source\FastMathFunctions/arm_sqrt_q31.c ****     {
+  76:Source\FastMathFunctions/arm_sqrt_q31.c ****       number = number << (signBits1 - 1);
+ 102              		.loc 1 76 0
+ 103 006e 7B1D     		add	r3, r7, #5
+ 104 0070 FF33     		add	r3, r3, #255
+ 105 0072 1B68     		ldr	r3, [r3]
+ 106 0074 5A1E     		sub	r2, r3, #1
+ 107 0076 8623     		mov	r3, #134
+ 108 0078 5B00     		lsl	r3, r3, #1
+ 109 007a FB18     		add	r3, r7, r3
+ 110 007c 1B68     		ldr	r3, [r3]
+ 111 007e 9340     		lsl	r3, r3, r2
+ 112 0080 8622     		mov	r2, #134
+ 113 0082 5200     		lsl	r2, r2, #1
+ 114 0084 BA18     		add	r2, r7, r2
+ 115 0086 1360     		str	r3, [r2]
+ 116              	.L4:
+  77:Source\FastMathFunctions/arm_sqrt_q31.c ****     }
+  78:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  79:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* Calculate half value of the number */
+  80:Source\FastMathFunctions/arm_sqrt_q31.c ****     half = number >> 1;
+ 117              		.loc 1 80 0
+ 118 0088 8623     		mov	r3, #134
+ 119 008a 5B00     		lsl	r3, r3, #1
+ 120 008c FB18     		add	r3, r7, r3
+ 121 008e 1B68     		ldr	r3, [r3]
+ 122 0090 5B10     		asr	r3, r3, #1
+ 123 0092 7A1C     		add	r2, r7, #1
+ 124 0094 FF32     		add	r2, r2, #255
+ 125 0096 1360     		str	r3, [r2]
+  81:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* Store the number for later use */
+  82:Source\FastMathFunctions/arm_sqrt_q31.c ****     temp1 = number;
+ 126              		.loc 1 82 0
+ 127 0098 8623     		mov	r3, #134
+ 128 009a 5B00     		lsl	r3, r3, #1
+ 129 009c FB18     		add	r3, r7, r3
+ 130 009e 1B68     		ldr	r3, [r3]
+ 131 00a0 FC22     		mov	r2, #252
+ 132 00a2 BA18     		add	r2, r7, r2
+ 133 00a4 1360     		str	r3, [r2]
+  83:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  84:Source\FastMathFunctions/arm_sqrt_q31.c ****     /*Convert to float */
+  85:Source\FastMathFunctions/arm_sqrt_q31.c ****     temp_float1 = number * 4.6566128731e-010f;
+ 134              		.loc 1 85 0
+ 135 00a6 8623     		mov	r3, #134
+ 136 00a8 5B00     		lsl	r3, r3, #1
+ 137 00aa FB18     		add	r3, r7, r3
+ 138 00ac 1868     		ldr	r0, [r3]
+ 139 00ae FFF7FEFF 		bl	__aeabi_i2f
+ 140 00b2 031C     		add	r3, r0, #0
+ 141 00b4 181C     		add	r0, r3, #0
+ 142 00b6 C021     		mov	r1, #192
+ 143 00b8 8905     		lsl	r1, r1, #22
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 5
+
+
+ 144 00ba FFF7FEFF 		bl	__aeabi_fmul
+ 145 00be 031C     		add	r3, r0, #0
+ 146 00c0 F822     		mov	r2, #248
+ 147 00c2 BA18     		add	r2, r7, r2
+ 148 00c4 1360     		str	r3, [r2]
+  86:Source\FastMathFunctions/arm_sqrt_q31.c ****     /*Store as integer */
+  87:Source\FastMathFunctions/arm_sqrt_q31.c ****     tempconv.floatval = temp_float1;
+ 149              		.loc 1 87 0
+ 150 00c6 F823     		mov	r3, #248
+ 151 00c8 FB18     		add	r3, r7, r3
+ 152 00ca 1B68     		ldr	r3, [r3]
+ 153 00cc F022     		mov	r2, #240
+ 154 00ce BA18     		add	r2, r7, r2
+ 155 00d0 1360     		str	r3, [r2]
+  88:Source\FastMathFunctions/arm_sqrt_q31.c ****     bits_val1 = tempconv.fracval;
+ 156              		.loc 1 88 0
+ 157 00d2 F023     		mov	r3, #240
+ 158 00d4 FB18     		add	r3, r7, r3
+ 159 00d6 1B68     		ldr	r3, [r3]
+ 160 00d8 F422     		mov	r2, #244
+ 161 00da BA18     		add	r2, r7, r2
+ 162 00dc 1360     		str	r3, [r2]
+  89:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* Subtract the shifted value from the magic number to give intial guess */
+  90:Source\FastMathFunctions/arm_sqrt_q31.c ****     bits_val1 = 0x5f3759df - (bits_val1 >> 1);  /* gives initial guess */
+ 163              		.loc 1 90 0
+ 164 00de F423     		mov	r3, #244
+ 165 00e0 FB18     		add	r3, r7, r3
+ 166 00e2 1B68     		ldr	r3, [r3]
+ 167 00e4 5A10     		asr	r2, r3, #1
+ 168 00e6 EF4B     		ldr	r3, .L11
+ 169 00e8 9B1A     		sub	r3, r3, r2
+ 170 00ea F422     		mov	r2, #244
+ 171 00ec BA18     		add	r2, r7, r2
+ 172 00ee 1360     		str	r3, [r2]
+  91:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* Store as float */
+  92:Source\FastMathFunctions/arm_sqrt_q31.c ****     tempconv.fracval = bits_val1;
+ 173              		.loc 1 92 0
+ 174 00f0 F423     		mov	r3, #244
+ 175 00f2 FB18     		add	r3, r7, r3
+ 176 00f4 1B68     		ldr	r3, [r3]
+ 177 00f6 F022     		mov	r2, #240
+ 178 00f8 BA18     		add	r2, r7, r2
+ 179 00fa 1360     		str	r3, [r2]
+  93:Source\FastMathFunctions/arm_sqrt_q31.c ****     temp_float1 = tempconv.floatval;
+ 180              		.loc 1 93 0
+ 181 00fc F023     		mov	r3, #240
+ 182 00fe FB18     		add	r3, r7, r3
+ 183 0100 1B68     		ldr	r3, [r3]
+ 184 0102 F822     		mov	r2, #248
+ 185 0104 BA18     		add	r2, r7, r2
+ 186 0106 1360     		str	r3, [r2]
+  94:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* Convert to integer format */
+  95:Source\FastMathFunctions/arm_sqrt_q31.c ****     var1 = (q31_t) (temp_float1 * 1073741824);
+ 187              		.loc 1 95 0
+ 188 0108 F823     		mov	r3, #248
+ 189 010a FB18     		add	r3, r7, r3
+ 190 010c 1868     		ldr	r0, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 6
+
+
+ 191 010e 9D21     		mov	r1, #157
+ 192 0110 C905     		lsl	r1, r1, #23
+ 193 0112 FFF7FEFF 		bl	__aeabi_fmul
+ 194 0116 031C     		add	r3, r0, #0
+ 195 0118 181C     		add	r0, r3, #0
+ 196 011a FFF7FEFF 		bl	__aeabi_f2iz
+ 197 011e 031C     		mov	r3, r0
+ 198 0120 8422     		mov	r2, #132
+ 199 0122 5200     		lsl	r2, r2, #1
+ 200 0124 BA18     		add	r2, r7, r2
+ 201 0126 1360     		str	r3, [r2]
+  96:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+  97:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* 1st iteration */
+  98:Source\FastMathFunctions/arm_sqrt_q31.c ****     var1 = ((q31_t) ((q63_t) var1 * (0x30000000 -
+ 202              		.loc 1 98 0
+ 203 0128 8423     		mov	r3, #132
+ 204 012a 5B00     		lsl	r3, r3, #1
+ 205 012c FB18     		add	r3, r7, r3
+ 206 012e 1B68     		ldr	r3, [r3]
+ 207 0130 9822     		mov	r2, #152
+ 208 0132 BA18     		add	r2, r7, r2
+ 209 0134 1360     		str	r3, [r2]
+ 210 0136 DB17     		asr	r3, r3, #31
+ 211 0138 9C22     		mov	r2, #156
+ 212 013a BA18     		add	r2, r7, r2
+ 213 013c 1360     		str	r3, [r2]
+  99:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 100:Source\FastMathFunctions/arm_sqrt_q31.c ****                                       ((((q31_t)
+ 101:Source\FastMathFunctions/arm_sqrt_q31.c ****                                          (((q63_t) var1 * var1) >> 31)) *
+ 214              		.loc 1 101 0
+ 215 013e 8423     		mov	r3, #132
+ 216 0140 5B00     		lsl	r3, r3, #1
+ 217 0142 FB18     		add	r3, r7, r3
+ 218 0144 1B68     		ldr	r3, [r3]
+ 219 0146 9022     		mov	r2, #144
+ 220 0148 BA18     		add	r2, r7, r2
+ 221 014a 1360     		str	r3, [r2]
+ 222 014c DB17     		asr	r3, r3, #31
+ 223 014e 9422     		mov	r2, #148
+ 224 0150 BA18     		add	r2, r7, r2
+ 225 0152 1360     		str	r3, [r2]
+ 226 0154 8423     		mov	r3, #132
+ 227 0156 5B00     		lsl	r3, r3, #1
+ 228 0158 FB18     		add	r3, r7, r3
+ 229 015a 1B68     		ldr	r3, [r3]
+ 230 015c 8822     		mov	r2, #136
+ 231 015e BA18     		add	r2, r7, r2
+ 232 0160 1360     		str	r3, [r2]
+ 233 0162 DB17     		asr	r3, r3, #31
+ 234 0164 8C22     		mov	r2, #140
+ 235 0166 BA18     		add	r2, r7, r2
+ 236 0168 1360     		str	r3, [r2]
+ 237 016a 9023     		mov	r3, #144
+ 238 016c FB18     		add	r3, r7, r3
+ 239 016e 1868     		ldr	r0, [r3]
+ 240 0170 5968     		ldr	r1, [r3, #4]
+ 241 0172 8823     		mov	r3, #136
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 7
+
+
+ 242 0174 FB18     		add	r3, r7, r3
+ 243 0176 1A68     		ldr	r2, [r3]
+ 244 0178 5B68     		ldr	r3, [r3, #4]
+ 245 017a FFF7FEFF 		bl	__aeabi_lmul
+ 246 017e 031C     		mov	r3, r0
+ 247 0180 0C1C     		mov	r4, r1
+ 248 0182 6200     		lsl	r2, r4, #1
+ 249 0184 DD0F     		lsr	r5, r3, #31
+ 250 0186 1543     		orr	r5, r2
+ 251 0188 E617     		asr	r6, r4, #31
+ 100:Source\FastMathFunctions/arm_sqrt_q31.c ****                                          (((q63_t) var1 * var1) >> 31)) *
+ 252              		.loc 1 100 0
+ 253 018a 2B1C     		mov	r3, r5
+ 254              		.loc 1 101 0
+ 255 018c 8022     		mov	r2, #128
+ 256 018e BA18     		add	r2, r7, r2
+ 257 0190 1360     		str	r3, [r2]
+ 258 0192 DB17     		asr	r3, r3, #31
+ 259 0194 8422     		mov	r2, #132
+ 260 0196 BA18     		add	r2, r7, r2
+ 261 0198 1360     		str	r3, [r2]
+ 102:Source\FastMathFunctions/arm_sqrt_q31.c ****                                         (q63_t) half) >> 31))) >> 31)) << 2;
+ 262              		.loc 1 102 0
+ 263 019a 7B1C     		add	r3, r7, #1
+ 264 019c FF33     		add	r3, r3, #255
+ 265 019e 1B68     		ldr	r3, [r3]
+ 266 01a0 BB67     		str	r3, [r7, #120]
+ 267 01a2 DB17     		asr	r3, r3, #31
+ 268 01a4 FB67     		str	r3, [r7, #124]
+ 101:Source\FastMathFunctions/arm_sqrt_q31.c ****                                         (q63_t) half) >> 31))) >> 31)) << 2;
+ 269              		.loc 1 101 0
+ 270 01a6 8023     		mov	r3, #128
+ 271 01a8 FB18     		add	r3, r7, r3
+ 272 01aa 1868     		ldr	r0, [r3]
+ 273 01ac 5968     		ldr	r1, [r3, #4]
+ 274 01ae BA6F     		ldr	r2, [r7, #120]
+ 275 01b0 FB6F     		ldr	r3, [r7, #124]
+ 276 01b2 FFF7FEFF 		bl	__aeabi_lmul
+ 277 01b6 031C     		mov	r3, r0
+ 278 01b8 0C1C     		mov	r4, r1
+ 279              		.loc 1 102 0
+ 280 01ba 6200     		lsl	r2, r4, #1
+ 281 01bc D90F     		lsr	r1, r3, #31
+ 282 01be E020     		mov	r0, #224
+ 283 01c0 3818     		add	r0, r7, r0
+ 284 01c2 0160     		str	r1, [r0]
+ 285 01c4 E021     		mov	r1, #224
+ 286 01c6 7918     		add	r1, r7, r1
+ 287 01c8 0968     		ldr	r1, [r1]
+ 288 01ca 1143     		orr	r1, r2
+ 289 01cc E022     		mov	r2, #224
+ 290 01ce BA18     		add	r2, r7, r2
+ 291 01d0 1160     		str	r1, [r2]
+ 292 01d2 E317     		asr	r3, r4, #31
+ 293 01d4 E422     		mov	r2, #228
+ 294 01d6 BA18     		add	r2, r7, r2
+ 295 01d8 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 8
+
+
+  99:Source\FastMathFunctions/arm_sqrt_q31.c ****                                       ((((q31_t)
+ 296              		.loc 1 99 0
+ 297 01da E023     		mov	r3, #224
+ 298 01dc FB18     		add	r3, r7, r3
+ 299 01de 1A68     		ldr	r2, [r3]
+  98:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 300              		.loc 1 98 0
+ 301 01e0 C023     		mov	r3, #192
+ 302 01e2 9B05     		lsl	r3, r3, #22
+ 303 01e4 9B1A     		sub	r3, r3, r2
+ 304 01e6 3B67     		str	r3, [r7, #112]
+ 305 01e8 DB17     		asr	r3, r3, #31
+ 306 01ea 7B67     		str	r3, [r7, #116]
+ 307 01ec 9823     		mov	r3, #152
+ 308 01ee FB18     		add	r3, r7, r3
+ 309 01f0 1868     		ldr	r0, [r3]
+ 310 01f2 5968     		ldr	r1, [r3, #4]
+ 311 01f4 3A6F     		ldr	r2, [r7, #112]
+ 312 01f6 7B6F     		ldr	r3, [r7, #116]
+ 313 01f8 FFF7FEFF 		bl	__aeabi_lmul
+ 314 01fc 031C     		mov	r3, r0
+ 315 01fe 0C1C     		mov	r4, r1
+ 316              		.loc 1 102 0
+ 317 0200 6200     		lsl	r2, r4, #1
+ 318 0202 D90F     		lsr	r1, r3, #31
+ 319 0204 D820     		mov	r0, #216
+ 320 0206 3818     		add	r0, r7, r0
+ 321 0208 0160     		str	r1, [r0]
+ 322 020a D821     		mov	r1, #216
+ 323 020c 7918     		add	r1, r7, r1
+ 324 020e 0968     		ldr	r1, [r1]
+ 325 0210 1143     		orr	r1, r2
+ 326 0212 D822     		mov	r2, #216
+ 327 0214 BA18     		add	r2, r7, r2
+ 328 0216 1160     		str	r1, [r2]
+ 329 0218 E317     		asr	r3, r4, #31
+ 330 021a DC22     		mov	r2, #220
+ 331 021c BA18     		add	r2, r7, r2
+ 332 021e 1360     		str	r3, [r2]
+  98:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 333              		.loc 1 98 0
+ 334 0220 D823     		mov	r3, #216
+ 335 0222 FB18     		add	r3, r7, r3
+ 336 0224 1B68     		ldr	r3, [r3]
+ 337 0226 9B00     		lsl	r3, r3, #2
+ 338 0228 8422     		mov	r2, #132
+ 339 022a 5200     		lsl	r2, r2, #1
+ 340 022c BA18     		add	r2, r7, r2
+ 341 022e 1360     		str	r3, [r2]
+ 103:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* 2nd iteration */
+ 104:Source\FastMathFunctions/arm_sqrt_q31.c ****     var1 = ((q31_t) ((q63_t) var1 * (0x30000000 -
+ 342              		.loc 1 104 0
+ 343 0230 8423     		mov	r3, #132
+ 344 0232 5B00     		lsl	r3, r3, #1
+ 345 0234 FB18     		add	r3, r7, r3
+ 346 0236 1B68     		ldr	r3, [r3]
+ 347 0238 BB66     		str	r3, [r7, #104]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 9
+
+
+ 348 023a DB17     		asr	r3, r3, #31
+ 349 023c FB66     		str	r3, [r7, #108]
+ 105:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 106:Source\FastMathFunctions/arm_sqrt_q31.c ****                                       ((((q31_t)
+ 107:Source\FastMathFunctions/arm_sqrt_q31.c ****                                          (((q63_t) var1 * var1) >> 31)) *
+ 350              		.loc 1 107 0
+ 351 023e 8423     		mov	r3, #132
+ 352 0240 5B00     		lsl	r3, r3, #1
+ 353 0242 FB18     		add	r3, r7, r3
+ 354 0244 1B68     		ldr	r3, [r3]
+ 355 0246 3B66     		str	r3, [r7, #96]
+ 356 0248 DB17     		asr	r3, r3, #31
+ 357 024a 7B66     		str	r3, [r7, #100]
+ 358 024c 8423     		mov	r3, #132
+ 359 024e 5B00     		lsl	r3, r3, #1
+ 360 0250 FB18     		add	r3, r7, r3
+ 361 0252 1B68     		ldr	r3, [r3]
+ 362 0254 BB65     		str	r3, [r7, #88]
+ 363 0256 DB17     		asr	r3, r3, #31
+ 364 0258 FB65     		str	r3, [r7, #92]
+ 365 025a 386E     		ldr	r0, [r7, #96]
+ 366 025c 796E     		ldr	r1, [r7, #100]
+ 367 025e BA6D     		ldr	r2, [r7, #88]
+ 368 0260 FB6D     		ldr	r3, [r7, #92]
+ 369 0262 FFF7FEFF 		bl	__aeabi_lmul
+ 370 0266 031C     		mov	r3, r0
+ 371 0268 0C1C     		mov	r4, r1
+ 372 026a 6200     		lsl	r2, r4, #1
+ 373 026c D90F     		lsr	r1, r3, #31
+ 374 026e D020     		mov	r0, #208
+ 375 0270 3818     		add	r0, r7, r0
+ 376 0272 0160     		str	r1, [r0]
+ 377 0274 D021     		mov	r1, #208
+ 378 0276 7918     		add	r1, r7, r1
+ 379 0278 0968     		ldr	r1, [r1]
+ 380 027a 1143     		orr	r1, r2
+ 381 027c D022     		mov	r2, #208
+ 382 027e BA18     		add	r2, r7, r2
+ 383 0280 1160     		str	r1, [r2]
+ 384 0282 E317     		asr	r3, r4, #31
+ 385 0284 D422     		mov	r2, #212
+ 386 0286 BA18     		add	r2, r7, r2
+ 387 0288 1360     		str	r3, [r2]
+ 106:Source\FastMathFunctions/arm_sqrt_q31.c ****                                          (((q63_t) var1 * var1) >> 31)) *
+ 388              		.loc 1 106 0
+ 389 028a D023     		mov	r3, #208
+ 390 028c FB18     		add	r3, r7, r3
+ 391 028e 1B68     		ldr	r3, [r3]
+ 392              		.loc 1 107 0
+ 393 0290 3B65     		str	r3, [r7, #80]
+ 394 0292 DB17     		asr	r3, r3, #31
+ 395 0294 7B65     		str	r3, [r7, #84]
+ 108:Source\FastMathFunctions/arm_sqrt_q31.c ****                                         (q63_t) half) >> 31))) >> 31)) << 2;
+ 396              		.loc 1 108 0
+ 397 0296 7B1C     		add	r3, r7, #1
+ 398 0298 FF33     		add	r3, r3, #255
+ 399 029a 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 10
+
+
+ 400 029c BB64     		str	r3, [r7, #72]
+ 401 029e DB17     		asr	r3, r3, #31
+ 402 02a0 FB64     		str	r3, [r7, #76]
+ 107:Source\FastMathFunctions/arm_sqrt_q31.c ****                                         (q63_t) half) >> 31))) >> 31)) << 2;
+ 403              		.loc 1 107 0
+ 404 02a2 386D     		ldr	r0, [r7, #80]
+ 405 02a4 796D     		ldr	r1, [r7, #84]
+ 406 02a6 BA6C     		ldr	r2, [r7, #72]
+ 407 02a8 FB6C     		ldr	r3, [r7, #76]
+ 408 02aa FFF7FEFF 		bl	__aeabi_lmul
+ 409 02ae 031C     		mov	r3, r0
+ 410 02b0 0C1C     		mov	r4, r1
+ 411              		.loc 1 108 0
+ 412 02b2 6200     		lsl	r2, r4, #1
+ 413 02b4 D90F     		lsr	r1, r3, #31
+ 414 02b6 C820     		mov	r0, #200
+ 415 02b8 3818     		add	r0, r7, r0
+ 416 02ba 0160     		str	r1, [r0]
+ 417 02bc C821     		mov	r1, #200
+ 418 02be 7918     		add	r1, r7, r1
+ 419 02c0 0968     		ldr	r1, [r1]
+ 420 02c2 1143     		orr	r1, r2
+ 421 02c4 C822     		mov	r2, #200
+ 422 02c6 BA18     		add	r2, r7, r2
+ 423 02c8 1160     		str	r1, [r2]
+ 424 02ca E317     		asr	r3, r4, #31
+ 425 02cc CC22     		mov	r2, #204
+ 426 02ce BA18     		add	r2, r7, r2
+ 427 02d0 1360     		str	r3, [r2]
+ 105:Source\FastMathFunctions/arm_sqrt_q31.c ****                                       ((((q31_t)
+ 428              		.loc 1 105 0
+ 429 02d2 C823     		mov	r3, #200
+ 430 02d4 FB18     		add	r3, r7, r3
+ 431 02d6 1A68     		ldr	r2, [r3]
+ 104:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 432              		.loc 1 104 0
+ 433 02d8 C023     		mov	r3, #192
+ 434 02da 9B05     		lsl	r3, r3, #22
+ 435 02dc 9B1A     		sub	r3, r3, r2
+ 436 02de 3B64     		str	r3, [r7, #64]
+ 437 02e0 DB17     		asr	r3, r3, #31
+ 438 02e2 7B64     		str	r3, [r7, #68]
+ 439 02e4 B86E     		ldr	r0, [r7, #104]
+ 440 02e6 F96E     		ldr	r1, [r7, #108]
+ 441 02e8 3A6C     		ldr	r2, [r7, #64]
+ 442 02ea 7B6C     		ldr	r3, [r7, #68]
+ 443 02ec FFF7FEFF 		bl	__aeabi_lmul
+ 444 02f0 031C     		mov	r3, r0
+ 445 02f2 0C1C     		mov	r4, r1
+ 446              		.loc 1 108 0
+ 447 02f4 6200     		lsl	r2, r4, #1
+ 448 02f6 D90F     		lsr	r1, r3, #31
+ 449 02f8 C020     		mov	r0, #192
+ 450 02fa 3818     		add	r0, r7, r0
+ 451 02fc 0160     		str	r1, [r0]
+ 452 02fe C021     		mov	r1, #192
+ 453 0300 7918     		add	r1, r7, r1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 11
+
+
+ 454 0302 0968     		ldr	r1, [r1]
+ 455 0304 1143     		orr	r1, r2
+ 456 0306 C022     		mov	r2, #192
+ 457 0308 BA18     		add	r2, r7, r2
+ 458 030a 1160     		str	r1, [r2]
+ 459 030c E317     		asr	r3, r4, #31
+ 460 030e C422     		mov	r2, #196
+ 461 0310 BA18     		add	r2, r7, r2
+ 462 0312 1360     		str	r3, [r2]
+ 104:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 463              		.loc 1 104 0
+ 464 0314 C023     		mov	r3, #192
+ 465 0316 FB18     		add	r3, r7, r3
+ 466 0318 1B68     		ldr	r3, [r3]
+ 467 031a 9B00     		lsl	r3, r3, #2
+ 468 031c 8422     		mov	r2, #132
+ 469 031e 5200     		lsl	r2, r2, #1
+ 470 0320 BA18     		add	r2, r7, r2
+ 471 0322 1360     		str	r3, [r2]
+ 109:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* 3rd iteration */
+ 110:Source\FastMathFunctions/arm_sqrt_q31.c ****     var1 = ((q31_t) ((q63_t) var1 * (0x30000000 -
+ 472              		.loc 1 110 0
+ 473 0324 8423     		mov	r3, #132
+ 474 0326 5B00     		lsl	r3, r3, #1
+ 475 0328 FB18     		add	r3, r7, r3
+ 476 032a 1B68     		ldr	r3, [r3]
+ 477 032c BB63     		str	r3, [r7, #56]
+ 478 032e DB17     		asr	r3, r3, #31
+ 479 0330 FB63     		str	r3, [r7, #60]
+ 111:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 112:Source\FastMathFunctions/arm_sqrt_q31.c ****                                       ((((q31_t)
+ 113:Source\FastMathFunctions/arm_sqrt_q31.c ****                                          (((q63_t) var1 * var1) >> 31)) *
+ 480              		.loc 1 113 0
+ 481 0332 8423     		mov	r3, #132
+ 482 0334 5B00     		lsl	r3, r3, #1
+ 483 0336 FB18     		add	r3, r7, r3
+ 484 0338 1B68     		ldr	r3, [r3]
+ 485 033a 3B63     		str	r3, [r7, #48]
+ 486 033c DB17     		asr	r3, r3, #31
+ 487 033e 7B63     		str	r3, [r7, #52]
+ 488 0340 8423     		mov	r3, #132
+ 489 0342 5B00     		lsl	r3, r3, #1
+ 490 0344 FB18     		add	r3, r7, r3
+ 491 0346 1B68     		ldr	r3, [r3]
+ 492 0348 BB62     		str	r3, [r7, #40]
+ 493 034a DB17     		asr	r3, r3, #31
+ 494 034c FB62     		str	r3, [r7, #44]
+ 495 034e 386B     		ldr	r0, [r7, #48]
+ 496 0350 796B     		ldr	r1, [r7, #52]
+ 497 0352 BA6A     		ldr	r2, [r7, #40]
+ 498 0354 FB6A     		ldr	r3, [r7, #44]
+ 499 0356 FFF7FEFF 		bl	__aeabi_lmul
+ 500 035a 031C     		mov	r3, r0
+ 501 035c 0C1C     		mov	r4, r1
+ 502 035e 6200     		lsl	r2, r4, #1
+ 503 0360 D90F     		lsr	r1, r3, #31
+ 504 0362 B820     		mov	r0, #184
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 12
+
+
+ 505 0364 3818     		add	r0, r7, r0
+ 506 0366 0160     		str	r1, [r0]
+ 507 0368 B821     		mov	r1, #184
+ 508 036a 7918     		add	r1, r7, r1
+ 509 036c 0968     		ldr	r1, [r1]
+ 510 036e 1143     		orr	r1, r2
+ 511 0370 B822     		mov	r2, #184
+ 512 0372 BA18     		add	r2, r7, r2
+ 513 0374 1160     		str	r1, [r2]
+ 514 0376 E317     		asr	r3, r4, #31
+ 515 0378 BC22     		mov	r2, #188
+ 516 037a BA18     		add	r2, r7, r2
+ 517 037c 1360     		str	r3, [r2]
+ 112:Source\FastMathFunctions/arm_sqrt_q31.c ****                                          (((q63_t) var1 * var1) >> 31)) *
+ 518              		.loc 1 112 0
+ 519 037e B823     		mov	r3, #184
+ 520 0380 FB18     		add	r3, r7, r3
+ 521 0382 1B68     		ldr	r3, [r3]
+ 522              		.loc 1 113 0
+ 523 0384 3B62     		str	r3, [r7, #32]
+ 524 0386 DB17     		asr	r3, r3, #31
+ 525 0388 7B62     		str	r3, [r7, #36]
+ 114:Source\FastMathFunctions/arm_sqrt_q31.c ****                                         (q63_t) half) >> 31))) >> 31)) << 2;
+ 526              		.loc 1 114 0
+ 527 038a 7B1C     		add	r3, r7, #1
+ 528 038c FF33     		add	r3, r3, #255
+ 529 038e 1B68     		ldr	r3, [r3]
+ 530 0390 BB61     		str	r3, [r7, #24]
+ 531 0392 DB17     		asr	r3, r3, #31
+ 532 0394 FB61     		str	r3, [r7, #28]
+ 113:Source\FastMathFunctions/arm_sqrt_q31.c ****                                         (q63_t) half) >> 31))) >> 31)) << 2;
+ 533              		.loc 1 113 0
+ 534 0396 386A     		ldr	r0, [r7, #32]
+ 535 0398 796A     		ldr	r1, [r7, #36]
+ 536 039a BA69     		ldr	r2, [r7, #24]
+ 537 039c FB69     		ldr	r3, [r7, #28]
+ 538 039e FFF7FEFF 		bl	__aeabi_lmul
+ 539 03a2 031C     		mov	r3, r0
+ 540 03a4 0C1C     		mov	r4, r1
+ 541              		.loc 1 114 0
+ 542 03a6 6200     		lsl	r2, r4, #1
+ 543 03a8 D90F     		lsr	r1, r3, #31
+ 544 03aa B020     		mov	r0, #176
+ 545 03ac 3818     		add	r0, r7, r0
+ 546 03ae 0160     		str	r1, [r0]
+ 547 03b0 B021     		mov	r1, #176
+ 548 03b2 7918     		add	r1, r7, r1
+ 549 03b4 0968     		ldr	r1, [r1]
+ 550 03b6 1143     		orr	r1, r2
+ 551 03b8 B022     		mov	r2, #176
+ 552 03ba BA18     		add	r2, r7, r2
+ 553 03bc 1160     		str	r1, [r2]
+ 554 03be E317     		asr	r3, r4, #31
+ 555 03c0 B422     		mov	r2, #180
+ 556 03c2 BA18     		add	r2, r7, r2
+ 557 03c4 1360     		str	r3, [r2]
+ 111:Source\FastMathFunctions/arm_sqrt_q31.c ****                                       ((((q31_t)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 13
+
+
+ 558              		.loc 1 111 0
+ 559 03c6 B023     		mov	r3, #176
+ 560 03c8 FB18     		add	r3, r7, r3
+ 561 03ca 1A68     		ldr	r2, [r3]
+ 110:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 562              		.loc 1 110 0
+ 563 03cc C023     		mov	r3, #192
+ 564 03ce 9B05     		lsl	r3, r3, #22
+ 565 03d0 9B1A     		sub	r3, r3, r2
+ 566 03d2 3B61     		str	r3, [r7, #16]
+ 567 03d4 DB17     		asr	r3, r3, #31
+ 568 03d6 7B61     		str	r3, [r7, #20]
+ 569 03d8 B86B     		ldr	r0, [r7, #56]
+ 570 03da F96B     		ldr	r1, [r7, #60]
+ 571 03dc 3A69     		ldr	r2, [r7, #16]
+ 572 03de 7B69     		ldr	r3, [r7, #20]
+ 573 03e0 FFF7FEFF 		bl	__aeabi_lmul
+ 574 03e4 031C     		mov	r3, r0
+ 575 03e6 0C1C     		mov	r4, r1
+ 576              		.loc 1 114 0
+ 577 03e8 6200     		lsl	r2, r4, #1
+ 578 03ea D90F     		lsr	r1, r3, #31
+ 579 03ec A820     		mov	r0, #168
+ 580 03ee 3818     		add	r0, r7, r0
+ 581 03f0 0160     		str	r1, [r0]
+ 582 03f2 A821     		mov	r1, #168
+ 583 03f4 7918     		add	r1, r7, r1
+ 584 03f6 0968     		ldr	r1, [r1]
+ 585 03f8 1143     		orr	r1, r2
+ 586 03fa A822     		mov	r2, #168
+ 587 03fc BA18     		add	r2, r7, r2
+ 588 03fe 1160     		str	r1, [r2]
+ 589 0400 E317     		asr	r3, r4, #31
+ 590 0402 AC22     		mov	r2, #172
+ 591 0404 BA18     		add	r2, r7, r2
+ 592 0406 1360     		str	r3, [r2]
+ 110:Source\FastMathFunctions/arm_sqrt_q31.c ****                                      ((q31_t)
+ 593              		.loc 1 110 0
+ 594 0408 A823     		mov	r3, #168
+ 595 040a FB18     		add	r3, r7, r3
+ 596 040c 1B68     		ldr	r3, [r3]
+ 597 040e 9B00     		lsl	r3, r3, #2
+ 598 0410 8422     		mov	r2, #132
+ 599 0412 5200     		lsl	r2, r2, #1
+ 600 0414 BA18     		add	r2, r7, r2
+ 601 0416 1360     		str	r3, [r2]
+ 115:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+ 116:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* Multiply the inverse square root with the original value */
+ 117:Source\FastMathFunctions/arm_sqrt_q31.c ****     var1 = ((q31_t) (((q63_t) temp1 * var1) >> 31)) << 1;
+ 602              		.loc 1 117 0
+ 603 0418 FC23     		mov	r3, #252
+ 604 041a FB18     		add	r3, r7, r3
+ 605 041c 1B68     		ldr	r3, [r3]
+ 606 041e BB60     		str	r3, [r7, #8]
+ 607 0420 DB17     		asr	r3, r3, #31
+ 608 0422 FB60     		str	r3, [r7, #12]
+ 609 0424 8423     		mov	r3, #132
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 14
+
+
+ 610 0426 5B00     		lsl	r3, r3, #1
+ 611 0428 FB18     		add	r3, r7, r3
+ 612 042a 1B68     		ldr	r3, [r3]
+ 613 042c 3B60     		str	r3, [r7]
+ 614 042e DB17     		asr	r3, r3, #31
+ 615 0430 7B60     		str	r3, [r7, #4]
+ 616 0432 B868     		ldr	r0, [r7, #8]
+ 617 0434 F968     		ldr	r1, [r7, #12]
+ 618 0436 3A68     		ldr	r2, [r7]
+ 619 0438 7B68     		ldr	r3, [r7, #4]
+ 620 043a FFF7FEFF 		bl	__aeabi_lmul
+ 621 043e 031C     		mov	r3, r0
+ 622 0440 0C1C     		mov	r4, r1
+ 623 0442 6200     		lsl	r2, r4, #1
+ 624 0444 D90F     		lsr	r1, r3, #31
+ 625 0446 A020     		mov	r0, #160
+ 626 0448 3818     		add	r0, r7, r0
+ 627 044a 0160     		str	r1, [r0]
+ 628 044c A021     		mov	r1, #160
+ 629 044e 7918     		add	r1, r7, r1
+ 630 0450 0968     		ldr	r1, [r1]
+ 631 0452 1143     		orr	r1, r2
+ 632 0454 A022     		mov	r2, #160
+ 633 0456 BA18     		add	r2, r7, r2
+ 634 0458 1160     		str	r1, [r2]
+ 635 045a E317     		asr	r3, r4, #31
+ 636 045c A422     		mov	r2, #164
+ 637 045e BA18     		add	r2, r7, r2
+ 638 0460 1360     		str	r3, [r2]
+ 639 0462 A023     		mov	r3, #160
+ 640 0464 FB18     		add	r3, r7, r3
+ 641 0466 1B68     		ldr	r3, [r3]
+ 642 0468 5B00     		lsl	r3, r3, #1
+ 643 046a 8422     		mov	r2, #132
+ 644 046c 5200     		lsl	r2, r2, #1
+ 645 046e BA18     		add	r2, r7, r2
+ 646 0470 1360     		str	r3, [r2]
+ 118:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+ 119:Source\FastMathFunctions/arm_sqrt_q31.c ****     /* Shift the output down accordingly */
+ 120:Source\FastMathFunctions/arm_sqrt_q31.c ****     if ((signBits1 % 2) == 0)
+ 647              		.loc 1 120 0
+ 648 0472 7B1D     		add	r3, r7, #5
+ 649 0474 FF33     		add	r3, r3, #255
+ 650 0476 1B68     		ldr	r3, [r3]
+ 651 0478 0122     		mov	r2, #1
+ 652 047a 1340     		and	r3, r2
+ 653 047c 14D1     		bne	.L5
+ 121:Source\FastMathFunctions/arm_sqrt_q31.c ****     {
+ 122:Source\FastMathFunctions/arm_sqrt_q31.c ****       var1 = var1 >> (signBits1 / 2);
+ 654              		.loc 1 122 0
+ 655 047e 7B1D     		add	r3, r7, #5
+ 656 0480 FF33     		add	r3, r3, #255
+ 657 0482 1B68     		ldr	r3, [r3]
+ 658 0484 002B     		cmp	r3, #0
+ 659 0486 00DA     		bge	.L6
+ 660 0488 0133     		add	r3, r3, #1
+ 661              	.L6:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 15
+
+
+ 662 048a 5B10     		asr	r3, r3, #1
+ 663 048c 1A1C     		mov	r2, r3
+ 664 048e 8423     		mov	r3, #132
+ 665 0490 5B00     		lsl	r3, r3, #1
+ 666 0492 FB18     		add	r3, r7, r3
+ 667 0494 1B68     		ldr	r3, [r3]
+ 668 0496 1341     		asr	r3, r3, r2
+ 669 0498 8422     		mov	r2, #132
+ 670 049a 5200     		lsl	r2, r2, #1
+ 671 049c BA18     		add	r2, r7, r2
+ 672 049e 1360     		str	r3, [r2]
+ 673 04a0 14E0     		b	.L7
+ 674              	.L12:
+ 675 04a2 C046     		.align	2
+ 676              	.L11:
+ 677 04a4 DF59375F 		.word	1597463007
+ 678              	.L5:
+ 123:Source\FastMathFunctions/arm_sqrt_q31.c ****     }
+ 124:Source\FastMathFunctions/arm_sqrt_q31.c ****     else
+ 125:Source\FastMathFunctions/arm_sqrt_q31.c ****     {
+ 126:Source\FastMathFunctions/arm_sqrt_q31.c ****       var1 = var1 >> ((signBits1 - 1) / 2);
+ 679              		.loc 1 126 0
+ 680 04a8 7B1D     		add	r3, r7, #5
+ 681 04aa FF33     		add	r3, r3, #255
+ 682 04ac 1B68     		ldr	r3, [r3]
+ 683 04ae 013B     		sub	r3, r3, #1
+ 684 04b0 002B     		cmp	r3, #0
+ 685 04b2 00DA     		bge	.L8
+ 686 04b4 0133     		add	r3, r3, #1
+ 687              	.L8:
+ 688 04b6 5B10     		asr	r3, r3, #1
+ 689 04b8 1A1C     		mov	r2, r3
+ 690 04ba 8423     		mov	r3, #132
+ 691 04bc 5B00     		lsl	r3, r3, #1
+ 692 04be FB18     		add	r3, r7, r3
+ 693 04c0 1B68     		ldr	r3, [r3]
+ 694 04c2 1341     		asr	r3, r3, r2
+ 695 04c4 8422     		mov	r2, #132
+ 696 04c6 5200     		lsl	r2, r2, #1
+ 697 04c8 BA18     		add	r2, r7, r2
+ 698 04ca 1360     		str	r3, [r2]
+ 699              	.L7:
+ 127:Source\FastMathFunctions/arm_sqrt_q31.c ****     }
+ 128:Source\FastMathFunctions/arm_sqrt_q31.c ****     *pOut = var1;
+ 700              		.loc 1 128 0
+ 701 04cc E823     		mov	r3, #232
+ 702 04ce FB18     		add	r3, r7, r3
+ 703 04d0 1B68     		ldr	r3, [r3]
+ 704 04d2 8422     		mov	r2, #132
+ 705 04d4 5200     		lsl	r2, r2, #1
+ 706 04d6 BA18     		add	r2, r7, r2
+ 707 04d8 1268     		ldr	r2, [r2]
+ 708 04da 1A60     		str	r2, [r3]
+ 129:Source\FastMathFunctions/arm_sqrt_q31.c **** 
+ 130:Source\FastMathFunctions/arm_sqrt_q31.c ****     return (ARM_MATH_SUCCESS);
+ 709              		.loc 1 130 0
+ 710 04dc 0023     		mov	r3, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 16
+
+
+ 711 04de 05E0     		b	.L10
+ 712              	.L2:
+ 131:Source\FastMathFunctions/arm_sqrt_q31.c ****   }
+ 132:Source\FastMathFunctions/arm_sqrt_q31.c ****   /* If the number is a negative number then store zero as its square root value */
+ 133:Source\FastMathFunctions/arm_sqrt_q31.c ****   else
+ 134:Source\FastMathFunctions/arm_sqrt_q31.c ****   {
+ 135:Source\FastMathFunctions/arm_sqrt_q31.c ****     *pOut = 0;
+ 713              		.loc 1 135 0
+ 714 04e0 E823     		mov	r3, #232
+ 715 04e2 FB18     		add	r3, r7, r3
+ 716 04e4 1B68     		ldr	r3, [r3]
+ 717 04e6 0022     		mov	r2, #0
+ 718 04e8 1A60     		str	r2, [r3]
+ 136:Source\FastMathFunctions/arm_sqrt_q31.c ****     return (ARM_MATH_ARGUMENT_ERROR);
+ 719              		.loc 1 136 0
+ 720 04ea FF23     		mov	r3, #255
+ 721              	.L10:
+ 722 04ec 5BB2     		sxtb	r3, r3
+ 137:Source\FastMathFunctions/arm_sqrt_q31.c ****   }
+ 138:Source\FastMathFunctions/arm_sqrt_q31.c **** }
+ 723              		.loc 1 138 0 discriminator 1
+ 724 04ee 181C     		mov	r0, r3
+ 725 04f0 BD46     		mov	sp, r7
+ 726 04f2 45B0     		add	sp, sp, #276
+ 727              		@ sp needed
+ 728 04f4 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 729              		.cfi_endproc
+ 730              	.LFE82:
+ 731              		.size	arm_sqrt_q31, .-arm_sqrt_q31
+ 732 04f6 C046     		.text
+ 733              	.Letext0:
+ 734              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 735              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 736              		.file 4 ".\\Include/arm_math.h"
+ 737              		.section	.debug_info,"",%progbits
+ 738              	.Ldebug_info0:
+ 739 0000 E1010000 		.4byte	0x1e1
+ 740 0004 0400     		.2byte	0x4
+ 741 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 742 000a 04       		.byte	0x4
+ 743 000b 01       		.uleb128 0x1
+ 744 000c 77010000 		.4byte	.LASF40
+ 745 0010 01       		.byte	0x1
+ 746 0011 2B010000 		.4byte	.LASF41
+ 747 0015 36000000 		.4byte	.LASF42
+ 748 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 749 001d 00000000 		.4byte	0
+ 750 0021 00000000 		.4byte	.Ldebug_line0
+ 751 0025 02       		.uleb128 0x2
+ 752 0026 01       		.byte	0x1
+ 753 0027 06       		.byte	0x6
+ 754 0028 AE020000 		.4byte	.LASF0
+ 755 002c 02       		.uleb128 0x2
+ 756 002d 01       		.byte	0x1
+ 757 002e 08       		.byte	0x8
+ 758 002f AA000000 		.4byte	.LASF1
+ 759 0033 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 17
+
+
+ 760 0034 02       		.byte	0x2
+ 761 0035 05       		.byte	0x5
+ 762 0036 7A020000 		.4byte	.LASF2
+ 763 003a 02       		.uleb128 0x2
+ 764 003b 02       		.byte	0x2
+ 765 003c 07       		.byte	0x7
+ 766 003d CA000000 		.4byte	.LASF3
+ 767 0041 03       		.uleb128 0x3
+ 768 0042 2C000000 		.4byte	.LASF6
+ 769 0046 02       		.byte	0x2
+ 770 0047 3F       		.byte	0x3f
+ 771 0048 4C000000 		.4byte	0x4c
+ 772 004c 02       		.uleb128 0x2
+ 773 004d 04       		.byte	0x4
+ 774 004e 05       		.byte	0x5
+ 775 004f 8C020000 		.4byte	.LASF4
+ 776 0053 02       		.uleb128 0x2
+ 777 0054 04       		.byte	0x4
+ 778 0055 07       		.byte	0x7
+ 779 0056 B8000000 		.4byte	.LASF5
+ 780 005a 03       		.uleb128 0x3
+ 781 005b F3000000 		.4byte	.LASF7
+ 782 005f 02       		.byte	0x2
+ 783 0060 59       		.byte	0x59
+ 784 0061 65000000 		.4byte	0x65
+ 785 0065 02       		.uleb128 0x2
+ 786 0066 08       		.byte	0x8
+ 787 0067 05       		.byte	0x5
+ 788 0068 31020000 		.4byte	.LASF8
+ 789 006c 02       		.uleb128 0x2
+ 790 006d 08       		.byte	0x8
+ 791 006e 07       		.byte	0x7
+ 792 006f 60010000 		.4byte	.LASF9
+ 793 0073 04       		.uleb128 0x4
+ 794 0074 04       		.byte	0x4
+ 795 0075 05       		.byte	0x5
+ 796 0076 696E7400 		.ascii	"int\000"
+ 797 007a 02       		.uleb128 0x2
+ 798 007b 04       		.byte	0x4
+ 799 007c 07       		.byte	0x7
+ 800 007d 53010000 		.4byte	.LASF10
+ 801 0081 03       		.uleb128 0x3
+ 802 0082 16020000 		.4byte	.LASF11
+ 803 0086 03       		.byte	0x3
+ 804 0087 2C       		.byte	0x2c
+ 805 0088 41000000 		.4byte	0x41
+ 806 008c 03       		.uleb128 0x3
+ 807 008d 00000000 		.4byte	.LASF12
+ 808 0091 03       		.byte	0x3
+ 809 0092 38       		.byte	0x38
+ 810 0093 5A000000 		.4byte	0x5a
+ 811 0097 02       		.uleb128 0x2
+ 812 0098 04       		.byte	0x4
+ 813 0099 07       		.byte	0x7
+ 814 009a 1E020000 		.4byte	.LASF13
+ 815 009e 02       		.uleb128 0x2
+ 816 009f 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 18
+
+
+ 817 00a0 08       		.byte	0x8
+ 818 00a1 45020000 		.4byte	.LASF14
+ 819 00a5 02       		.uleb128 0x2
+ 820 00a6 08       		.byte	0x8
+ 821 00a7 04       		.byte	0x4
+ 822 00a8 FD000000 		.4byte	.LASF15
+ 823 00ac 02       		.uleb128 0x2
+ 824 00ad 04       		.byte	0x4
+ 825 00ae 04       		.byte	0x4
+ 826 00af 3F020000 		.4byte	.LASF16
+ 827 00b3 02       		.uleb128 0x2
+ 828 00b4 08       		.byte	0x8
+ 829 00b5 04       		.byte	0x4
+ 830 00b6 95020000 		.4byte	.LASF17
+ 831 00ba 05       		.uleb128 0x5
+ 832 00bb 01       		.byte	0x1
+ 833 00bc 04       		.byte	0x4
+ 834 00bd 8401     		.2byte	0x184
+ 835 00bf EE000000 		.4byte	0xee
+ 836 00c3 06       		.uleb128 0x6
+ 837 00c4 69020000 		.4byte	.LASF18
+ 838 00c8 00       		.sleb128 0
+ 839 00c9 06       		.uleb128 0x6
+ 840 00ca 0E010000 		.4byte	.LASF19
+ 841 00ce 7F       		.sleb128 -1
+ 842 00cf 06       		.uleb128 0x6
+ 843 00d0 0D000000 		.4byte	.LASF20
+ 844 00d4 7E       		.sleb128 -2
+ 845 00d5 06       		.uleb128 0x6
+ 846 00d6 7C000000 		.4byte	.LASF21
+ 847 00da 7D       		.sleb128 -3
+ 848 00db 06       		.uleb128 0x6
+ 849 00dc 4A020000 		.4byte	.LASF22
+ 850 00e0 7C       		.sleb128 -4
+ 851 00e1 06       		.uleb128 0x6
+ 852 00e2 CF020000 		.4byte	.LASF23
+ 853 00e6 7B       		.sleb128 -5
+ 854 00e7 06       		.uleb128 0x6
+ 855 00e8 DD000000 		.4byte	.LASF24
+ 856 00ec 7A       		.sleb128 -6
+ 857 00ed 00       		.byte	0
+ 858 00ee 07       		.uleb128 0x7
+ 859 00ef C4020000 		.4byte	.LASF25
+ 860 00f3 04       		.byte	0x4
+ 861 00f4 8C01     		.2byte	0x18c
+ 862 00f6 BA000000 		.4byte	0xba
+ 863 00fa 07       		.uleb128 0x7
+ 864 00fb A4000000 		.4byte	.LASF26
+ 865 00ff 04       		.byte	0x4
+ 866 0100 9B01     		.2byte	0x19b
+ 867 0102 81000000 		.4byte	0x81
+ 868 0106 07       		.uleb128 0x7
+ 869 0107 09020000 		.4byte	.LASF27
+ 870 010b 04       		.byte	0x4
+ 871 010c A001     		.2byte	0x1a0
+ 872 010e 8C000000 		.4byte	0x8c
+ 873 0112 07       		.uleb128 0x7
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 19
+
+
+ 874 0113 04010000 		.4byte	.LASF28
+ 875 0117 04       		.byte	0x4
+ 876 0118 A501     		.2byte	0x1a5
+ 877 011a AC000000 		.4byte	0xac
+ 878 011e 08       		.uleb128 0x8
+ 879 011f 04       		.byte	0x4
+ 880 0120 FA000000 		.4byte	0xfa
+ 881 0124 09       		.uleb128 0x9
+ 882 0125 A1020000 		.4byte	.LASF43
+ 883 0129 01       		.byte	0x1
+ 884 012a 32       		.byte	0x32
+ 885 012b EE000000 		.4byte	0xee
+ 886 012f 00000000 		.4byte	.LFB82
+ 887 0133 F6040000 		.4byte	.LFE82-.LFB82
+ 888 0137 01       		.uleb128 0x1
+ 889 0138 9C       		.byte	0x9c
+ 890 0139 0A       		.uleb128 0xa
+ 891 013a 696E00   		.ascii	"in\000"
+ 892 013d 01       		.byte	0x1
+ 893 013e 33       		.byte	0x33
+ 894 013f FA000000 		.4byte	0xfa
+ 895 0143 02       		.uleb128 0x2
+ 896 0144 91       		.byte	0x91
+ 897 0145 44       		.sleb128 -60
+ 898 0146 0B       		.uleb128 0xb
+ 899 0147 93000000 		.4byte	.LASF29
+ 900 014b 01       		.byte	0x1
+ 901 014c 34       		.byte	0x34
+ 902 014d 1E010000 		.4byte	0x11e
+ 903 0151 02       		.uleb128 0x2
+ 904 0152 91       		.byte	0x91
+ 905 0153 40       		.sleb128 -64
+ 906 0154 0C       		.uleb128 0xc
+ 907 0155 0F020000 		.4byte	.LASF30
+ 908 0159 01       		.byte	0x1
+ 909 015a 36       		.byte	0x36
+ 910 015b FA000000 		.4byte	0xfa
+ 911 015f 02       		.uleb128 0x2
+ 912 0160 91       		.byte	0x91
+ 913 0161 64       		.sleb128 -28
+ 914 0162 0C       		.uleb128 0xc
+ 915 0163 5A020000 		.4byte	.LASF31
+ 916 0167 01       		.byte	0x1
+ 917 0168 36       		.byte	0x36
+ 918 0169 FA000000 		.4byte	0xfa
+ 919 016d 02       		.uleb128 0x2
+ 920 016e 91       		.byte	0x91
+ 921 016f 54       		.sleb128 -44
+ 922 0170 0C       		.uleb128 0xc
+ 923 0171 27020000 		.4byte	.LASF32
+ 924 0175 01       		.byte	0x1
+ 925 0176 36       		.byte	0x36
+ 926 0177 FA000000 		.4byte	0xfa
+ 927 017b 02       		.uleb128 0x2
+ 928 017c 91       		.byte	0x91
+ 929 017d 4C       		.sleb128 -52
+ 930 017e 0C       		.uleb128 0xc
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 20
+
+
+ 931 017f 26010000 		.4byte	.LASF33
+ 932 0183 01       		.byte	0x1
+ 933 0184 36       		.byte	0x36
+ 934 0185 FA000000 		.4byte	0xfa
+ 935 0189 02       		.uleb128 0x2
+ 936 018a 91       		.byte	0x91
+ 937 018b 60       		.sleb128 -32
+ 938 018c 0C       		.uleb128 0xc
+ 939 018d BA020000 		.4byte	.LASF34
+ 940 0191 01       		.byte	0x1
+ 941 0192 36       		.byte	0x36
+ 942 0193 FA000000 		.4byte	0xfa
+ 943 0197 02       		.uleb128 0x2
+ 944 0198 91       		.byte	0x91
+ 945 0199 5C       		.sleb128 -36
+ 946 019a 0C       		.uleb128 0xc
+ 947 019b 08000000 		.4byte	.LASF35
+ 948 019f 01       		.byte	0x1
+ 949 01a0 36       		.byte	0x36
+ 950 01a1 FA000000 		.4byte	0xfa
+ 951 01a5 02       		.uleb128 0x2
+ 952 01a6 91       		.byte	0x91
+ 953 01a7 58       		.sleb128 -40
+ 954 01a8 0C       		.uleb128 0xc
+ 955 01a9 98000000 		.4byte	.LASF36
+ 956 01ad 01       		.byte	0x1
+ 957 01ae 37       		.byte	0x37
+ 958 01af 12010000 		.4byte	0x112
+ 959 01b3 02       		.uleb128 0x2
+ 960 01b4 91       		.byte	0x91
+ 961 01b5 50       		.sleb128 -48
+ 962 01b6 0D       		.uleb128 0xd
+ 963 01b7 04       		.byte	0x4
+ 964 01b8 01       		.byte	0x1
+ 965 01b9 38       		.byte	0x38
+ 966 01ba D5010000 		.4byte	0x1d5
+ 967 01be 0E       		.uleb128 0xe
+ 968 01bf 84020000 		.4byte	.LASF37
+ 969 01c3 01       		.byte	0x1
+ 970 01c4 3A       		.byte	0x3a
+ 971 01c5 FA000000 		.4byte	0xfa
+ 972 01c9 0E       		.uleb128 0xe
+ 973 01ca 23000000 		.4byte	.LASF38
+ 974 01ce 01       		.byte	0x1
+ 975 01cf 3B       		.byte	0x3b
+ 976 01d0 12010000 		.4byte	0x112
+ 977 01d4 00       		.byte	0
+ 978 01d5 0C       		.uleb128 0xc
+ 979 01d6 60020000 		.4byte	.LASF39
+ 980 01da 01       		.byte	0x1
+ 981 01db 3C       		.byte	0x3c
+ 982 01dc B6010000 		.4byte	0x1b6
+ 983 01e0 02       		.uleb128 0x2
+ 984 01e1 91       		.byte	0x91
+ 985 01e2 48       		.sleb128 -56
+ 986 01e3 00       		.byte	0
+ 987 01e4 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 21
+
+
+ 988              		.section	.debug_abbrev,"",%progbits
+ 989              	.Ldebug_abbrev0:
+ 990 0000 01       		.uleb128 0x1
+ 991 0001 11       		.uleb128 0x11
+ 992 0002 01       		.byte	0x1
+ 993 0003 25       		.uleb128 0x25
+ 994 0004 0E       		.uleb128 0xe
+ 995 0005 13       		.uleb128 0x13
+ 996 0006 0B       		.uleb128 0xb
+ 997 0007 03       		.uleb128 0x3
+ 998 0008 0E       		.uleb128 0xe
+ 999 0009 1B       		.uleb128 0x1b
+ 1000 000a 0E       		.uleb128 0xe
+ 1001 000b 55       		.uleb128 0x55
+ 1002 000c 17       		.uleb128 0x17
+ 1003 000d 11       		.uleb128 0x11
+ 1004 000e 01       		.uleb128 0x1
+ 1005 000f 10       		.uleb128 0x10
+ 1006 0010 17       		.uleb128 0x17
+ 1007 0011 00       		.byte	0
+ 1008 0012 00       		.byte	0
+ 1009 0013 02       		.uleb128 0x2
+ 1010 0014 24       		.uleb128 0x24
+ 1011 0015 00       		.byte	0
+ 1012 0016 0B       		.uleb128 0xb
+ 1013 0017 0B       		.uleb128 0xb
+ 1014 0018 3E       		.uleb128 0x3e
+ 1015 0019 0B       		.uleb128 0xb
+ 1016 001a 03       		.uleb128 0x3
+ 1017 001b 0E       		.uleb128 0xe
+ 1018 001c 00       		.byte	0
+ 1019 001d 00       		.byte	0
+ 1020 001e 03       		.uleb128 0x3
+ 1021 001f 16       		.uleb128 0x16
+ 1022 0020 00       		.byte	0
+ 1023 0021 03       		.uleb128 0x3
+ 1024 0022 0E       		.uleb128 0xe
+ 1025 0023 3A       		.uleb128 0x3a
+ 1026 0024 0B       		.uleb128 0xb
+ 1027 0025 3B       		.uleb128 0x3b
+ 1028 0026 0B       		.uleb128 0xb
+ 1029 0027 49       		.uleb128 0x49
+ 1030 0028 13       		.uleb128 0x13
+ 1031 0029 00       		.byte	0
+ 1032 002a 00       		.byte	0
+ 1033 002b 04       		.uleb128 0x4
+ 1034 002c 24       		.uleb128 0x24
+ 1035 002d 00       		.byte	0
+ 1036 002e 0B       		.uleb128 0xb
+ 1037 002f 0B       		.uleb128 0xb
+ 1038 0030 3E       		.uleb128 0x3e
+ 1039 0031 0B       		.uleb128 0xb
+ 1040 0032 03       		.uleb128 0x3
+ 1041 0033 08       		.uleb128 0x8
+ 1042 0034 00       		.byte	0
+ 1043 0035 00       		.byte	0
+ 1044 0036 05       		.uleb128 0x5
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 22
+
+
+ 1045 0037 04       		.uleb128 0x4
+ 1046 0038 01       		.byte	0x1
+ 1047 0039 0B       		.uleb128 0xb
+ 1048 003a 0B       		.uleb128 0xb
+ 1049 003b 3A       		.uleb128 0x3a
+ 1050 003c 0B       		.uleb128 0xb
+ 1051 003d 3B       		.uleb128 0x3b
+ 1052 003e 05       		.uleb128 0x5
+ 1053 003f 01       		.uleb128 0x1
+ 1054 0040 13       		.uleb128 0x13
+ 1055 0041 00       		.byte	0
+ 1056 0042 00       		.byte	0
+ 1057 0043 06       		.uleb128 0x6
+ 1058 0044 28       		.uleb128 0x28
+ 1059 0045 00       		.byte	0
+ 1060 0046 03       		.uleb128 0x3
+ 1061 0047 0E       		.uleb128 0xe
+ 1062 0048 1C       		.uleb128 0x1c
+ 1063 0049 0D       		.uleb128 0xd
+ 1064 004a 00       		.byte	0
+ 1065 004b 00       		.byte	0
+ 1066 004c 07       		.uleb128 0x7
+ 1067 004d 16       		.uleb128 0x16
+ 1068 004e 00       		.byte	0
+ 1069 004f 03       		.uleb128 0x3
+ 1070 0050 0E       		.uleb128 0xe
+ 1071 0051 3A       		.uleb128 0x3a
+ 1072 0052 0B       		.uleb128 0xb
+ 1073 0053 3B       		.uleb128 0x3b
+ 1074 0054 05       		.uleb128 0x5
+ 1075 0055 49       		.uleb128 0x49
+ 1076 0056 13       		.uleb128 0x13
+ 1077 0057 00       		.byte	0
+ 1078 0058 00       		.byte	0
+ 1079 0059 08       		.uleb128 0x8
+ 1080 005a 0F       		.uleb128 0xf
+ 1081 005b 00       		.byte	0
+ 1082 005c 0B       		.uleb128 0xb
+ 1083 005d 0B       		.uleb128 0xb
+ 1084 005e 49       		.uleb128 0x49
+ 1085 005f 13       		.uleb128 0x13
+ 1086 0060 00       		.byte	0
+ 1087 0061 00       		.byte	0
+ 1088 0062 09       		.uleb128 0x9
+ 1089 0063 2E       		.uleb128 0x2e
+ 1090 0064 01       		.byte	0x1
+ 1091 0065 3F       		.uleb128 0x3f
+ 1092 0066 19       		.uleb128 0x19
+ 1093 0067 03       		.uleb128 0x3
+ 1094 0068 0E       		.uleb128 0xe
+ 1095 0069 3A       		.uleb128 0x3a
+ 1096 006a 0B       		.uleb128 0xb
+ 1097 006b 3B       		.uleb128 0x3b
+ 1098 006c 0B       		.uleb128 0xb
+ 1099 006d 27       		.uleb128 0x27
+ 1100 006e 19       		.uleb128 0x19
+ 1101 006f 49       		.uleb128 0x49
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 23
+
+
+ 1102 0070 13       		.uleb128 0x13
+ 1103 0071 11       		.uleb128 0x11
+ 1104 0072 01       		.uleb128 0x1
+ 1105 0073 12       		.uleb128 0x12
+ 1106 0074 06       		.uleb128 0x6
+ 1107 0075 40       		.uleb128 0x40
+ 1108 0076 18       		.uleb128 0x18
+ 1109 0077 9642     		.uleb128 0x2116
+ 1110 0079 19       		.uleb128 0x19
+ 1111 007a 00       		.byte	0
+ 1112 007b 00       		.byte	0
+ 1113 007c 0A       		.uleb128 0xa
+ 1114 007d 05       		.uleb128 0x5
+ 1115 007e 00       		.byte	0
+ 1116 007f 03       		.uleb128 0x3
+ 1117 0080 08       		.uleb128 0x8
+ 1118 0081 3A       		.uleb128 0x3a
+ 1119 0082 0B       		.uleb128 0xb
+ 1120 0083 3B       		.uleb128 0x3b
+ 1121 0084 0B       		.uleb128 0xb
+ 1122 0085 49       		.uleb128 0x49
+ 1123 0086 13       		.uleb128 0x13
+ 1124 0087 02       		.uleb128 0x2
+ 1125 0088 18       		.uleb128 0x18
+ 1126 0089 00       		.byte	0
+ 1127 008a 00       		.byte	0
+ 1128 008b 0B       		.uleb128 0xb
+ 1129 008c 05       		.uleb128 0x5
+ 1130 008d 00       		.byte	0
+ 1131 008e 03       		.uleb128 0x3
+ 1132 008f 0E       		.uleb128 0xe
+ 1133 0090 3A       		.uleb128 0x3a
+ 1134 0091 0B       		.uleb128 0xb
+ 1135 0092 3B       		.uleb128 0x3b
+ 1136 0093 0B       		.uleb128 0xb
+ 1137 0094 49       		.uleb128 0x49
+ 1138 0095 13       		.uleb128 0x13
+ 1139 0096 02       		.uleb128 0x2
+ 1140 0097 18       		.uleb128 0x18
+ 1141 0098 00       		.byte	0
+ 1142 0099 00       		.byte	0
+ 1143 009a 0C       		.uleb128 0xc
+ 1144 009b 34       		.uleb128 0x34
+ 1145 009c 00       		.byte	0
+ 1146 009d 03       		.uleb128 0x3
+ 1147 009e 0E       		.uleb128 0xe
+ 1148 009f 3A       		.uleb128 0x3a
+ 1149 00a0 0B       		.uleb128 0xb
+ 1150 00a1 3B       		.uleb128 0x3b
+ 1151 00a2 0B       		.uleb128 0xb
+ 1152 00a3 49       		.uleb128 0x49
+ 1153 00a4 13       		.uleb128 0x13
+ 1154 00a5 02       		.uleb128 0x2
+ 1155 00a6 18       		.uleb128 0x18
+ 1156 00a7 00       		.byte	0
+ 1157 00a8 00       		.byte	0
+ 1158 00a9 0D       		.uleb128 0xd
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 24
+
+
+ 1159 00aa 17       		.uleb128 0x17
+ 1160 00ab 01       		.byte	0x1
+ 1161 00ac 0B       		.uleb128 0xb
+ 1162 00ad 0B       		.uleb128 0xb
+ 1163 00ae 3A       		.uleb128 0x3a
+ 1164 00af 0B       		.uleb128 0xb
+ 1165 00b0 3B       		.uleb128 0x3b
+ 1166 00b1 0B       		.uleb128 0xb
+ 1167 00b2 01       		.uleb128 0x1
+ 1168 00b3 13       		.uleb128 0x13
+ 1169 00b4 00       		.byte	0
+ 1170 00b5 00       		.byte	0
+ 1171 00b6 0E       		.uleb128 0xe
+ 1172 00b7 0D       		.uleb128 0xd
+ 1173 00b8 00       		.byte	0
+ 1174 00b9 03       		.uleb128 0x3
+ 1175 00ba 0E       		.uleb128 0xe
+ 1176 00bb 3A       		.uleb128 0x3a
+ 1177 00bc 0B       		.uleb128 0xb
+ 1178 00bd 3B       		.uleb128 0x3b
+ 1179 00be 0B       		.uleb128 0xb
+ 1180 00bf 49       		.uleb128 0x49
+ 1181 00c0 13       		.uleb128 0x13
+ 1182 00c1 00       		.byte	0
+ 1183 00c2 00       		.byte	0
+ 1184 00c3 00       		.byte	0
+ 1185              		.section	.debug_aranges,"",%progbits
+ 1186 0000 1C000000 		.4byte	0x1c
+ 1187 0004 0200     		.2byte	0x2
+ 1188 0006 00000000 		.4byte	.Ldebug_info0
+ 1189 000a 04       		.byte	0x4
+ 1190 000b 00       		.byte	0
+ 1191 000c 0000     		.2byte	0
+ 1192 000e 0000     		.2byte	0
+ 1193 0010 00000000 		.4byte	.LFB82
+ 1194 0014 F6040000 		.4byte	.LFE82-.LFB82
+ 1195 0018 00000000 		.4byte	0
+ 1196 001c 00000000 		.4byte	0
+ 1197              		.section	.debug_ranges,"",%progbits
+ 1198              	.Ldebug_ranges0:
+ 1199 0000 00000000 		.4byte	.LFB82
+ 1200 0004 F6040000 		.4byte	.LFE82
+ 1201 0008 00000000 		.4byte	0
+ 1202 000c 00000000 		.4byte	0
+ 1203              		.section	.debug_line,"",%progbits
+ 1204              	.Ldebug_line0:
+ 1205 0000 AC010000 		.section	.debug_str,"MS",%progbits,1
+ 1205      02004E01 
+ 1205      00000201 
+ 1205      FB0E0D00 
+ 1205      01010101 
+ 1206              	.LASF12:
+ 1207 0000 696E7436 		.ascii	"int64_t\000"
+ 1207      345F7400 
+ 1208              	.LASF35:
+ 1209 0008 68616C66 		.ascii	"half\000"
+ 1209      00
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 25
+
+
+ 1210              	.LASF20:
+ 1211 000d 41524D5F 		.ascii	"ARM_MATH_LENGTH_ERROR\000"
+ 1211      4D415448 
+ 1211      5F4C454E 
+ 1211      4754485F 
+ 1211      4552524F 
+ 1212              	.LASF38:
+ 1213 0023 666C6F61 		.ascii	"floatval\000"
+ 1213      7476616C 
+ 1213      00
+ 1214              	.LASF6:
+ 1215 002c 5F5F696E 		.ascii	"__int32_t\000"
+ 1215      7433325F 
+ 1215      7400
+ 1216              	.LASF42:
+ 1217 0036 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 1217      73657273 
+ 1217      5C666E65 
+ 1217      7665735C 
+ 1217      446F6375 
+ 1218 0063 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 1218      655F7370 
+ 1218      6565645F 
+ 1218      73656E73 
+ 1218      6F722E63 
+ 1219              	.LASF21:
+ 1220 007c 41524D5F 		.ascii	"ARM_MATH_SIZE_MISMATCH\000"
+ 1220      4D415448 
+ 1220      5F53495A 
+ 1220      455F4D49 
+ 1220      534D4154 
+ 1221              	.LASF29:
+ 1222 0093 704F7574 		.ascii	"pOut\000"
+ 1222      00
+ 1223              	.LASF36:
+ 1224 0098 74656D70 		.ascii	"temp_float1\000"
+ 1224      5F666C6F 
+ 1224      61743100 
+ 1225              	.LASF26:
+ 1226 00a4 7133315F 		.ascii	"q31_t\000"
+ 1226      7400
+ 1227              	.LASF1:
+ 1228 00aa 756E7369 		.ascii	"unsigned char\000"
+ 1228      676E6564 
+ 1228      20636861 
+ 1228      7200
+ 1229              	.LASF5:
+ 1230 00b8 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1230      20756E73 
+ 1230      69676E65 
+ 1230      6420696E 
+ 1230      7400
+ 1231              	.LASF3:
+ 1232 00ca 73686F72 		.ascii	"short unsigned int\000"
+ 1232      7420756E 
+ 1232      7369676E 
+ 1232      65642069 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 26
+
+
+ 1232      6E7400
+ 1233              	.LASF24:
+ 1234 00dd 41524D5F 		.ascii	"ARM_MATH_TEST_FAILURE\000"
+ 1234      4D415448 
+ 1234      5F544553 
+ 1234      545F4641 
+ 1234      494C5552 
+ 1235              	.LASF7:
+ 1236 00f3 5F5F696E 		.ascii	"__int64_t\000"
+ 1236      7436345F 
+ 1236      7400
+ 1237              	.LASF15:
+ 1238 00fd 646F7562 		.ascii	"double\000"
+ 1238      6C6500
+ 1239              	.LASF28:
+ 1240 0104 666C6F61 		.ascii	"float32_t\000"
+ 1240      7433325F 
+ 1240      7400
+ 1241              	.LASF19:
+ 1242 010e 41524D5F 		.ascii	"ARM_MATH_ARGUMENT_ERROR\000"
+ 1242      4D415448 
+ 1242      5F415247 
+ 1242      554D454E 
+ 1242      545F4552 
+ 1243              	.LASF33:
+ 1244 0126 76617231 		.ascii	"var1\000"
+ 1244      00
+ 1245              	.LASF41:
+ 1246 012b 536F7572 		.ascii	"Source\\FastMathFunctions\\arm_sqrt_q31.c\000"
+ 1246      63655C46 
+ 1246      6173744D 
+ 1246      61746846 
+ 1246      756E6374 
+ 1247              	.LASF10:
+ 1248 0153 756E7369 		.ascii	"unsigned int\000"
+ 1248      676E6564 
+ 1248      20696E74 
+ 1248      00
+ 1249              	.LASF9:
+ 1250 0160 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1250      206C6F6E 
+ 1250      6720756E 
+ 1250      7369676E 
+ 1250      65642069 
+ 1251              	.LASF40:
+ 1252 0177 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 1252      4320342E 
+ 1252      392E3320 
+ 1252      32303135 
+ 1252      30333033 
+ 1253 01aa 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 1253      20726576 
+ 1253      6973696F 
+ 1253      6E203232 
+ 1253      31323230 
+ 1254 01dd 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 1254      30202D66 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 27
+
+
+ 1254      66756E63 
+ 1254      74696F6E 
+ 1254      2D736563 
+ 1255              	.LASF27:
+ 1256 0209 7136335F 		.ascii	"q63_t\000"
+ 1256      7400
+ 1257              	.LASF30:
+ 1258 020f 6E756D62 		.ascii	"number\000"
+ 1258      657200
+ 1259              	.LASF11:
+ 1260 0216 696E7433 		.ascii	"int32_t\000"
+ 1260      325F7400 
+ 1261              	.LASF13:
+ 1262 021e 73697A65 		.ascii	"sizetype\000"
+ 1262      74797065 
+ 1262      00
+ 1263              	.LASF32:
+ 1264 0227 62697473 		.ascii	"bits_val1\000"
+ 1264      5F76616C 
+ 1264      3100
+ 1265              	.LASF8:
+ 1266 0231 6C6F6E67 		.ascii	"long long int\000"
+ 1266      206C6F6E 
+ 1266      6720696E 
+ 1266      7400
+ 1267              	.LASF16:
+ 1268 023f 666C6F61 		.ascii	"float\000"
+ 1268      7400
+ 1269              	.LASF14:
+ 1270 0245 63686172 		.ascii	"char\000"
+ 1270      00
+ 1271              	.LASF22:
+ 1272 024a 41524D5F 		.ascii	"ARM_MATH_NANINF\000"
+ 1272      4D415448 
+ 1272      5F4E414E 
+ 1272      494E4600 
+ 1273              	.LASF31:
+ 1274 025a 74656D70 		.ascii	"temp1\000"
+ 1274      3100
+ 1275              	.LASF39:
+ 1276 0260 74656D70 		.ascii	"tempconv\000"
+ 1276      636F6E76 
+ 1276      00
+ 1277              	.LASF18:
+ 1278 0269 41524D5F 		.ascii	"ARM_MATH_SUCCESS\000"
+ 1278      4D415448 
+ 1278      5F535543 
+ 1278      43455353 
+ 1278      00
+ 1279              	.LASF2:
+ 1280 027a 73686F72 		.ascii	"short int\000"
+ 1280      7420696E 
+ 1280      7400
+ 1281              	.LASF37:
+ 1282 0284 66726163 		.ascii	"fracval\000"
+ 1282      76616C00 
+ 1283              	.LASF4:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccGVGOQg.s 			page 28
+
+
+ 1284 028c 6C6F6E67 		.ascii	"long int\000"
+ 1284      20696E74 
+ 1284      00
+ 1285              	.LASF17:
+ 1286 0295 6C6F6E67 		.ascii	"long double\000"
+ 1286      20646F75 
+ 1286      626C6500 
+ 1287              	.LASF43:
+ 1288 02a1 61726D5F 		.ascii	"arm_sqrt_q31\000"
+ 1288      73717274 
+ 1288      5F713331 
+ 1288      00
+ 1289              	.LASF0:
+ 1290 02ae 7369676E 		.ascii	"signed char\000"
+ 1290      65642063 
+ 1290      68617200 
+ 1291              	.LASF34:
+ 1292 02ba 7369676E 		.ascii	"signBits1\000"
+ 1292      42697473 
+ 1292      3100
+ 1293              	.LASF25:
+ 1294 02c4 61726D5F 		.ascii	"arm_status\000"
+ 1294      73746174 
+ 1294      757300
+ 1295              	.LASF23:
+ 1296 02cf 41524D5F 		.ascii	"ARM_MATH_SINGULAR\000"
+ 1296      4D415448 
+ 1296      5F53494E 
+ 1296      47554C41 
+ 1296      5200
+ 1297              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

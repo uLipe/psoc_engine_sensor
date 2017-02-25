@@ -1,0 +1,1572 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_fir_interpolate_f32.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_fmul
+  18              		.global	__aeabi_fadd
+  19              		.section	.text.arm_fir_interpolate_f32,"ax",%progbits
+  20              		.align	2
+  21              		.global	arm_fir_interpolate_f32
+  22              		.code	16
+  23              		.thumb_func
+  24              		.type	arm_fir_interpolate_f32, %function
+  25              	arm_fir_interpolate_f32:
+  26              	.LFB82:
+  27              		.file 1 "Source\\FilteringFunctions\\arm_fir_interpolate_f32.c"
+   1:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Title:        arm_fir_interpolate_f32.c
+   4:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Description:  Floating-point FIR interpolation sequences
+   5:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+   6:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+   9:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** /*
+  12:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  14:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  16:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  20:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  22:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  */
+  28:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+  29:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** #include "arm_math.h"
+  30:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 2
+
+
+  31:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** /**
+  32:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @defgroup FIR_Interpolate Finite Impulse Response (FIR) Interpolator
+  33:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  34:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * These functions combine an upsampler (zero stuffer) and an FIR filter.
+  35:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * They are used in multirate systems for increasing the sample rate of a signal without introducin
+  36:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Conceptually, the functions are equivalent to the block diagram below:
+  37:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \image html FIRInterpolator.gif "Components included in the FIR Interpolator functions"
+  38:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * After upsampling by a factor of <code>L</code>, the signal should be filtered by a lowpass filte
+  39:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * cutoff frequency of <code>1/L</code> in order to eliminate high frequency copies of the spectrum
+  40:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The user of the function is responsible for providing the filter coefficients.
+  41:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  42:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The FIR interpolator functions provided in the CMSIS DSP Library combine the upsampler and FIR f
+  43:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The upsampler inserts <code>L-1</code> zeros between each sample.
+  44:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Instead of multiplying by these zero values, the FIR filter is designed to skip them.
+  45:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * This leads to an efficient implementation without any wasted effort.
+  46:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The functions operate on blocks of input and output data.
+  47:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <code>pSrc</code> points to an array of <code>blockSize</code> input values and
+  48:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <code>pDst</code> points to an array of <code>blockSize*L</code> output values.
+  49:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  50:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The library provides separate functions for Q15, Q31, and floating-point data types.
+  51:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  52:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par Algorithm:
+  53:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The functions use a polyphase filter structure:
+  54:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <pre>
+  55:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *    y[n] = b[0] * x[n] + b[L]   * x[n-1] + ... + b[L*(phaseLength-1)] * x[n-phaseLength+1]
+  56:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *    y[n+1] = b[1] * x[n] + b[L+1] * x[n-1] + ... + b[L*(phaseLength-1)+1] * x[n-phaseLength+1]
+  57:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *    ...
+  58:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *    y[n+(L-1)] = b[L-1] * x[n] + b[2*L-1] * x[n-1] + ....+ b[L*(phaseLength-1)+(L-1)] * x[n-phase
+  59:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * </pre>
+  60:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * This approach is more efficient than straightforward upsample-then-filter algorithms.
+  61:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * With this method the computation is reduced by a factor of <code>1/L</code> when compared to usi
+  62:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par
+  63:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <code>pCoeffs</code> points to a coefficient array of size <code>numTaps</code>.
+  64:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <code>numTaps</code> must be a multiple of the interpolation factor <code>L</code> and this is c
+  65:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * initialization functions.
+  66:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Internally, the function divides the FIR filter's impulse response into shorter filters of lengt
+  67:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <code>phaseLength=numTaps/L</code>.
+  68:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Coefficients are stored in time reversed order.
+  69:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par
+  70:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <pre>
+  71:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *    {b[numTaps-1], b[numTaps-2], b[N-2], ..., b[1], b[0]}
+  72:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * </pre>
+  73:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par
+  74:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <code>pState</code> points to a state array of size <code>blockSize + phaseLength - 1</code>.
+  75:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Samples in the state buffer are stored in the order:
+  76:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par
+  77:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <pre>
+  78:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *    {x[n-phaseLength+1], x[n-phaseLength], x[n-phaseLength-1], x[n-phaseLength-2]....x[0], x[1], 
+  79:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * </pre>
+  80:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The state variables are updated after each block of data is processed, the coefficients are unto
+  81:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  82:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par Instance Structure
+  83:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The coefficients and state variables for a filter are stored together in an instance data struct
+  84:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * A separate instance structure must be defined for each filter.
+  85:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Coefficient arrays may be shared among several instances while state variable array should be al
+  86:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * There are separate instance structure declarations for each of the 3 supported data types.
+  87:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 3
+
+
+  88:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par Initialization Functions
+  89:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * There is also an associated initialization function for each data type.
+  90:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The initialization function performs the following operations:
+  91:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * - Sets the values of the internal structure fields.
+  92:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * - Zeros out the values in the state buffer.
+  93:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * - Checks to make sure that the length of the filter is a multiple of the interpolation factor.
+  94:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * To do this manually without calling the init function, assign the follow subfields of the instan
+  95:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * L (interpolation factor), pCoeffs, phaseLength (numTaps / L), pState. Also set all of the values
+  96:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+  97:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par
+  98:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Use of the initialization function is optional.
+  99:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * However, if the initialization function is used, then the instance structure cannot be placed in
+ 100:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * To place an instance structure into a const data section, the instance structure must be manuall
+ 101:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * The code below statically initializes each of the 3 different data type filter instance structur
+ 102:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <pre>
+ 103:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * arm_fir_interpolate_instance_f32 S = {L, phaseLength, pCoeffs, pState};
+ 104:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * arm_fir_interpolate_instance_q31 S = {L, phaseLength, pCoeffs, pState};
+ 105:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * arm_fir_interpolate_instance_q15 S = {L, phaseLength, pCoeffs, pState};
+ 106:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * </pre>
+ 107:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * where <code>L</code> is the interpolation factor; <code>phaseLength=numTaps/L</code> is the
+ 108:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * length of each of the shorter FIR filters used internally,
+ 109:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <code>pCoeffs</code> is the address of the coefficient buffer;
+ 110:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * <code>pState</code> is the address of the state buffer.
+ 111:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Be sure to set the values in the state buffer to zeros when doing static initialization.
+ 112:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  *
+ 113:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * \par Fixed-Point Behavior
+ 114:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Care must be taken when using the fixed-point versions of the FIR interpolate filter functions.
+ 115:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * In particular, the overflow and saturation behavior of the accumulator used in each function mus
+ 116:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * Refer to the function specific documentation below for usage guidelines.
+ 117:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  */
+ 118:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 119:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** /**
+ 120:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @addtogroup FIR_Interpolate
+ 121:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @{
+ 122:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  */
+ 123:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 124:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** /**
+ 125:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @brief Processing function for the floating-point FIR interpolator.
+ 126:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @param[in] *S        points to an instance of the floating-point FIR interpolator structure.
+ 127:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @param[in] *pSrc     points to the block of input data.
+ 128:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @param[out] *pDst    points to the block of output data.
+ 129:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @param[in] blockSize number of input samples to process per call.
+ 130:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  * @return none.
+ 131:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****  */
+ 132:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** #if defined (ARM_MATH_DSP)
+ 133:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 134:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+ 135:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 136:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** void arm_fir_interpolate_f32(
+ 137:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   const arm_fir_interpolate_instance_f32 * S,
+ 138:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t * pSrc,
+ 139:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t * pDst,
+ 140:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   uint32_t blockSize)
+ 141:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** {
+ 142:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t *pState = S->pState;                 /* State pointer */
+ 143:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t *pCoeffs = S->pCoeffs;               /* Coefficient pointer */
+ 144:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t *pStateCurnt;                        /* Points to the current sample of the state */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 4
+
+
+ 145:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t *ptr1, *ptr2;                        /* Temporary pointers for state and coefficient bu
+ 146:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t sum0;                                /* Accumulators */
+ 147:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t x0, c0;                              /* Temporary variables to hold state and coefficie
+ 148:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   uint32_t i, blkCnt, j;                         /* Loop counters */
+ 149:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   uint16_t phaseLen = S->phaseLength, tapCnt;    /* Length of each polyphase filter component */
+ 150:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t acc0, acc1, acc2, acc3;
+ 151:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t x1, x2, x3;
+ 152:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   uint32_t blkCntN4;
+ 153:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t c1, c2, c3;
+ 154:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 155:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* S->pState buffer contains previous frame (phaseLen - 1) samples */
+ 156:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* pStateCurnt points to the location where the new input data should be written */
+ 157:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   pStateCurnt = S->pState + (phaseLen - 1u);
+ 158:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 159:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Initialise  blkCnt */
+ 160:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   blkCnt = blockSize / 4;
+ 161:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   blkCntN4 = blockSize - (4 * blkCnt);
+ 162:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 163:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Samples loop unrolled by 4 */
+ 164:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   while (blkCnt > 0u)
+ 165:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   {
+ 166:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Copy new input sample into the state buffer */
+ 167:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pSrc++;
+ 168:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pSrc++;
+ 169:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pSrc++;
+ 170:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pSrc++;
+ 171:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 172:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Address modifier index of coefficient buffer */
+ 173:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     j = 1u;
+ 174:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 175:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Loop over the Interpolation factor. */
+ 176:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     i = (S->L);
+ 177:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 178:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     while (i > 0u)
+ 179:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     {
+ 180:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Set accumulator to zero */
+ 181:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       acc0 = 0.0f;
+ 182:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       acc1 = 0.0f;
+ 183:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       acc2 = 0.0f;
+ 184:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       acc3 = 0.0f;
+ 185:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 186:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Initialize state pointer */
+ 187:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       ptr1 = pState;
+ 188:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 189:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Initialize coefficient pointer */
+ 190:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       ptr2 = pCoeffs + (S->L - j);
+ 191:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 192:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Loop over the polyPhase length. Unroll by a factor of 4.
+ 193:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****        ** Repeat until we've computed numTaps-(4*S->L) coefficients. */
+ 194:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       tapCnt = phaseLen >> 2u;
+ 195:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 196:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       x0 = *(ptr1++);
+ 197:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       x1 = *(ptr1++);
+ 198:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       x2 = *(ptr1++);
+ 199:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 200:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       while (tapCnt > 0u)
+ 201:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       {
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 5
+
+
+ 202:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 203:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 204:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x3 = *(ptr1++);
+ 205:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 206:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ 207:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c0 = *(ptr2);
+ 208:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 209:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 210:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc0 += x0 * c0;
+ 211:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc1 += x1 * c0;
+ 212:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc2 += x2 * c0;
+ 213:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc3 += x3 * c0;
+ 214:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 215:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ 216:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c1 = *(ptr2 + S->L);
+ 217:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 218:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 219:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x0 = *(ptr1++);
+ 220:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 221:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 222:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc0 += x1 * c1;
+ 223:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc1 += x2 * c1;
+ 224:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc2 += x3 * c1;
+ 225:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc3 += x0 * c1;
+ 226:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 227:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ 228:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c2 = *(ptr2 + S->L * 2);
+ 229:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 230:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 231:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x1 = *(ptr1++);
+ 232:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 233:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 234:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc0 += x2 * c2;
+ 235:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc1 += x3 * c2;
+ 236:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc2 += x0 * c2;
+ 237:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc3 += x1 * c2;
+ 238:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 239:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ 240:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c3 = *(ptr2 + S->L * 3);
+ 241:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 242:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 243:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x2 = *(ptr1++);
+ 244:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 245:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 246:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc0 += x3 * c3;
+ 247:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc1 += x0 * c3;
+ 248:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc2 += x1 * c3;
+ 249:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc3 += x2 * c3;
+ 250:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 251:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 252:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Upsampling is done by stuffing L-1 zeros between each sample.
+ 253:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****          * So instead of multiplying zeros with coefficients,
+ 254:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****          * Increment the coefficient pointer by interpolation factor times. */
+ 255:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         ptr2 += 4 * S->L;
+ 256:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 257:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Decrement the loop counter */
+ 258:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         tapCnt--;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 6
+
+
+ 259:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       }
+ 260:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 261:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* If the polyPhase length is not a multiple of 4, compute the remaining filter taps */
+ 262:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       tapCnt = phaseLen % 0x4u;
+ 263:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 264:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       while (tapCnt > 0u)
+ 265:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       {
+ 266:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 267:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 268:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x3 = *(ptr1++);
+ 269:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 270:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ 271:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c0 = *(ptr2);
+ 272:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 273:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 274:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc0 += x0 * c0;
+ 275:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc1 += x1 * c0;
+ 276:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc2 += x2 * c0;
+ 277:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         acc3 += x3 * c0;
+ 278:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 279:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Increment the coefficient pointer by interpolation factor times. */
+ 280:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         ptr2 += S->L;
+ 281:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 282:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* update states for next sample processing */
+ 283:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x0 = x1;
+ 284:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x1 = x2;
+ 285:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x2 = x3;
+ 286:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 287:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Decrement the loop counter */
+ 288:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         tapCnt--;
+ 289:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       }
+ 290:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 291:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* The result is in the accumulator, store in the destination buffer. */
+ 292:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       *pDst = acc0;
+ 293:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       *(pDst + S->L) = acc1;
+ 294:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       *(pDst + 2 * S->L) = acc2;
+ 295:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       *(pDst + 3 * S->L) = acc3;
+ 296:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 297:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       pDst++;
+ 298:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 299:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Increment the address modifier index of coefficient buffer */
+ 300:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       j++;
+ 301:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 302:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Decrement the loop counter */
+ 303:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       i--;
+ 304:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     }
+ 305:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 306:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Advance the state pointer by 1
+ 307:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****      * to process the next group of interpolation factor number samples */
+ 308:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     pState = pState + 4;
+ 309:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 310:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     pDst += S->L * 3;
+ 311:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 312:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Decrement the loop counter */
+ 313:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     blkCnt--;
+ 314:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   }
+ 315:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 7
+
+
+ 316:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+ 317:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****    ** No loop unrolling is used. */
+ 318:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 319:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   while (blkCntN4 > 0u)
+ 320:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   {
+ 321:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Copy new input sample into the state buffer */
+ 322:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pSrc++;
+ 323:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 324:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Address modifier index of coefficient buffer */
+ 325:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     j = 1u;
+ 326:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 327:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Loop over the Interpolation factor. */
+ 328:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     i = S->L;
+ 329:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     while (i > 0u)
+ 330:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     {
+ 331:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Set accumulator to zero */
+ 332:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       sum0 = 0.0f;
+ 333:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 334:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Initialize state pointer */
+ 335:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       ptr1 = pState;
+ 336:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 337:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Initialize coefficient pointer */
+ 338:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       ptr2 = pCoeffs + (S->L - j);
+ 339:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 340:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Loop over the polyPhase length. Unroll by a factor of 4.
+ 341:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****        ** Repeat until we've computed numTaps-(4*S->L) coefficients. */
+ 342:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       tapCnt = phaseLen >> 2u;
+ 343:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       while (tapCnt > 0u)
+ 344:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       {
+ 345:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 346:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ 347:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c0 = *(ptr2);
+ 348:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 349:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Upsampling is done by stuffing L-1 zeros between each sample.
+ 350:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****          * So instead of multiplying zeros with coefficients,
+ 351:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****          * Increment the coefficient pointer by interpolation factor times. */
+ 352:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         ptr2 += S->L;
+ 353:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 354:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 355:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x0 = *(ptr1++);
+ 356:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 357:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 358:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         sum0 += x0 * c0;
+ 359:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 360:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ 361:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c0 = *(ptr2);
+ 362:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 363:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Increment the coefficient pointer by interpolation factor times. */
+ 364:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         ptr2 += S->L;
+ 365:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 366:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 367:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x0 = *(ptr1++);
+ 368:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 369:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 370:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         sum0 += x0 * c0;
+ 371:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 372:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 8
+
+
+ 373:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c0 = *(ptr2);
+ 374:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 375:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Increment the coefficient pointer by interpolation factor times. */
+ 376:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         ptr2 += S->L;
+ 377:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 378:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 379:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x0 = *(ptr1++);
+ 380:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 381:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 382:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         sum0 += x0 * c0;
+ 383:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 384:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the coefficient */
+ 385:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         c0 = *(ptr2);
+ 386:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 387:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Increment the coefficient pointer by interpolation factor times. */
+ 388:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         ptr2 += S->L;
+ 389:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 390:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Read the input sample */
+ 391:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         x0 = *(ptr1++);
+ 392:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 393:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 394:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         sum0 += x0 * c0;
+ 395:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 396:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Decrement the loop counter */
+ 397:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         tapCnt--;
+ 398:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       }
+ 399:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 400:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* If the polyPhase length is not a multiple of 4, compute the remaining filter taps */
+ 401:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       tapCnt = phaseLen % 0x4u;
+ 402:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 403:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       while (tapCnt > 0u)
+ 404:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       {
+ 405:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 406:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         sum0 += *(ptr1++) * (*ptr2);
+ 407:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 408:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Increment the coefficient pointer by interpolation factor times. */
+ 409:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         ptr2 += S->L;
+ 410:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 411:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Decrement the loop counter */
+ 412:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         tapCnt--;
+ 413:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       }
+ 414:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 415:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* The result is in the accumulator, store in the destination buffer. */
+ 416:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       *pDst++ = sum0;
+ 417:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 418:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Increment the address modifier index of coefficient buffer */
+ 419:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       j++;
+ 420:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 421:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Decrement the loop counter */
+ 422:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       i--;
+ 423:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     }
+ 424:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 425:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Advance the state pointer by 1
+ 426:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****      * to process the next group of interpolation factor number samples */
+ 427:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     pState = pState + 1;
+ 428:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 429:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Decrement the loop counter */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 9
+
+
+ 430:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     blkCntN4--;
+ 431:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   }
+ 432:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 433:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Processing is complete.
+ 434:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****    ** Now copy the last phaseLen - 1 samples to the satrt of the state buffer.
+ 435:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****    ** This prepares the state buffer for the next function call. */
+ 436:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 437:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Points to the start of the state buffer */
+ 438:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   pStateCurnt = S->pState;
+ 439:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 440:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   tapCnt = (phaseLen - 1u) >> 2u;
+ 441:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 442:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* copy data */
+ 443:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   while (tapCnt > 0u)
+ 444:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   {
+ 445:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pState++;
+ 446:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pState++;
+ 447:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pState++;
+ 448:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pState++;
+ 449:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 450:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Decrement the loop counter */
+ 451:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     tapCnt--;
+ 452:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   }
+ 453:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 454:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   tapCnt = (phaseLen - 1u) % 0x04u;
+ 455:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 456:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* copy data */
+ 457:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   while (tapCnt > 0u)
+ 458:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   {
+ 459:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pState++;
+ 460:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 461:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Decrement the loop counter */
+ 462:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     tapCnt--;
+ 463:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   }
+ 464:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** }
+ 465:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 466:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** #else
+ 467:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 468:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Run the below code for Cortex-M0 */
+ 469:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 470:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** void arm_fir_interpolate_f32(
+ 471:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   const arm_fir_interpolate_instance_f32 * S,
+ 472:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t * pSrc,
+ 473:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t * pDst,
+ 474:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   uint32_t blockSize)
+ 475:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** {
+  28              		.loc 1 475 0
+  29              		.cfi_startproc
+  30 0000 80B5     		push	{r7, lr}
+  31              		.cfi_def_cfa_offset 8
+  32              		.cfi_offset 7, -8
+  33              		.cfi_offset 14, -4
+  34 0002 8EB0     		sub	sp, sp, #56
+  35              		.cfi_def_cfa_offset 64
+  36 0004 00AF     		add	r7, sp, #0
+  37              		.cfi_def_cfa_register 7
+  38 0006 F860     		str	r0, [r7, #12]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 10
+
+
+  39 0008 B960     		str	r1, [r7, #8]
+  40 000a 7A60     		str	r2, [r7, #4]
+  41 000c 3B60     		str	r3, [r7]
+ 476:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t *pState = S->pState;                 /* State pointer */
+  42              		.loc 1 476 0
+  43 000e FB68     		ldr	r3, [r7, #12]
+  44 0010 9B68     		ldr	r3, [r3, #8]
+  45 0012 7B63     		str	r3, [r7, #52]
+ 477:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t *pCoeffs = S->pCoeffs;               /* Coefficient pointer */
+  46              		.loc 1 477 0
+  47 0014 FB68     		ldr	r3, [r7, #12]
+  48 0016 5B68     		ldr	r3, [r3, #4]
+  49 0018 7B61     		str	r3, [r7, #20]
+ 478:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t *pStateCurnt;                        /* Points to the current sample of the state */
+ 479:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t *ptr1, *ptr2;                        /* Temporary pointers for state and coefficient bu
+ 480:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 481:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 482:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   float32_t sum;                                 /* Accumulator */
+ 483:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   uint32_t i, blkCnt;                            /* Loop counters */
+ 484:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   uint16_t phaseLen = S->phaseLength, tapCnt;    /* Length of each polyphase filter component */
+  50              		.loc 1 484 0
+  51 001a 1223     		mov	r3, #18
+  52 001c FB18     		add	r3, r7, r3
+  53 001e FA68     		ldr	r2, [r7, #12]
+  54 0020 5288     		ldrh	r2, [r2, #2]
+  55 0022 1A80     		strh	r2, [r3]
+ 485:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 486:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 487:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* S->pState buffer contains previous frame (phaseLen - 1) samples */
+ 488:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* pStateCurnt points to the location where the new input data should be written */
+ 489:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   pStateCurnt = S->pState + (phaseLen - 1u);
+  56              		.loc 1 489 0
+  57 0024 FB68     		ldr	r3, [r7, #12]
+  58 0026 9A68     		ldr	r2, [r3, #8]
+  59 0028 1223     		mov	r3, #18
+  60 002a FB18     		add	r3, r7, r3
+  61 002c 1B88     		ldrh	r3, [r3]
+  62 002e 4049     		ldr	r1, .L10
+  63 0030 8C46     		mov	ip, r1
+  64 0032 6344     		add	r3, r3, ip
+  65 0034 9B00     		lsl	r3, r3, #2
+  66 0036 D318     		add	r3, r2, r3
+  67 0038 3B63     		str	r3, [r7, #48]
+ 490:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 491:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Total number of intput samples */
+ 492:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   blkCnt = blockSize;
+  68              		.loc 1 492 0
+  69 003a 3B68     		ldr	r3, [r7]
+  70 003c FB61     		str	r3, [r7, #28]
+ 493:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 494:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Loop over the blockSize. */
+ 495:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   while (blkCnt > 0u)
+  71              		.loc 1 495 0
+  72 003e 52E0     		b	.L2
+  73              	.L7:
+ 496:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   {
+ 497:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Copy new input sample into the state buffer */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 11
+
+
+ 498:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pSrc++;
+  74              		.loc 1 498 0
+  75 0040 3B6B     		ldr	r3, [r7, #48]
+  76 0042 1A1D     		add	r2, r3, #4
+  77 0044 3A63     		str	r2, [r7, #48]
+  78 0046 BA68     		ldr	r2, [r7, #8]
+  79 0048 111D     		add	r1, r2, #4
+  80 004a B960     		str	r1, [r7, #8]
+  81 004c 1268     		ldr	r2, [r2]
+  82 004e 1A60     		str	r2, [r3]
+ 499:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 500:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Loop over the Interpolation factor. */
+ 501:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     i = S->L;
+  83              		.loc 1 501 0
+  84 0050 FB68     		ldr	r3, [r7, #12]
+  85 0052 1B78     		ldrb	r3, [r3]
+  86 0054 3B62     		str	r3, [r7, #32]
+ 502:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 503:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     while (i > 0u)
+  87              		.loc 1 503 0
+  88 0056 3DE0     		b	.L3
+  89              	.L6:
+ 504:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     {
+ 505:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Set accumulator to zero */
+ 506:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       sum = 0.0f;
+  90              		.loc 1 506 0
+  91 0058 0023     		mov	r3, #0
+  92 005a 7B62     		str	r3, [r7, #36]
+ 507:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 508:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Initialize state pointer */
+ 509:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       ptr1 = pState;
+  93              		.loc 1 509 0
+  94 005c 7B6B     		ldr	r3, [r7, #52]
+  95 005e FB62     		str	r3, [r7, #44]
+ 510:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 511:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Initialize coefficient pointer */
+ 512:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       ptr2 = pCoeffs + (i - 1u);
+  96              		.loc 1 512 0
+  97 0060 3B6A     		ldr	r3, [r7, #32]
+  98 0062 334A     		ldr	r2, .L10
+  99 0064 9446     		mov	ip, r2
+ 100 0066 6344     		add	r3, r3, ip
+ 101 0068 9B00     		lsl	r3, r3, #2
+ 102 006a 7A69     		ldr	r2, [r7, #20]
+ 103 006c D318     		add	r3, r2, r3
+ 104 006e BB62     		str	r3, [r7, #40]
+ 513:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 514:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Loop over the polyPhase length */
+ 515:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       tapCnt = phaseLen;
+ 105              		.loc 1 515 0
+ 106 0070 1A23     		mov	r3, #26
+ 107 0072 FB18     		add	r3, r7, r3
+ 108 0074 1222     		mov	r2, #18
+ 109 0076 BA18     		add	r2, r7, r2
+ 110 0078 1288     		ldrh	r2, [r2]
+ 111 007a 1A80     		strh	r2, [r3]
+ 516:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 12
+
+
+ 517:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       while (tapCnt > 0u)
+ 112              		.loc 1 517 0
+ 113 007c 1DE0     		b	.L4
+ 114              	.L5:
+ 518:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       {
+ 519:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Perform the multiply-accumulate */
+ 520:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         sum += *ptr1++ * *ptr2;
+ 115              		.loc 1 520 0
+ 116 007e FB6A     		ldr	r3, [r7, #44]
+ 117 0080 1A1D     		add	r2, r3, #4
+ 118 0082 FA62     		str	r2, [r7, #44]
+ 119 0084 1A68     		ldr	r2, [r3]
+ 120 0086 BB6A     		ldr	r3, [r7, #40]
+ 121 0088 1B68     		ldr	r3, [r3]
+ 122 008a 101C     		add	r0, r2, #0
+ 123 008c 191C     		add	r1, r3, #0
+ 124 008e FFF7FEFF 		bl	__aeabi_fmul
+ 125 0092 031C     		add	r3, r0, #0
+ 126 0094 786A     		ldr	r0, [r7, #36]
+ 127 0096 191C     		add	r1, r3, #0
+ 128 0098 FFF7FEFF 		bl	__aeabi_fadd
+ 129 009c 031C     		add	r3, r0, #0
+ 130 009e 7B62     		str	r3, [r7, #36]
+ 521:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 522:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Increment the coefficient pointer by interpolation factor times. */
+ 523:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         ptr2 += S->L;
+ 131              		.loc 1 523 0
+ 132 00a0 FB68     		ldr	r3, [r7, #12]
+ 133 00a2 1B78     		ldrb	r3, [r3]
+ 134 00a4 9B00     		lsl	r3, r3, #2
+ 135 00a6 BA6A     		ldr	r2, [r7, #40]
+ 136 00a8 D318     		add	r3, r2, r3
+ 137 00aa BB62     		str	r3, [r7, #40]
+ 524:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 525:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         /* Decrement the loop counter */
+ 526:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****         tapCnt--;
+ 138              		.loc 1 526 0
+ 139 00ac 1A23     		mov	r3, #26
+ 140 00ae FB18     		add	r3, r7, r3
+ 141 00b0 1A88     		ldrh	r2, [r3]
+ 142 00b2 1A23     		mov	r3, #26
+ 143 00b4 FB18     		add	r3, r7, r3
+ 144 00b6 013A     		sub	r2, r2, #1
+ 145 00b8 1A80     		strh	r2, [r3]
+ 146              	.L4:
+ 517:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       {
+ 147              		.loc 1 517 0
+ 148 00ba 1A23     		mov	r3, #26
+ 149 00bc FB18     		add	r3, r7, r3
+ 150 00be 1B88     		ldrh	r3, [r3]
+ 151 00c0 002B     		cmp	r3, #0
+ 152 00c2 DCD1     		bne	.L5
+ 527:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       }
+ 528:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 529:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* The result is in the accumulator, store in the destination buffer. */
+ 530:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       *pDst++ = sum;
+ 153              		.loc 1 530 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 13
+
+
+ 154 00c4 7B68     		ldr	r3, [r7, #4]
+ 155 00c6 1A1D     		add	r2, r3, #4
+ 156 00c8 7A60     		str	r2, [r7, #4]
+ 157 00ca 7A6A     		ldr	r2, [r7, #36]
+ 158 00cc 1A60     		str	r2, [r3]
+ 531:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 532:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       /* Decrement the loop counter */
+ 533:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****       i--;
+ 159              		.loc 1 533 0
+ 160 00ce 3B6A     		ldr	r3, [r7, #32]
+ 161 00d0 013B     		sub	r3, r3, #1
+ 162 00d2 3B62     		str	r3, [r7, #32]
+ 163              	.L3:
+ 503:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     {
+ 164              		.loc 1 503 0
+ 165 00d4 3B6A     		ldr	r3, [r7, #32]
+ 166 00d6 002B     		cmp	r3, #0
+ 167 00d8 BED1     		bne	.L6
+ 534:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     }
+ 535:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 536:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Advance the state pointer by 1
+ 537:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****      * to process the next group of interpolation factor number samples */
+ 538:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     pState = pState + 1;
+ 168              		.loc 1 538 0
+ 169 00da 7B6B     		ldr	r3, [r7, #52]
+ 170 00dc 0433     		add	r3, r3, #4
+ 171 00de 7B63     		str	r3, [r7, #52]
+ 539:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 540:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Decrement the loop counter */
+ 541:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     blkCnt--;
+ 172              		.loc 1 541 0
+ 173 00e0 FB69     		ldr	r3, [r7, #28]
+ 174 00e2 013B     		sub	r3, r3, #1
+ 175 00e4 FB61     		str	r3, [r7, #28]
+ 176              	.L2:
+ 495:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   {
+ 177              		.loc 1 495 0
+ 178 00e6 FB69     		ldr	r3, [r7, #28]
+ 179 00e8 002B     		cmp	r3, #0
+ 180 00ea A9D1     		bne	.L7
+ 542:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   }
+ 543:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 544:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Processing is complete.
+ 545:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****    ** Now copy the last phaseLen - 1 samples to the start of the state buffer.
+ 546:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****    ** This prepares the state buffer for the next function call. */
+ 547:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 548:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   /* Points to the start of the state buffer */
+ 549:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   pStateCurnt = S->pState;
+ 181              		.loc 1 549 0
+ 182 00ec FB68     		ldr	r3, [r7, #12]
+ 183 00ee 9B68     		ldr	r3, [r3, #8]
+ 184 00f0 3B63     		str	r3, [r7, #48]
+ 550:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 551:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   tapCnt = phaseLen - 1u;
+ 185              		.loc 1 551 0
+ 186 00f2 1A23     		mov	r3, #26
+ 187 00f4 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 14
+
+
+ 188 00f6 1222     		mov	r2, #18
+ 189 00f8 BA18     		add	r2, r7, r2
+ 190 00fa 1288     		ldrh	r2, [r2]
+ 191 00fc 013A     		sub	r2, r2, #1
+ 192 00fe 1A80     		strh	r2, [r3]
+ 552:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 553:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   while (tapCnt > 0u)
+ 193              		.loc 1 553 0
+ 194 0100 0EE0     		b	.L8
+ 195              	.L9:
+ 554:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   {
+ 555:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     *pStateCurnt++ = *pState++;
+ 196              		.loc 1 555 0
+ 197 0102 3B6B     		ldr	r3, [r7, #48]
+ 198 0104 1A1D     		add	r2, r3, #4
+ 199 0106 3A63     		str	r2, [r7, #48]
+ 200 0108 7A6B     		ldr	r2, [r7, #52]
+ 201 010a 111D     		add	r1, r2, #4
+ 202 010c 7963     		str	r1, [r7, #52]
+ 203 010e 1268     		ldr	r2, [r2]
+ 204 0110 1A60     		str	r2, [r3]
+ 556:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 557:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     /* Decrement the loop counter */
+ 558:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****     tapCnt--;
+ 205              		.loc 1 558 0
+ 206 0112 1A23     		mov	r3, #26
+ 207 0114 FB18     		add	r3, r7, r3
+ 208 0116 1A88     		ldrh	r2, [r3]
+ 209 0118 1A23     		mov	r3, #26
+ 210 011a FB18     		add	r3, r7, r3
+ 211 011c 013A     		sub	r2, r2, #1
+ 212 011e 1A80     		strh	r2, [r3]
+ 213              	.L8:
+ 553:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   {
+ 214              		.loc 1 553 0
+ 215 0120 1A23     		mov	r3, #26
+ 216 0122 FB18     		add	r3, r7, r3
+ 217 0124 1B88     		ldrh	r3, [r3]
+ 218 0126 002B     		cmp	r3, #0
+ 219 0128 EBD1     		bne	.L9
+ 559:Source\FilteringFunctions/arm_fir_interpolate_f32.c ****   }
+ 560:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** 
+ 561:Source\FilteringFunctions/arm_fir_interpolate_f32.c **** }
+ 220              		.loc 1 561 0
+ 221 012a BD46     		mov	sp, r7
+ 222 012c 0EB0     		add	sp, sp, #56
+ 223              		@ sp needed
+ 224 012e 80BD     		pop	{r7, pc}
+ 225              	.L11:
+ 226              		.align	2
+ 227              	.L10:
+ 228 0130 FFFFFF3F 		.word	1073741823
+ 229              		.cfi_endproc
+ 230              	.LFE82:
+ 231              		.size	arm_fir_interpolate_f32, .-arm_fir_interpolate_f32
+ 232              		.text
+ 233              	.Letext0:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 15
+
+
+ 234              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 235              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 236              		.file 4 ".\\Include/arm_math.h"
+ 237              		.section	.debug_info,"",%progbits
+ 238              	.Ldebug_info0:
+ 239 0000 17020000 		.4byte	0x217
+ 240 0004 0400     		.2byte	0x4
+ 241 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 242 000a 04       		.byte	0x4
+ 243 000b 01       		.uleb128 0x1
+ 244 000c 42010000 		.4byte	.LASF34
+ 245 0010 01       		.byte	0x1
+ 246 0011 50000000 		.4byte	.LASF35
+ 247 0015 0A000000 		.4byte	.LASF36
+ 248 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 249 001d 00000000 		.4byte	0
+ 250 0021 00000000 		.4byte	.Ldebug_line0
+ 251 0025 02       		.uleb128 0x2
+ 252 0026 01       		.byte	0x1
+ 253 0027 06       		.byte	0x6
+ 254 0028 5D020000 		.4byte	.LASF0
+ 255 002c 03       		.uleb128 0x3
+ 256 002d 00000000 		.4byte	.LASF3
+ 257 0031 02       		.byte	0x2
+ 258 0032 1D       		.byte	0x1d
+ 259 0033 37000000 		.4byte	0x37
+ 260 0037 02       		.uleb128 0x2
+ 261 0038 01       		.byte	0x1
+ 262 0039 08       		.byte	0x8
+ 263 003a BC000000 		.4byte	.LASF1
+ 264 003e 02       		.uleb128 0x2
+ 265 003f 02       		.byte	0x2
+ 266 0040 05       		.byte	0x5
+ 267 0041 0D020000 		.4byte	.LASF2
+ 268 0045 03       		.uleb128 0x3
+ 269 0046 17020000 		.4byte	.LASF4
+ 270 004a 02       		.byte	0x2
+ 271 004b 2B       		.byte	0x2b
+ 272 004c 50000000 		.4byte	0x50
+ 273 0050 02       		.uleb128 0x2
+ 274 0051 02       		.byte	0x2
+ 275 0052 07       		.byte	0x7
+ 276 0053 E3000000 		.4byte	.LASF5
+ 277 0057 02       		.uleb128 0x2
+ 278 0058 04       		.byte	0x4
+ 279 0059 05       		.byte	0x5
+ 280 005a 48020000 		.4byte	.LASF6
+ 281 005e 03       		.uleb128 0x3
+ 282 005f 13010000 		.4byte	.LASF7
+ 283 0063 02       		.byte	0x2
+ 284 0064 41       		.byte	0x41
+ 285 0065 69000000 		.4byte	0x69
+ 286 0069 02       		.uleb128 0x2
+ 287 006a 04       		.byte	0x4
+ 288 006b 07       		.byte	0x7
+ 289 006c D1000000 		.4byte	.LASF8
+ 290 0070 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 16
+
+
+ 291 0071 08       		.byte	0x8
+ 292 0072 05       		.byte	0x5
+ 293 0073 E9010000 		.4byte	.LASF9
+ 294 0077 02       		.uleb128 0x2
+ 295 0078 08       		.byte	0x8
+ 296 0079 07       		.byte	0x7
+ 297 007a 2B010000 		.4byte	.LASF10
+ 298 007e 04       		.uleb128 0x4
+ 299 007f 04       		.byte	0x4
+ 300 0080 05       		.byte	0x5
+ 301 0081 696E7400 		.ascii	"int\000"
+ 302 0085 02       		.uleb128 0x2
+ 303 0086 04       		.byte	0x4
+ 304 0087 07       		.byte	0x7
+ 305 0088 1E010000 		.4byte	.LASF11
+ 306 008c 03       		.uleb128 0x3
+ 307 008d 84000000 		.4byte	.LASF12
+ 308 0091 03       		.byte	0x3
+ 309 0092 15       		.byte	0x15
+ 310 0093 2C000000 		.4byte	0x2c
+ 311 0097 03       		.uleb128 0x3
+ 312 0098 22020000 		.4byte	.LASF13
+ 313 009c 03       		.byte	0x3
+ 314 009d 21       		.byte	0x21
+ 315 009e 45000000 		.4byte	0x45
+ 316 00a2 03       		.uleb128 0x3
+ 317 00a3 3F020000 		.4byte	.LASF14
+ 318 00a7 03       		.byte	0x3
+ 319 00a8 2D       		.byte	0x2d
+ 320 00a9 5E000000 		.4byte	0x5e
+ 321 00ad 02       		.uleb128 0x2
+ 322 00ae 04       		.byte	0x4
+ 323 00af 07       		.byte	0x7
+ 324 00b0 E0010000 		.4byte	.LASF15
+ 325 00b4 02       		.uleb128 0x2
+ 326 00b5 01       		.byte	0x1
+ 327 00b6 08       		.byte	0x8
+ 328 00b7 08020000 		.4byte	.LASF16
+ 329 00bb 02       		.uleb128 0x2
+ 330 00bc 08       		.byte	0x8
+ 331 00bd 04       		.byte	0x4
+ 332 00be 02010000 		.4byte	.LASF17
+ 333 00c2 02       		.uleb128 0x2
+ 334 00c3 04       		.byte	0x4
+ 335 00c4 04       		.byte	0x4
+ 336 00c5 B6000000 		.4byte	.LASF18
+ 337 00c9 02       		.uleb128 0x2
+ 338 00ca 08       		.byte	0x8
+ 339 00cb 04       		.byte	0x4
+ 340 00cc 51020000 		.4byte	.LASF19
+ 341 00d0 05       		.uleb128 0x5
+ 342 00d1 09010000 		.4byte	.LASF20
+ 343 00d5 04       		.byte	0x4
+ 344 00d6 A501     		.2byte	0x1a5
+ 345 00d8 C2000000 		.4byte	0xc2
+ 346 00dc 06       		.uleb128 0x6
+ 347 00dd 04       		.byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 17
+
+
+ 348 00de D0000000 		.4byte	0xd0
+ 349 00e2 07       		.uleb128 0x7
+ 350 00e3 0C       		.byte	0xc
+ 351 00e4 04       		.byte	0x4
+ 352 00e5 BF0D     		.2byte	0xdbf
+ 353 00e7 1E010000 		.4byte	0x11e
+ 354 00eb 08       		.uleb128 0x8
+ 355 00ec 4C00     		.ascii	"L\000"
+ 356 00ee 04       		.byte	0x4
+ 357 00ef C10D     		.2byte	0xdc1
+ 358 00f1 8C000000 		.4byte	0x8c
+ 359 00f5 00       		.byte	0
+ 360 00f6 09       		.uleb128 0x9
+ 361 00f7 2B020000 		.4byte	.LASF21
+ 362 00fb 04       		.byte	0x4
+ 363 00fc C20D     		.2byte	0xdc2
+ 364 00fe 97000000 		.4byte	0x97
+ 365 0102 02       		.byte	0x2
+ 366 0103 09       		.uleb128 0x9
+ 367 0104 37020000 		.4byte	.LASF22
+ 368 0108 04       		.byte	0x4
+ 369 0109 C30D     		.2byte	0xdc3
+ 370 010b DC000000 		.4byte	0xdc
+ 371 010f 04       		.byte	0x4
+ 372 0110 09       		.uleb128 0x9
+ 373 0111 01020000 		.4byte	.LASF23
+ 374 0115 04       		.byte	0x4
+ 375 0116 C40D     		.2byte	0xdc4
+ 376 0118 DC000000 		.4byte	0xdc
+ 377 011c 08       		.byte	0x8
+ 378 011d 00       		.byte	0
+ 379 011e 05       		.uleb128 0x5
+ 380 011f 8C000000 		.4byte	.LASF24
+ 381 0123 04       		.byte	0x4
+ 382 0124 C50D     		.2byte	0xdc5
+ 383 0126 E2000000 		.4byte	0xe2
+ 384 012a 0A       		.uleb128 0xa
+ 385 012b 78020000 		.4byte	.LASF37
+ 386 012f 01       		.byte	0x1
+ 387 0130 D601     		.2byte	0x1d6
+ 388 0132 00000000 		.4byte	.LFB82
+ 389 0136 34010000 		.4byte	.LFE82-.LFB82
+ 390 013a 01       		.uleb128 0x1
+ 391 013b 9C       		.byte	0x9c
+ 392 013c 0F020000 		.4byte	0x20f
+ 393 0140 0B       		.uleb128 0xb
+ 394 0141 5300     		.ascii	"S\000"
+ 395 0143 01       		.byte	0x1
+ 396 0144 D701     		.2byte	0x1d7
+ 397 0146 0F020000 		.4byte	0x20f
+ 398 014a 02       		.uleb128 0x2
+ 399 014b 91       		.byte	0x91
+ 400 014c 4C       		.sleb128 -52
+ 401 014d 0C       		.uleb128 0xc
+ 402 014e 69020000 		.4byte	.LASF25
+ 403 0152 01       		.byte	0x1
+ 404 0153 D801     		.2byte	0x1d8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 18
+
+
+ 405 0155 DC000000 		.4byte	0xdc
+ 406 0159 02       		.uleb128 0x2
+ 407 015a 91       		.byte	0x91
+ 408 015b 48       		.sleb128 -56
+ 409 015c 0C       		.uleb128 0xc
+ 410 015d F6000000 		.4byte	.LASF26
+ 411 0161 01       		.byte	0x1
+ 412 0162 D901     		.2byte	0x1d9
+ 413 0164 DC000000 		.4byte	0xdc
+ 414 0168 02       		.uleb128 0x2
+ 415 0169 91       		.byte	0x91
+ 416 016a 44       		.sleb128 -60
+ 417 016b 0C       		.uleb128 0xc
+ 418 016c F7010000 		.4byte	.LASF27
+ 419 0170 01       		.byte	0x1
+ 420 0171 DA01     		.2byte	0x1da
+ 421 0173 A2000000 		.4byte	0xa2
+ 422 0177 02       		.uleb128 0x2
+ 423 0178 91       		.byte	0x91
+ 424 0179 40       		.sleb128 -64
+ 425 017a 0D       		.uleb128 0xd
+ 426 017b 01020000 		.4byte	.LASF23
+ 427 017f 01       		.byte	0x1
+ 428 0180 DC01     		.2byte	0x1dc
+ 429 0182 DC000000 		.4byte	0xdc
+ 430 0186 02       		.uleb128 0x2
+ 431 0187 91       		.byte	0x91
+ 432 0188 74       		.sleb128 -12
+ 433 0189 0D       		.uleb128 0xd
+ 434 018a 37020000 		.4byte	.LASF22
+ 435 018e 01       		.byte	0x1
+ 436 018f DD01     		.2byte	0x1dd
+ 437 0191 DC000000 		.4byte	0xdc
+ 438 0195 02       		.uleb128 0x2
+ 439 0196 91       		.byte	0x91
+ 440 0197 54       		.sleb128 -44
+ 441 0198 0D       		.uleb128 0xd
+ 442 0199 D4010000 		.4byte	.LASF28
+ 443 019d 01       		.byte	0x1
+ 444 019e DE01     		.2byte	0x1de
+ 445 01a0 DC000000 		.4byte	0xdc
+ 446 01a4 02       		.uleb128 0x2
+ 447 01a5 91       		.byte	0x91
+ 448 01a6 70       		.sleb128 -16
+ 449 01a7 0D       		.uleb128 0xd
+ 450 01a8 6E020000 		.4byte	.LASF29
+ 451 01ac 01       		.byte	0x1
+ 452 01ad DF01     		.2byte	0x1df
+ 453 01af DC000000 		.4byte	0xdc
+ 454 01b3 02       		.uleb128 0x2
+ 455 01b4 91       		.byte	0x91
+ 456 01b5 6C       		.sleb128 -20
+ 457 01b6 0D       		.uleb128 0xd
+ 458 01b7 73020000 		.4byte	.LASF30
+ 459 01bb 01       		.byte	0x1
+ 460 01bc DF01     		.2byte	0x1df
+ 461 01be DC000000 		.4byte	0xdc
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 19
+
+
+ 462 01c2 02       		.uleb128 0x2
+ 463 01c3 91       		.byte	0x91
+ 464 01c4 68       		.sleb128 -24
+ 465 01c5 0E       		.uleb128 0xe
+ 466 01c6 73756D00 		.ascii	"sum\000"
+ 467 01ca 01       		.byte	0x1
+ 468 01cb E201     		.2byte	0x1e2
+ 469 01cd D0000000 		.4byte	0xd0
+ 470 01d1 02       		.uleb128 0x2
+ 471 01d2 91       		.byte	0x91
+ 472 01d3 64       		.sleb128 -28
+ 473 01d4 0E       		.uleb128 0xe
+ 474 01d5 6900     		.ascii	"i\000"
+ 475 01d7 01       		.byte	0x1
+ 476 01d8 E301     		.2byte	0x1e3
+ 477 01da A2000000 		.4byte	0xa2
+ 478 01de 02       		.uleb128 0x2
+ 479 01df 91       		.byte	0x91
+ 480 01e0 60       		.sleb128 -32
+ 481 01e1 0D       		.uleb128 0xd
+ 482 01e2 CA000000 		.4byte	.LASF31
+ 483 01e6 01       		.byte	0x1
+ 484 01e7 E301     		.2byte	0x1e3
+ 485 01e9 A2000000 		.4byte	0xa2
+ 486 01ed 02       		.uleb128 0x2
+ 487 01ee 91       		.byte	0x91
+ 488 01ef 5C       		.sleb128 -36
+ 489 01f0 0D       		.uleb128 0xd
+ 490 01f1 AD000000 		.4byte	.LASF32
+ 491 01f5 01       		.byte	0x1
+ 492 01f6 E401     		.2byte	0x1e4
+ 493 01f8 97000000 		.4byte	0x97
+ 494 01fc 02       		.uleb128 0x2
+ 495 01fd 91       		.byte	0x91
+ 496 01fe 52       		.sleb128 -46
+ 497 01ff 0D       		.uleb128 0xd
+ 498 0200 FB000000 		.4byte	.LASF33
+ 499 0204 01       		.byte	0x1
+ 500 0205 E401     		.2byte	0x1e4
+ 501 0207 97000000 		.4byte	0x97
+ 502 020b 02       		.uleb128 0x2
+ 503 020c 91       		.byte	0x91
+ 504 020d 5A       		.sleb128 -38
+ 505 020e 00       		.byte	0
+ 506 020f 06       		.uleb128 0x6
+ 507 0210 04       		.byte	0x4
+ 508 0211 15020000 		.4byte	0x215
+ 509 0215 0F       		.uleb128 0xf
+ 510 0216 1E010000 		.4byte	0x11e
+ 511 021a 00       		.byte	0
+ 512              		.section	.debug_abbrev,"",%progbits
+ 513              	.Ldebug_abbrev0:
+ 514 0000 01       		.uleb128 0x1
+ 515 0001 11       		.uleb128 0x11
+ 516 0002 01       		.byte	0x1
+ 517 0003 25       		.uleb128 0x25
+ 518 0004 0E       		.uleb128 0xe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 20
+
+
+ 519 0005 13       		.uleb128 0x13
+ 520 0006 0B       		.uleb128 0xb
+ 521 0007 03       		.uleb128 0x3
+ 522 0008 0E       		.uleb128 0xe
+ 523 0009 1B       		.uleb128 0x1b
+ 524 000a 0E       		.uleb128 0xe
+ 525 000b 55       		.uleb128 0x55
+ 526 000c 17       		.uleb128 0x17
+ 527 000d 11       		.uleb128 0x11
+ 528 000e 01       		.uleb128 0x1
+ 529 000f 10       		.uleb128 0x10
+ 530 0010 17       		.uleb128 0x17
+ 531 0011 00       		.byte	0
+ 532 0012 00       		.byte	0
+ 533 0013 02       		.uleb128 0x2
+ 534 0014 24       		.uleb128 0x24
+ 535 0015 00       		.byte	0
+ 536 0016 0B       		.uleb128 0xb
+ 537 0017 0B       		.uleb128 0xb
+ 538 0018 3E       		.uleb128 0x3e
+ 539 0019 0B       		.uleb128 0xb
+ 540 001a 03       		.uleb128 0x3
+ 541 001b 0E       		.uleb128 0xe
+ 542 001c 00       		.byte	0
+ 543 001d 00       		.byte	0
+ 544 001e 03       		.uleb128 0x3
+ 545 001f 16       		.uleb128 0x16
+ 546 0020 00       		.byte	0
+ 547 0021 03       		.uleb128 0x3
+ 548 0022 0E       		.uleb128 0xe
+ 549 0023 3A       		.uleb128 0x3a
+ 550 0024 0B       		.uleb128 0xb
+ 551 0025 3B       		.uleb128 0x3b
+ 552 0026 0B       		.uleb128 0xb
+ 553 0027 49       		.uleb128 0x49
+ 554 0028 13       		.uleb128 0x13
+ 555 0029 00       		.byte	0
+ 556 002a 00       		.byte	0
+ 557 002b 04       		.uleb128 0x4
+ 558 002c 24       		.uleb128 0x24
+ 559 002d 00       		.byte	0
+ 560 002e 0B       		.uleb128 0xb
+ 561 002f 0B       		.uleb128 0xb
+ 562 0030 3E       		.uleb128 0x3e
+ 563 0031 0B       		.uleb128 0xb
+ 564 0032 03       		.uleb128 0x3
+ 565 0033 08       		.uleb128 0x8
+ 566 0034 00       		.byte	0
+ 567 0035 00       		.byte	0
+ 568 0036 05       		.uleb128 0x5
+ 569 0037 16       		.uleb128 0x16
+ 570 0038 00       		.byte	0
+ 571 0039 03       		.uleb128 0x3
+ 572 003a 0E       		.uleb128 0xe
+ 573 003b 3A       		.uleb128 0x3a
+ 574 003c 0B       		.uleb128 0xb
+ 575 003d 3B       		.uleb128 0x3b
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 21
+
+
+ 576 003e 05       		.uleb128 0x5
+ 577 003f 49       		.uleb128 0x49
+ 578 0040 13       		.uleb128 0x13
+ 579 0041 00       		.byte	0
+ 580 0042 00       		.byte	0
+ 581 0043 06       		.uleb128 0x6
+ 582 0044 0F       		.uleb128 0xf
+ 583 0045 00       		.byte	0
+ 584 0046 0B       		.uleb128 0xb
+ 585 0047 0B       		.uleb128 0xb
+ 586 0048 49       		.uleb128 0x49
+ 587 0049 13       		.uleb128 0x13
+ 588 004a 00       		.byte	0
+ 589 004b 00       		.byte	0
+ 590 004c 07       		.uleb128 0x7
+ 591 004d 13       		.uleb128 0x13
+ 592 004e 01       		.byte	0x1
+ 593 004f 0B       		.uleb128 0xb
+ 594 0050 0B       		.uleb128 0xb
+ 595 0051 3A       		.uleb128 0x3a
+ 596 0052 0B       		.uleb128 0xb
+ 597 0053 3B       		.uleb128 0x3b
+ 598 0054 05       		.uleb128 0x5
+ 599 0055 01       		.uleb128 0x1
+ 600 0056 13       		.uleb128 0x13
+ 601 0057 00       		.byte	0
+ 602 0058 00       		.byte	0
+ 603 0059 08       		.uleb128 0x8
+ 604 005a 0D       		.uleb128 0xd
+ 605 005b 00       		.byte	0
+ 606 005c 03       		.uleb128 0x3
+ 607 005d 08       		.uleb128 0x8
+ 608 005e 3A       		.uleb128 0x3a
+ 609 005f 0B       		.uleb128 0xb
+ 610 0060 3B       		.uleb128 0x3b
+ 611 0061 05       		.uleb128 0x5
+ 612 0062 49       		.uleb128 0x49
+ 613 0063 13       		.uleb128 0x13
+ 614 0064 38       		.uleb128 0x38
+ 615 0065 0B       		.uleb128 0xb
+ 616 0066 00       		.byte	0
+ 617 0067 00       		.byte	0
+ 618 0068 09       		.uleb128 0x9
+ 619 0069 0D       		.uleb128 0xd
+ 620 006a 00       		.byte	0
+ 621 006b 03       		.uleb128 0x3
+ 622 006c 0E       		.uleb128 0xe
+ 623 006d 3A       		.uleb128 0x3a
+ 624 006e 0B       		.uleb128 0xb
+ 625 006f 3B       		.uleb128 0x3b
+ 626 0070 05       		.uleb128 0x5
+ 627 0071 49       		.uleb128 0x49
+ 628 0072 13       		.uleb128 0x13
+ 629 0073 38       		.uleb128 0x38
+ 630 0074 0B       		.uleb128 0xb
+ 631 0075 00       		.byte	0
+ 632 0076 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 22
+
+
+ 633 0077 0A       		.uleb128 0xa
+ 634 0078 2E       		.uleb128 0x2e
+ 635 0079 01       		.byte	0x1
+ 636 007a 3F       		.uleb128 0x3f
+ 637 007b 19       		.uleb128 0x19
+ 638 007c 03       		.uleb128 0x3
+ 639 007d 0E       		.uleb128 0xe
+ 640 007e 3A       		.uleb128 0x3a
+ 641 007f 0B       		.uleb128 0xb
+ 642 0080 3B       		.uleb128 0x3b
+ 643 0081 05       		.uleb128 0x5
+ 644 0082 27       		.uleb128 0x27
+ 645 0083 19       		.uleb128 0x19
+ 646 0084 11       		.uleb128 0x11
+ 647 0085 01       		.uleb128 0x1
+ 648 0086 12       		.uleb128 0x12
+ 649 0087 06       		.uleb128 0x6
+ 650 0088 40       		.uleb128 0x40
+ 651 0089 18       		.uleb128 0x18
+ 652 008a 9642     		.uleb128 0x2116
+ 653 008c 19       		.uleb128 0x19
+ 654 008d 01       		.uleb128 0x1
+ 655 008e 13       		.uleb128 0x13
+ 656 008f 00       		.byte	0
+ 657 0090 00       		.byte	0
+ 658 0091 0B       		.uleb128 0xb
+ 659 0092 05       		.uleb128 0x5
+ 660 0093 00       		.byte	0
+ 661 0094 03       		.uleb128 0x3
+ 662 0095 08       		.uleb128 0x8
+ 663 0096 3A       		.uleb128 0x3a
+ 664 0097 0B       		.uleb128 0xb
+ 665 0098 3B       		.uleb128 0x3b
+ 666 0099 05       		.uleb128 0x5
+ 667 009a 49       		.uleb128 0x49
+ 668 009b 13       		.uleb128 0x13
+ 669 009c 02       		.uleb128 0x2
+ 670 009d 18       		.uleb128 0x18
+ 671 009e 00       		.byte	0
+ 672 009f 00       		.byte	0
+ 673 00a0 0C       		.uleb128 0xc
+ 674 00a1 05       		.uleb128 0x5
+ 675 00a2 00       		.byte	0
+ 676 00a3 03       		.uleb128 0x3
+ 677 00a4 0E       		.uleb128 0xe
+ 678 00a5 3A       		.uleb128 0x3a
+ 679 00a6 0B       		.uleb128 0xb
+ 680 00a7 3B       		.uleb128 0x3b
+ 681 00a8 05       		.uleb128 0x5
+ 682 00a9 49       		.uleb128 0x49
+ 683 00aa 13       		.uleb128 0x13
+ 684 00ab 02       		.uleb128 0x2
+ 685 00ac 18       		.uleb128 0x18
+ 686 00ad 00       		.byte	0
+ 687 00ae 00       		.byte	0
+ 688 00af 0D       		.uleb128 0xd
+ 689 00b0 34       		.uleb128 0x34
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 23
+
+
+ 690 00b1 00       		.byte	0
+ 691 00b2 03       		.uleb128 0x3
+ 692 00b3 0E       		.uleb128 0xe
+ 693 00b4 3A       		.uleb128 0x3a
+ 694 00b5 0B       		.uleb128 0xb
+ 695 00b6 3B       		.uleb128 0x3b
+ 696 00b7 05       		.uleb128 0x5
+ 697 00b8 49       		.uleb128 0x49
+ 698 00b9 13       		.uleb128 0x13
+ 699 00ba 02       		.uleb128 0x2
+ 700 00bb 18       		.uleb128 0x18
+ 701 00bc 00       		.byte	0
+ 702 00bd 00       		.byte	0
+ 703 00be 0E       		.uleb128 0xe
+ 704 00bf 34       		.uleb128 0x34
+ 705 00c0 00       		.byte	0
+ 706 00c1 03       		.uleb128 0x3
+ 707 00c2 08       		.uleb128 0x8
+ 708 00c3 3A       		.uleb128 0x3a
+ 709 00c4 0B       		.uleb128 0xb
+ 710 00c5 3B       		.uleb128 0x3b
+ 711 00c6 05       		.uleb128 0x5
+ 712 00c7 49       		.uleb128 0x49
+ 713 00c8 13       		.uleb128 0x13
+ 714 00c9 02       		.uleb128 0x2
+ 715 00ca 18       		.uleb128 0x18
+ 716 00cb 00       		.byte	0
+ 717 00cc 00       		.byte	0
+ 718 00cd 0F       		.uleb128 0xf
+ 719 00ce 26       		.uleb128 0x26
+ 720 00cf 00       		.byte	0
+ 721 00d0 49       		.uleb128 0x49
+ 722 00d1 13       		.uleb128 0x13
+ 723 00d2 00       		.byte	0
+ 724 00d3 00       		.byte	0
+ 725 00d4 00       		.byte	0
+ 726              		.section	.debug_aranges,"",%progbits
+ 727 0000 1C000000 		.4byte	0x1c
+ 728 0004 0200     		.2byte	0x2
+ 729 0006 00000000 		.4byte	.Ldebug_info0
+ 730 000a 04       		.byte	0x4
+ 731 000b 00       		.byte	0
+ 732 000c 0000     		.2byte	0
+ 733 000e 0000     		.2byte	0
+ 734 0010 00000000 		.4byte	.LFB82
+ 735 0014 34010000 		.4byte	.LFE82-.LFB82
+ 736 0018 00000000 		.4byte	0
+ 737 001c 00000000 		.4byte	0
+ 738              		.section	.debug_ranges,"",%progbits
+ 739              	.Ldebug_ranges0:
+ 740 0000 00000000 		.4byte	.LFB82
+ 741 0004 34010000 		.4byte	.LFE82
+ 742 0008 00000000 		.4byte	0
+ 743 000c 00000000 		.4byte	0
+ 744              		.section	.debug_line,"",%progbits
+ 745              	.Ldebug_line0:
+ 746 0000 9C010000 		.section	.debug_str,"MS",%progbits,1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 24
+
+
+ 746      02005A01 
+ 746      00000201 
+ 746      FB0E0D00 
+ 746      01010101 
+ 747              	.LASF3:
+ 748 0000 5F5F7569 		.ascii	"__uint8_t\000"
+ 748      6E74385F 
+ 748      7400
+ 749              	.LASF36:
+ 750 000a 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 750      73657273 
+ 750      5C666E65 
+ 750      7665735C 
+ 750      446F6375 
+ 751 0037 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 751      655F7370 
+ 751      6565645F 
+ 751      73656E73 
+ 751      6F722E63 
+ 752              	.LASF35:
+ 753 0050 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_fir_interpolate_f32"
+ 753      63655C46 
+ 753      696C7465 
+ 753      72696E67 
+ 753      46756E63 
+ 754 0081 2E6300   		.ascii	".c\000"
+ 755              	.LASF12:
+ 756 0084 75696E74 		.ascii	"uint8_t\000"
+ 756      385F7400 
+ 757              	.LASF24:
+ 758 008c 61726D5F 		.ascii	"arm_fir_interpolate_instance_f32\000"
+ 758      6669725F 
+ 758      696E7465 
+ 758      72706F6C 
+ 758      6174655F 
+ 759              	.LASF32:
+ 760 00ad 70686173 		.ascii	"phaseLen\000"
+ 760      654C656E 
+ 760      00
+ 761              	.LASF18:
+ 762 00b6 666C6F61 		.ascii	"float\000"
+ 762      7400
+ 763              	.LASF1:
+ 764 00bc 756E7369 		.ascii	"unsigned char\000"
+ 764      676E6564 
+ 764      20636861 
+ 764      7200
+ 765              	.LASF31:
+ 766 00ca 626C6B43 		.ascii	"blkCnt\000"
+ 766      6E7400
+ 767              	.LASF8:
+ 768 00d1 6C6F6E67 		.ascii	"long unsigned int\000"
+ 768      20756E73 
+ 768      69676E65 
+ 768      6420696E 
+ 768      7400
+ 769              	.LASF5:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 25
+
+
+ 770 00e3 73686F72 		.ascii	"short unsigned int\000"
+ 770      7420756E 
+ 770      7369676E 
+ 770      65642069 
+ 770      6E7400
+ 771              	.LASF26:
+ 772 00f6 70447374 		.ascii	"pDst\000"
+ 772      00
+ 773              	.LASF33:
+ 774 00fb 74617043 		.ascii	"tapCnt\000"
+ 774      6E7400
+ 775              	.LASF17:
+ 776 0102 646F7562 		.ascii	"double\000"
+ 776      6C6500
+ 777              	.LASF20:
+ 778 0109 666C6F61 		.ascii	"float32_t\000"
+ 778      7433325F 
+ 778      7400
+ 779              	.LASF7:
+ 780 0113 5F5F7569 		.ascii	"__uint32_t\000"
+ 780      6E743332 
+ 780      5F7400
+ 781              	.LASF11:
+ 782 011e 756E7369 		.ascii	"unsigned int\000"
+ 782      676E6564 
+ 782      20696E74 
+ 782      00
+ 783              	.LASF10:
+ 784 012b 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 784      206C6F6E 
+ 784      6720756E 
+ 784      7369676E 
+ 784      65642069 
+ 785              	.LASF34:
+ 786 0142 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 786      4320342E 
+ 786      392E3320 
+ 786      32303135 
+ 786      30333033 
+ 787 0175 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 787      20726576 
+ 787      6973696F 
+ 787      6E203232 
+ 787      31323230 
+ 788 01a8 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 788      30202D66 
+ 788      66756E63 
+ 788      74696F6E 
+ 788      2D736563 
+ 789              	.LASF28:
+ 790 01d4 70537461 		.ascii	"pStateCurnt\000"
+ 790      74654375 
+ 790      726E7400 
+ 791              	.LASF15:
+ 792 01e0 73697A65 		.ascii	"sizetype\000"
+ 792      74797065 
+ 792      00
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 26
+
+
+ 793              	.LASF9:
+ 794 01e9 6C6F6E67 		.ascii	"long long int\000"
+ 794      206C6F6E 
+ 794      6720696E 
+ 794      7400
+ 795              	.LASF27:
+ 796 01f7 626C6F63 		.ascii	"blockSize\000"
+ 796      6B53697A 
+ 796      6500
+ 797              	.LASF23:
+ 798 0201 70537461 		.ascii	"pState\000"
+ 798      746500
+ 799              	.LASF16:
+ 800 0208 63686172 		.ascii	"char\000"
+ 800      00
+ 801              	.LASF2:
+ 802 020d 73686F72 		.ascii	"short int\000"
+ 802      7420696E 
+ 802      7400
+ 803              	.LASF4:
+ 804 0217 5F5F7569 		.ascii	"__uint16_t\000"
+ 804      6E743136 
+ 804      5F7400
+ 805              	.LASF13:
+ 806 0222 75696E74 		.ascii	"uint16_t\000"
+ 806      31365F74 
+ 806      00
+ 807              	.LASF21:
+ 808 022b 70686173 		.ascii	"phaseLength\000"
+ 808      654C656E 
+ 808      67746800 
+ 809              	.LASF22:
+ 810 0237 70436F65 		.ascii	"pCoeffs\000"
+ 810      66667300 
+ 811              	.LASF14:
+ 812 023f 75696E74 		.ascii	"uint32_t\000"
+ 812      33325F74 
+ 812      00
+ 813              	.LASF6:
+ 814 0248 6C6F6E67 		.ascii	"long int\000"
+ 814      20696E74 
+ 814      00
+ 815              	.LASF19:
+ 816 0251 6C6F6E67 		.ascii	"long double\000"
+ 816      20646F75 
+ 816      626C6500 
+ 817              	.LASF0:
+ 818 025d 7369676E 		.ascii	"signed char\000"
+ 818      65642063 
+ 818      68617200 
+ 819              	.LASF25:
+ 820 0269 70537263 		.ascii	"pSrc\000"
+ 820      00
+ 821              	.LASF29:
+ 822 026e 70747231 		.ascii	"ptr1\000"
+ 822      00
+ 823              	.LASF30:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccyXw0na.s 			page 27
+
+
+ 824 0273 70747232 		.ascii	"ptr2\000"
+ 824      00
+ 825              	.LASF37:
+ 826 0278 61726D5F 		.ascii	"arm_fir_interpolate_f32\000"
+ 826      6669725F 
+ 826      696E7465 
+ 826      72706F6C 
+ 826      6174655F 
+ 827              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

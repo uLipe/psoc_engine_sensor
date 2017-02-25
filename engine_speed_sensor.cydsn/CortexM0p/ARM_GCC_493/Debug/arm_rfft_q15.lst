@@ -1,0 +1,2284 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_rfft_q15.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.arm_rfft_q15,"ax",%progbits
+  18              		.align	2
+  19              		.global	arm_rfft_q15
+  20              		.code	16
+  21              		.thumb_func
+  22              		.type	arm_rfft_q15, %function
+  23              	arm_rfft_q15:
+  24              	.LFB82:
+  25              		.file 1 "Source\\TransformFunctions\\arm_rfft_q15.c"
+   1:Source\TransformFunctions/arm_rfft_q15.c **** /* ----------------------------------------------------------------------
+   2:Source\TransformFunctions/arm_rfft_q15.c ****  * Project:      CMSIS DSP Library
+   3:Source\TransformFunctions/arm_rfft_q15.c ****  * Title:        arm_rfft_q15.c
+   4:Source\TransformFunctions/arm_rfft_q15.c ****  * Description:  RFFT & RIFFT Q15 process function
+   5:Source\TransformFunctions/arm_rfft_q15.c ****  *
+   6:Source\TransformFunctions/arm_rfft_q15.c ****  * $Date:        27. January 2017
+   7:Source\TransformFunctions/arm_rfft_q15.c ****  * $Revision:    V.1.5.1
+   8:Source\TransformFunctions/arm_rfft_q15.c ****  *
+   9:Source\TransformFunctions/arm_rfft_q15.c ****  * Target Processor: Cortex-M cores
+  10:Source\TransformFunctions/arm_rfft_q15.c ****  * -------------------------------------------------------------------- */
+  11:Source\TransformFunctions/arm_rfft_q15.c **** /*
+  12:Source\TransformFunctions/arm_rfft_q15.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\TransformFunctions/arm_rfft_q15.c ****  *
+  14:Source\TransformFunctions/arm_rfft_q15.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\TransformFunctions/arm_rfft_q15.c ****  *
+  16:Source\TransformFunctions/arm_rfft_q15.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\TransformFunctions/arm_rfft_q15.c ****  * not use this file except in compliance with the License.
+  18:Source\TransformFunctions/arm_rfft_q15.c ****  * You may obtain a copy of the License at
+  19:Source\TransformFunctions/arm_rfft_q15.c ****  *
+  20:Source\TransformFunctions/arm_rfft_q15.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\TransformFunctions/arm_rfft_q15.c ****  *
+  22:Source\TransformFunctions/arm_rfft_q15.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\TransformFunctions/arm_rfft_q15.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\TransformFunctions/arm_rfft_q15.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\TransformFunctions/arm_rfft_q15.c ****  * See the License for the specific language governing permissions and
+  26:Source\TransformFunctions/arm_rfft_q15.c ****  * limitations under the License.
+  27:Source\TransformFunctions/arm_rfft_q15.c ****  */
+  28:Source\TransformFunctions/arm_rfft_q15.c **** 
+  29:Source\TransformFunctions/arm_rfft_q15.c **** #include "arm_math.h"
+  30:Source\TransformFunctions/arm_rfft_q15.c **** 
+  31:Source\TransformFunctions/arm_rfft_q15.c **** /* ----------------------------------------------------------------------
+  32:Source\TransformFunctions/arm_rfft_q15.c ****  * Internal functions prototypes
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 2
+
+
+  33:Source\TransformFunctions/arm_rfft_q15.c ****  * -------------------------------------------------------------------- */
+  34:Source\TransformFunctions/arm_rfft_q15.c **** 
+  35:Source\TransformFunctions/arm_rfft_q15.c **** void arm_split_rfft_q15(
+  36:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pSrc,
+  37:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t fftLen,
+  38:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pATable,
+  39:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pBTable,
+  40:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pDst,
+  41:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t modifier);
+  42:Source\TransformFunctions/arm_rfft_q15.c **** 
+  43:Source\TransformFunctions/arm_rfft_q15.c **** void arm_split_rifft_q15(
+  44:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pSrc,
+  45:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t fftLen,
+  46:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pATable,
+  47:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pBTable,
+  48:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pDst,
+  49:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t modifier);
+  50:Source\TransformFunctions/arm_rfft_q15.c **** 
+  51:Source\TransformFunctions/arm_rfft_q15.c **** /**
+  52:Source\TransformFunctions/arm_rfft_q15.c **** * @addtogroup RealFFT
+  53:Source\TransformFunctions/arm_rfft_q15.c **** * @{
+  54:Source\TransformFunctions/arm_rfft_q15.c **** */
+  55:Source\TransformFunctions/arm_rfft_q15.c **** 
+  56:Source\TransformFunctions/arm_rfft_q15.c **** /**
+  57:Source\TransformFunctions/arm_rfft_q15.c **** * @brief Processing function for the Q15 RFFT/RIFFT.
+  58:Source\TransformFunctions/arm_rfft_q15.c **** * @param[in]  *S    points to an instance of the Q15 RFFT/RIFFT structure.
+  59:Source\TransformFunctions/arm_rfft_q15.c **** * @param[in]  *pSrc points to the input buffer.
+  60:Source\TransformFunctions/arm_rfft_q15.c **** * @param[out] *pDst points to the output buffer.
+  61:Source\TransformFunctions/arm_rfft_q15.c **** * @return none.
+  62:Source\TransformFunctions/arm_rfft_q15.c **** *
+  63:Source\TransformFunctions/arm_rfft_q15.c **** * \par Input an output formats:
+  64:Source\TransformFunctions/arm_rfft_q15.c **** * \par
+  65:Source\TransformFunctions/arm_rfft_q15.c **** * Internally input is downscaled by 2 for every stage to avoid saturations inside CFFT/CIFFT proces
+  66:Source\TransformFunctions/arm_rfft_q15.c **** * Hence the output format is different for different RFFT sizes.
+  67:Source\TransformFunctions/arm_rfft_q15.c **** * The input and output formats for different RFFT sizes and number of bits to upscale are mentioned
+  68:Source\TransformFunctions/arm_rfft_q15.c **** * \par
+  69:Source\TransformFunctions/arm_rfft_q15.c **** * \image html RFFTQ15.gif "Input and Output Formats for Q15 RFFT"
+  70:Source\TransformFunctions/arm_rfft_q15.c **** * \par
+  71:Source\TransformFunctions/arm_rfft_q15.c **** * \image html RIFFTQ15.gif "Input and Output Formats for Q15 RIFFT"
+  72:Source\TransformFunctions/arm_rfft_q15.c **** */
+  73:Source\TransformFunctions/arm_rfft_q15.c **** 
+  74:Source\TransformFunctions/arm_rfft_q15.c **** void arm_rfft_q15(
+  75:Source\TransformFunctions/arm_rfft_q15.c ****     const arm_rfft_instance_q15 * S,
+  76:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pSrc,
+  77:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pDst)
+  78:Source\TransformFunctions/arm_rfft_q15.c **** {
+  26              		.loc 1 78 0
+  27              		.cfi_startproc
+  28 0000 B0B5     		push	{r4, r5, r7, lr}
+  29              		.cfi_def_cfa_offset 16
+  30              		.cfi_offset 4, -16
+  31              		.cfi_offset 5, -12
+  32              		.cfi_offset 7, -8
+  33              		.cfi_offset 14, -4
+  34 0002 8AB0     		sub	sp, sp, #40
+  35              		.cfi_def_cfa_offset 56
+  36 0004 02AF     		add	r7, sp, #8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 3
+
+
+  37              		.cfi_def_cfa 7, 48
+  38 0006 F860     		str	r0, [r7, #12]
+  39 0008 B960     		str	r1, [r7, #8]
+  40 000a 7A60     		str	r2, [r7, #4]
+  79:Source\TransformFunctions/arm_rfft_q15.c ****     const arm_cfft_instance_q15 *S_CFFT = S->pCfft;
+  41              		.loc 1 79 0
+  42 000c FB68     		ldr	r3, [r7, #12]
+  43 000e 5B69     		ldr	r3, [r3, #20]
+  44 0010 BB61     		str	r3, [r7, #24]
+  80:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t i;
+  81:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t L2 = S->fftLenReal >> 1;
+  45              		.loc 1 81 0
+  46 0012 FB68     		ldr	r3, [r7, #12]
+  47 0014 1B68     		ldr	r3, [r3]
+  48 0016 5B08     		lsr	r3, r3, #1
+  49 0018 7B61     		str	r3, [r7, #20]
+  82:Source\TransformFunctions/arm_rfft_q15.c **** 
+  83:Source\TransformFunctions/arm_rfft_q15.c ****     /* Calculation of RIFFT of input */
+  84:Source\TransformFunctions/arm_rfft_q15.c ****     if (S->ifftFlagR == 1u)
+  50              		.loc 1 84 0
+  51 001a FB68     		ldr	r3, [r7, #12]
+  52 001c 1B79     		ldrb	r3, [r3, #4]
+  53 001e 012B     		cmp	r3, #1
+  54 0020 2FD1     		bne	.L2
+  85:Source\TransformFunctions/arm_rfft_q15.c ****     {
+  86:Source\TransformFunctions/arm_rfft_q15.c ****         /*  Real IFFT core process */
+  87:Source\TransformFunctions/arm_rfft_q15.c ****         arm_split_rifft_q15(pSrc, L2, S->pTwiddleAReal,
+  55              		.loc 1 87 0
+  56 0022 FB68     		ldr	r3, [r7, #12]
+  57 0024 DD68     		ldr	r5, [r3, #12]
+  58 0026 FB68     		ldr	r3, [r7, #12]
+  59 0028 1C69     		ldr	r4, [r3, #16]
+  60 002a FB68     		ldr	r3, [r7, #12]
+  61 002c 9B68     		ldr	r3, [r3, #8]
+  62 002e B868     		ldr	r0, [r7, #8]
+  63 0030 7969     		ldr	r1, [r7, #20]
+  64 0032 7A68     		ldr	r2, [r7, #4]
+  65 0034 0092     		str	r2, [sp]
+  66 0036 0193     		str	r3, [sp, #4]
+  67 0038 2A1C     		mov	r2, r5
+  68 003a 231C     		mov	r3, r4
+  69 003c FFF7FEFF 		bl	arm_split_rifft_q15
+  88:Source\TransformFunctions/arm_rfft_q15.c ****                             S->pTwiddleBReal, pDst, S->twidCoefRModifier);
+  89:Source\TransformFunctions/arm_rfft_q15.c **** 
+  90:Source\TransformFunctions/arm_rfft_q15.c ****         /* Complex IFFT process */
+  91:Source\TransformFunctions/arm_rfft_q15.c ****         arm_cfft_q15(S_CFFT, pDst, S->ifftFlagR, S->bitReverseFlagR);
+  70              		.loc 1 91 0
+  71 0040 FB68     		ldr	r3, [r7, #12]
+  72 0042 1A79     		ldrb	r2, [r3, #4]
+  73 0044 FB68     		ldr	r3, [r7, #12]
+  74 0046 5B79     		ldrb	r3, [r3, #5]
+  75 0048 B869     		ldr	r0, [r7, #24]
+  76 004a 7968     		ldr	r1, [r7, #4]
+  77 004c FFF7FEFF 		bl	arm_cfft_q15
+  92:Source\TransformFunctions/arm_rfft_q15.c **** 
+  93:Source\TransformFunctions/arm_rfft_q15.c ****         for(i=0;i<S->fftLenReal;i++)
+  78              		.loc 1 93 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 4
+
+
+  79 0050 0023     		mov	r3, #0
+  80 0052 FB61     		str	r3, [r7, #28]
+  81 0054 0FE0     		b	.L3
+  82              	.L4:
+  94:Source\TransformFunctions/arm_rfft_q15.c ****         {
+  95:Source\TransformFunctions/arm_rfft_q15.c ****             pDst[i] = pDst[i] << 1;
+  83              		.loc 1 95 0 discriminator 3
+  84 0056 FB69     		ldr	r3, [r7, #28]
+  85 0058 5B00     		lsl	r3, r3, #1
+  86 005a 7A68     		ldr	r2, [r7, #4]
+  87 005c D318     		add	r3, r2, r3
+  88 005e FA69     		ldr	r2, [r7, #28]
+  89 0060 5200     		lsl	r2, r2, #1
+  90 0062 7968     		ldr	r1, [r7, #4]
+  91 0064 8A18     		add	r2, r1, r2
+  92 0066 1288     		ldrh	r2, [r2]
+  93 0068 12B2     		sxth	r2, r2
+  94 006a 5200     		lsl	r2, r2, #1
+  95 006c 92B2     		uxth	r2, r2
+  96 006e 1A80     		strh	r2, [r3]
+  93:Source\TransformFunctions/arm_rfft_q15.c ****         {
+  97              		.loc 1 93 0 discriminator 3
+  98 0070 FB69     		ldr	r3, [r7, #28]
+  99 0072 0133     		add	r3, r3, #1
+ 100 0074 FB61     		str	r3, [r7, #28]
+ 101              	.L3:
+  93:Source\TransformFunctions/arm_rfft_q15.c ****         {
+ 102              		.loc 1 93 0 is_stmt 0 discriminator 1
+ 103 0076 FB68     		ldr	r3, [r7, #12]
+ 104 0078 1A68     		ldr	r2, [r3]
+ 105 007a FB69     		ldr	r3, [r7, #28]
+ 106 007c 9A42     		cmp	r2, r3
+ 107 007e EAD8     		bhi	.L4
+ 108 0080 16E0     		b	.L1
+ 109              	.L2:
+  96:Source\TransformFunctions/arm_rfft_q15.c ****         }
+  97:Source\TransformFunctions/arm_rfft_q15.c ****     }
+  98:Source\TransformFunctions/arm_rfft_q15.c ****     else
+  99:Source\TransformFunctions/arm_rfft_q15.c ****     {
+ 100:Source\TransformFunctions/arm_rfft_q15.c ****         /* Calculation of RFFT of input */
+ 101:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 102:Source\TransformFunctions/arm_rfft_q15.c ****         /* Complex FFT process */
+ 103:Source\TransformFunctions/arm_rfft_q15.c ****         arm_cfft_q15(S_CFFT, pSrc, S->ifftFlagR, S->bitReverseFlagR);
+ 110              		.loc 1 103 0 is_stmt 1
+ 111 0082 FB68     		ldr	r3, [r7, #12]
+ 112 0084 1A79     		ldrb	r2, [r3, #4]
+ 113 0086 FB68     		ldr	r3, [r7, #12]
+ 114 0088 5B79     		ldrb	r3, [r3, #5]
+ 115 008a B869     		ldr	r0, [r7, #24]
+ 116 008c B968     		ldr	r1, [r7, #8]
+ 117 008e FFF7FEFF 		bl	arm_cfft_q15
+ 104:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 105:Source\TransformFunctions/arm_rfft_q15.c ****         /*  Real FFT core process */
+ 106:Source\TransformFunctions/arm_rfft_q15.c ****         arm_split_rfft_q15(pSrc, L2, S->pTwiddleAReal,
+ 118              		.loc 1 106 0
+ 119 0092 FB68     		ldr	r3, [r7, #12]
+ 120 0094 DD68     		ldr	r5, [r3, #12]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 5
+
+
+ 121 0096 FB68     		ldr	r3, [r7, #12]
+ 122 0098 1C69     		ldr	r4, [r3, #16]
+ 123 009a FB68     		ldr	r3, [r7, #12]
+ 124 009c 9B68     		ldr	r3, [r3, #8]
+ 125 009e B868     		ldr	r0, [r7, #8]
+ 126 00a0 7969     		ldr	r1, [r7, #20]
+ 127 00a2 7A68     		ldr	r2, [r7, #4]
+ 128 00a4 0092     		str	r2, [sp]
+ 129 00a6 0193     		str	r3, [sp, #4]
+ 130 00a8 2A1C     		mov	r2, r5
+ 131 00aa 231C     		mov	r3, r4
+ 132 00ac FFF7FEFF 		bl	arm_split_rfft_q15
+ 133              	.L1:
+ 107:Source\TransformFunctions/arm_rfft_q15.c ****                             S->pTwiddleBReal, pDst, S->twidCoefRModifier);
+ 108:Source\TransformFunctions/arm_rfft_q15.c ****     }
+ 109:Source\TransformFunctions/arm_rfft_q15.c **** }
+ 134              		.loc 1 109 0
+ 135 00b0 BD46     		mov	sp, r7
+ 136 00b2 08B0     		add	sp, sp, #32
+ 137              		@ sp needed
+ 138 00b4 B0BD     		pop	{r4, r5, r7, pc}
+ 139              		.cfi_endproc
+ 140              	.LFE82:
+ 141              		.size	arm_rfft_q15, .-arm_rfft_q15
+ 142 00b6 C046     		.section	.text.arm_split_rfft_q15,"ax",%progbits
+ 143              		.align	2
+ 144              		.global	arm_split_rfft_q15
+ 145              		.code	16
+ 146              		.thumb_func
+ 147              		.type	arm_split_rfft_q15, %function
+ 148              	arm_split_rfft_q15:
+ 149              	.LFB83:
+ 110:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 111:Source\TransformFunctions/arm_rfft_q15.c **** /**
+ 112:Source\TransformFunctions/arm_rfft_q15.c **** * @} end of RealFFT group
+ 113:Source\TransformFunctions/arm_rfft_q15.c **** */
+ 114:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 115:Source\TransformFunctions/arm_rfft_q15.c **** /**
+ 116:Source\TransformFunctions/arm_rfft_q15.c **** * @brief  Core Real FFT process
+ 117:Source\TransformFunctions/arm_rfft_q15.c **** * @param  *pSrc 				points to the input buffer.
+ 118:Source\TransformFunctions/arm_rfft_q15.c **** * @param  fftLen  				length of FFT.
+ 119:Source\TransformFunctions/arm_rfft_q15.c **** * @param  *pATable 			points to the A twiddle Coef buffer.
+ 120:Source\TransformFunctions/arm_rfft_q15.c **** * @param  *pBTable 			points to the B twiddle Coef buffer.
+ 121:Source\TransformFunctions/arm_rfft_q15.c **** * @param  *pDst 				points to the output buffer.
+ 122:Source\TransformFunctions/arm_rfft_q15.c **** * @param  modifier 	        twiddle coefficient modifier that supports different size FFTs with the
+ 123:Source\TransformFunctions/arm_rfft_q15.c **** * @return none.
+ 124:Source\TransformFunctions/arm_rfft_q15.c **** * The function implements a Real FFT
+ 125:Source\TransformFunctions/arm_rfft_q15.c **** */
+ 126:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 127:Source\TransformFunctions/arm_rfft_q15.c **** void arm_split_rfft_q15(
+ 128:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pSrc,
+ 129:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t fftLen,
+ 130:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pATable,
+ 131:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pBTable,
+ 132:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pDst,
+ 133:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t modifier)
+ 134:Source\TransformFunctions/arm_rfft_q15.c **** {
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 6
+
+
+ 150              		.loc 1 134 0
+ 151              		.cfi_startproc
+ 152 0000 80B5     		push	{r7, lr}
+ 153              		.cfi_def_cfa_offset 8
+ 154              		.cfi_offset 7, -8
+ 155              		.cfi_offset 14, -4
+ 156 0002 8CB0     		sub	sp, sp, #48
+ 157              		.cfi_def_cfa_offset 56
+ 158 0004 00AF     		add	r7, sp, #0
+ 159              		.cfi_def_cfa_register 7
+ 160 0006 F860     		str	r0, [r7, #12]
+ 161 0008 B960     		str	r1, [r7, #8]
+ 162 000a 7A60     		str	r2, [r7, #4]
+ 163 000c 3B60     		str	r3, [r7]
+ 135:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t i;                                    /* Loop Counter */
+ 136:Source\TransformFunctions/arm_rfft_q15.c ****     q31_t outR, outI;                              /* Temporary variables for output */
+ 137:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t *pCoefA, *pCoefB;                        /* Temporary pointers for twiddle factors */
+ 138:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t *pSrc1, *pSrc2;
+ 139:Source\TransformFunctions/arm_rfft_q15.c **** #if defined (ARM_MATH_DSP)
+ 140:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t *pD1, *pD2;
+ 141:Source\TransformFunctions/arm_rfft_q15.c **** #endif
+ 142:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 143:Source\TransformFunctions/arm_rfft_q15.c ****     //  pSrc[2u * fftLen] = pSrc[0];
+ 144:Source\TransformFunctions/arm_rfft_q15.c ****     //  pSrc[(2u * fftLen) + 1u] = pSrc[1];
+ 145:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 146:Source\TransformFunctions/arm_rfft_q15.c ****     pCoefA = &pATable[modifier * 2u];
+ 164              		.loc 1 146 0
+ 165 000e FB6B     		ldr	r3, [r7, #60]
+ 166 0010 9B00     		lsl	r3, r3, #2
+ 167 0012 7A68     		ldr	r2, [r7, #4]
+ 168 0014 D318     		add	r3, r2, r3
+ 169 0016 BB62     		str	r3, [r7, #40]
+ 147:Source\TransformFunctions/arm_rfft_q15.c ****     pCoefB = &pBTable[modifier * 2u];
+ 170              		.loc 1 147 0
+ 171 0018 FB6B     		ldr	r3, [r7, #60]
+ 172 001a 9B00     		lsl	r3, r3, #2
+ 173 001c 3A68     		ldr	r2, [r7]
+ 174 001e D318     		add	r3, r2, r3
+ 175 0020 7B62     		str	r3, [r7, #36]
+ 148:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 149:Source\TransformFunctions/arm_rfft_q15.c ****     pSrc1 = &pSrc[2];
+ 176              		.loc 1 149 0
+ 177 0022 FB68     		ldr	r3, [r7, #12]
+ 178 0024 0433     		add	r3, r3, #4
+ 179 0026 3B62     		str	r3, [r7, #32]
+ 150:Source\TransformFunctions/arm_rfft_q15.c ****     pSrc2 = &pSrc[(2u * fftLen) - 2u];
+ 180              		.loc 1 150 0
+ 181 0028 BB68     		ldr	r3, [r7, #8]
+ 182 002a 644A     		ldr	r2, .L9
+ 183 002c 9446     		mov	ip, r2
+ 184 002e 6344     		add	r3, r3, ip
+ 185 0030 9B00     		lsl	r3, r3, #2
+ 186 0032 FA68     		ldr	r2, [r7, #12]
+ 187 0034 D318     		add	r3, r2, r3
+ 188 0036 FB61     		str	r3, [r7, #28]
+ 151:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 152:Source\TransformFunctions/arm_rfft_q15.c **** #if defined (ARM_MATH_DSP)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 7
+
+
+ 153:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 154:Source\TransformFunctions/arm_rfft_q15.c ****     /* Run the below code for Cortex-M4 and Cortex-M3 */
+ 155:Source\TransformFunctions/arm_rfft_q15.c ****     i = 1u;
+ 156:Source\TransformFunctions/arm_rfft_q15.c ****     pD1 = pDst + 2;
+ 157:Source\TransformFunctions/arm_rfft_q15.c ****     pD2 = pDst + (4u * fftLen) - 2;
+ 158:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 159:Source\TransformFunctions/arm_rfft_q15.c ****     for(i = fftLen - 1; i > 0; i--)
+ 160:Source\TransformFunctions/arm_rfft_q15.c ****     {
+ 161:Source\TransformFunctions/arm_rfft_q15.c ****         /*
+ 162:Source\TransformFunctions/arm_rfft_q15.c ****         outR = (pSrc[2 * i] * pATable[2 * i] - pSrc[2 * i + 1] * pATable[2 * i + 1]
+ 163:Source\TransformFunctions/arm_rfft_q15.c ****         + pSrc[2 * n - 2 * i] * pBTable[2 * i] +
+ 164:Source\TransformFunctions/arm_rfft_q15.c ****         pSrc[2 * n - 2 * i + 1] * pBTable[2 * i + 1]);
+ 165:Source\TransformFunctions/arm_rfft_q15.c ****         */
+ 166:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 167:Source\TransformFunctions/arm_rfft_q15.c ****         /* outI = (pIn[2 * i + 1] * pATable[2 * i] + pIn[2 * i] * pATable[2 * i + 1] +
+ 168:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i] * pBTable[2 * i + 1] -
+ 169:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i]); */
+ 170:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 171:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 172:Source\TransformFunctions/arm_rfft_q15.c **** #ifndef ARM_MATH_BIG_ENDIAN
+ 173:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 174:Source\TransformFunctions/arm_rfft_q15.c ****         /* pSrc[2 * i] * pATable[2 * i] - pSrc[2 * i + 1] * pATable[2 * i + 1] */
+ 175:Source\TransformFunctions/arm_rfft_q15.c ****         outR = __SMUSD(*__SIMD32(pSrc1), *__SIMD32(pCoefA));
+ 176:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 177:Source\TransformFunctions/arm_rfft_q15.c **** #else
+ 178:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 179:Source\TransformFunctions/arm_rfft_q15.c ****         /* -(pSrc[2 * i + 1] * pATable[2 * i + 1] - pSrc[2 * i] * pATable[2 * i]) */
+ 180:Source\TransformFunctions/arm_rfft_q15.c ****         outR = -(__SMUSD(*__SIMD32(pSrc1), *__SIMD32(pCoefA)));
+ 181:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 182:Source\TransformFunctions/arm_rfft_q15.c **** #endif /*      #ifndef ARM_MATH_BIG_ENDIAN     */
+ 183:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 184:Source\TransformFunctions/arm_rfft_q15.c ****         /* pSrc[2 * n - 2 * i] * pBTable[2 * i] +
+ 185:Source\TransformFunctions/arm_rfft_q15.c ****         pSrc[2 * n - 2 * i + 1] * pBTable[2 * i + 1]) */
+ 186:Source\TransformFunctions/arm_rfft_q15.c ****         outR = __SMLAD(*__SIMD32(pSrc2), *__SIMD32(pCoefB), outR) >> 16u;
+ 187:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 188:Source\TransformFunctions/arm_rfft_q15.c ****         /* pIn[2 * n - 2 * i] * pBTable[2 * i + 1] -
+ 189:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i] */
+ 190:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 191:Source\TransformFunctions/arm_rfft_q15.c **** #ifndef ARM_MATH_BIG_ENDIAN
+ 192:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 193:Source\TransformFunctions/arm_rfft_q15.c ****         outI = __SMUSDX(*__SIMD32(pSrc2)--, *__SIMD32(pCoefB));
+ 194:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 195:Source\TransformFunctions/arm_rfft_q15.c **** #else
+ 196:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 197:Source\TransformFunctions/arm_rfft_q15.c ****         outI = __SMUSDX(*__SIMD32(pCoefB), *__SIMD32(pSrc2)--);
+ 198:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 199:Source\TransformFunctions/arm_rfft_q15.c **** #endif /*      #ifndef ARM_MATH_BIG_ENDIAN     */
+ 200:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 201:Source\TransformFunctions/arm_rfft_q15.c ****         /* (pIn[2 * i + 1] * pATable[2 * i] + pIn[2 * i] * pATable[2 * i + 1] */
+ 202:Source\TransformFunctions/arm_rfft_q15.c ****         outI = __SMLADX(*__SIMD32(pSrc1)++, *__SIMD32(pCoefA), outI);
+ 203:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 204:Source\TransformFunctions/arm_rfft_q15.c ****         /* write output */
+ 205:Source\TransformFunctions/arm_rfft_q15.c ****         *pD1++ = (q15_t) outR;
+ 206:Source\TransformFunctions/arm_rfft_q15.c ****         *pD1++ = outI >> 16u;
+ 207:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 208:Source\TransformFunctions/arm_rfft_q15.c ****         /* write complex conjugate output */
+ 209:Source\TransformFunctions/arm_rfft_q15.c ****         pD2[0] = (q15_t) outR;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 8
+
+
+ 210:Source\TransformFunctions/arm_rfft_q15.c ****         pD2[1] = -(outI >> 16u);
+ 211:Source\TransformFunctions/arm_rfft_q15.c ****         pD2 -= 2;
+ 212:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 213:Source\TransformFunctions/arm_rfft_q15.c ****         /* update coefficient pointer */
+ 214:Source\TransformFunctions/arm_rfft_q15.c ****         pCoefB = pCoefB + (2u * modifier);
+ 215:Source\TransformFunctions/arm_rfft_q15.c ****         pCoefA = pCoefA + (2u * modifier);
+ 216:Source\TransformFunctions/arm_rfft_q15.c ****     }
+ 217:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 218:Source\TransformFunctions/arm_rfft_q15.c ****     pDst[2u * fftLen] = (pSrc[0] - pSrc[1]) >> 1;
+ 219:Source\TransformFunctions/arm_rfft_q15.c ****     pDst[(2u * fftLen) + 1u] = 0;
+ 220:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 221:Source\TransformFunctions/arm_rfft_q15.c ****     pDst[0] = (pSrc[0] + pSrc[1]) >> 1;
+ 222:Source\TransformFunctions/arm_rfft_q15.c ****     pDst[1] = 0;
+ 223:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 224:Source\TransformFunctions/arm_rfft_q15.c **** #else
+ 225:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 226:Source\TransformFunctions/arm_rfft_q15.c ****     /* Run the below code for Cortex-M0 */
+ 227:Source\TransformFunctions/arm_rfft_q15.c ****     i = 1u;
+ 189              		.loc 1 227 0
+ 190 0038 0123     		mov	r3, #1
+ 191 003a FB62     		str	r3, [r7, #44]
+ 228:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 229:Source\TransformFunctions/arm_rfft_q15.c ****     while (i < fftLen)
+ 192              		.loc 1 229 0
+ 193 003c 90E0     		b	.L7
+ 194              	.L8:
+ 230:Source\TransformFunctions/arm_rfft_q15.c ****     {
+ 231:Source\TransformFunctions/arm_rfft_q15.c ****         /*
+ 232:Source\TransformFunctions/arm_rfft_q15.c ****         outR = (pSrc[2 * i] * pATable[2 * i] - pSrc[2 * i + 1] * pATable[2 * i + 1]
+ 233:Source\TransformFunctions/arm_rfft_q15.c ****         + pSrc[2 * n - 2 * i] * pBTable[2 * i] +
+ 234:Source\TransformFunctions/arm_rfft_q15.c ****         pSrc[2 * n - 2 * i + 1] * pBTable[2 * i + 1]);
+ 235:Source\TransformFunctions/arm_rfft_q15.c ****         */
+ 236:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 237:Source\TransformFunctions/arm_rfft_q15.c ****         outR = *pSrc1 * *pCoefA;
+ 195              		.loc 1 237 0
+ 196 003e 3B6A     		ldr	r3, [r7, #32]
+ 197 0040 1B88     		ldrh	r3, [r3]
+ 198 0042 1BB2     		sxth	r3, r3
+ 199 0044 BA6A     		ldr	r2, [r7, #40]
+ 200 0046 1288     		ldrh	r2, [r2]
+ 201 0048 12B2     		sxth	r2, r2
+ 202 004a 5343     		mul	r3, r2
+ 203 004c BB61     		str	r3, [r7, #24]
+ 238:Source\TransformFunctions/arm_rfft_q15.c ****         outR = outR - (*(pSrc1 + 1) * *(pCoefA + 1));
+ 204              		.loc 1 238 0
+ 205 004e 3B6A     		ldr	r3, [r7, #32]
+ 206 0050 0233     		add	r3, r3, #2
+ 207 0052 1B88     		ldrh	r3, [r3]
+ 208 0054 1BB2     		sxth	r3, r3
+ 209 0056 BA6A     		ldr	r2, [r7, #40]
+ 210 0058 0232     		add	r2, r2, #2
+ 211 005a 1288     		ldrh	r2, [r2]
+ 212 005c 12B2     		sxth	r2, r2
+ 213 005e 5343     		mul	r3, r2
+ 214 0060 BA69     		ldr	r2, [r7, #24]
+ 215 0062 D31A     		sub	r3, r2, r3
+ 216 0064 BB61     		str	r3, [r7, #24]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 9
+
+
+ 239:Source\TransformFunctions/arm_rfft_q15.c ****         outR = outR + (*pSrc2 * *pCoefB);
+ 217              		.loc 1 239 0
+ 218 0066 FB69     		ldr	r3, [r7, #28]
+ 219 0068 1B88     		ldrh	r3, [r3]
+ 220 006a 1BB2     		sxth	r3, r3
+ 221 006c 7A6A     		ldr	r2, [r7, #36]
+ 222 006e 1288     		ldrh	r2, [r2]
+ 223 0070 12B2     		sxth	r2, r2
+ 224 0072 5343     		mul	r3, r2
+ 225 0074 BA69     		ldr	r2, [r7, #24]
+ 226 0076 D318     		add	r3, r2, r3
+ 227 0078 BB61     		str	r3, [r7, #24]
+ 240:Source\TransformFunctions/arm_rfft_q15.c ****         outR = (outR + (*(pSrc2 + 1) * *(pCoefB + 1))) >> 16;
+ 228              		.loc 1 240 0
+ 229 007a FB69     		ldr	r3, [r7, #28]
+ 230 007c 0233     		add	r3, r3, #2
+ 231 007e 1B88     		ldrh	r3, [r3]
+ 232 0080 1BB2     		sxth	r3, r3
+ 233 0082 7A6A     		ldr	r2, [r7, #36]
+ 234 0084 0232     		add	r2, r2, #2
+ 235 0086 1288     		ldrh	r2, [r2]
+ 236 0088 12B2     		sxth	r2, r2
+ 237 008a 5A43     		mul	r2, r3
+ 238 008c BB69     		ldr	r3, [r7, #24]
+ 239 008e D318     		add	r3, r2, r3
+ 240 0090 1B14     		asr	r3, r3, #16
+ 241 0092 BB61     		str	r3, [r7, #24]
+ 241:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 242:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 243:Source\TransformFunctions/arm_rfft_q15.c ****         /* outI = (pIn[2 * i + 1] * pATable[2 * i] + pIn[2 * i] * pATable[2 * i + 1] +
+ 244:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i] * pBTable[2 * i + 1] -
+ 245:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i]);
+ 246:Source\TransformFunctions/arm_rfft_q15.c ****         */
+ 247:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 248:Source\TransformFunctions/arm_rfft_q15.c ****         outI = *pSrc2 * *(pCoefB + 1);
+ 242              		.loc 1 248 0
+ 243 0094 FB69     		ldr	r3, [r7, #28]
+ 244 0096 1B88     		ldrh	r3, [r3]
+ 245 0098 1BB2     		sxth	r3, r3
+ 246 009a 7A6A     		ldr	r2, [r7, #36]
+ 247 009c 0232     		add	r2, r2, #2
+ 248 009e 1288     		ldrh	r2, [r2]
+ 249 00a0 12B2     		sxth	r2, r2
+ 250 00a2 5343     		mul	r3, r2
+ 251 00a4 7B61     		str	r3, [r7, #20]
+ 249:Source\TransformFunctions/arm_rfft_q15.c ****         outI = outI - (*(pSrc2 + 1) * *pCoefB);
+ 252              		.loc 1 249 0
+ 253 00a6 FB69     		ldr	r3, [r7, #28]
+ 254 00a8 0233     		add	r3, r3, #2
+ 255 00aa 1B88     		ldrh	r3, [r3]
+ 256 00ac 1BB2     		sxth	r3, r3
+ 257 00ae 7A6A     		ldr	r2, [r7, #36]
+ 258 00b0 1288     		ldrh	r2, [r2]
+ 259 00b2 12B2     		sxth	r2, r2
+ 260 00b4 5343     		mul	r3, r2
+ 261 00b6 7A69     		ldr	r2, [r7, #20]
+ 262 00b8 D31A     		sub	r3, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 10
+
+
+ 263 00ba 7B61     		str	r3, [r7, #20]
+ 250:Source\TransformFunctions/arm_rfft_q15.c ****         outI = outI + (*(pSrc1 + 1) * *pCoefA);
+ 264              		.loc 1 250 0
+ 265 00bc 3B6A     		ldr	r3, [r7, #32]
+ 266 00be 0233     		add	r3, r3, #2
+ 267 00c0 1B88     		ldrh	r3, [r3]
+ 268 00c2 1BB2     		sxth	r3, r3
+ 269 00c4 BA6A     		ldr	r2, [r7, #40]
+ 270 00c6 1288     		ldrh	r2, [r2]
+ 271 00c8 12B2     		sxth	r2, r2
+ 272 00ca 5343     		mul	r3, r2
+ 273 00cc 7A69     		ldr	r2, [r7, #20]
+ 274 00ce D318     		add	r3, r2, r3
+ 275 00d0 7B61     		str	r3, [r7, #20]
+ 251:Source\TransformFunctions/arm_rfft_q15.c ****         outI = outI + (*pSrc1 * *(pCoefA + 1));
+ 276              		.loc 1 251 0
+ 277 00d2 3B6A     		ldr	r3, [r7, #32]
+ 278 00d4 1B88     		ldrh	r3, [r3]
+ 279 00d6 1BB2     		sxth	r3, r3
+ 280 00d8 BA6A     		ldr	r2, [r7, #40]
+ 281 00da 0232     		add	r2, r2, #2
+ 282 00dc 1288     		ldrh	r2, [r2]
+ 283 00de 12B2     		sxth	r2, r2
+ 284 00e0 5343     		mul	r3, r2
+ 285 00e2 7A69     		ldr	r2, [r7, #20]
+ 286 00e4 D318     		add	r3, r2, r3
+ 287 00e6 7B61     		str	r3, [r7, #20]
+ 252:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 253:Source\TransformFunctions/arm_rfft_q15.c ****         /* update input pointers */
+ 254:Source\TransformFunctions/arm_rfft_q15.c ****         pSrc1 += 2u;
+ 288              		.loc 1 254 0
+ 289 00e8 3B6A     		ldr	r3, [r7, #32]
+ 290 00ea 0433     		add	r3, r3, #4
+ 291 00ec 3B62     		str	r3, [r7, #32]
+ 255:Source\TransformFunctions/arm_rfft_q15.c ****         pSrc2 -= 2u;
+ 292              		.loc 1 255 0
+ 293 00ee FB69     		ldr	r3, [r7, #28]
+ 294 00f0 043B     		sub	r3, r3, #4
+ 295 00f2 FB61     		str	r3, [r7, #28]
+ 256:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 257:Source\TransformFunctions/arm_rfft_q15.c ****         /* write output */
+ 258:Source\TransformFunctions/arm_rfft_q15.c ****         pDst[2u * i] = (q15_t) outR;
+ 296              		.loc 1 258 0
+ 297 00f4 FB6A     		ldr	r3, [r7, #44]
+ 298 00f6 9B00     		lsl	r3, r3, #2
+ 299 00f8 BA6B     		ldr	r2, [r7, #56]
+ 300 00fa D318     		add	r3, r2, r3
+ 301 00fc BA69     		ldr	r2, [r7, #24]
+ 302 00fe 92B2     		uxth	r2, r2
+ 303 0100 1A80     		strh	r2, [r3]
+ 259:Source\TransformFunctions/arm_rfft_q15.c ****         pDst[(2u * i) + 1u] = outI >> 16u;
+ 304              		.loc 1 259 0
+ 305 0102 FB6A     		ldr	r3, [r7, #44]
+ 306 0104 9B00     		lsl	r3, r3, #2
+ 307 0106 0233     		add	r3, r3, #2
+ 308 0108 BA6B     		ldr	r2, [r7, #56]
+ 309 010a D318     		add	r3, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 11
+
+
+ 310 010c 7A69     		ldr	r2, [r7, #20]
+ 311 010e 1214     		asr	r2, r2, #16
+ 312 0110 92B2     		uxth	r2, r2
+ 313 0112 1A80     		strh	r2, [r3]
+ 260:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 261:Source\TransformFunctions/arm_rfft_q15.c ****         /* write complex conjugate output */
+ 262:Source\TransformFunctions/arm_rfft_q15.c ****         pDst[(4u * fftLen) - (2u * i)] = (q15_t) outR;
+ 314              		.loc 1 262 0
+ 315 0114 BB68     		ldr	r3, [r7, #8]
+ 316 0116 5A00     		lsl	r2, r3, #1
+ 317 0118 FB6A     		ldr	r3, [r7, #44]
+ 318 011a D31A     		sub	r3, r2, r3
+ 319 011c 9B00     		lsl	r3, r3, #2
+ 320 011e BA6B     		ldr	r2, [r7, #56]
+ 321 0120 D318     		add	r3, r2, r3
+ 322 0122 BA69     		ldr	r2, [r7, #24]
+ 323 0124 92B2     		uxth	r2, r2
+ 324 0126 1A80     		strh	r2, [r3]
+ 263:Source\TransformFunctions/arm_rfft_q15.c ****         pDst[((4u * fftLen) - (2u * i)) + 1u] = -(outI >> 16u);
+ 325              		.loc 1 263 0
+ 326 0128 BB68     		ldr	r3, [r7, #8]
+ 327 012a 5A00     		lsl	r2, r3, #1
+ 328 012c FB6A     		ldr	r3, [r7, #44]
+ 329 012e D31A     		sub	r3, r2, r3
+ 330 0130 9B00     		lsl	r3, r3, #2
+ 331 0132 0233     		add	r3, r3, #2
+ 332 0134 BA6B     		ldr	r2, [r7, #56]
+ 333 0136 D318     		add	r3, r2, r3
+ 334 0138 7A69     		ldr	r2, [r7, #20]
+ 335 013a 1214     		asr	r2, r2, #16
+ 336 013c 92B2     		uxth	r2, r2
+ 337 013e 5242     		neg	r2, r2
+ 338 0140 92B2     		uxth	r2, r2
+ 339 0142 92B2     		uxth	r2, r2
+ 340 0144 1A80     		strh	r2, [r3]
+ 264:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 265:Source\TransformFunctions/arm_rfft_q15.c ****         /* update coefficient pointer */
+ 266:Source\TransformFunctions/arm_rfft_q15.c ****         pCoefB = pCoefB + (2u * modifier);
+ 341              		.loc 1 266 0
+ 342 0146 FB6B     		ldr	r3, [r7, #60]
+ 343 0148 9B00     		lsl	r3, r3, #2
+ 344 014a 7A6A     		ldr	r2, [r7, #36]
+ 345 014c D318     		add	r3, r2, r3
+ 346 014e 7B62     		str	r3, [r7, #36]
+ 267:Source\TransformFunctions/arm_rfft_q15.c ****         pCoefA = pCoefA + (2u * modifier);
+ 347              		.loc 1 267 0
+ 348 0150 FB6B     		ldr	r3, [r7, #60]
+ 349 0152 9B00     		lsl	r3, r3, #2
+ 350 0154 BA6A     		ldr	r2, [r7, #40]
+ 351 0156 D318     		add	r3, r2, r3
+ 352 0158 BB62     		str	r3, [r7, #40]
+ 268:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 269:Source\TransformFunctions/arm_rfft_q15.c ****         i++;
+ 353              		.loc 1 269 0
+ 354 015a FB6A     		ldr	r3, [r7, #44]
+ 355 015c 0133     		add	r3, r3, #1
+ 356 015e FB62     		str	r3, [r7, #44]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 12
+
+
+ 357              	.L7:
+ 229:Source\TransformFunctions/arm_rfft_q15.c ****     {
+ 358              		.loc 1 229 0
+ 359 0160 FA6A     		ldr	r2, [r7, #44]
+ 360 0162 BB68     		ldr	r3, [r7, #8]
+ 361 0164 9A42     		cmp	r2, r3
+ 362 0166 00D2     		bcs	.LCB309
+ 363 0168 69E7     		b	.L8	@long jump
+ 364              	.LCB309:
+ 270:Source\TransformFunctions/arm_rfft_q15.c ****     }
+ 271:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 272:Source\TransformFunctions/arm_rfft_q15.c ****     pDst[2u * fftLen] = (pSrc[0] - pSrc[1]) >> 1;
+ 365              		.loc 1 272 0
+ 366 016a BB68     		ldr	r3, [r7, #8]
+ 367 016c 9B00     		lsl	r3, r3, #2
+ 368 016e BA6B     		ldr	r2, [r7, #56]
+ 369 0170 D318     		add	r3, r2, r3
+ 370 0172 FA68     		ldr	r2, [r7, #12]
+ 371 0174 1288     		ldrh	r2, [r2]
+ 372 0176 11B2     		sxth	r1, r2
+ 373 0178 FA68     		ldr	r2, [r7, #12]
+ 374 017a 0232     		add	r2, r2, #2
+ 375 017c 1288     		ldrh	r2, [r2]
+ 376 017e 12B2     		sxth	r2, r2
+ 377 0180 8A1A     		sub	r2, r1, r2
+ 378 0182 5210     		asr	r2, r2, #1
+ 379 0184 92B2     		uxth	r2, r2
+ 380 0186 1A80     		strh	r2, [r3]
+ 273:Source\TransformFunctions/arm_rfft_q15.c ****     pDst[(2u * fftLen) + 1u] = 0;
+ 381              		.loc 1 273 0
+ 382 0188 BB68     		ldr	r3, [r7, #8]
+ 383 018a 9B00     		lsl	r3, r3, #2
+ 384 018c 0233     		add	r3, r3, #2
+ 385 018e BA6B     		ldr	r2, [r7, #56]
+ 386 0190 D318     		add	r3, r2, r3
+ 387 0192 0022     		mov	r2, #0
+ 388 0194 1A80     		strh	r2, [r3]
+ 274:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 275:Source\TransformFunctions/arm_rfft_q15.c ****     pDst[0] = (pSrc[0] + pSrc[1]) >> 1;
+ 389              		.loc 1 275 0
+ 390 0196 FB68     		ldr	r3, [r7, #12]
+ 391 0198 1B88     		ldrh	r3, [r3]
+ 392 019a 1AB2     		sxth	r2, r3
+ 393 019c FB68     		ldr	r3, [r7, #12]
+ 394 019e 0233     		add	r3, r3, #2
+ 395 01a0 1B88     		ldrh	r3, [r3]
+ 396 01a2 1BB2     		sxth	r3, r3
+ 397 01a4 D318     		add	r3, r2, r3
+ 398 01a6 5B10     		asr	r3, r3, #1
+ 399 01a8 9AB2     		uxth	r2, r3
+ 400 01aa BB6B     		ldr	r3, [r7, #56]
+ 401 01ac 1A80     		strh	r2, [r3]
+ 276:Source\TransformFunctions/arm_rfft_q15.c ****     pDst[1] = 0;
+ 402              		.loc 1 276 0
+ 403 01ae BB6B     		ldr	r3, [r7, #56]
+ 404 01b0 0233     		add	r3, r3, #2
+ 405 01b2 0022     		mov	r2, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 13
+
+
+ 406 01b4 1A80     		strh	r2, [r3]
+ 277:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 278:Source\TransformFunctions/arm_rfft_q15.c **** #endif /* #if defined (ARM_MATH_DSP) */
+ 279:Source\TransformFunctions/arm_rfft_q15.c **** }
+ 407              		.loc 1 279 0
+ 408 01b6 BD46     		mov	sp, r7
+ 409 01b8 0CB0     		add	sp, sp, #48
+ 410              		@ sp needed
+ 411 01ba 80BD     		pop	{r7, pc}
+ 412              	.L10:
+ 413              		.align	2
+ 414              	.L9:
+ 415 01bc FFFFFF3F 		.word	1073741823
+ 416              		.cfi_endproc
+ 417              	.LFE83:
+ 418              		.size	arm_split_rfft_q15, .-arm_split_rfft_q15
+ 419              		.section	.text.arm_split_rifft_q15,"ax",%progbits
+ 420              		.align	2
+ 421              		.global	arm_split_rifft_q15
+ 422              		.code	16
+ 423              		.thumb_func
+ 424              		.type	arm_split_rifft_q15, %function
+ 425              	arm_split_rifft_q15:
+ 426              	.LFB84:
+ 280:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 281:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 282:Source\TransformFunctions/arm_rfft_q15.c **** /**
+ 283:Source\TransformFunctions/arm_rfft_q15.c **** * @brief  Core Real IFFT process
+ 284:Source\TransformFunctions/arm_rfft_q15.c **** * @param[in]   *pSrc 				points to the input buffer.
+ 285:Source\TransformFunctions/arm_rfft_q15.c **** * @param[in]   fftLen  		    length of FFT.
+ 286:Source\TransformFunctions/arm_rfft_q15.c **** * @param[in]   *pATable 			points to the twiddle Coef A buffer.
+ 287:Source\TransformFunctions/arm_rfft_q15.c **** * @param[in]   *pBTable 			points to the twiddle Coef B buffer.
+ 288:Source\TransformFunctions/arm_rfft_q15.c **** * @param[out]  *pDst 				points to the output buffer.
+ 289:Source\TransformFunctions/arm_rfft_q15.c **** * @param[in]   modifier 	        twiddle coefficient modifier that supports different size FFTs wit
+ 290:Source\TransformFunctions/arm_rfft_q15.c **** * @return none.
+ 291:Source\TransformFunctions/arm_rfft_q15.c **** * The function implements a Real IFFT
+ 292:Source\TransformFunctions/arm_rfft_q15.c **** */
+ 293:Source\TransformFunctions/arm_rfft_q15.c **** void arm_split_rifft_q15(
+ 294:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pSrc,
+ 295:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t fftLen,
+ 296:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pATable,
+ 297:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pBTable,
+ 298:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t * pDst,
+ 299:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t modifier)
+ 300:Source\TransformFunctions/arm_rfft_q15.c **** {
+ 427              		.loc 1 300 0
+ 428              		.cfi_startproc
+ 429 0000 80B5     		push	{r7, lr}
+ 430              		.cfi_def_cfa_offset 8
+ 431              		.cfi_offset 7, -8
+ 432              		.cfi_offset 14, -4
+ 433 0002 8CB0     		sub	sp, sp, #48
+ 434              		.cfi_def_cfa_offset 56
+ 435 0004 00AF     		add	r7, sp, #0
+ 436              		.cfi_def_cfa_register 7
+ 437 0006 F860     		str	r0, [r7, #12]
+ 438 0008 B960     		str	r1, [r7, #8]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 14
+
+
+ 439 000a 7A60     		str	r2, [r7, #4]
+ 440 000c 3B60     		str	r3, [r7]
+ 301:Source\TransformFunctions/arm_rfft_q15.c ****     uint32_t i;                                    /* Loop Counter */
+ 302:Source\TransformFunctions/arm_rfft_q15.c ****     q31_t outR, outI;                              /* Temporary variables for output */
+ 303:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t *pCoefA, *pCoefB;                        /* Temporary pointers for twiddle factors */
+ 304:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t *pSrc1, *pSrc2;
+ 305:Source\TransformFunctions/arm_rfft_q15.c ****     q15_t *pDst1 = &pDst[0];
+ 441              		.loc 1 305 0
+ 442 000e BB6B     		ldr	r3, [r7, #56]
+ 443 0010 BB61     		str	r3, [r7, #24]
+ 306:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 307:Source\TransformFunctions/arm_rfft_q15.c ****     pCoefA = &pATable[0];
+ 444              		.loc 1 307 0
+ 445 0012 7B68     		ldr	r3, [r7, #4]
+ 446 0014 BB62     		str	r3, [r7, #40]
+ 308:Source\TransformFunctions/arm_rfft_q15.c ****     pCoefB = &pBTable[0];
+ 447              		.loc 1 308 0
+ 448 0016 3B68     		ldr	r3, [r7]
+ 449 0018 7B62     		str	r3, [r7, #36]
+ 309:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 310:Source\TransformFunctions/arm_rfft_q15.c ****     pSrc1 = &pSrc[0];
+ 450              		.loc 1 310 0
+ 451 001a FB68     		ldr	r3, [r7, #12]
+ 452 001c 3B62     		str	r3, [r7, #32]
+ 311:Source\TransformFunctions/arm_rfft_q15.c ****     pSrc2 = &pSrc[2u * fftLen];
+ 453              		.loc 1 311 0
+ 454 001e BB68     		ldr	r3, [r7, #8]
+ 455 0020 9B00     		lsl	r3, r3, #2
+ 456 0022 FA68     		ldr	r2, [r7, #12]
+ 457 0024 D318     		add	r3, r2, r3
+ 458 0026 FB61     		str	r3, [r7, #28]
+ 312:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 313:Source\TransformFunctions/arm_rfft_q15.c **** #if defined (ARM_MATH_DSP)
+ 314:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 315:Source\TransformFunctions/arm_rfft_q15.c ****     /* Run the below code for Cortex-M4 and Cortex-M3 */
+ 316:Source\TransformFunctions/arm_rfft_q15.c ****     i = fftLen;
+ 317:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 318:Source\TransformFunctions/arm_rfft_q15.c ****     while (i > 0u)
+ 319:Source\TransformFunctions/arm_rfft_q15.c ****     {
+ 320:Source\TransformFunctions/arm_rfft_q15.c ****         /*
+ 321:Source\TransformFunctions/arm_rfft_q15.c ****         outR = (pIn[2 * i] * pATable[2 * i] + pIn[2 * i + 1] * pATable[2 * i + 1] +
+ 322:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i] * pBTable[2 * i] -
+ 323:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i + 1]);
+ 324:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 325:Source\TransformFunctions/arm_rfft_q15.c ****         outI = (pIn[2 * i + 1] * pATable[2 * i] - pIn[2 * i] * pATable[2 * i + 1] -
+ 326:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i] * pBTable[2 * i + 1] -
+ 327:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i]);
+ 328:Source\TransformFunctions/arm_rfft_q15.c ****         */
+ 329:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 330:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 331:Source\TransformFunctions/arm_rfft_q15.c **** #ifndef ARM_MATH_BIG_ENDIAN
+ 332:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 333:Source\TransformFunctions/arm_rfft_q15.c ****         /* pIn[2 * n - 2 * i] * pBTable[2 * i] -
+ 334:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i + 1]) */
+ 335:Source\TransformFunctions/arm_rfft_q15.c ****         outR = __SMUSD(*__SIMD32(pSrc2), *__SIMD32(pCoefB));
+ 336:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 337:Source\TransformFunctions/arm_rfft_q15.c **** #else
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 15
+
+
+ 338:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 339:Source\TransformFunctions/arm_rfft_q15.c ****         /* -(-pIn[2 * n - 2 * i] * pBTable[2 * i] +
+ 340:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i + 1])) */
+ 341:Source\TransformFunctions/arm_rfft_q15.c ****         outR = -(__SMUSD(*__SIMD32(pSrc2), *__SIMD32(pCoefB)));
+ 342:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 343:Source\TransformFunctions/arm_rfft_q15.c **** #endif /*      #ifndef ARM_MATH_BIG_ENDIAN     */
+ 344:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 345:Source\TransformFunctions/arm_rfft_q15.c ****         /* pIn[2 * i] * pATable[2 * i] + pIn[2 * i + 1] * pATable[2 * i + 1] +
+ 346:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i] * pBTable[2 * i] */
+ 347:Source\TransformFunctions/arm_rfft_q15.c ****         outR = __SMLAD(*__SIMD32(pSrc1), *__SIMD32(pCoefA), outR) >> 16u;
+ 348:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 349:Source\TransformFunctions/arm_rfft_q15.c ****         /*
+ 350:Source\TransformFunctions/arm_rfft_q15.c ****         -pIn[2 * n - 2 * i] * pBTable[2 * i + 1] +
+ 351:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i] */
+ 352:Source\TransformFunctions/arm_rfft_q15.c ****         outI = __SMUADX(*__SIMD32(pSrc2)--, *__SIMD32(pCoefB));
+ 353:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 354:Source\TransformFunctions/arm_rfft_q15.c ****         /* pIn[2 * i + 1] * pATable[2 * i] - pIn[2 * i] * pATable[2 * i + 1] */
+ 355:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 356:Source\TransformFunctions/arm_rfft_q15.c **** #ifndef ARM_MATH_BIG_ENDIAN
+ 357:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 358:Source\TransformFunctions/arm_rfft_q15.c ****         outI = __SMLSDX(*__SIMD32(pCoefA), *__SIMD32(pSrc1)++, -outI);
+ 359:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 360:Source\TransformFunctions/arm_rfft_q15.c **** #else
+ 361:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 362:Source\TransformFunctions/arm_rfft_q15.c ****         outI = __SMLSDX(*__SIMD32(pSrc1)++, *__SIMD32(pCoefA), -outI);
+ 363:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 364:Source\TransformFunctions/arm_rfft_q15.c **** #endif /*      #ifndef ARM_MATH_BIG_ENDIAN     */
+ 365:Source\TransformFunctions/arm_rfft_q15.c ****         /* write output */
+ 366:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 367:Source\TransformFunctions/arm_rfft_q15.c **** #ifndef ARM_MATH_BIG_ENDIAN
+ 368:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 369:Source\TransformFunctions/arm_rfft_q15.c ****         *__SIMD32(pDst1)++ = __PKHBT(outR, (outI >> 16u), 16);
+ 370:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 371:Source\TransformFunctions/arm_rfft_q15.c **** #else
+ 372:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 373:Source\TransformFunctions/arm_rfft_q15.c ****         *__SIMD32(pDst1)++ = __PKHBT((outI >> 16u), outR, 16);
+ 374:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 375:Source\TransformFunctions/arm_rfft_q15.c **** #endif /*      #ifndef ARM_MATH_BIG_ENDIAN     */
+ 376:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 377:Source\TransformFunctions/arm_rfft_q15.c ****         /* update coefficient pointer */
+ 378:Source\TransformFunctions/arm_rfft_q15.c ****         pCoefB = pCoefB + (2u * modifier);
+ 379:Source\TransformFunctions/arm_rfft_q15.c ****         pCoefA = pCoefA + (2u * modifier);
+ 380:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 381:Source\TransformFunctions/arm_rfft_q15.c ****         i--;
+ 382:Source\TransformFunctions/arm_rfft_q15.c ****     }
+ 383:Source\TransformFunctions/arm_rfft_q15.c **** #else
+ 384:Source\TransformFunctions/arm_rfft_q15.c ****     /* Run the below code for Cortex-M0 */
+ 385:Source\TransformFunctions/arm_rfft_q15.c ****     i = fftLen;
+ 459              		.loc 1 385 0
+ 460 0028 BB68     		ldr	r3, [r7, #8]
+ 461 002a FB62     		str	r3, [r7, #44]
+ 386:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 387:Source\TransformFunctions/arm_rfft_q15.c ****     while (i > 0u)
+ 462              		.loc 1 387 0
+ 463 002c 74E0     		b	.L12
+ 464              	.L13:
+ 388:Source\TransformFunctions/arm_rfft_q15.c ****     {
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 16
+
+
+ 389:Source\TransformFunctions/arm_rfft_q15.c ****         /*
+ 390:Source\TransformFunctions/arm_rfft_q15.c ****         outR = (pIn[2 * i] * pATable[2 * i] + pIn[2 * i + 1] * pATable[2 * i + 1] +
+ 391:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i] * pBTable[2 * i] -
+ 392:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i + 1]);
+ 393:Source\TransformFunctions/arm_rfft_q15.c ****         */
+ 394:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 395:Source\TransformFunctions/arm_rfft_q15.c ****         outR = *pSrc2 * *pCoefB;
+ 465              		.loc 1 395 0
+ 466 002e FB69     		ldr	r3, [r7, #28]
+ 467 0030 1B88     		ldrh	r3, [r3]
+ 468 0032 1BB2     		sxth	r3, r3
+ 469 0034 7A6A     		ldr	r2, [r7, #36]
+ 470 0036 1288     		ldrh	r2, [r2]
+ 471 0038 12B2     		sxth	r2, r2
+ 472 003a 5343     		mul	r3, r2
+ 473 003c 7B61     		str	r3, [r7, #20]
+ 396:Source\TransformFunctions/arm_rfft_q15.c ****         outR = outR - (*(pSrc2 + 1) * *(pCoefB + 1));
+ 474              		.loc 1 396 0
+ 475 003e FB69     		ldr	r3, [r7, #28]
+ 476 0040 0233     		add	r3, r3, #2
+ 477 0042 1B88     		ldrh	r3, [r3]
+ 478 0044 1BB2     		sxth	r3, r3
+ 479 0046 7A6A     		ldr	r2, [r7, #36]
+ 480 0048 0232     		add	r2, r2, #2
+ 481 004a 1288     		ldrh	r2, [r2]
+ 482 004c 12B2     		sxth	r2, r2
+ 483 004e 5343     		mul	r3, r2
+ 484 0050 7A69     		ldr	r2, [r7, #20]
+ 485 0052 D31A     		sub	r3, r2, r3
+ 486 0054 7B61     		str	r3, [r7, #20]
+ 397:Source\TransformFunctions/arm_rfft_q15.c ****         outR = outR + (*pSrc1 * *pCoefA);
+ 487              		.loc 1 397 0
+ 488 0056 3B6A     		ldr	r3, [r7, #32]
+ 489 0058 1B88     		ldrh	r3, [r3]
+ 490 005a 1BB2     		sxth	r3, r3
+ 491 005c BA6A     		ldr	r2, [r7, #40]
+ 492 005e 1288     		ldrh	r2, [r2]
+ 493 0060 12B2     		sxth	r2, r2
+ 494 0062 5343     		mul	r3, r2
+ 495 0064 7A69     		ldr	r2, [r7, #20]
+ 496 0066 D318     		add	r3, r2, r3
+ 497 0068 7B61     		str	r3, [r7, #20]
+ 398:Source\TransformFunctions/arm_rfft_q15.c ****         outR = (outR + (*(pSrc1 + 1) * *(pCoefA + 1))) >> 16;
+ 498              		.loc 1 398 0
+ 499 006a 3B6A     		ldr	r3, [r7, #32]
+ 500 006c 0233     		add	r3, r3, #2
+ 501 006e 1B88     		ldrh	r3, [r3]
+ 502 0070 1BB2     		sxth	r3, r3
+ 503 0072 BA6A     		ldr	r2, [r7, #40]
+ 504 0074 0232     		add	r2, r2, #2
+ 505 0076 1288     		ldrh	r2, [r2]
+ 506 0078 12B2     		sxth	r2, r2
+ 507 007a 5A43     		mul	r2, r3
+ 508 007c 7B69     		ldr	r3, [r7, #20]
+ 509 007e D318     		add	r3, r2, r3
+ 510 0080 1B14     		asr	r3, r3, #16
+ 511 0082 7B61     		str	r3, [r7, #20]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 17
+
+
+ 399:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 400:Source\TransformFunctions/arm_rfft_q15.c ****         /*
+ 401:Source\TransformFunctions/arm_rfft_q15.c ****         outI = (pIn[2 * i + 1] * pATable[2 * i] - pIn[2 * i] * pATable[2 * i + 1] -
+ 402:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i] * pBTable[2 * i + 1] -
+ 403:Source\TransformFunctions/arm_rfft_q15.c ****         pIn[2 * n - 2 * i + 1] * pBTable[2 * i]);
+ 404:Source\TransformFunctions/arm_rfft_q15.c ****         */
+ 405:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 406:Source\TransformFunctions/arm_rfft_q15.c ****         outI = *(pSrc1 + 1) * *pCoefA;
+ 512              		.loc 1 406 0
+ 513 0084 3B6A     		ldr	r3, [r7, #32]
+ 514 0086 0233     		add	r3, r3, #2
+ 515 0088 1B88     		ldrh	r3, [r3]
+ 516 008a 1BB2     		sxth	r3, r3
+ 517 008c BA6A     		ldr	r2, [r7, #40]
+ 518 008e 1288     		ldrh	r2, [r2]
+ 519 0090 12B2     		sxth	r2, r2
+ 520 0092 5343     		mul	r3, r2
+ 521 0094 3B61     		str	r3, [r7, #16]
+ 407:Source\TransformFunctions/arm_rfft_q15.c ****         outI = outI - (*pSrc1 * *(pCoefA + 1));
+ 522              		.loc 1 407 0
+ 523 0096 3B6A     		ldr	r3, [r7, #32]
+ 524 0098 1B88     		ldrh	r3, [r3]
+ 525 009a 1BB2     		sxth	r3, r3
+ 526 009c BA6A     		ldr	r2, [r7, #40]
+ 527 009e 0232     		add	r2, r2, #2
+ 528 00a0 1288     		ldrh	r2, [r2]
+ 529 00a2 12B2     		sxth	r2, r2
+ 530 00a4 5343     		mul	r3, r2
+ 531 00a6 3A69     		ldr	r2, [r7, #16]
+ 532 00a8 D31A     		sub	r3, r2, r3
+ 533 00aa 3B61     		str	r3, [r7, #16]
+ 408:Source\TransformFunctions/arm_rfft_q15.c ****         outI = outI - (*pSrc2 * *(pCoefB + 1));
+ 534              		.loc 1 408 0
+ 535 00ac FB69     		ldr	r3, [r7, #28]
+ 536 00ae 1B88     		ldrh	r3, [r3]
+ 537 00b0 1BB2     		sxth	r3, r3
+ 538 00b2 7A6A     		ldr	r2, [r7, #36]
+ 539 00b4 0232     		add	r2, r2, #2
+ 540 00b6 1288     		ldrh	r2, [r2]
+ 541 00b8 12B2     		sxth	r2, r2
+ 542 00ba 5343     		mul	r3, r2
+ 543 00bc 3A69     		ldr	r2, [r7, #16]
+ 544 00be D31A     		sub	r3, r2, r3
+ 545 00c0 3B61     		str	r3, [r7, #16]
+ 409:Source\TransformFunctions/arm_rfft_q15.c ****         outI = outI - (*(pSrc2 + 1) * *(pCoefB));
+ 546              		.loc 1 409 0
+ 547 00c2 FB69     		ldr	r3, [r7, #28]
+ 548 00c4 0233     		add	r3, r3, #2
+ 549 00c6 1B88     		ldrh	r3, [r3]
+ 550 00c8 1BB2     		sxth	r3, r3
+ 551 00ca 7A6A     		ldr	r2, [r7, #36]
+ 552 00cc 1288     		ldrh	r2, [r2]
+ 553 00ce 12B2     		sxth	r2, r2
+ 554 00d0 5343     		mul	r3, r2
+ 555 00d2 3A69     		ldr	r2, [r7, #16]
+ 556 00d4 D31A     		sub	r3, r2, r3
+ 557 00d6 3B61     		str	r3, [r7, #16]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 18
+
+
+ 410:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 411:Source\TransformFunctions/arm_rfft_q15.c ****         /* update input pointers */
+ 412:Source\TransformFunctions/arm_rfft_q15.c ****         pSrc1 += 2u;
+ 558              		.loc 1 412 0
+ 559 00d8 3B6A     		ldr	r3, [r7, #32]
+ 560 00da 0433     		add	r3, r3, #4
+ 561 00dc 3B62     		str	r3, [r7, #32]
+ 413:Source\TransformFunctions/arm_rfft_q15.c ****         pSrc2 -= 2u;
+ 562              		.loc 1 413 0
+ 563 00de FB69     		ldr	r3, [r7, #28]
+ 564 00e0 043B     		sub	r3, r3, #4
+ 565 00e2 FB61     		str	r3, [r7, #28]
+ 414:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 415:Source\TransformFunctions/arm_rfft_q15.c ****         /* write output */
+ 416:Source\TransformFunctions/arm_rfft_q15.c ****         *pDst1++ = (q15_t) outR;
+ 566              		.loc 1 416 0
+ 567 00e4 BB69     		ldr	r3, [r7, #24]
+ 568 00e6 9A1C     		add	r2, r3, #2
+ 569 00e8 BA61     		str	r2, [r7, #24]
+ 570 00ea 7A69     		ldr	r2, [r7, #20]
+ 571 00ec 92B2     		uxth	r2, r2
+ 572 00ee 1A80     		strh	r2, [r3]
+ 417:Source\TransformFunctions/arm_rfft_q15.c ****         *pDst1++ = (q15_t) (outI >> 16);
+ 573              		.loc 1 417 0
+ 574 00f0 BB69     		ldr	r3, [r7, #24]
+ 575 00f2 9A1C     		add	r2, r3, #2
+ 576 00f4 BA61     		str	r2, [r7, #24]
+ 577 00f6 3A69     		ldr	r2, [r7, #16]
+ 578 00f8 1214     		asr	r2, r2, #16
+ 579 00fa 92B2     		uxth	r2, r2
+ 580 00fc 1A80     		strh	r2, [r3]
+ 418:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 419:Source\TransformFunctions/arm_rfft_q15.c ****         /* update coefficient pointer */
+ 420:Source\TransformFunctions/arm_rfft_q15.c ****         pCoefB = pCoefB + (2u * modifier);
+ 581              		.loc 1 420 0
+ 582 00fe FB6B     		ldr	r3, [r7, #60]
+ 583 0100 9B00     		lsl	r3, r3, #2
+ 584 0102 7A6A     		ldr	r2, [r7, #36]
+ 585 0104 D318     		add	r3, r2, r3
+ 586 0106 7B62     		str	r3, [r7, #36]
+ 421:Source\TransformFunctions/arm_rfft_q15.c ****         pCoefA = pCoefA + (2u * modifier);
+ 587              		.loc 1 421 0
+ 588 0108 FB6B     		ldr	r3, [r7, #60]
+ 589 010a 9B00     		lsl	r3, r3, #2
+ 590 010c BA6A     		ldr	r2, [r7, #40]
+ 591 010e D318     		add	r3, r2, r3
+ 592 0110 BB62     		str	r3, [r7, #40]
+ 422:Source\TransformFunctions/arm_rfft_q15.c **** 
+ 423:Source\TransformFunctions/arm_rfft_q15.c ****         i--;
+ 593              		.loc 1 423 0
+ 594 0112 FB6A     		ldr	r3, [r7, #44]
+ 595 0114 013B     		sub	r3, r3, #1
+ 596 0116 FB62     		str	r3, [r7, #44]
+ 597              	.L12:
+ 387:Source\TransformFunctions/arm_rfft_q15.c ****     {
+ 598              		.loc 1 387 0
+ 599 0118 FB6A     		ldr	r3, [r7, #44]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 19
+
+
+ 600 011a 002B     		cmp	r3, #0
+ 601 011c 00D0     		beq	.LCB520
+ 602 011e 86E7     		b	.L13	@long jump
+ 603              	.LCB520:
+ 424:Source\TransformFunctions/arm_rfft_q15.c ****     }
+ 425:Source\TransformFunctions/arm_rfft_q15.c **** #endif /* #if defined (ARM_MATH_DSP) */
+ 426:Source\TransformFunctions/arm_rfft_q15.c **** }
+ 604              		.loc 1 426 0
+ 605 0120 BD46     		mov	sp, r7
+ 606 0122 0CB0     		add	sp, sp, #48
+ 607              		@ sp needed
+ 608 0124 80BD     		pop	{r7, pc}
+ 609              		.cfi_endproc
+ 610              	.LFE84:
+ 611              		.size	arm_split_rifft_q15, .-arm_split_rifft_q15
+ 612 0126 C046     		.text
+ 613              	.Letext0:
+ 614              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 615              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 616              		.file 4 ".\\Include/arm_math.h"
+ 617              		.section	.debug_info,"",%progbits
+ 618              	.Ldebug_info0:
+ 619 0000 10040000 		.4byte	0x410
+ 620 0004 0400     		.2byte	0x4
+ 621 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 622 000a 04       		.byte	0x4
+ 623 000b 01       		.uleb128 0x1
+ 624 000c 0A020000 		.4byte	.LASF54
+ 625 0010 01       		.byte	0x1
+ 626 0011 DC000000 		.4byte	.LASF55
+ 627 0015 52000000 		.4byte	.LASF56
+ 628 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 629 001d 00000000 		.4byte	0
+ 630 0021 00000000 		.4byte	.Ldebug_line0
+ 631 0025 02       		.uleb128 0x2
+ 632 0026 01       		.byte	0x1
+ 633 0027 06       		.byte	0x6
+ 634 0028 30030000 		.4byte	.LASF0
+ 635 002c 03       		.uleb128 0x3
+ 636 002d 13000000 		.4byte	.LASF2
+ 637 0031 02       		.byte	0x2
+ 638 0032 1D       		.byte	0x1d
+ 639 0033 37000000 		.4byte	0x37
+ 640 0037 02       		.uleb128 0x2
+ 641 0038 01       		.byte	0x1
+ 642 0039 08       		.byte	0x8
+ 643 003a 24010000 		.4byte	.LASF1
+ 644 003e 03       		.uleb128 0x3
+ 645 003f 2D000000 		.4byte	.LASF3
+ 646 0043 02       		.byte	0x2
+ 647 0044 29       		.byte	0x29
+ 648 0045 49000000 		.4byte	0x49
+ 649 0049 02       		.uleb128 0x2
+ 650 004a 02       		.byte	0x2
+ 651 004b 05       		.byte	0x5
+ 652 004c FF020000 		.4byte	.LASF4
+ 653 0050 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 20
+
+
+ 654 0051 9A010000 		.4byte	.LASF5
+ 655 0055 02       		.byte	0x2
+ 656 0056 2B       		.byte	0x2b
+ 657 0057 5B000000 		.4byte	0x5b
+ 658 005b 02       		.uleb128 0x2
+ 659 005c 02       		.byte	0x2
+ 660 005d 07       		.byte	0x7
+ 661 005e AB000000 		.4byte	.LASF6
+ 662 0062 03       		.uleb128 0x3
+ 663 0063 98000000 		.4byte	.LASF7
+ 664 0067 02       		.byte	0x2
+ 665 0068 3F       		.byte	0x3f
+ 666 0069 6D000000 		.4byte	0x6d
+ 667 006d 02       		.uleb128 0x2
+ 668 006e 04       		.byte	0x4
+ 669 006f 05       		.byte	0x5
+ 670 0070 1B030000 		.4byte	.LASF8
+ 671 0074 03       		.uleb128 0x3
+ 672 0075 B6010000 		.4byte	.LASF9
+ 673 0079 02       		.byte	0x2
+ 674 007a 41       		.byte	0x41
+ 675 007b 7F000000 		.4byte	0x7f
+ 676 007f 02       		.uleb128 0x2
+ 677 0080 04       		.byte	0x4
+ 678 0081 07       		.byte	0x7
+ 679 0082 40010000 		.4byte	.LASF10
+ 680 0086 02       		.uleb128 0x2
+ 681 0087 08       		.byte	0x8
+ 682 0088 05       		.byte	0x5
+ 683 0089 C7020000 		.4byte	.LASF11
+ 684 008d 02       		.uleb128 0x2
+ 685 008e 08       		.byte	0x8
+ 686 008f 07       		.byte	0x7
+ 687 0090 F3010000 		.4byte	.LASF12
+ 688 0094 04       		.uleb128 0x4
+ 689 0095 04       		.byte	0x4
+ 690 0096 05       		.byte	0x5
+ 691 0097 696E7400 		.ascii	"int\000"
+ 692 009b 02       		.uleb128 0x2
+ 693 009c 04       		.byte	0x4
+ 694 009d 07       		.byte	0x7
+ 695 009e D4010000 		.4byte	.LASF13
+ 696 00a2 03       		.uleb128 0x3
+ 697 00a3 BE000000 		.4byte	.LASF14
+ 698 00a7 03       		.byte	0x3
+ 699 00a8 15       		.byte	0x15
+ 700 00a9 2C000000 		.4byte	0x2c
+ 701 00ad 03       		.uleb128 0x3
+ 702 00ae 9C020000 		.4byte	.LASF15
+ 703 00b2 03       		.byte	0x3
+ 704 00b3 20       		.byte	0x20
+ 705 00b4 3E000000 		.4byte	0x3e
+ 706 00b8 03       		.uleb128 0x3
+ 707 00b9 09030000 		.4byte	.LASF16
+ 708 00bd 03       		.byte	0x3
+ 709 00be 21       		.byte	0x21
+ 710 00bf 50000000 		.4byte	0x50
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 21
+
+
+ 711 00c3 03       		.uleb128 0x3
+ 712 00c4 B6020000 		.4byte	.LASF17
+ 713 00c8 03       		.byte	0x3
+ 714 00c9 2C       		.byte	0x2c
+ 715 00ca 62000000 		.4byte	0x62
+ 716 00ce 03       		.uleb128 0x3
+ 717 00cf 12030000 		.4byte	.LASF18
+ 718 00d3 03       		.byte	0x3
+ 719 00d4 2D       		.byte	0x2d
+ 720 00d5 74000000 		.4byte	0x74
+ 721 00d9 02       		.uleb128 0x2
+ 722 00da 04       		.byte	0x4
+ 723 00db 07       		.byte	0x7
+ 724 00dc BE020000 		.4byte	.LASF19
+ 725 00e0 02       		.uleb128 0x2
+ 726 00e1 01       		.byte	0x1
+ 727 00e2 08       		.byte	0x8
+ 728 00e3 E3020000 		.4byte	.LASF20
+ 729 00e7 02       		.uleb128 0x2
+ 730 00e8 08       		.byte	0x8
+ 731 00e9 04       		.byte	0x4
+ 732 00ea A5010000 		.4byte	.LASF21
+ 733 00ee 02       		.uleb128 0x2
+ 734 00ef 04       		.byte	0x4
+ 735 00f0 04       		.byte	0x4
+ 736 00f1 18010000 		.4byte	.LASF22
+ 737 00f5 02       		.uleb128 0x2
+ 738 00f6 08       		.byte	0x8
+ 739 00f7 04       		.byte	0x4
+ 740 00f8 24030000 		.4byte	.LASF23
+ 741 00fc 05       		.uleb128 0x5
+ 742 00fd 12010000 		.4byte	.LASF24
+ 743 0101 04       		.byte	0x4
+ 744 0102 9601     		.2byte	0x196
+ 745 0104 AD000000 		.4byte	0xad
+ 746 0108 05       		.uleb128 0x5
+ 747 0109 1E010000 		.4byte	.LASF25
+ 748 010d 04       		.byte	0x4
+ 749 010e 9B01     		.2byte	0x19b
+ 750 0110 C3000000 		.4byte	0xc3
+ 751 0114 06       		.uleb128 0x6
+ 752 0115 04       		.byte	0x4
+ 753 0116 FC000000 		.4byte	0xfc
+ 754 011a 07       		.uleb128 0x7
+ 755 011b 10       		.byte	0x10
+ 756 011c 04       		.byte	0x4
+ 757 011d 7C08     		.2byte	0x87c
+ 758 011f 58010000 		.4byte	0x158
+ 759 0123 08       		.uleb128 0x8
+ 760 0124 7C010000 		.4byte	.LASF26
+ 761 0128 04       		.byte	0x4
+ 762 0129 7E08     		.2byte	0x87e
+ 763 012b B8000000 		.4byte	0xb8
+ 764 012f 00       		.byte	0
+ 765 0130 08       		.uleb128 0x8
+ 766 0131 E8020000 		.4byte	.LASF27
+ 767 0135 04       		.byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 22
+
+
+ 768 0136 7F08     		.2byte	0x87f
+ 769 0138 58010000 		.4byte	0x158
+ 770 013c 04       		.byte	0x4
+ 771 013d 08       		.uleb128 0x8
+ 772 013e 05010000 		.4byte	.LASF28
+ 773 0142 04       		.byte	0x4
+ 774 0143 8008     		.2byte	0x880
+ 775 0145 63010000 		.4byte	0x163
+ 776 0149 08       		.byte	0x8
+ 777 014a 08       		.uleb128 0x8
+ 778 014b 45000000 		.4byte	.LASF29
+ 779 014f 04       		.byte	0x4
+ 780 0150 8108     		.2byte	0x881
+ 781 0152 B8000000 		.4byte	0xb8
+ 782 0156 0C       		.byte	0xc
+ 783 0157 00       		.byte	0
+ 784 0158 06       		.uleb128 0x6
+ 785 0159 04       		.byte	0x4
+ 786 015a 5E010000 		.4byte	0x15e
+ 787 015e 09       		.uleb128 0x9
+ 788 015f FC000000 		.4byte	0xfc
+ 789 0163 06       		.uleb128 0x6
+ 790 0164 04       		.byte	0x4
+ 791 0165 69010000 		.4byte	0x169
+ 792 0169 09       		.uleb128 0x9
+ 793 016a B8000000 		.4byte	0xb8
+ 794 016e 05       		.uleb128 0x5
+ 795 016f 52010000 		.4byte	.LASF30
+ 796 0173 04       		.byte	0x4
+ 797 0174 8208     		.2byte	0x882
+ 798 0176 1A010000 		.4byte	0x11a
+ 799 017a 07       		.uleb128 0x7
+ 800 017b 18       		.byte	0x18
+ 801 017c 04       		.byte	0x4
+ 802 017d AF08     		.2byte	0x8af
+ 803 017f DF010000 		.4byte	0x1df
+ 804 0183 08       		.uleb128 0x8
+ 805 0184 AB020000 		.4byte	.LASF31
+ 806 0188 04       		.byte	0x4
+ 807 0189 B108     		.2byte	0x8b1
+ 808 018b CE000000 		.4byte	0xce
+ 809 018f 00       		.byte	0
+ 810 0190 08       		.uleb128 0x8
+ 811 0191 AC010000 		.4byte	.LASF32
+ 812 0195 04       		.byte	0x4
+ 813 0196 B208     		.2byte	0x8b2
+ 814 0198 A2000000 		.4byte	0xa2
+ 815 019c 04       		.byte	0x4
+ 816 019d 08       		.uleb128 0x8
+ 817 019e 1D000000 		.4byte	.LASF33
+ 818 01a2 04       		.byte	0x4
+ 819 01a3 B308     		.2byte	0x8b3
+ 820 01a5 A2000000 		.4byte	0xa2
+ 821 01a9 05       		.byte	0x5
+ 822 01aa 08       		.uleb128 0x8
+ 823 01ab E1010000 		.4byte	.LASF34
+ 824 01af 04       		.byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 23
+
+
+ 825 01b0 B408     		.2byte	0x8b4
+ 826 01b2 CE000000 		.4byte	0xce
+ 827 01b6 08       		.byte	0x8
+ 828 01b7 08       		.uleb128 0x8
+ 829 01b8 37000000 		.4byte	.LASF35
+ 830 01bc 04       		.byte	0x4
+ 831 01bd B508     		.2byte	0x8b5
+ 832 01bf 14010000 		.4byte	0x114
+ 833 01c3 0C       		.byte	0xc
+ 834 01c4 08       		.uleb128 0x8
+ 835 01c5 32010000 		.4byte	.LASF36
+ 836 01c9 04       		.byte	0x4
+ 837 01ca B608     		.2byte	0x8b6
+ 838 01cc 14010000 		.4byte	0x114
+ 839 01d0 10       		.byte	0x10
+ 840 01d1 08       		.uleb128 0x8
+ 841 01d2 C9010000 		.4byte	.LASF37
+ 842 01d6 04       		.byte	0x4
+ 843 01d7 B708     		.2byte	0x8b7
+ 844 01d9 DF010000 		.4byte	0x1df
+ 845 01dd 14       		.byte	0x14
+ 846 01de 00       		.byte	0
+ 847 01df 06       		.uleb128 0x6
+ 848 01e0 04       		.byte	0x4
+ 849 01e1 E5010000 		.4byte	0x1e5
+ 850 01e5 09       		.uleb128 0x9
+ 851 01e6 6E010000 		.4byte	0x16e
+ 852 01ea 05       		.uleb128 0x5
+ 853 01eb C6000000 		.4byte	.LASF38
+ 854 01ef 04       		.byte	0x4
+ 855 01f0 B808     		.2byte	0x8b8
+ 856 01f2 7A010000 		.4byte	0x17a
+ 857 01f6 0A       		.uleb128 0xa
+ 858 01f7 83010000 		.4byte	.LASF42
+ 859 01fb 01       		.byte	0x1
+ 860 01fc 4A       		.byte	0x4a
+ 861 01fd 00000000 		.4byte	.LFB82
+ 862 0201 B6000000 		.4byte	.LFE82-.LFB82
+ 863 0205 01       		.uleb128 0x1
+ 864 0206 9C       		.byte	0x9c
+ 865 0207 5B020000 		.4byte	0x25b
+ 866 020b 0B       		.uleb128 0xb
+ 867 020c 5300     		.ascii	"S\000"
+ 868 020e 01       		.byte	0x1
+ 869 020f 4B       		.byte	0x4b
+ 870 0210 5B020000 		.4byte	0x25b
+ 871 0214 02       		.uleb128 0x2
+ 872 0215 91       		.byte	0x91
+ 873 0216 5C       		.sleb128 -36
+ 874 0217 0C       		.uleb128 0xc
+ 875 0218 3C030000 		.4byte	.LASF39
+ 876 021c 01       		.byte	0x1
+ 877 021d 4C       		.byte	0x4c
+ 878 021e 14010000 		.4byte	0x114
+ 879 0222 02       		.uleb128 0x2
+ 880 0223 91       		.byte	0x91
+ 881 0224 58       		.sleb128 -40
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 24
+
+
+ 882 0225 0C       		.uleb128 0xc
+ 883 0226 90010000 		.4byte	.LASF40
+ 884 022a 01       		.byte	0x1
+ 885 022b 4D       		.byte	0x4d
+ 886 022c 14010000 		.4byte	0x114
+ 887 0230 02       		.uleb128 0x2
+ 888 0231 91       		.byte	0x91
+ 889 0232 54       		.sleb128 -44
+ 890 0233 0D       		.uleb128 0xd
+ 891 0234 A4020000 		.4byte	.LASF41
+ 892 0238 01       		.byte	0x1
+ 893 0239 4F       		.byte	0x4f
+ 894 023a DF010000 		.4byte	0x1df
+ 895 023e 02       		.uleb128 0x2
+ 896 023f 91       		.byte	0x91
+ 897 0240 68       		.sleb128 -24
+ 898 0241 0E       		.uleb128 0xe
+ 899 0242 6900     		.ascii	"i\000"
+ 900 0244 01       		.byte	0x1
+ 901 0245 50       		.byte	0x50
+ 902 0246 CE000000 		.4byte	0xce
+ 903 024a 02       		.uleb128 0x2
+ 904 024b 91       		.byte	0x91
+ 905 024c 6C       		.sleb128 -20
+ 906 024d 0E       		.uleb128 0xe
+ 907 024e 4C3200   		.ascii	"L2\000"
+ 908 0251 01       		.byte	0x1
+ 909 0252 51       		.byte	0x51
+ 910 0253 CE000000 		.4byte	0xce
+ 911 0257 02       		.uleb128 0x2
+ 912 0258 91       		.byte	0x91
+ 913 0259 64       		.sleb128 -28
+ 914 025a 00       		.byte	0
+ 915 025b 06       		.uleb128 0x6
+ 916 025c 04       		.byte	0x4
+ 917 025d 61020000 		.4byte	0x261
+ 918 0261 09       		.uleb128 0x9
+ 919 0262 EA010000 		.4byte	0x1ea
+ 920 0266 0F       		.uleb128 0xf
+ 921 0267 00000000 		.4byte	.LASF43
+ 922 026b 01       		.byte	0x1
+ 923 026c 7F       		.byte	0x7f
+ 924 026d 00000000 		.4byte	.LFB83
+ 925 0271 C0010000 		.4byte	.LFE83-.LFB83
+ 926 0275 01       		.uleb128 0x1
+ 927 0276 9C       		.byte	0x9c
+ 928 0277 30030000 		.4byte	0x330
+ 929 027b 0C       		.uleb128 0xc
+ 930 027c 3C030000 		.4byte	.LASF39
+ 931 0280 01       		.byte	0x1
+ 932 0281 80       		.byte	0x80
+ 933 0282 14010000 		.4byte	0x114
+ 934 0286 02       		.uleb128 0x2
+ 935 0287 91       		.byte	0x91
+ 936 0288 54       		.sleb128 -44
+ 937 0289 0C       		.uleb128 0xc
+ 938 028a 7C010000 		.4byte	.LASF26
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 25
+
+
+ 939 028e 01       		.byte	0x1
+ 940 028f 81       		.byte	0x81
+ 941 0290 CE000000 		.4byte	0xce
+ 942 0294 02       		.uleb128 0x2
+ 943 0295 91       		.byte	0x91
+ 944 0296 50       		.sleb128 -48
+ 945 0297 0C       		.uleb128 0xc
+ 946 0298 C1010000 		.4byte	.LASF44
+ 947 029c 01       		.byte	0x1
+ 948 029d 82       		.byte	0x82
+ 949 029e 14010000 		.4byte	0x114
+ 950 02a2 02       		.uleb128 0x2
+ 951 02a3 91       		.byte	0x91
+ 952 02a4 4C       		.sleb128 -52
+ 953 02a5 0C       		.uleb128 0xc
+ 954 02a6 DB020000 		.4byte	.LASF45
+ 955 02aa 01       		.byte	0x1
+ 956 02ab 83       		.byte	0x83
+ 957 02ac 14010000 		.4byte	0x114
+ 958 02b0 02       		.uleb128 0x2
+ 959 02b1 91       		.byte	0x91
+ 960 02b2 48       		.sleb128 -56
+ 961 02b3 0C       		.uleb128 0xc
+ 962 02b4 90010000 		.4byte	.LASF40
+ 963 02b8 01       		.byte	0x1
+ 964 02b9 84       		.byte	0x84
+ 965 02ba 14010000 		.4byte	0x114
+ 966 02be 02       		.uleb128 0x2
+ 967 02bf 91       		.byte	0x91
+ 968 02c0 00       		.sleb128 0
+ 969 02c1 0C       		.uleb128 0xc
+ 970 02c2 A2000000 		.4byte	.LASF46
+ 971 02c6 01       		.byte	0x1
+ 972 02c7 85       		.byte	0x85
+ 973 02c8 CE000000 		.4byte	0xce
+ 974 02cc 02       		.uleb128 0x2
+ 975 02cd 91       		.byte	0x91
+ 976 02ce 04       		.sleb128 4
+ 977 02cf 0E       		.uleb128 0xe
+ 978 02d0 6900     		.ascii	"i\000"
+ 979 02d2 01       		.byte	0x1
+ 980 02d3 87       		.byte	0x87
+ 981 02d4 CE000000 		.4byte	0xce
+ 982 02d8 02       		.uleb128 0x2
+ 983 02d9 91       		.byte	0x91
+ 984 02da 74       		.sleb128 -12
+ 985 02db 0D       		.uleb128 0xd
+ 986 02dc 95010000 		.4byte	.LASF47
+ 987 02e0 01       		.byte	0x1
+ 988 02e1 88       		.byte	0x88
+ 989 02e2 08010000 		.4byte	0x108
+ 990 02e6 02       		.uleb128 0x2
+ 991 02e7 91       		.byte	0x91
+ 992 02e8 60       		.sleb128 -32
+ 993 02e9 0D       		.uleb128 0xd
+ 994 02ea CF010000 		.4byte	.LASF48
+ 995 02ee 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 26
+
+
+ 996 02ef 88       		.byte	0x88
+ 997 02f0 08010000 		.4byte	0x108
+ 998 02f4 02       		.uleb128 0x2
+ 999 02f5 91       		.byte	0x91
+ 1000 02f6 5C       		.sleb128 -36
+ 1001 02f7 0D       		.uleb128 0xd
+ 1002 02f8 F1020000 		.4byte	.LASF49
+ 1003 02fc 01       		.byte	0x1
+ 1004 02fd 89       		.byte	0x89
+ 1005 02fe 14010000 		.4byte	0x114
+ 1006 0302 02       		.uleb128 0x2
+ 1007 0303 91       		.byte	0x91
+ 1008 0304 70       		.sleb128 -16
+ 1009 0305 0D       		.uleb128 0xd
+ 1010 0306 F8020000 		.4byte	.LASF50
+ 1011 030a 01       		.byte	0x1
+ 1012 030b 89       		.byte	0x89
+ 1013 030c 14010000 		.4byte	0x114
+ 1014 0310 02       		.uleb128 0x2
+ 1015 0311 91       		.byte	0x91
+ 1016 0312 6C       		.sleb128 -20
+ 1017 0313 0D       		.uleb128 0xd
+ 1018 0314 41030000 		.4byte	.LASF51
+ 1019 0318 01       		.byte	0x1
+ 1020 0319 8A       		.byte	0x8a
+ 1021 031a 14010000 		.4byte	0x114
+ 1022 031e 02       		.uleb128 0x2
+ 1023 031f 91       		.byte	0x91
+ 1024 0320 68       		.sleb128 -24
+ 1025 0321 0D       		.uleb128 0xd
+ 1026 0322 47030000 		.4byte	.LASF52
+ 1027 0326 01       		.byte	0x1
+ 1028 0327 8A       		.byte	0x8a
+ 1029 0328 14010000 		.4byte	0x114
+ 1030 032c 02       		.uleb128 0x2
+ 1031 032d 91       		.byte	0x91
+ 1032 032e 64       		.sleb128 -28
+ 1033 032f 00       		.byte	0
+ 1034 0330 10       		.uleb128 0x10
+ 1035 0331 68010000 		.4byte	.LASF57
+ 1036 0335 01       		.byte	0x1
+ 1037 0336 2501     		.2byte	0x125
+ 1038 0338 00000000 		.4byte	.LFB84
+ 1039 033c 26010000 		.4byte	.LFE84-.LFB84
+ 1040 0340 01       		.uleb128 0x1
+ 1041 0341 9C       		.byte	0x9c
+ 1042 0342 11       		.uleb128 0x11
+ 1043 0343 3C030000 		.4byte	.LASF39
+ 1044 0347 01       		.byte	0x1
+ 1045 0348 2601     		.2byte	0x126
+ 1046 034a 14010000 		.4byte	0x114
+ 1047 034e 02       		.uleb128 0x2
+ 1048 034f 91       		.byte	0x91
+ 1049 0350 54       		.sleb128 -44
+ 1050 0351 11       		.uleb128 0x11
+ 1051 0352 7C010000 		.4byte	.LASF26
+ 1052 0356 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 27
+
+
+ 1053 0357 2701     		.2byte	0x127
+ 1054 0359 CE000000 		.4byte	0xce
+ 1055 035d 02       		.uleb128 0x2
+ 1056 035e 91       		.byte	0x91
+ 1057 035f 50       		.sleb128 -48
+ 1058 0360 11       		.uleb128 0x11
+ 1059 0361 C1010000 		.4byte	.LASF44
+ 1060 0365 01       		.byte	0x1
+ 1061 0366 2801     		.2byte	0x128
+ 1062 0368 14010000 		.4byte	0x114
+ 1063 036c 02       		.uleb128 0x2
+ 1064 036d 91       		.byte	0x91
+ 1065 036e 4C       		.sleb128 -52
+ 1066 036f 11       		.uleb128 0x11
+ 1067 0370 DB020000 		.4byte	.LASF45
+ 1068 0374 01       		.byte	0x1
+ 1069 0375 2901     		.2byte	0x129
+ 1070 0377 14010000 		.4byte	0x114
+ 1071 037b 02       		.uleb128 0x2
+ 1072 037c 91       		.byte	0x91
+ 1073 037d 48       		.sleb128 -56
+ 1074 037e 11       		.uleb128 0x11
+ 1075 037f 90010000 		.4byte	.LASF40
+ 1076 0383 01       		.byte	0x1
+ 1077 0384 2A01     		.2byte	0x12a
+ 1078 0386 14010000 		.4byte	0x114
+ 1079 038a 02       		.uleb128 0x2
+ 1080 038b 91       		.byte	0x91
+ 1081 038c 00       		.sleb128 0
+ 1082 038d 11       		.uleb128 0x11
+ 1083 038e A2000000 		.4byte	.LASF46
+ 1084 0392 01       		.byte	0x1
+ 1085 0393 2B01     		.2byte	0x12b
+ 1086 0395 CE000000 		.4byte	0xce
+ 1087 0399 02       		.uleb128 0x2
+ 1088 039a 91       		.byte	0x91
+ 1089 039b 04       		.sleb128 4
+ 1090 039c 12       		.uleb128 0x12
+ 1091 039d 6900     		.ascii	"i\000"
+ 1092 039f 01       		.byte	0x1
+ 1093 03a0 2D01     		.2byte	0x12d
+ 1094 03a2 CE000000 		.4byte	0xce
+ 1095 03a6 02       		.uleb128 0x2
+ 1096 03a7 91       		.byte	0x91
+ 1097 03a8 74       		.sleb128 -12
+ 1098 03a9 13       		.uleb128 0x13
+ 1099 03aa 95010000 		.4byte	.LASF47
+ 1100 03ae 01       		.byte	0x1
+ 1101 03af 2E01     		.2byte	0x12e
+ 1102 03b1 08010000 		.4byte	0x108
+ 1103 03b5 02       		.uleb128 0x2
+ 1104 03b6 91       		.byte	0x91
+ 1105 03b7 5C       		.sleb128 -36
+ 1106 03b8 13       		.uleb128 0x13
+ 1107 03b9 CF010000 		.4byte	.LASF48
+ 1108 03bd 01       		.byte	0x1
+ 1109 03be 2E01     		.2byte	0x12e
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 28
+
+
+ 1110 03c0 08010000 		.4byte	0x108
+ 1111 03c4 02       		.uleb128 0x2
+ 1112 03c5 91       		.byte	0x91
+ 1113 03c6 58       		.sleb128 -40
+ 1114 03c7 13       		.uleb128 0x13
+ 1115 03c8 F1020000 		.4byte	.LASF49
+ 1116 03cc 01       		.byte	0x1
+ 1117 03cd 2F01     		.2byte	0x12f
+ 1118 03cf 14010000 		.4byte	0x114
+ 1119 03d3 02       		.uleb128 0x2
+ 1120 03d4 91       		.byte	0x91
+ 1121 03d5 70       		.sleb128 -16
+ 1122 03d6 13       		.uleb128 0x13
+ 1123 03d7 F8020000 		.4byte	.LASF50
+ 1124 03db 01       		.byte	0x1
+ 1125 03dc 2F01     		.2byte	0x12f
+ 1126 03de 14010000 		.4byte	0x114
+ 1127 03e2 02       		.uleb128 0x2
+ 1128 03e3 91       		.byte	0x91
+ 1129 03e4 6C       		.sleb128 -20
+ 1130 03e5 13       		.uleb128 0x13
+ 1131 03e6 41030000 		.4byte	.LASF51
+ 1132 03ea 01       		.byte	0x1
+ 1133 03eb 3001     		.2byte	0x130
+ 1134 03ed 14010000 		.4byte	0x114
+ 1135 03f1 02       		.uleb128 0x2
+ 1136 03f2 91       		.byte	0x91
+ 1137 03f3 68       		.sleb128 -24
+ 1138 03f4 13       		.uleb128 0x13
+ 1139 03f5 47030000 		.4byte	.LASF52
+ 1140 03f9 01       		.byte	0x1
+ 1141 03fa 3001     		.2byte	0x130
+ 1142 03fc 14010000 		.4byte	0x114
+ 1143 0400 02       		.uleb128 0x2
+ 1144 0401 91       		.byte	0x91
+ 1145 0402 64       		.sleb128 -28
+ 1146 0403 13       		.uleb128 0x13
+ 1147 0404 D5020000 		.4byte	.LASF53
+ 1148 0408 01       		.byte	0x1
+ 1149 0409 3101     		.2byte	0x131
+ 1150 040b 14010000 		.4byte	0x114
+ 1151 040f 02       		.uleb128 0x2
+ 1152 0410 91       		.byte	0x91
+ 1153 0411 60       		.sleb128 -32
+ 1154 0412 00       		.byte	0
+ 1155 0413 00       		.byte	0
+ 1156              		.section	.debug_abbrev,"",%progbits
+ 1157              	.Ldebug_abbrev0:
+ 1158 0000 01       		.uleb128 0x1
+ 1159 0001 11       		.uleb128 0x11
+ 1160 0002 01       		.byte	0x1
+ 1161 0003 25       		.uleb128 0x25
+ 1162 0004 0E       		.uleb128 0xe
+ 1163 0005 13       		.uleb128 0x13
+ 1164 0006 0B       		.uleb128 0xb
+ 1165 0007 03       		.uleb128 0x3
+ 1166 0008 0E       		.uleb128 0xe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 29
+
+
+ 1167 0009 1B       		.uleb128 0x1b
+ 1168 000a 0E       		.uleb128 0xe
+ 1169 000b 55       		.uleb128 0x55
+ 1170 000c 17       		.uleb128 0x17
+ 1171 000d 11       		.uleb128 0x11
+ 1172 000e 01       		.uleb128 0x1
+ 1173 000f 10       		.uleb128 0x10
+ 1174 0010 17       		.uleb128 0x17
+ 1175 0011 00       		.byte	0
+ 1176 0012 00       		.byte	0
+ 1177 0013 02       		.uleb128 0x2
+ 1178 0014 24       		.uleb128 0x24
+ 1179 0015 00       		.byte	0
+ 1180 0016 0B       		.uleb128 0xb
+ 1181 0017 0B       		.uleb128 0xb
+ 1182 0018 3E       		.uleb128 0x3e
+ 1183 0019 0B       		.uleb128 0xb
+ 1184 001a 03       		.uleb128 0x3
+ 1185 001b 0E       		.uleb128 0xe
+ 1186 001c 00       		.byte	0
+ 1187 001d 00       		.byte	0
+ 1188 001e 03       		.uleb128 0x3
+ 1189 001f 16       		.uleb128 0x16
+ 1190 0020 00       		.byte	0
+ 1191 0021 03       		.uleb128 0x3
+ 1192 0022 0E       		.uleb128 0xe
+ 1193 0023 3A       		.uleb128 0x3a
+ 1194 0024 0B       		.uleb128 0xb
+ 1195 0025 3B       		.uleb128 0x3b
+ 1196 0026 0B       		.uleb128 0xb
+ 1197 0027 49       		.uleb128 0x49
+ 1198 0028 13       		.uleb128 0x13
+ 1199 0029 00       		.byte	0
+ 1200 002a 00       		.byte	0
+ 1201 002b 04       		.uleb128 0x4
+ 1202 002c 24       		.uleb128 0x24
+ 1203 002d 00       		.byte	0
+ 1204 002e 0B       		.uleb128 0xb
+ 1205 002f 0B       		.uleb128 0xb
+ 1206 0030 3E       		.uleb128 0x3e
+ 1207 0031 0B       		.uleb128 0xb
+ 1208 0032 03       		.uleb128 0x3
+ 1209 0033 08       		.uleb128 0x8
+ 1210 0034 00       		.byte	0
+ 1211 0035 00       		.byte	0
+ 1212 0036 05       		.uleb128 0x5
+ 1213 0037 16       		.uleb128 0x16
+ 1214 0038 00       		.byte	0
+ 1215 0039 03       		.uleb128 0x3
+ 1216 003a 0E       		.uleb128 0xe
+ 1217 003b 3A       		.uleb128 0x3a
+ 1218 003c 0B       		.uleb128 0xb
+ 1219 003d 3B       		.uleb128 0x3b
+ 1220 003e 05       		.uleb128 0x5
+ 1221 003f 49       		.uleb128 0x49
+ 1222 0040 13       		.uleb128 0x13
+ 1223 0041 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 30
+
+
+ 1224 0042 00       		.byte	0
+ 1225 0043 06       		.uleb128 0x6
+ 1226 0044 0F       		.uleb128 0xf
+ 1227 0045 00       		.byte	0
+ 1228 0046 0B       		.uleb128 0xb
+ 1229 0047 0B       		.uleb128 0xb
+ 1230 0048 49       		.uleb128 0x49
+ 1231 0049 13       		.uleb128 0x13
+ 1232 004a 00       		.byte	0
+ 1233 004b 00       		.byte	0
+ 1234 004c 07       		.uleb128 0x7
+ 1235 004d 13       		.uleb128 0x13
+ 1236 004e 01       		.byte	0x1
+ 1237 004f 0B       		.uleb128 0xb
+ 1238 0050 0B       		.uleb128 0xb
+ 1239 0051 3A       		.uleb128 0x3a
+ 1240 0052 0B       		.uleb128 0xb
+ 1241 0053 3B       		.uleb128 0x3b
+ 1242 0054 05       		.uleb128 0x5
+ 1243 0055 01       		.uleb128 0x1
+ 1244 0056 13       		.uleb128 0x13
+ 1245 0057 00       		.byte	0
+ 1246 0058 00       		.byte	0
+ 1247 0059 08       		.uleb128 0x8
+ 1248 005a 0D       		.uleb128 0xd
+ 1249 005b 00       		.byte	0
+ 1250 005c 03       		.uleb128 0x3
+ 1251 005d 0E       		.uleb128 0xe
+ 1252 005e 3A       		.uleb128 0x3a
+ 1253 005f 0B       		.uleb128 0xb
+ 1254 0060 3B       		.uleb128 0x3b
+ 1255 0061 05       		.uleb128 0x5
+ 1256 0062 49       		.uleb128 0x49
+ 1257 0063 13       		.uleb128 0x13
+ 1258 0064 38       		.uleb128 0x38
+ 1259 0065 0B       		.uleb128 0xb
+ 1260 0066 00       		.byte	0
+ 1261 0067 00       		.byte	0
+ 1262 0068 09       		.uleb128 0x9
+ 1263 0069 26       		.uleb128 0x26
+ 1264 006a 00       		.byte	0
+ 1265 006b 49       		.uleb128 0x49
+ 1266 006c 13       		.uleb128 0x13
+ 1267 006d 00       		.byte	0
+ 1268 006e 00       		.byte	0
+ 1269 006f 0A       		.uleb128 0xa
+ 1270 0070 2E       		.uleb128 0x2e
+ 1271 0071 01       		.byte	0x1
+ 1272 0072 3F       		.uleb128 0x3f
+ 1273 0073 19       		.uleb128 0x19
+ 1274 0074 03       		.uleb128 0x3
+ 1275 0075 0E       		.uleb128 0xe
+ 1276 0076 3A       		.uleb128 0x3a
+ 1277 0077 0B       		.uleb128 0xb
+ 1278 0078 3B       		.uleb128 0x3b
+ 1279 0079 0B       		.uleb128 0xb
+ 1280 007a 27       		.uleb128 0x27
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 31
+
+
+ 1281 007b 19       		.uleb128 0x19
+ 1282 007c 11       		.uleb128 0x11
+ 1283 007d 01       		.uleb128 0x1
+ 1284 007e 12       		.uleb128 0x12
+ 1285 007f 06       		.uleb128 0x6
+ 1286 0080 40       		.uleb128 0x40
+ 1287 0081 18       		.uleb128 0x18
+ 1288 0082 9642     		.uleb128 0x2116
+ 1289 0084 19       		.uleb128 0x19
+ 1290 0085 01       		.uleb128 0x1
+ 1291 0086 13       		.uleb128 0x13
+ 1292 0087 00       		.byte	0
+ 1293 0088 00       		.byte	0
+ 1294 0089 0B       		.uleb128 0xb
+ 1295 008a 05       		.uleb128 0x5
+ 1296 008b 00       		.byte	0
+ 1297 008c 03       		.uleb128 0x3
+ 1298 008d 08       		.uleb128 0x8
+ 1299 008e 3A       		.uleb128 0x3a
+ 1300 008f 0B       		.uleb128 0xb
+ 1301 0090 3B       		.uleb128 0x3b
+ 1302 0091 0B       		.uleb128 0xb
+ 1303 0092 49       		.uleb128 0x49
+ 1304 0093 13       		.uleb128 0x13
+ 1305 0094 02       		.uleb128 0x2
+ 1306 0095 18       		.uleb128 0x18
+ 1307 0096 00       		.byte	0
+ 1308 0097 00       		.byte	0
+ 1309 0098 0C       		.uleb128 0xc
+ 1310 0099 05       		.uleb128 0x5
+ 1311 009a 00       		.byte	0
+ 1312 009b 03       		.uleb128 0x3
+ 1313 009c 0E       		.uleb128 0xe
+ 1314 009d 3A       		.uleb128 0x3a
+ 1315 009e 0B       		.uleb128 0xb
+ 1316 009f 3B       		.uleb128 0x3b
+ 1317 00a0 0B       		.uleb128 0xb
+ 1318 00a1 49       		.uleb128 0x49
+ 1319 00a2 13       		.uleb128 0x13
+ 1320 00a3 02       		.uleb128 0x2
+ 1321 00a4 18       		.uleb128 0x18
+ 1322 00a5 00       		.byte	0
+ 1323 00a6 00       		.byte	0
+ 1324 00a7 0D       		.uleb128 0xd
+ 1325 00a8 34       		.uleb128 0x34
+ 1326 00a9 00       		.byte	0
+ 1327 00aa 03       		.uleb128 0x3
+ 1328 00ab 0E       		.uleb128 0xe
+ 1329 00ac 3A       		.uleb128 0x3a
+ 1330 00ad 0B       		.uleb128 0xb
+ 1331 00ae 3B       		.uleb128 0x3b
+ 1332 00af 0B       		.uleb128 0xb
+ 1333 00b0 49       		.uleb128 0x49
+ 1334 00b1 13       		.uleb128 0x13
+ 1335 00b2 02       		.uleb128 0x2
+ 1336 00b3 18       		.uleb128 0x18
+ 1337 00b4 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 32
+
+
+ 1338 00b5 00       		.byte	0
+ 1339 00b6 0E       		.uleb128 0xe
+ 1340 00b7 34       		.uleb128 0x34
+ 1341 00b8 00       		.byte	0
+ 1342 00b9 03       		.uleb128 0x3
+ 1343 00ba 08       		.uleb128 0x8
+ 1344 00bb 3A       		.uleb128 0x3a
+ 1345 00bc 0B       		.uleb128 0xb
+ 1346 00bd 3B       		.uleb128 0x3b
+ 1347 00be 0B       		.uleb128 0xb
+ 1348 00bf 49       		.uleb128 0x49
+ 1349 00c0 13       		.uleb128 0x13
+ 1350 00c1 02       		.uleb128 0x2
+ 1351 00c2 18       		.uleb128 0x18
+ 1352 00c3 00       		.byte	0
+ 1353 00c4 00       		.byte	0
+ 1354 00c5 0F       		.uleb128 0xf
+ 1355 00c6 2E       		.uleb128 0x2e
+ 1356 00c7 01       		.byte	0x1
+ 1357 00c8 3F       		.uleb128 0x3f
+ 1358 00c9 19       		.uleb128 0x19
+ 1359 00ca 03       		.uleb128 0x3
+ 1360 00cb 0E       		.uleb128 0xe
+ 1361 00cc 3A       		.uleb128 0x3a
+ 1362 00cd 0B       		.uleb128 0xb
+ 1363 00ce 3B       		.uleb128 0x3b
+ 1364 00cf 0B       		.uleb128 0xb
+ 1365 00d0 27       		.uleb128 0x27
+ 1366 00d1 19       		.uleb128 0x19
+ 1367 00d2 11       		.uleb128 0x11
+ 1368 00d3 01       		.uleb128 0x1
+ 1369 00d4 12       		.uleb128 0x12
+ 1370 00d5 06       		.uleb128 0x6
+ 1371 00d6 40       		.uleb128 0x40
+ 1372 00d7 18       		.uleb128 0x18
+ 1373 00d8 9742     		.uleb128 0x2117
+ 1374 00da 19       		.uleb128 0x19
+ 1375 00db 01       		.uleb128 0x1
+ 1376 00dc 13       		.uleb128 0x13
+ 1377 00dd 00       		.byte	0
+ 1378 00de 00       		.byte	0
+ 1379 00df 10       		.uleb128 0x10
+ 1380 00e0 2E       		.uleb128 0x2e
+ 1381 00e1 01       		.byte	0x1
+ 1382 00e2 3F       		.uleb128 0x3f
+ 1383 00e3 19       		.uleb128 0x19
+ 1384 00e4 03       		.uleb128 0x3
+ 1385 00e5 0E       		.uleb128 0xe
+ 1386 00e6 3A       		.uleb128 0x3a
+ 1387 00e7 0B       		.uleb128 0xb
+ 1388 00e8 3B       		.uleb128 0x3b
+ 1389 00e9 05       		.uleb128 0x5
+ 1390 00ea 27       		.uleb128 0x27
+ 1391 00eb 19       		.uleb128 0x19
+ 1392 00ec 11       		.uleb128 0x11
+ 1393 00ed 01       		.uleb128 0x1
+ 1394 00ee 12       		.uleb128 0x12
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 33
+
+
+ 1395 00ef 06       		.uleb128 0x6
+ 1396 00f0 40       		.uleb128 0x40
+ 1397 00f1 18       		.uleb128 0x18
+ 1398 00f2 9742     		.uleb128 0x2117
+ 1399 00f4 19       		.uleb128 0x19
+ 1400 00f5 00       		.byte	0
+ 1401 00f6 00       		.byte	0
+ 1402 00f7 11       		.uleb128 0x11
+ 1403 00f8 05       		.uleb128 0x5
+ 1404 00f9 00       		.byte	0
+ 1405 00fa 03       		.uleb128 0x3
+ 1406 00fb 0E       		.uleb128 0xe
+ 1407 00fc 3A       		.uleb128 0x3a
+ 1408 00fd 0B       		.uleb128 0xb
+ 1409 00fe 3B       		.uleb128 0x3b
+ 1410 00ff 05       		.uleb128 0x5
+ 1411 0100 49       		.uleb128 0x49
+ 1412 0101 13       		.uleb128 0x13
+ 1413 0102 02       		.uleb128 0x2
+ 1414 0103 18       		.uleb128 0x18
+ 1415 0104 00       		.byte	0
+ 1416 0105 00       		.byte	0
+ 1417 0106 12       		.uleb128 0x12
+ 1418 0107 34       		.uleb128 0x34
+ 1419 0108 00       		.byte	0
+ 1420 0109 03       		.uleb128 0x3
+ 1421 010a 08       		.uleb128 0x8
+ 1422 010b 3A       		.uleb128 0x3a
+ 1423 010c 0B       		.uleb128 0xb
+ 1424 010d 3B       		.uleb128 0x3b
+ 1425 010e 05       		.uleb128 0x5
+ 1426 010f 49       		.uleb128 0x49
+ 1427 0110 13       		.uleb128 0x13
+ 1428 0111 02       		.uleb128 0x2
+ 1429 0112 18       		.uleb128 0x18
+ 1430 0113 00       		.byte	0
+ 1431 0114 00       		.byte	0
+ 1432 0115 13       		.uleb128 0x13
+ 1433 0116 34       		.uleb128 0x34
+ 1434 0117 00       		.byte	0
+ 1435 0118 03       		.uleb128 0x3
+ 1436 0119 0E       		.uleb128 0xe
+ 1437 011a 3A       		.uleb128 0x3a
+ 1438 011b 0B       		.uleb128 0xb
+ 1439 011c 3B       		.uleb128 0x3b
+ 1440 011d 05       		.uleb128 0x5
+ 1441 011e 49       		.uleb128 0x49
+ 1442 011f 13       		.uleb128 0x13
+ 1443 0120 02       		.uleb128 0x2
+ 1444 0121 18       		.uleb128 0x18
+ 1445 0122 00       		.byte	0
+ 1446 0123 00       		.byte	0
+ 1447 0124 00       		.byte	0
+ 1448              		.section	.debug_aranges,"",%progbits
+ 1449 0000 2C000000 		.4byte	0x2c
+ 1450 0004 0200     		.2byte	0x2
+ 1451 0006 00000000 		.4byte	.Ldebug_info0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 34
+
+
+ 1452 000a 04       		.byte	0x4
+ 1453 000b 00       		.byte	0
+ 1454 000c 0000     		.2byte	0
+ 1455 000e 0000     		.2byte	0
+ 1456 0010 00000000 		.4byte	.LFB82
+ 1457 0014 B6000000 		.4byte	.LFE82-.LFB82
+ 1458 0018 00000000 		.4byte	.LFB83
+ 1459 001c C0010000 		.4byte	.LFE83-.LFB83
+ 1460 0020 00000000 		.4byte	.LFB84
+ 1461 0024 26010000 		.4byte	.LFE84-.LFB84
+ 1462 0028 00000000 		.4byte	0
+ 1463 002c 00000000 		.4byte	0
+ 1464              		.section	.debug_ranges,"",%progbits
+ 1465              	.Ldebug_ranges0:
+ 1466 0000 00000000 		.4byte	.LFB82
+ 1467 0004 B6000000 		.4byte	.LFE82
+ 1468 0008 00000000 		.4byte	.LFB83
+ 1469 000c C0010000 		.4byte	.LFE83
+ 1470 0010 00000000 		.4byte	.LFB84
+ 1471 0014 26010000 		.4byte	.LFE84
+ 1472 0018 00000000 		.4byte	0
+ 1473 001c 00000000 		.4byte	0
+ 1474              		.section	.debug_line,"",%progbits
+ 1475              	.Ldebug_line0:
+ 1476 0000 E6010000 		.section	.debug_str,"MS",%progbits,1
+ 1476      02004F01 
+ 1476      00000201 
+ 1476      FB0E0D00 
+ 1476      01010101 
+ 1477              	.LASF43:
+ 1478 0000 61726D5F 		.ascii	"arm_split_rfft_q15\000"
+ 1478      73706C69 
+ 1478      745F7266 
+ 1478      66745F71 
+ 1478      313500
+ 1479              	.LASF2:
+ 1480 0013 5F5F7569 		.ascii	"__uint8_t\000"
+ 1480      6E74385F 
+ 1480      7400
+ 1481              	.LASF33:
+ 1482 001d 62697452 		.ascii	"bitReverseFlagR\000"
+ 1482      65766572 
+ 1482      7365466C 
+ 1482      61675200 
+ 1483              	.LASF3:
+ 1484 002d 5F5F696E 		.ascii	"__int16_t\000"
+ 1484      7431365F 
+ 1484      7400
+ 1485              	.LASF35:
+ 1486 0037 70547769 		.ascii	"pTwiddleAReal\000"
+ 1486      64646C65 
+ 1486      41526561 
+ 1486      6C00
+ 1487              	.LASF29:
+ 1488 0045 62697452 		.ascii	"bitRevLength\000"
+ 1488      65764C65 
+ 1488      6E677468 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 35
+
+
+ 1488      00
+ 1489              	.LASF56:
+ 1490 0052 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 1490      73657273 
+ 1490      5C666E65 
+ 1490      7665735C 
+ 1490      446F6375 
+ 1491 007f 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 1491      655F7370 
+ 1491      6565645F 
+ 1491      73656E73 
+ 1491      6F722E63 
+ 1492              	.LASF7:
+ 1493 0098 5F5F696E 		.ascii	"__int32_t\000"
+ 1493      7433325F 
+ 1493      7400
+ 1494              	.LASF46:
+ 1495 00a2 6D6F6469 		.ascii	"modifier\000"
+ 1495      66696572 
+ 1495      00
+ 1496              	.LASF6:
+ 1497 00ab 73686F72 		.ascii	"short unsigned int\000"
+ 1497      7420756E 
+ 1497      7369676E 
+ 1497      65642069 
+ 1497      6E7400
+ 1498              	.LASF14:
+ 1499 00be 75696E74 		.ascii	"uint8_t\000"
+ 1499      385F7400 
+ 1500              	.LASF38:
+ 1501 00c6 61726D5F 		.ascii	"arm_rfft_instance_q15\000"
+ 1501      72666674 
+ 1501      5F696E73 
+ 1501      74616E63 
+ 1501      655F7131 
+ 1502              	.LASF55:
+ 1503 00dc 536F7572 		.ascii	"Source\\TransformFunctions\\arm_rfft_q15.c\000"
+ 1503      63655C54 
+ 1503      72616E73 
+ 1503      666F726D 
+ 1503      46756E63 
+ 1504              	.LASF28:
+ 1505 0105 70426974 		.ascii	"pBitRevTable\000"
+ 1505      52657654 
+ 1505      61626C65 
+ 1505      00
+ 1506              	.LASF24:
+ 1507 0112 7131355F 		.ascii	"q15_t\000"
+ 1507      7400
+ 1508              	.LASF22:
+ 1509 0118 666C6F61 		.ascii	"float\000"
+ 1509      7400
+ 1510              	.LASF25:
+ 1511 011e 7133315F 		.ascii	"q31_t\000"
+ 1511      7400
+ 1512              	.LASF1:
+ 1513 0124 756E7369 		.ascii	"unsigned char\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 36
+
+
+ 1513      676E6564 
+ 1513      20636861 
+ 1513      7200
+ 1514              	.LASF36:
+ 1515 0132 70547769 		.ascii	"pTwiddleBReal\000"
+ 1515      64646C65 
+ 1515      42526561 
+ 1515      6C00
+ 1516              	.LASF10:
+ 1517 0140 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1517      20756E73 
+ 1517      69676E65 
+ 1517      6420696E 
+ 1517      7400
+ 1518              	.LASF30:
+ 1519 0152 61726D5F 		.ascii	"arm_cfft_instance_q15\000"
+ 1519      63666674 
+ 1519      5F696E73 
+ 1519      74616E63 
+ 1519      655F7131 
+ 1520              	.LASF57:
+ 1521 0168 61726D5F 		.ascii	"arm_split_rifft_q15\000"
+ 1521      73706C69 
+ 1521      745F7269 
+ 1521      6666745F 
+ 1521      71313500 
+ 1522              	.LASF26:
+ 1523 017c 6666744C 		.ascii	"fftLen\000"
+ 1523      656E00
+ 1524              	.LASF42:
+ 1525 0183 61726D5F 		.ascii	"arm_rfft_q15\000"
+ 1525      72666674 
+ 1525      5F713135 
+ 1525      00
+ 1526              	.LASF40:
+ 1527 0190 70447374 		.ascii	"pDst\000"
+ 1527      00
+ 1528              	.LASF47:
+ 1529 0195 6F757452 		.ascii	"outR\000"
+ 1529      00
+ 1530              	.LASF5:
+ 1531 019a 5F5F7569 		.ascii	"__uint16_t\000"
+ 1531      6E743136 
+ 1531      5F7400
+ 1532              	.LASF21:
+ 1533 01a5 646F7562 		.ascii	"double\000"
+ 1533      6C6500
+ 1534              	.LASF32:
+ 1535 01ac 69666674 		.ascii	"ifftFlagR\000"
+ 1535      466C6167 
+ 1535      5200
+ 1536              	.LASF9:
+ 1537 01b6 5F5F7569 		.ascii	"__uint32_t\000"
+ 1537      6E743332 
+ 1537      5F7400
+ 1538              	.LASF44:
+ 1539 01c1 70415461 		.ascii	"pATable\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 37
+
+
+ 1539      626C6500 
+ 1540              	.LASF37:
+ 1541 01c9 70436666 		.ascii	"pCfft\000"
+ 1541      7400
+ 1542              	.LASF48:
+ 1543 01cf 6F757449 		.ascii	"outI\000"
+ 1543      00
+ 1544              	.LASF13:
+ 1545 01d4 756E7369 		.ascii	"unsigned int\000"
+ 1545      676E6564 
+ 1545      20696E74 
+ 1545      00
+ 1546              	.LASF34:
+ 1547 01e1 74776964 		.ascii	"twidCoefRModifier\000"
+ 1547      436F6566 
+ 1547      524D6F64 
+ 1547      69666965 
+ 1547      7200
+ 1548              	.LASF12:
+ 1549 01f3 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1549      206C6F6E 
+ 1549      6720756E 
+ 1549      7369676E 
+ 1549      65642069 
+ 1550              	.LASF54:
+ 1551 020a 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 1551      4320342E 
+ 1551      392E3320 
+ 1551      32303135 
+ 1551      30333033 
+ 1552 023d 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 1552      20726576 
+ 1552      6973696F 
+ 1552      6E203232 
+ 1552      31323230 
+ 1553 0270 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 1553      30202D66 
+ 1553      66756E63 
+ 1553      74696F6E 
+ 1553      2D736563 
+ 1554              	.LASF15:
+ 1555 029c 696E7431 		.ascii	"int16_t\000"
+ 1555      365F7400 
+ 1556              	.LASF41:
+ 1557 02a4 535F4346 		.ascii	"S_CFFT\000"
+ 1557      465400
+ 1558              	.LASF31:
+ 1559 02ab 6666744C 		.ascii	"fftLenReal\000"
+ 1559      656E5265 
+ 1559      616C00
+ 1560              	.LASF17:
+ 1561 02b6 696E7433 		.ascii	"int32_t\000"
+ 1561      325F7400 
+ 1562              	.LASF19:
+ 1563 02be 73697A65 		.ascii	"sizetype\000"
+ 1563      74797065 
+ 1563      00
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 38
+
+
+ 1564              	.LASF11:
+ 1565 02c7 6C6F6E67 		.ascii	"long long int\000"
+ 1565      206C6F6E 
+ 1565      6720696E 
+ 1565      7400
+ 1566              	.LASF53:
+ 1567 02d5 70447374 		.ascii	"pDst1\000"
+ 1567      3100
+ 1568              	.LASF45:
+ 1569 02db 70425461 		.ascii	"pBTable\000"
+ 1569      626C6500 
+ 1570              	.LASF20:
+ 1571 02e3 63686172 		.ascii	"char\000"
+ 1571      00
+ 1572              	.LASF27:
+ 1573 02e8 70547769 		.ascii	"pTwiddle\000"
+ 1573      64646C65 
+ 1573      00
+ 1574              	.LASF49:
+ 1575 02f1 70436F65 		.ascii	"pCoefA\000"
+ 1575      664100
+ 1576              	.LASF50:
+ 1577 02f8 70436F65 		.ascii	"pCoefB\000"
+ 1577      664200
+ 1578              	.LASF4:
+ 1579 02ff 73686F72 		.ascii	"short int\000"
+ 1579      7420696E 
+ 1579      7400
+ 1580              	.LASF16:
+ 1581 0309 75696E74 		.ascii	"uint16_t\000"
+ 1581      31365F74 
+ 1581      00
+ 1582              	.LASF18:
+ 1583 0312 75696E74 		.ascii	"uint32_t\000"
+ 1583      33325F74 
+ 1583      00
+ 1584              	.LASF8:
+ 1585 031b 6C6F6E67 		.ascii	"long int\000"
+ 1585      20696E74 
+ 1585      00
+ 1586              	.LASF23:
+ 1587 0324 6C6F6E67 		.ascii	"long double\000"
+ 1587      20646F75 
+ 1587      626C6500 
+ 1588              	.LASF0:
+ 1589 0330 7369676E 		.ascii	"signed char\000"
+ 1589      65642063 
+ 1589      68617200 
+ 1590              	.LASF39:
+ 1591 033c 70537263 		.ascii	"pSrc\000"
+ 1591      00
+ 1592              	.LASF51:
+ 1593 0341 70537263 		.ascii	"pSrc1\000"
+ 1593      3100
+ 1594              	.LASF52:
+ 1595 0347 70537263 		.ascii	"pSrc2\000"
+ 1595      3200
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccWBWjgd.s 			page 39
+
+
+ 1596              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

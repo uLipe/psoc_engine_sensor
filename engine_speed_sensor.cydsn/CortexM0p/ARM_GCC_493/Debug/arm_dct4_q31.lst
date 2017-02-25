@@ -1,0 +1,1813 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_dct4_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_lmul
+  18              		.section	.text.arm_dct4_q31,"ax",%progbits
+  19              		.align	2
+  20              		.global	arm_dct4_q31
+  21              		.code	16
+  22              		.thumb_func
+  23              		.type	arm_dct4_q31, %function
+  24              	arm_dct4_q31:
+  25              	.LFB82:
+  26              		.file 1 "Source\\TransformFunctions\\arm_dct4_q31.c"
+   1:Source\TransformFunctions/arm_dct4_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\TransformFunctions/arm_dct4_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\TransformFunctions/arm_dct4_q31.c ****  * Title:        arm_dct4_q31.c
+   4:Source\TransformFunctions/arm_dct4_q31.c ****  * Description:  Processing function of DCT4 & IDCT4 Q31
+   5:Source\TransformFunctions/arm_dct4_q31.c ****  *
+   6:Source\TransformFunctions/arm_dct4_q31.c ****  * $Date:        27. January 2017
+   7:Source\TransformFunctions/arm_dct4_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\TransformFunctions/arm_dct4_q31.c ****  *
+   9:Source\TransformFunctions/arm_dct4_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\TransformFunctions/arm_dct4_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\TransformFunctions/arm_dct4_q31.c **** /*
+  12:Source\TransformFunctions/arm_dct4_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\TransformFunctions/arm_dct4_q31.c ****  *
+  14:Source\TransformFunctions/arm_dct4_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\TransformFunctions/arm_dct4_q31.c ****  *
+  16:Source\TransformFunctions/arm_dct4_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\TransformFunctions/arm_dct4_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\TransformFunctions/arm_dct4_q31.c ****  * You may obtain a copy of the License at
+  19:Source\TransformFunctions/arm_dct4_q31.c ****  *
+  20:Source\TransformFunctions/arm_dct4_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\TransformFunctions/arm_dct4_q31.c ****  *
+  22:Source\TransformFunctions/arm_dct4_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\TransformFunctions/arm_dct4_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\TransformFunctions/arm_dct4_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\TransformFunctions/arm_dct4_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\TransformFunctions/arm_dct4_q31.c ****  * limitations under the License.
+  27:Source\TransformFunctions/arm_dct4_q31.c ****  */
+  28:Source\TransformFunctions/arm_dct4_q31.c **** 
+  29:Source\TransformFunctions/arm_dct4_q31.c **** #include "arm_math.h"
+  30:Source\TransformFunctions/arm_dct4_q31.c **** 
+  31:Source\TransformFunctions/arm_dct4_q31.c **** /**
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 2
+
+
+  32:Source\TransformFunctions/arm_dct4_q31.c ****  * @addtogroup DCT4_IDCT4
+  33:Source\TransformFunctions/arm_dct4_q31.c ****  * @{
+  34:Source\TransformFunctions/arm_dct4_q31.c ****  */
+  35:Source\TransformFunctions/arm_dct4_q31.c **** 
+  36:Source\TransformFunctions/arm_dct4_q31.c **** /**
+  37:Source\TransformFunctions/arm_dct4_q31.c ****  * @brief Processing function for the Q31 DCT4/IDCT4.
+  38:Source\TransformFunctions/arm_dct4_q31.c ****  * @param[in]       *S             points to an instance of the Q31 DCT4 structure.
+  39:Source\TransformFunctions/arm_dct4_q31.c ****  * @param[in]       *pState        points to state buffer.
+  40:Source\TransformFunctions/arm_dct4_q31.c ****  * @param[in,out]   *pInlineBuffer points to the in-place input and output buffer.
+  41:Source\TransformFunctions/arm_dct4_q31.c ****  * @return none.
+  42:Source\TransformFunctions/arm_dct4_q31.c ****  * \par Input an output formats:
+  43:Source\TransformFunctions/arm_dct4_q31.c ****  * Input samples need to be downscaled by 1 bit to avoid saturations in the Q31 DCT process,
+  44:Source\TransformFunctions/arm_dct4_q31.c ****  * as the conversion from DCT2 to DCT4 involves one subtraction.
+  45:Source\TransformFunctions/arm_dct4_q31.c ****  * Internally inputs are downscaled in the RFFT process function to avoid overflows.
+  46:Source\TransformFunctions/arm_dct4_q31.c ****  * Number of bits downscaled, depends on the size of the transform.
+  47:Source\TransformFunctions/arm_dct4_q31.c ****  * The input and output formats for different DCT sizes and number of bits to upscale are mentioned
+  48:Source\TransformFunctions/arm_dct4_q31.c ****  *
+  49:Source\TransformFunctions/arm_dct4_q31.c ****  * \image html dct4FormatsQ31Table.gif
+  50:Source\TransformFunctions/arm_dct4_q31.c ****  */
+  51:Source\TransformFunctions/arm_dct4_q31.c **** 
+  52:Source\TransformFunctions/arm_dct4_q31.c **** void arm_dct4_q31(
+  53:Source\TransformFunctions/arm_dct4_q31.c ****   const arm_dct4_instance_q31 * S,
+  54:Source\TransformFunctions/arm_dct4_q31.c ****   q31_t * pState,
+  55:Source\TransformFunctions/arm_dct4_q31.c ****   q31_t * pInlineBuffer)
+  56:Source\TransformFunctions/arm_dct4_q31.c **** {
+  27              		.loc 1 56 0
+  28              		.cfi_startproc
+  29 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  30              		.cfi_def_cfa_offset 20
+  31              		.cfi_offset 4, -20
+  32              		.cfi_offset 5, -16
+  33              		.cfi_offset 6, -12
+  34              		.cfi_offset 7, -8
+  35              		.cfi_offset 14, -4
+  36 0002 91B0     		sub	sp, sp, #68
+  37              		.cfi_def_cfa_offset 88
+  38 0004 00AF     		add	r7, sp, #0
+  39              		.cfi_def_cfa_register 7
+  40 0006 F861     		str	r0, [r7, #28]
+  41 0008 B961     		str	r1, [r7, #24]
+  42 000a 7A61     		str	r2, [r7, #20]
+  57:Source\TransformFunctions/arm_dct4_q31.c ****   uint16_t i;                                    /* Loop counter */
+  58:Source\TransformFunctions/arm_dct4_q31.c ****   q31_t *weights = S->pTwiddle;                  /* Pointer to the Weights table */
+  43              		.loc 1 58 0
+  44 000c FB69     		ldr	r3, [r7, #28]
+  45 000e 9B68     		ldr	r3, [r3, #8]
+  46 0010 BB62     		str	r3, [r7, #40]
+  59:Source\TransformFunctions/arm_dct4_q31.c ****   q31_t *cosFact = S->pCosFactor;                /* Pointer to the cos factors table */
+  47              		.loc 1 59 0
+  48 0012 FB69     		ldr	r3, [r7, #28]
+  49 0014 DB68     		ldr	r3, [r3, #12]
+  50 0016 7B62     		str	r3, [r7, #36]
+  60:Source\TransformFunctions/arm_dct4_q31.c ****   q31_t *pS1, *pS2, *pbuff;                      /* Temporary pointers for input buffer and pState 
+  61:Source\TransformFunctions/arm_dct4_q31.c ****   q31_t in;                                      /* Temporary variable */
+  62:Source\TransformFunctions/arm_dct4_q31.c **** 
+  63:Source\TransformFunctions/arm_dct4_q31.c **** 
+  64:Source\TransformFunctions/arm_dct4_q31.c ****   /* DCT4 computation involves DCT2 (which is calculated using RFFT)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 3
+
+
+  65:Source\TransformFunctions/arm_dct4_q31.c ****    * along with some pre-processing and post-processing.
+  66:Source\TransformFunctions/arm_dct4_q31.c ****    * Computational procedure is explained as follows:
+  67:Source\TransformFunctions/arm_dct4_q31.c ****    * (a) Pre-processing involves multiplying input with cos factor,
+  68:Source\TransformFunctions/arm_dct4_q31.c ****    *     r(n) = 2 * u(n) * cos(pi*(2*n+1)/(4*n))
+  69:Source\TransformFunctions/arm_dct4_q31.c ****    *              where,
+  70:Source\TransformFunctions/arm_dct4_q31.c ****    *                 r(n) -- output of preprocessing
+  71:Source\TransformFunctions/arm_dct4_q31.c ****    *                 u(n) -- input to preprocessing(actual Source buffer)
+  72:Source\TransformFunctions/arm_dct4_q31.c ****    * (b) Calculation of DCT2 using FFT is divided into three steps:
+  73:Source\TransformFunctions/arm_dct4_q31.c ****    *                  Step1: Re-ordering of even and odd elements of input.
+  74:Source\TransformFunctions/arm_dct4_q31.c ****    *                  Step2: Calculating FFT of the re-ordered input.
+  75:Source\TransformFunctions/arm_dct4_q31.c ****    *                  Step3: Taking the real part of the product of FFT output and weights.
+  76:Source\TransformFunctions/arm_dct4_q31.c ****    * (c) Post-processing - DCT4 can be obtained from DCT2 output using the following equation:
+  77:Source\TransformFunctions/arm_dct4_q31.c ****    *                   Y4(k) = Y2(k) - Y4(k-1) and Y4(-1) = Y4(0)
+  78:Source\TransformFunctions/arm_dct4_q31.c ****    *                        where,
+  79:Source\TransformFunctions/arm_dct4_q31.c ****    *                           Y4 -- DCT4 output,   Y2 -- DCT2 output
+  80:Source\TransformFunctions/arm_dct4_q31.c ****    * (d) Multiplying the output with the normalizing factor sqrt(2/N).
+  81:Source\TransformFunctions/arm_dct4_q31.c ****    */
+  82:Source\TransformFunctions/arm_dct4_q31.c **** 
+  83:Source\TransformFunctions/arm_dct4_q31.c ****         /*-------- Pre-processing ------------*/
+  84:Source\TransformFunctions/arm_dct4_q31.c ****   /* Multiplying input with cos factor i.e. r(n) = 2 * x(n) * cos(pi*(2*n+1)/(4*n)) */
+  85:Source\TransformFunctions/arm_dct4_q31.c ****   arm_mult_q31(pInlineBuffer, cosFact, pInlineBuffer, S->N);
+  51              		.loc 1 85 0
+  52 0018 FB69     		ldr	r3, [r7, #28]
+  53 001a 1B88     		ldrh	r3, [r3]
+  54 001c 1E1C     		mov	r6, r3
+  55 001e 7969     		ldr	r1, [r7, #20]
+  56 0020 7A6A     		ldr	r2, [r7, #36]
+  57 0022 7B69     		ldr	r3, [r7, #20]
+  58 0024 081C     		mov	r0, r1
+  59 0026 111C     		mov	r1, r2
+  60 0028 1A1C     		mov	r2, r3
+  61 002a 331C     		mov	r3, r6
+  62 002c FFF7FEFF 		bl	arm_mult_q31
+  86:Source\TransformFunctions/arm_dct4_q31.c ****   arm_shift_q31(pInlineBuffer, 1, pInlineBuffer, S->N);
+  63              		.loc 1 86 0
+  64 0030 FB69     		ldr	r3, [r7, #28]
+  65 0032 1B88     		ldrh	r3, [r3]
+  66 0034 1E1C     		mov	r6, r3
+  67 0036 7A69     		ldr	r2, [r7, #20]
+  68 0038 7B69     		ldr	r3, [r7, #20]
+  69 003a 101C     		mov	r0, r2
+  70 003c 0121     		mov	r1, #1
+  71 003e 1A1C     		mov	r2, r3
+  72 0040 331C     		mov	r3, r6
+  73 0042 FFF7FEFF 		bl	arm_shift_q31
+  87:Source\TransformFunctions/arm_dct4_q31.c **** 
+  88:Source\TransformFunctions/arm_dct4_q31.c ****   /* ----------------------------------------------------------------
+  89:Source\TransformFunctions/arm_dct4_q31.c ****    * Step1: Re-ordering of even and odd elements as
+  90:Source\TransformFunctions/arm_dct4_q31.c ****    *             pState[i] =  pInlineBuffer[2*i] and
+  91:Source\TransformFunctions/arm_dct4_q31.c ****    *             pState[N-i-1] = pInlineBuffer[2*i+1] where i = 0 to N/2
+  92:Source\TransformFunctions/arm_dct4_q31.c ****    ---------------------------------------------------------------------*/
+  93:Source\TransformFunctions/arm_dct4_q31.c **** 
+  94:Source\TransformFunctions/arm_dct4_q31.c ****   /* pS1 initialized to pState */
+  95:Source\TransformFunctions/arm_dct4_q31.c ****   pS1 = pState;
+  74              		.loc 1 95 0
+  75 0046 BB69     		ldr	r3, [r7, #24]
+  76 0048 BB63     		str	r3, [r7, #56]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 4
+
+
+  96:Source\TransformFunctions/arm_dct4_q31.c **** 
+  97:Source\TransformFunctions/arm_dct4_q31.c ****   /* pS2 initialized to pState+N-1, so that it points to the end of the state buffer */
+  98:Source\TransformFunctions/arm_dct4_q31.c ****   pS2 = pState + (S->N - 1u);
+  77              		.loc 1 98 0
+  78 004a FB69     		ldr	r3, [r7, #28]
+  79 004c 1B88     		ldrh	r3, [r3]
+  80 004e 7F4A     		ldr	r2, .L7
+  81 0050 9446     		mov	ip, r2
+  82 0052 6344     		add	r3, r3, ip
+  83 0054 9B00     		lsl	r3, r3, #2
+  84 0056 BA69     		ldr	r2, [r7, #24]
+  85 0058 D318     		add	r3, r2, r3
+  86 005a 7B63     		str	r3, [r7, #52]
+  99:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 100:Source\TransformFunctions/arm_dct4_q31.c ****   /* pbuff initialized to input buffer */
+ 101:Source\TransformFunctions/arm_dct4_q31.c ****   pbuff = pInlineBuffer;
+  87              		.loc 1 101 0
+  88 005c 7B69     		ldr	r3, [r7, #20]
+  89 005e 3B63     		str	r3, [r7, #48]
+ 102:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 103:Source\TransformFunctions/arm_dct4_q31.c **** #if defined (ARM_MATH_DSP)
+ 104:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 105:Source\TransformFunctions/arm_dct4_q31.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+ 106:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 107:Source\TransformFunctions/arm_dct4_q31.c ****   /* Initializing the loop counter to N/2 >> 2 for loop unrolling by 4 */
+ 108:Source\TransformFunctions/arm_dct4_q31.c ****   i = S->Nby2 >> 2u;
+ 109:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 110:Source\TransformFunctions/arm_dct4_q31.c ****   /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+ 111:Source\TransformFunctions/arm_dct4_q31.c ****    ** a second loop below computes the remaining 1 to 3 samples. */
+ 112:Source\TransformFunctions/arm_dct4_q31.c ****   do
+ 113:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 114:Source\TransformFunctions/arm_dct4_q31.c ****     /* Re-ordering of even and odd elements */
+ 115:Source\TransformFunctions/arm_dct4_q31.c ****     /* pState[i] =  pInlineBuffer[2*i] */
+ 116:Source\TransformFunctions/arm_dct4_q31.c ****     *pS1++ = *pbuff++;
+ 117:Source\TransformFunctions/arm_dct4_q31.c ****     /* pState[N-i-1] = pInlineBuffer[2*i+1] */
+ 118:Source\TransformFunctions/arm_dct4_q31.c ****     *pS2-- = *pbuff++;
+ 119:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 120:Source\TransformFunctions/arm_dct4_q31.c ****     *pS1++ = *pbuff++;
+ 121:Source\TransformFunctions/arm_dct4_q31.c ****     *pS2-- = *pbuff++;
+ 122:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 123:Source\TransformFunctions/arm_dct4_q31.c ****     *pS1++ = *pbuff++;
+ 124:Source\TransformFunctions/arm_dct4_q31.c ****     *pS2-- = *pbuff++;
+ 125:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 126:Source\TransformFunctions/arm_dct4_q31.c ****     *pS1++ = *pbuff++;
+ 127:Source\TransformFunctions/arm_dct4_q31.c ****     *pS2-- = *pbuff++;
+ 128:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 129:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 130:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 131:Source\TransformFunctions/arm_dct4_q31.c ****   } while (i > 0u);
+ 132:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 133:Source\TransformFunctions/arm_dct4_q31.c ****   /* pbuff initialized to input buffer */
+ 134:Source\TransformFunctions/arm_dct4_q31.c ****   pbuff = pInlineBuffer;
+ 135:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 136:Source\TransformFunctions/arm_dct4_q31.c ****   /* pS1 initialized to pState */
+ 137:Source\TransformFunctions/arm_dct4_q31.c ****   pS1 = pState;
+ 138:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 139:Source\TransformFunctions/arm_dct4_q31.c ****   /* Initializing the loop counter to N/4 instead of N for loop unrolling */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 5
+
+
+ 140:Source\TransformFunctions/arm_dct4_q31.c ****   i = S->N >> 2u;
+ 141:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 142:Source\TransformFunctions/arm_dct4_q31.c ****   /* Processing with loop unrolling 4 times as N is always multiple of 4.
+ 143:Source\TransformFunctions/arm_dct4_q31.c ****    * Compute 4 outputs at a time */
+ 144:Source\TransformFunctions/arm_dct4_q31.c ****   do
+ 145:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 146:Source\TransformFunctions/arm_dct4_q31.c ****     /* Writing the re-ordered output back to inplace input buffer */
+ 147:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = *pS1++;
+ 148:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = *pS1++;
+ 149:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = *pS1++;
+ 150:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = *pS1++;
+ 151:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 152:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 153:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 154:Source\TransformFunctions/arm_dct4_q31.c ****   } while (i > 0u);
+ 155:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 156:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 157:Source\TransformFunctions/arm_dct4_q31.c ****   /* ---------------------------------------------------------
+ 158:Source\TransformFunctions/arm_dct4_q31.c ****    *     Step2: Calculate RFFT for N-point input
+ 159:Source\TransformFunctions/arm_dct4_q31.c ****    * ---------------------------------------------------------- */
+ 160:Source\TransformFunctions/arm_dct4_q31.c ****   /* pInlineBuffer is real input of length N , pState is the complex output of length 2N */
+ 161:Source\TransformFunctions/arm_dct4_q31.c ****   arm_rfft_q31(S->pRfft, pInlineBuffer, pState);
+ 162:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 163:Source\TransformFunctions/arm_dct4_q31.c ****   /*----------------------------------------------------------------------
+ 164:Source\TransformFunctions/arm_dct4_q31.c ****    *  Step3: Multiply the FFT output with the weights.
+ 165:Source\TransformFunctions/arm_dct4_q31.c ****    *----------------------------------------------------------------------*/
+ 166:Source\TransformFunctions/arm_dct4_q31.c ****   arm_cmplx_mult_cmplx_q31(pState, weights, pState, S->N);
+ 167:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 168:Source\TransformFunctions/arm_dct4_q31.c ****   /* The output of complex multiplication is in 3.29 format.
+ 169:Source\TransformFunctions/arm_dct4_q31.c ****    * Hence changing the format of N (i.e. 2*N elements) complex numbers to 1.31 format by shifting 
+ 170:Source\TransformFunctions/arm_dct4_q31.c ****   arm_shift_q31(pState, 2, pState, S->N * 2);
+ 171:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 172:Source\TransformFunctions/arm_dct4_q31.c ****   /* ----------- Post-processing ---------- */
+ 173:Source\TransformFunctions/arm_dct4_q31.c ****   /* DCT-IV can be obtained from DCT-II by the equation,
+ 174:Source\TransformFunctions/arm_dct4_q31.c ****    *       Y4(k) = Y2(k) - Y4(k-1) and Y4(-1) = Y4(0)
+ 175:Source\TransformFunctions/arm_dct4_q31.c ****    *       Hence, Y4(0) = Y2(0)/2  */
+ 176:Source\TransformFunctions/arm_dct4_q31.c ****   /* Getting only real part from the output and Converting to DCT-IV */
+ 177:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 178:Source\TransformFunctions/arm_dct4_q31.c ****   /* Initializing the loop counter to N >> 2 for loop unrolling by 4 */
+ 179:Source\TransformFunctions/arm_dct4_q31.c ****   i = (S->N - 1u) >> 2u;
+ 180:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 181:Source\TransformFunctions/arm_dct4_q31.c ****   /* pbuff initialized to input buffer. */
+ 182:Source\TransformFunctions/arm_dct4_q31.c ****   pbuff = pInlineBuffer;
+ 183:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 184:Source\TransformFunctions/arm_dct4_q31.c ****   /* pS1 initialized to pState */
+ 185:Source\TransformFunctions/arm_dct4_q31.c ****   pS1 = pState;
+ 186:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 187:Source\TransformFunctions/arm_dct4_q31.c ****   /* Calculating Y4(0) from Y2(0) using Y4(0) = Y2(0)/2 */
+ 188:Source\TransformFunctions/arm_dct4_q31.c ****   in = *pS1++ >> 1u;
+ 189:Source\TransformFunctions/arm_dct4_q31.c ****   /* input buffer acts as inplace, so output values are stored in the input itself. */
+ 190:Source\TransformFunctions/arm_dct4_q31.c ****   *pbuff++ = in;
+ 191:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 192:Source\TransformFunctions/arm_dct4_q31.c ****   /* pState pointer is incremented twice as the real values are located alternatively in the array 
+ 193:Source\TransformFunctions/arm_dct4_q31.c ****   pS1++;
+ 194:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 195:Source\TransformFunctions/arm_dct4_q31.c ****   /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+ 196:Source\TransformFunctions/arm_dct4_q31.c ****    ** a second loop below computes the remaining 1 to 3 samples. */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 6
+
+
+ 197:Source\TransformFunctions/arm_dct4_q31.c ****   do
+ 198:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 199:Source\TransformFunctions/arm_dct4_q31.c ****     /* Calculating Y4(1) to Y4(N-1) from Y2 using equation Y4(k) = Y2(k) - Y4(k-1) */
+ 200:Source\TransformFunctions/arm_dct4_q31.c ****     /* pState pointer (pS1) is incremented twice as the real values are located alternatively in th
+ 201:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pS1++ - in;
+ 202:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = in;
+ 203:Source\TransformFunctions/arm_dct4_q31.c ****     /* points to the next real value */
+ 204:Source\TransformFunctions/arm_dct4_q31.c ****     pS1++;
+ 205:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 206:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pS1++ - in;
+ 207:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = in;
+ 208:Source\TransformFunctions/arm_dct4_q31.c ****     pS1++;
+ 209:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 210:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pS1++ - in;
+ 211:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = in;
+ 212:Source\TransformFunctions/arm_dct4_q31.c ****     pS1++;
+ 213:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 214:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pS1++ - in;
+ 215:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = in;
+ 216:Source\TransformFunctions/arm_dct4_q31.c ****     pS1++;
+ 217:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 218:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 219:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 220:Source\TransformFunctions/arm_dct4_q31.c ****   } while (i > 0u);
+ 221:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 222:Source\TransformFunctions/arm_dct4_q31.c ****   /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+ 223:Source\TransformFunctions/arm_dct4_q31.c ****    ** No loop unrolling is used. */
+ 224:Source\TransformFunctions/arm_dct4_q31.c ****   i = (S->N - 1u) % 0x4u;
+ 225:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 226:Source\TransformFunctions/arm_dct4_q31.c ****   while (i > 0u)
+ 227:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 228:Source\TransformFunctions/arm_dct4_q31.c ****     /* Calculating Y4(1) to Y4(N-1) from Y2 using equation Y4(k) = Y2(k) - Y4(k-1) */
+ 229:Source\TransformFunctions/arm_dct4_q31.c ****     /* pState pointer (pS1) is incremented twice as the real values are located alternatively in th
+ 230:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pS1++ - in;
+ 231:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = in;
+ 232:Source\TransformFunctions/arm_dct4_q31.c ****     /* points to the next real value */
+ 233:Source\TransformFunctions/arm_dct4_q31.c ****     pS1++;
+ 234:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 235:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 236:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 237:Source\TransformFunctions/arm_dct4_q31.c ****   }
+ 238:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 239:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 240:Source\TransformFunctions/arm_dct4_q31.c ****         /*------------ Normalizing the output by multiplying with the normalizing factor ----------
+ 241:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 242:Source\TransformFunctions/arm_dct4_q31.c ****   /* Initializing the loop counter to N/4 instead of N for loop unrolling */
+ 243:Source\TransformFunctions/arm_dct4_q31.c ****   i = S->N >> 2u;
+ 244:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 245:Source\TransformFunctions/arm_dct4_q31.c ****   /* pbuff initialized to the pInlineBuffer(now contains the output values) */
+ 246:Source\TransformFunctions/arm_dct4_q31.c ****   pbuff = pInlineBuffer;
+ 247:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 248:Source\TransformFunctions/arm_dct4_q31.c ****   /* Processing with loop unrolling 4 times as N is always multiple of 4.  Compute 4 outputs at a t
+ 249:Source\TransformFunctions/arm_dct4_q31.c ****   do
+ 250:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 251:Source\TransformFunctions/arm_dct4_q31.c ****     /* Multiplying pInlineBuffer with the normalizing factor sqrt(2/N) */
+ 252:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pbuff;
+ 253:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = ((q31_t) (((q63_t) in * S->normalize) >> 31));
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 7
+
+
+ 254:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 255:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pbuff;
+ 256:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = ((q31_t) (((q63_t) in * S->normalize) >> 31));
+ 257:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 258:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pbuff;
+ 259:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = ((q31_t) (((q63_t) in * S->normalize) >> 31));
+ 260:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 261:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pbuff;
+ 262:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = ((q31_t) (((q63_t) in * S->normalize) >> 31));
+ 263:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 264:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 265:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 266:Source\TransformFunctions/arm_dct4_q31.c ****   } while (i > 0u);
+ 267:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 268:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 269:Source\TransformFunctions/arm_dct4_q31.c **** #else
+ 270:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 271:Source\TransformFunctions/arm_dct4_q31.c ****   /* Run the below code for Cortex-M0 */
+ 272:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 273:Source\TransformFunctions/arm_dct4_q31.c ****   /* Initializing the loop counter to N/2 */
+ 274:Source\TransformFunctions/arm_dct4_q31.c ****   i = S->Nby2;
+  90              		.loc 1 274 0
+  91 0060 2E23     		mov	r3, #46
+  92 0062 1022     		mov	r2, #16
+  93 0064 9446     		mov	ip, r2
+  94 0066 BC44     		add	ip, ip, r7
+  95 0068 6344     		add	r3, r3, ip
+  96 006a FA69     		ldr	r2, [r7, #28]
+  97 006c 5288     		ldrh	r2, [r2, #2]
+  98 006e 1A80     		strh	r2, [r3]
+  99              	.L2:
+ 275:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 276:Source\TransformFunctions/arm_dct4_q31.c ****   do
+ 277:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 278:Source\TransformFunctions/arm_dct4_q31.c ****     /* Re-ordering of even and odd elements */
+ 279:Source\TransformFunctions/arm_dct4_q31.c ****     /* pState[i] =  pInlineBuffer[2*i] */
+ 280:Source\TransformFunctions/arm_dct4_q31.c ****     *pS1++ = *pbuff++;
+ 100              		.loc 1 280 0 discriminator 1
+ 101 0070 BB6B     		ldr	r3, [r7, #56]
+ 102 0072 1A1D     		add	r2, r3, #4
+ 103 0074 BA63     		str	r2, [r7, #56]
+ 104 0076 3A6B     		ldr	r2, [r7, #48]
+ 105 0078 111D     		add	r1, r2, #4
+ 106 007a 3963     		str	r1, [r7, #48]
+ 107 007c 1268     		ldr	r2, [r2]
+ 108 007e 1A60     		str	r2, [r3]
+ 281:Source\TransformFunctions/arm_dct4_q31.c ****     /* pState[N-i-1] = pInlineBuffer[2*i+1] */
+ 282:Source\TransformFunctions/arm_dct4_q31.c ****     *pS2-- = *pbuff++;
+ 109              		.loc 1 282 0 discriminator 1
+ 110 0080 7B6B     		ldr	r3, [r7, #52]
+ 111 0082 1A1F     		sub	r2, r3, #4
+ 112 0084 7A63     		str	r2, [r7, #52]
+ 113 0086 3A6B     		ldr	r2, [r7, #48]
+ 114 0088 111D     		add	r1, r2, #4
+ 115 008a 3963     		str	r1, [r7, #48]
+ 116 008c 1268     		ldr	r2, [r2]
+ 117 008e 1A60     		str	r2, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 8
+
+
+ 283:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 284:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 285:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 118              		.loc 1 285 0 discriminator 1
+ 119 0090 2E23     		mov	r3, #46
+ 120 0092 1022     		mov	r2, #16
+ 121 0094 9446     		mov	ip, r2
+ 122 0096 BC44     		add	ip, ip, r7
+ 123 0098 6344     		add	r3, r3, ip
+ 124 009a 1A88     		ldrh	r2, [r3]
+ 125 009c 2E23     		mov	r3, #46
+ 126 009e 1021     		mov	r1, #16
+ 127 00a0 8C46     		mov	ip, r1
+ 128 00a2 BC44     		add	ip, ip, r7
+ 129 00a4 6344     		add	r3, r3, ip
+ 130 00a6 013A     		sub	r2, r2, #1
+ 131 00a8 1A80     		strh	r2, [r3]
+ 286:Source\TransformFunctions/arm_dct4_q31.c ****   } while (i > 0u);
+ 132              		.loc 1 286 0 discriminator 1
+ 133 00aa 2E23     		mov	r3, #46
+ 134 00ac 1022     		mov	r2, #16
+ 135 00ae 9446     		mov	ip, r2
+ 136 00b0 BC44     		add	ip, ip, r7
+ 137 00b2 6344     		add	r3, r3, ip
+ 138 00b4 1B88     		ldrh	r3, [r3]
+ 139 00b6 002B     		cmp	r3, #0
+ 140 00b8 DAD1     		bne	.L2
+ 287:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 288:Source\TransformFunctions/arm_dct4_q31.c ****   /* pbuff initialized to input buffer */
+ 289:Source\TransformFunctions/arm_dct4_q31.c ****   pbuff = pInlineBuffer;
+ 141              		.loc 1 289 0
+ 142 00ba 7B69     		ldr	r3, [r7, #20]
+ 143 00bc 3B63     		str	r3, [r7, #48]
+ 290:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 291:Source\TransformFunctions/arm_dct4_q31.c ****   /* pS1 initialized to pState */
+ 292:Source\TransformFunctions/arm_dct4_q31.c ****   pS1 = pState;
+ 144              		.loc 1 292 0
+ 145 00be BB69     		ldr	r3, [r7, #24]
+ 146 00c0 BB63     		str	r3, [r7, #56]
+ 293:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 294:Source\TransformFunctions/arm_dct4_q31.c ****   /* Initializing the loop counter */
+ 295:Source\TransformFunctions/arm_dct4_q31.c ****   i = S->N;
+ 147              		.loc 1 295 0
+ 148 00c2 2E23     		mov	r3, #46
+ 149 00c4 1022     		mov	r2, #16
+ 150 00c6 9446     		mov	ip, r2
+ 151 00c8 BC44     		add	ip, ip, r7
+ 152 00ca 6344     		add	r3, r3, ip
+ 153 00cc FA69     		ldr	r2, [r7, #28]
+ 154 00ce 1288     		ldrh	r2, [r2]
+ 155 00d0 1A80     		strh	r2, [r3]
+ 156              	.L3:
+ 296:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 297:Source\TransformFunctions/arm_dct4_q31.c ****   do
+ 298:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 299:Source\TransformFunctions/arm_dct4_q31.c ****     /* Writing the re-ordered output back to inplace input buffer */
+ 300:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = *pS1++;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 9
+
+
+ 157              		.loc 1 300 0 discriminator 1
+ 158 00d2 3B6B     		ldr	r3, [r7, #48]
+ 159 00d4 1A1D     		add	r2, r3, #4
+ 160 00d6 3A63     		str	r2, [r7, #48]
+ 161 00d8 BA6B     		ldr	r2, [r7, #56]
+ 162 00da 111D     		add	r1, r2, #4
+ 163 00dc B963     		str	r1, [r7, #56]
+ 164 00de 1268     		ldr	r2, [r2]
+ 165 00e0 1A60     		str	r2, [r3]
+ 301:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 302:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 303:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 166              		.loc 1 303 0 discriminator 1
+ 167 00e2 2E23     		mov	r3, #46
+ 168 00e4 1022     		mov	r2, #16
+ 169 00e6 9446     		mov	ip, r2
+ 170 00e8 BC44     		add	ip, ip, r7
+ 171 00ea 6344     		add	r3, r3, ip
+ 172 00ec 1A88     		ldrh	r2, [r3]
+ 173 00ee 2E23     		mov	r3, #46
+ 174 00f0 1021     		mov	r1, #16
+ 175 00f2 8C46     		mov	ip, r1
+ 176 00f4 BC44     		add	ip, ip, r7
+ 177 00f6 6344     		add	r3, r3, ip
+ 178 00f8 013A     		sub	r2, r2, #1
+ 179 00fa 1A80     		strh	r2, [r3]
+ 304:Source\TransformFunctions/arm_dct4_q31.c ****   } while (i > 0u);
+ 180              		.loc 1 304 0 discriminator 1
+ 181 00fc 2E23     		mov	r3, #46
+ 182 00fe 1022     		mov	r2, #16
+ 183 0100 9446     		mov	ip, r2
+ 184 0102 BC44     		add	ip, ip, r7
+ 185 0104 6344     		add	r3, r3, ip
+ 186 0106 1B88     		ldrh	r3, [r3]
+ 187 0108 002B     		cmp	r3, #0
+ 188 010a E2D1     		bne	.L3
+ 305:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 306:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 307:Source\TransformFunctions/arm_dct4_q31.c ****   /* ---------------------------------------------------------
+ 308:Source\TransformFunctions/arm_dct4_q31.c ****    *     Step2: Calculate RFFT for N-point input
+ 309:Source\TransformFunctions/arm_dct4_q31.c ****    * ---------------------------------------------------------- */
+ 310:Source\TransformFunctions/arm_dct4_q31.c ****   /* pInlineBuffer is real input of length N , pState is the complex output of length 2N */
+ 311:Source\TransformFunctions/arm_dct4_q31.c ****   arm_rfft_q31(S->pRfft, pInlineBuffer, pState);
+ 189              		.loc 1 311 0
+ 190 010c FB69     		ldr	r3, [r7, #28]
+ 191 010e 1969     		ldr	r1, [r3, #16]
+ 192 0110 7A69     		ldr	r2, [r7, #20]
+ 193 0112 BB69     		ldr	r3, [r7, #24]
+ 194 0114 081C     		mov	r0, r1
+ 195 0116 111C     		mov	r1, r2
+ 196 0118 1A1C     		mov	r2, r3
+ 197 011a FFF7FEFF 		bl	arm_rfft_q31
+ 312:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 313:Source\TransformFunctions/arm_dct4_q31.c ****   /*----------------------------------------------------------------------
+ 314:Source\TransformFunctions/arm_dct4_q31.c ****    *  Step3: Multiply the FFT output with the weights.
+ 315:Source\TransformFunctions/arm_dct4_q31.c ****    *----------------------------------------------------------------------*/
+ 316:Source\TransformFunctions/arm_dct4_q31.c ****   arm_cmplx_mult_cmplx_q31(pState, weights, pState, S->N);
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 10
+
+
+ 198              		.loc 1 316 0
+ 199 011e FB69     		ldr	r3, [r7, #28]
+ 200 0120 1B88     		ldrh	r3, [r3]
+ 201 0122 1E1C     		mov	r6, r3
+ 202 0124 B969     		ldr	r1, [r7, #24]
+ 203 0126 BA6A     		ldr	r2, [r7, #40]
+ 204 0128 BB69     		ldr	r3, [r7, #24]
+ 205 012a 081C     		mov	r0, r1
+ 206 012c 111C     		mov	r1, r2
+ 207 012e 1A1C     		mov	r2, r3
+ 208 0130 331C     		mov	r3, r6
+ 209 0132 FFF7FEFF 		bl	arm_cmplx_mult_cmplx_q31
+ 317:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 318:Source\TransformFunctions/arm_dct4_q31.c ****   /* The output of complex multiplication is in 3.29 format.
+ 319:Source\TransformFunctions/arm_dct4_q31.c ****    * Hence changing the format of N (i.e. 2*N elements) complex numbers to 1.31 format by shifting 
+ 320:Source\TransformFunctions/arm_dct4_q31.c ****   arm_shift_q31(pState, 2, pState, S->N * 2);
+ 210              		.loc 1 320 0
+ 211 0136 FB69     		ldr	r3, [r7, #28]
+ 212 0138 1B88     		ldrh	r3, [r3]
+ 213 013a 5B00     		lsl	r3, r3, #1
+ 214 013c 1E1C     		mov	r6, r3
+ 215 013e BA69     		ldr	r2, [r7, #24]
+ 216 0140 BB69     		ldr	r3, [r7, #24]
+ 217 0142 101C     		mov	r0, r2
+ 218 0144 0221     		mov	r1, #2
+ 219 0146 1A1C     		mov	r2, r3
+ 220 0148 331C     		mov	r3, r6
+ 221 014a FFF7FEFF 		bl	arm_shift_q31
+ 321:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 322:Source\TransformFunctions/arm_dct4_q31.c ****   /* ----------- Post-processing ---------- */
+ 323:Source\TransformFunctions/arm_dct4_q31.c ****   /* DCT-IV can be obtained from DCT-II by the equation,
+ 324:Source\TransformFunctions/arm_dct4_q31.c ****    *       Y4(k) = Y2(k) - Y4(k-1) and Y4(-1) = Y4(0)
+ 325:Source\TransformFunctions/arm_dct4_q31.c ****    *       Hence, Y4(0) = Y2(0)/2  */
+ 326:Source\TransformFunctions/arm_dct4_q31.c ****   /* Getting only real part from the output and Converting to DCT-IV */
+ 327:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 328:Source\TransformFunctions/arm_dct4_q31.c ****   /* pbuff initialized to input buffer. */
+ 329:Source\TransformFunctions/arm_dct4_q31.c ****   pbuff = pInlineBuffer;
+ 222              		.loc 1 329 0
+ 223 014e 7B69     		ldr	r3, [r7, #20]
+ 224 0150 3B63     		str	r3, [r7, #48]
+ 330:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 331:Source\TransformFunctions/arm_dct4_q31.c ****   /* pS1 initialized to pState */
+ 332:Source\TransformFunctions/arm_dct4_q31.c ****   pS1 = pState;
+ 225              		.loc 1 332 0
+ 226 0152 BB69     		ldr	r3, [r7, #24]
+ 227 0154 BB63     		str	r3, [r7, #56]
+ 333:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 334:Source\TransformFunctions/arm_dct4_q31.c ****   /* Calculating Y4(0) from Y2(0) using Y4(0) = Y2(0)/2 */
+ 335:Source\TransformFunctions/arm_dct4_q31.c ****   in = *pS1++ >> 1u;
+ 228              		.loc 1 335 0
+ 229 0156 BB6B     		ldr	r3, [r7, #56]
+ 230 0158 1A1D     		add	r2, r3, #4
+ 231 015a BA63     		str	r2, [r7, #56]
+ 232 015c 1B68     		ldr	r3, [r3]
+ 233 015e 5B10     		asr	r3, r3, #1
+ 234 0160 FB62     		str	r3, [r7, #44]
+ 336:Source\TransformFunctions/arm_dct4_q31.c ****   /* input buffer acts as inplace, so output values are stored in the input itself. */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 11
+
+
+ 337:Source\TransformFunctions/arm_dct4_q31.c ****   *pbuff++ = in;
+ 235              		.loc 1 337 0
+ 236 0162 3B6B     		ldr	r3, [r7, #48]
+ 237 0164 1A1D     		add	r2, r3, #4
+ 238 0166 3A63     		str	r2, [r7, #48]
+ 239 0168 FA6A     		ldr	r2, [r7, #44]
+ 240 016a 1A60     		str	r2, [r3]
+ 338:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 339:Source\TransformFunctions/arm_dct4_q31.c ****   /* pState pointer is incremented twice as the real values are located alternatively in the array 
+ 340:Source\TransformFunctions/arm_dct4_q31.c ****   pS1++;
+ 241              		.loc 1 340 0
+ 242 016c BB6B     		ldr	r3, [r7, #56]
+ 243 016e 0433     		add	r3, r3, #4
+ 244 0170 BB63     		str	r3, [r7, #56]
+ 341:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 342:Source\TransformFunctions/arm_dct4_q31.c ****   /* Initializing the loop counter */
+ 343:Source\TransformFunctions/arm_dct4_q31.c ****   i = (S->N - 1u);
+ 245              		.loc 1 343 0
+ 246 0172 FB69     		ldr	r3, [r7, #28]
+ 247 0174 1A88     		ldrh	r2, [r3]
+ 248 0176 2E23     		mov	r3, #46
+ 249 0178 1021     		mov	r1, #16
+ 250 017a 8C46     		mov	ip, r1
+ 251 017c BC44     		add	ip, ip, r7
+ 252 017e 6344     		add	r3, r3, ip
+ 253 0180 013A     		sub	r2, r2, #1
+ 254 0182 1A80     		strh	r2, [r3]
+ 344:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 345:Source\TransformFunctions/arm_dct4_q31.c ****   while (i > 0u)
+ 255              		.loc 1 345 0
+ 256 0184 1BE0     		b	.L4
+ 257              	.L5:
+ 346:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 347:Source\TransformFunctions/arm_dct4_q31.c ****     /* Calculating Y4(1) to Y4(N-1) from Y2 using equation Y4(k) = Y2(k) - Y4(k-1) */
+ 348:Source\TransformFunctions/arm_dct4_q31.c ****     /* pState pointer (pS1) is incremented twice as the real values are located alternatively in th
+ 349:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pS1++ - in;
+ 258              		.loc 1 349 0
+ 259 0186 BB6B     		ldr	r3, [r7, #56]
+ 260 0188 1A1D     		add	r2, r3, #4
+ 261 018a BA63     		str	r2, [r7, #56]
+ 262 018c 1A68     		ldr	r2, [r3]
+ 263 018e FB6A     		ldr	r3, [r7, #44]
+ 264 0190 D31A     		sub	r3, r2, r3
+ 265 0192 FB62     		str	r3, [r7, #44]
+ 350:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = in;
+ 266              		.loc 1 350 0
+ 267 0194 3B6B     		ldr	r3, [r7, #48]
+ 268 0196 1A1D     		add	r2, r3, #4
+ 269 0198 3A63     		str	r2, [r7, #48]
+ 270 019a FA6A     		ldr	r2, [r7, #44]
+ 271 019c 1A60     		str	r2, [r3]
+ 351:Source\TransformFunctions/arm_dct4_q31.c ****     /* points to the next real value */
+ 352:Source\TransformFunctions/arm_dct4_q31.c ****     pS1++;
+ 272              		.loc 1 352 0
+ 273 019e BB6B     		ldr	r3, [r7, #56]
+ 274 01a0 0433     		add	r3, r3, #4
+ 275 01a2 BB63     		str	r3, [r7, #56]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 12
+
+
+ 353:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 354:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 355:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 276              		.loc 1 355 0
+ 277 01a4 2E23     		mov	r3, #46
+ 278 01a6 1022     		mov	r2, #16
+ 279 01a8 9446     		mov	ip, r2
+ 280 01aa BC44     		add	ip, ip, r7
+ 281 01ac 6344     		add	r3, r3, ip
+ 282 01ae 1A88     		ldrh	r2, [r3]
+ 283 01b0 2E23     		mov	r3, #46
+ 284 01b2 1021     		mov	r1, #16
+ 285 01b4 8C46     		mov	ip, r1
+ 286 01b6 BC44     		add	ip, ip, r7
+ 287 01b8 6344     		add	r3, r3, ip
+ 288 01ba 013A     		sub	r2, r2, #1
+ 289 01bc 1A80     		strh	r2, [r3]
+ 290              	.L4:
+ 345:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 291              		.loc 1 345 0
+ 292 01be 2E23     		mov	r3, #46
+ 293 01c0 1022     		mov	r2, #16
+ 294 01c2 9446     		mov	ip, r2
+ 295 01c4 BC44     		add	ip, ip, r7
+ 296 01c6 6344     		add	r3, r3, ip
+ 297 01c8 1B88     		ldrh	r3, [r3]
+ 298 01ca 002B     		cmp	r3, #0
+ 299 01cc DBD1     		bne	.L5
+ 356:Source\TransformFunctions/arm_dct4_q31.c ****   }
+ 357:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 358:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 359:Source\TransformFunctions/arm_dct4_q31.c ****         /*------------ Normalizing the output by multiplying with the normalizing factor ----------
+ 360:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 361:Source\TransformFunctions/arm_dct4_q31.c ****   /* Initializing the loop counter */
+ 362:Source\TransformFunctions/arm_dct4_q31.c ****   i = S->N;
+ 300              		.loc 1 362 0
+ 301 01ce 2E23     		mov	r3, #46
+ 302 01d0 1022     		mov	r2, #16
+ 303 01d2 9446     		mov	ip, r2
+ 304 01d4 BC44     		add	ip, ip, r7
+ 305 01d6 6344     		add	r3, r3, ip
+ 306 01d8 FA69     		ldr	r2, [r7, #28]
+ 307 01da 1288     		ldrh	r2, [r2]
+ 308 01dc 1A80     		strh	r2, [r3]
+ 363:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 364:Source\TransformFunctions/arm_dct4_q31.c ****   /* pbuff initialized to the pInlineBuffer(now contains the output values) */
+ 365:Source\TransformFunctions/arm_dct4_q31.c ****   pbuff = pInlineBuffer;
+ 309              		.loc 1 365 0
+ 310 01de 7B69     		ldr	r3, [r7, #20]
+ 311 01e0 3B63     		str	r3, [r7, #48]
+ 312              	.L6:
+ 366:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 367:Source\TransformFunctions/arm_dct4_q31.c ****   do
+ 368:Source\TransformFunctions/arm_dct4_q31.c ****   {
+ 369:Source\TransformFunctions/arm_dct4_q31.c ****     /* Multiplying pInlineBuffer with the normalizing factor sqrt(2/N) */
+ 370:Source\TransformFunctions/arm_dct4_q31.c ****     in = *pbuff;
+ 313              		.loc 1 370 0 discriminator 1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 13
+
+
+ 314 01e2 3B6B     		ldr	r3, [r7, #48]
+ 315 01e4 1B68     		ldr	r3, [r3]
+ 316 01e6 FB62     		str	r3, [r7, #44]
+ 371:Source\TransformFunctions/arm_dct4_q31.c ****     *pbuff++ = ((q31_t) (((q63_t) in * S->normalize) >> 31));
+ 317              		.loc 1 371 0 discriminator 1
+ 318 01e8 3E6B     		ldr	r6, [r7, #48]
+ 319 01ea 331D     		add	r3, r6, #4
+ 320 01ec 3B63     		str	r3, [r7, #48]
+ 321 01ee FB6A     		ldr	r3, [r7, #44]
+ 322 01f0 BB60     		str	r3, [r7, #8]
+ 323 01f2 DB17     		asr	r3, r3, #31
+ 324 01f4 FB60     		str	r3, [r7, #12]
+ 325 01f6 FB69     		ldr	r3, [r7, #28]
+ 326 01f8 5B68     		ldr	r3, [r3, #4]
+ 327 01fa 3B60     		str	r3, [r7]
+ 328 01fc DB17     		asr	r3, r3, #31
+ 329 01fe 7B60     		str	r3, [r7, #4]
+ 330 0200 B868     		ldr	r0, [r7, #8]
+ 331 0202 F968     		ldr	r1, [r7, #12]
+ 332 0204 3A68     		ldr	r2, [r7]
+ 333 0206 7B68     		ldr	r3, [r7, #4]
+ 334 0208 FFF7FEFF 		bl	__aeabi_lmul
+ 335 020c 021C     		mov	r2, r0
+ 336 020e 0B1C     		mov	r3, r1
+ 337 0210 5900     		lsl	r1, r3, #1
+ 338 0212 D40F     		lsr	r4, r2, #31
+ 339 0214 0C43     		orr	r4, r1
+ 340 0216 DD17     		asr	r5, r3, #31
+ 341 0218 231C     		mov	r3, r4
+ 342 021a 3360     		str	r3, [r6]
+ 372:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 373:Source\TransformFunctions/arm_dct4_q31.c ****     /* Decrement the loop counter */
+ 374:Source\TransformFunctions/arm_dct4_q31.c ****     i--;
+ 343              		.loc 1 374 0 discriminator 1
+ 344 021c 2E23     		mov	r3, #46
+ 345 021e 1022     		mov	r2, #16
+ 346 0220 9446     		mov	ip, r2
+ 347 0222 BC44     		add	ip, ip, r7
+ 348 0224 6344     		add	r3, r3, ip
+ 349 0226 1A88     		ldrh	r2, [r3]
+ 350 0228 2E23     		mov	r3, #46
+ 351 022a 1021     		mov	r1, #16
+ 352 022c 8C46     		mov	ip, r1
+ 353 022e BC44     		add	ip, ip, r7
+ 354 0230 6344     		add	r3, r3, ip
+ 355 0232 013A     		sub	r2, r2, #1
+ 356 0234 1A80     		strh	r2, [r3]
+ 375:Source\TransformFunctions/arm_dct4_q31.c ****   } while (i > 0u);
+ 357              		.loc 1 375 0 discriminator 1
+ 358 0236 2E23     		mov	r3, #46
+ 359 0238 1022     		mov	r2, #16
+ 360 023a 9446     		mov	ip, r2
+ 361 023c BC44     		add	ip, ip, r7
+ 362 023e 6344     		add	r3, r3, ip
+ 363 0240 1B88     		ldrh	r3, [r3]
+ 364 0242 002B     		cmp	r3, #0
+ 365 0244 CDD1     		bne	.L6
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 14
+
+
+ 376:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 377:Source\TransformFunctions/arm_dct4_q31.c **** #endif /* #if defined (ARM_MATH_DSP) */
+ 378:Source\TransformFunctions/arm_dct4_q31.c **** 
+ 379:Source\TransformFunctions/arm_dct4_q31.c **** }
+ 366              		.loc 1 379 0
+ 367 0246 BD46     		mov	sp, r7
+ 368 0248 11B0     		add	sp, sp, #68
+ 369              		@ sp needed
+ 370 024a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 371              	.L8:
+ 372              		.align	2
+ 373              	.L7:
+ 374 024c FFFFFF3F 		.word	1073741823
+ 375              		.cfi_endproc
+ 376              	.LFE82:
+ 377              		.size	arm_dct4_q31, .-arm_dct4_q31
+ 378              		.text
+ 379              	.Letext0:
+ 380              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 381              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 382              		.file 4 ".\\Include/arm_math.h"
+ 383              		.section	.debug_info,"",%progbits
+ 384              	.Ldebug_info0:
+ 385 0000 8E030000 		.4byte	0x38e
+ 386 0004 0400     		.2byte	0x4
+ 387 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 388 000a 04       		.byte	0x4
+ 389 000b 01       		.uleb128 0x1
+ 390 000c 37010000 		.4byte	.LASF54
+ 391 0010 01       		.byte	0x1
+ 392 0011 16000000 		.4byte	.LASF55
+ 393 0015 81020000 		.4byte	.LASF56
+ 394 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 395 001d 00000000 		.4byte	0
+ 396 0021 00000000 		.4byte	.Ldebug_line0
+ 397 0025 02       		.uleb128 0x2
+ 398 0026 01       		.byte	0x1
+ 399 0027 06       		.byte	0x6
+ 400 0028 B7000000 		.4byte	.LASF0
+ 401 002c 03       		.uleb128 0x3
+ 402 002d 4B000000 		.4byte	.LASF3
+ 403 0031 02       		.byte	0x2
+ 404 0032 1D       		.byte	0x1d
+ 405 0033 37000000 		.4byte	0x37
+ 406 0037 02       		.uleb128 0x2
+ 407 0038 01       		.byte	0x1
+ 408 0039 08       		.byte	0x8
+ 409 003a 54020000 		.4byte	.LASF1
+ 410 003e 02       		.uleb128 0x2
+ 411 003f 02       		.byte	0x2
+ 412 0040 05       		.byte	0x5
+ 413 0041 77020000 		.4byte	.LASF2
+ 414 0045 03       		.uleb128 0x3
+ 415 0046 05030000 		.4byte	.LASF4
+ 416 004a 02       		.byte	0x2
+ 417 004b 2B       		.byte	0x2b
+ 418 004c 50000000 		.4byte	0x50
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 15
+
+
+ 419 0050 02       		.uleb128 0x2
+ 420 0051 02       		.byte	0x2
+ 421 0052 07       		.byte	0x7
+ 422 0053 C9010000 		.4byte	.LASF5
+ 423 0057 03       		.uleb128 0x3
+ 424 0058 10030000 		.4byte	.LASF6
+ 425 005c 02       		.byte	0x2
+ 426 005d 3F       		.byte	0x3f
+ 427 005e 62000000 		.4byte	0x62
+ 428 0062 02       		.uleb128 0x2
+ 429 0063 04       		.byte	0x4
+ 430 0064 05       		.byte	0x5
+ 431 0065 C8000000 		.4byte	.LASF7
+ 432 0069 03       		.uleb128 0x3
+ 433 006a F8000000 		.4byte	.LASF8
+ 434 006e 02       		.byte	0x2
+ 435 006f 41       		.byte	0x41
+ 436 0070 74000000 		.4byte	0x74
+ 437 0074 02       		.uleb128 0x2
+ 438 0075 04       		.byte	0x4
+ 439 0076 07       		.byte	0x7
+ 440 0077 25010000 		.4byte	.LASF9
+ 441 007b 03       		.uleb128 0x3
+ 442 007c 82000000 		.4byte	.LASF10
+ 443 0080 02       		.byte	0x2
+ 444 0081 59       		.byte	0x59
+ 445 0082 86000000 		.4byte	0x86
+ 446 0086 02       		.uleb128 0x2
+ 447 0087 08       		.byte	0x8
+ 448 0088 05       		.byte	0x5
+ 449 0089 A9000000 		.4byte	.LASF11
+ 450 008d 02       		.uleb128 0x2
+ 451 008e 08       		.byte	0x8
+ 452 008f 07       		.byte	0x7
+ 453 0090 6B000000 		.4byte	.LASF12
+ 454 0094 04       		.uleb128 0x4
+ 455 0095 04       		.byte	0x4
+ 456 0096 05       		.byte	0x5
+ 457 0097 696E7400 		.ascii	"int\000"
+ 458 009b 02       		.uleb128 0x2
+ 459 009c 04       		.byte	0x4
+ 460 009d 07       		.byte	0x7
+ 461 009e 18010000 		.4byte	.LASF13
+ 462 00a2 03       		.uleb128 0x3
+ 463 00a3 23030000 		.4byte	.LASF14
+ 464 00a7 03       		.byte	0x3
+ 465 00a8 15       		.byte	0x15
+ 466 00a9 2C000000 		.4byte	0x2c
+ 467 00ad 03       		.uleb128 0x3
+ 468 00ae DE000000 		.4byte	.LASF15
+ 469 00b2 03       		.byte	0x3
+ 470 00b3 21       		.byte	0x21
+ 471 00b4 45000000 		.4byte	0x45
+ 472 00b8 03       		.uleb128 0x3
+ 473 00b9 4C020000 		.4byte	.LASF16
+ 474 00bd 03       		.byte	0x3
+ 475 00be 2C       		.byte	0x2c
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 16
+
+
+ 476 00bf 57000000 		.4byte	0x57
+ 477 00c3 03       		.uleb128 0x3
+ 478 00c4 DF020000 		.4byte	.LASF17
+ 479 00c8 03       		.byte	0x3
+ 480 00c9 2D       		.byte	0x2d
+ 481 00ca 69000000 		.4byte	0x69
+ 482 00ce 03       		.uleb128 0x3
+ 483 00cf 49030000 		.4byte	.LASF18
+ 484 00d3 03       		.byte	0x3
+ 485 00d4 38       		.byte	0x38
+ 486 00d5 7B000000 		.4byte	0x7b
+ 487 00d9 02       		.uleb128 0x2
+ 488 00da 04       		.byte	0x4
+ 489 00db 07       		.byte	0x7
+ 490 00dc FF010000 		.4byte	.LASF19
+ 491 00e0 02       		.uleb128 0x2
+ 492 00e1 01       		.byte	0x1
+ 493 00e2 08       		.byte	0x8
+ 494 00e3 FA020000 		.4byte	.LASF20
+ 495 00e7 02       		.uleb128 0x2
+ 496 00e8 08       		.byte	0x8
+ 497 00e9 04       		.byte	0x4
+ 498 00ea E7000000 		.4byte	.LASF21
+ 499 00ee 02       		.uleb128 0x2
+ 500 00ef 04       		.byte	0x4
+ 501 00f0 04       		.byte	0x4
+ 502 00f1 39020000 		.4byte	.LASF22
+ 503 00f5 02       		.uleb128 0x2
+ 504 00f6 08       		.byte	0x8
+ 505 00f7 04       		.byte	0x4
+ 506 00f8 08020000 		.4byte	.LASF23
+ 507 00fc 05       		.uleb128 0x5
+ 508 00fd D9020000 		.4byte	.LASF24
+ 509 0101 04       		.byte	0x4
+ 510 0102 9B01     		.2byte	0x19b
+ 511 0104 B8000000 		.4byte	0xb8
+ 512 0108 05       		.uleb128 0x5
+ 513 0109 45000000 		.4byte	.LASF25
+ 514 010d 04       		.byte	0x4
+ 515 010e A001     		.2byte	0x1a0
+ 516 0110 CE000000 		.4byte	0xce
+ 517 0114 06       		.uleb128 0x6
+ 518 0115 04       		.byte	0x4
+ 519 0116 FC000000 		.4byte	0xfc
+ 520 011a 06       		.uleb128 0x6
+ 521 011b 04       		.byte	0x4
+ 522 011c AD000000 		.4byte	0xad
+ 523 0120 07       		.uleb128 0x7
+ 524 0121 10       		.byte	0x10
+ 525 0122 04       		.byte	0x4
+ 526 0123 2C08     		.2byte	0x82c
+ 527 0125 85010000 		.4byte	0x185
+ 528 0129 08       		.uleb128 0x8
+ 529 012a 11010000 		.4byte	.LASF26
+ 530 012e 04       		.byte	0x4
+ 531 012f 2E08     		.2byte	0x82e
+ 532 0131 AD000000 		.4byte	0xad
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 17
+
+
+ 533 0135 00       		.byte	0
+ 534 0136 08       		.uleb128 0x8
+ 535 0137 7D030000 		.4byte	.LASF27
+ 536 013b 04       		.byte	0x4
+ 537 013c 2F08     		.2byte	0x82f
+ 538 013e A2000000 		.4byte	0xa2
+ 539 0142 02       		.byte	0x2
+ 540 0143 08       		.uleb128 0x8
+ 541 0144 2A020000 		.4byte	.LASF28
+ 542 0148 04       		.byte	0x4
+ 543 0149 3008     		.2byte	0x830
+ 544 014b A2000000 		.4byte	0xa2
+ 545 014f 03       		.byte	0x3
+ 546 0150 08       		.uleb128 0x8
+ 547 0151 1A030000 		.4byte	.LASF29
+ 548 0155 04       		.byte	0x4
+ 549 0156 3108     		.2byte	0x831
+ 550 0158 14010000 		.4byte	0x114
+ 551 015c 04       		.byte	0x4
+ 552 015d 08       		.uleb128 0x8
+ 553 015e D1000000 		.4byte	.LASF30
+ 554 0162 04       		.byte	0x4
+ 555 0163 3208     		.2byte	0x832
+ 556 0165 1A010000 		.4byte	0x11a
+ 557 0169 08       		.byte	0x8
+ 558 016a 08       		.uleb128 0x8
+ 559 016b 38030000 		.4byte	.LASF31
+ 560 016f 04       		.byte	0x4
+ 561 0170 3308     		.2byte	0x833
+ 562 0172 AD000000 		.4byte	0xad
+ 563 0176 0C       		.byte	0xc
+ 564 0177 08       		.uleb128 0x8
+ 565 0178 DC010000 		.4byte	.LASF32
+ 566 017c 04       		.byte	0x4
+ 567 017d 3408     		.2byte	0x834
+ 568 017f AD000000 		.4byte	0xad
+ 569 0183 0E       		.byte	0xe
+ 570 0184 00       		.byte	0
+ 571 0185 05       		.uleb128 0x5
+ 572 0186 8C000000 		.4byte	.LASF33
+ 573 018a 04       		.byte	0x4
+ 574 018b 3508     		.2byte	0x835
+ 575 018d 20010000 		.4byte	0x120
+ 576 0191 06       		.uleb128 0x6
+ 577 0192 04       		.byte	0x4
+ 578 0193 97010000 		.4byte	0x197
+ 579 0197 09       		.uleb128 0x9
+ 580 0198 AD000000 		.4byte	0xad
+ 581 019c 07       		.uleb128 0x7
+ 582 019d 10       		.byte	0x10
+ 583 019e 04       		.byte	0x4
+ 584 019f 8D08     		.2byte	0x88d
+ 585 01a1 DA010000 		.4byte	0x1da
+ 586 01a5 08       		.uleb128 0x8
+ 587 01a6 11010000 		.4byte	.LASF26
+ 588 01aa 04       		.byte	0x4
+ 589 01ab 8F08     		.2byte	0x88f
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 18
+
+
+ 590 01ad AD000000 		.4byte	0xad
+ 591 01b1 00       		.byte	0
+ 592 01b2 08       		.uleb128 0x8
+ 593 01b3 1A030000 		.4byte	.LASF29
+ 594 01b7 04       		.byte	0x4
+ 595 01b8 9008     		.2byte	0x890
+ 596 01ba DA010000 		.4byte	0x1da
+ 597 01be 04       		.byte	0x4
+ 598 01bf 08       		.uleb128 0x8
+ 599 01c0 D1000000 		.4byte	.LASF30
+ 600 01c4 04       		.byte	0x4
+ 601 01c5 9108     		.2byte	0x891
+ 602 01c7 91010000 		.4byte	0x191
+ 603 01cb 08       		.byte	0x8
+ 604 01cc 08       		.uleb128 0x8
+ 605 01cd 3F020000 		.4byte	.LASF34
+ 606 01d1 04       		.byte	0x4
+ 607 01d2 9208     		.2byte	0x892
+ 608 01d4 AD000000 		.4byte	0xad
+ 609 01d8 0C       		.byte	0xc
+ 610 01d9 00       		.byte	0
+ 611 01da 06       		.uleb128 0x6
+ 612 01db 04       		.byte	0x4
+ 613 01dc E0010000 		.4byte	0x1e0
+ 614 01e0 09       		.uleb128 0x9
+ 615 01e1 FC000000 		.4byte	0xfc
+ 616 01e5 05       		.uleb128 0x5
+ 617 01e6 00000000 		.4byte	.LASF35
+ 618 01ea 04       		.byte	0x4
+ 619 01eb 9308     		.2byte	0x893
+ 620 01ed 9C010000 		.4byte	0x19c
+ 621 01f1 07       		.uleb128 0x7
+ 622 01f2 18       		.byte	0x18
+ 623 01f3 04       		.byte	0x4
+ 624 01f4 C808     		.2byte	0x8c8
+ 625 01f6 56020000 		.4byte	0x256
+ 626 01fa 08       		.uleb128 0x8
+ 627 01fb 51030000 		.4byte	.LASF36
+ 628 01ff 04       		.byte	0x4
+ 629 0200 CA08     		.2byte	0x8ca
+ 630 0202 C3000000 		.4byte	0xc3
+ 631 0206 00       		.byte	0
+ 632 0207 08       		.uleb128 0x8
+ 633 0208 EE000000 		.4byte	.LASF37
+ 634 020c 04       		.byte	0x4
+ 635 020d CB08     		.2byte	0x8cb
+ 636 020f A2000000 		.4byte	0xa2
+ 637 0213 04       		.byte	0x4
+ 638 0214 08       		.uleb128 0x8
+ 639 0215 14020000 		.4byte	.LASF38
+ 640 0219 04       		.byte	0x4
+ 641 021a CC08     		.2byte	0x8cc
+ 642 021c A2000000 		.4byte	0xa2
+ 643 0220 05       		.byte	0x5
+ 644 0221 08       		.uleb128 0x8
+ 645 0222 E8020000 		.4byte	.LASF39
+ 646 0226 04       		.byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 19
+
+
+ 647 0227 CD08     		.2byte	0x8cd
+ 648 0229 C3000000 		.4byte	0xc3
+ 649 022d 08       		.byte	0x8
+ 650 022e 08       		.uleb128 0x8
+ 651 022f 69020000 		.4byte	.LASF40
+ 652 0233 04       		.byte	0x4
+ 653 0234 CE08     		.2byte	0x8ce
+ 654 0236 14010000 		.4byte	0x114
+ 655 023a 0C       		.byte	0xc
+ 656 023b 08       		.uleb128 0x8
+ 657 023c 03010000 		.4byte	.LASF41
+ 658 0240 04       		.byte	0x4
+ 659 0241 CF08     		.2byte	0x8cf
+ 660 0243 14010000 		.4byte	0x114
+ 661 0247 10       		.byte	0x10
+ 662 0248 08       		.uleb128 0x8
+ 663 0249 FF020000 		.4byte	.LASF42
+ 664 024d 04       		.byte	0x4
+ 665 024e D008     		.2byte	0x8d0
+ 666 0250 56020000 		.4byte	0x256
+ 667 0254 14       		.byte	0x14
+ 668 0255 00       		.byte	0
+ 669 0256 06       		.uleb128 0x6
+ 670 0257 04       		.byte	0x4
+ 671 0258 5C020000 		.4byte	0x25c
+ 672 025c 09       		.uleb128 0x9
+ 673 025d E5010000 		.4byte	0x1e5
+ 674 0261 05       		.uleb128 0x5
+ 675 0262 55000000 		.4byte	.LASF43
+ 676 0266 04       		.byte	0x4
+ 677 0267 D108     		.2byte	0x8d1
+ 678 0269 F1010000 		.4byte	0x1f1
+ 679 026d 07       		.uleb128 0x7
+ 680 026e 18       		.byte	0x18
+ 681 026f 04       		.byte	0x4
+ 682 0270 3D09     		.2byte	0x93d
+ 683 0272 D0020000 		.4byte	0x2d0
+ 684 0276 0A       		.uleb128 0xa
+ 685 0277 4E00     		.ascii	"N\000"
+ 686 0279 04       		.byte	0x4
+ 687 027a 3F09     		.2byte	0x93f
+ 688 027c AD000000 		.4byte	0xad
+ 689 0280 00       		.byte	0
+ 690 0281 08       		.uleb128 0x8
+ 691 0282 C3000000 		.4byte	.LASF44
+ 692 0286 04       		.byte	0x4
+ 693 0287 4009     		.2byte	0x940
+ 694 0289 AD000000 		.4byte	0xad
+ 695 028d 02       		.byte	0x2
+ 696 028e 08       		.uleb128 0x8
+ 697 028f C7020000 		.4byte	.LASF45
+ 698 0293 04       		.byte	0x4
+ 699 0294 4109     		.2byte	0x941
+ 700 0296 FC000000 		.4byte	0xfc
+ 701 029a 04       		.byte	0x4
+ 702 029b 08       		.uleb128 0x8
+ 703 029c 1A030000 		.4byte	.LASF29
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 20
+
+
+ 704 02a0 04       		.byte	0x4
+ 705 02a1 4209     		.2byte	0x942
+ 706 02a3 14010000 		.4byte	0x114
+ 707 02a7 08       		.byte	0x8
+ 708 02a8 08       		.uleb128 0x8
+ 709 02a9 5C030000 		.4byte	.LASF46
+ 710 02ad 04       		.byte	0x4
+ 711 02ae 4309     		.2byte	0x943
+ 712 02b0 14010000 		.4byte	0x114
+ 713 02b4 0C       		.byte	0xc
+ 714 02b5 08       		.uleb128 0x8
+ 715 02b6 3F000000 		.4byte	.LASF47
+ 716 02ba 04       		.byte	0x4
+ 717 02bb 4409     		.2byte	0x944
+ 718 02bd D0020000 		.4byte	0x2d0
+ 719 02c1 10       		.byte	0x10
+ 720 02c2 08       		.uleb128 0x8
+ 721 02c3 FF020000 		.4byte	.LASF42
+ 722 02c7 04       		.byte	0x4
+ 723 02c8 4509     		.2byte	0x945
+ 724 02ca D6020000 		.4byte	0x2d6
+ 725 02ce 14       		.byte	0x14
+ 726 02cf 00       		.byte	0
+ 727 02d0 06       		.uleb128 0x6
+ 728 02d1 04       		.byte	0x4
+ 729 02d2 61020000 		.4byte	0x261
+ 730 02d6 06       		.uleb128 0x6
+ 731 02d7 04       		.byte	0x4
+ 732 02d8 85010000 		.4byte	0x185
+ 733 02dc 05       		.uleb128 0x5
+ 734 02dd E9010000 		.4byte	.LASF48
+ 735 02e1 04       		.byte	0x4
+ 736 02e2 4609     		.2byte	0x946
+ 737 02e4 6D020000 		.4byte	0x26d
+ 738 02e8 0B       		.uleb128 0xb
+ 739 02e9 2B030000 		.4byte	.LASF57
+ 740 02ed 01       		.byte	0x1
+ 741 02ee 34       		.byte	0x34
+ 742 02ef 00000000 		.4byte	.LFB82
+ 743 02f3 50020000 		.4byte	.LFE82-.LFB82
+ 744 02f7 01       		.uleb128 0x1
+ 745 02f8 9C       		.byte	0x9c
+ 746 02f9 86030000 		.4byte	0x386
+ 747 02fd 0C       		.uleb128 0xc
+ 748 02fe 5300     		.ascii	"S\000"
+ 749 0300 01       		.byte	0x1
+ 750 0301 35       		.byte	0x35
+ 751 0302 86030000 		.4byte	0x386
+ 752 0306 02       		.uleb128 0x2
+ 753 0307 91       		.byte	0x91
+ 754 0308 44       		.sleb128 -60
+ 755 0309 0D       		.uleb128 0xd
+ 756 030a 62020000 		.4byte	.LASF49
+ 757 030e 01       		.byte	0x1
+ 758 030f 36       		.byte	0x36
+ 759 0310 14010000 		.4byte	0x114
+ 760 0314 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 21
+
+
+ 761 0315 91       		.byte	0x91
+ 762 0316 40       		.sleb128 -64
+ 763 0317 0D       		.uleb128 0xd
+ 764 0318 6F030000 		.4byte	.LASF50
+ 765 031c 01       		.byte	0x1
+ 766 031d 37       		.byte	0x37
+ 767 031e 14010000 		.4byte	0x114
+ 768 0322 03       		.uleb128 0x3
+ 769 0323 91       		.byte	0x91
+ 770 0324 BC7F     		.sleb128 -68
+ 771 0326 0E       		.uleb128 0xe
+ 772 0327 6900     		.ascii	"i\000"
+ 773 0329 01       		.byte	0x1
+ 774 032a 39       		.byte	0x39
+ 775 032b AD000000 		.4byte	0xad
+ 776 032f 02       		.uleb128 0x2
+ 777 0330 91       		.byte	0x91
+ 778 0331 66       		.sleb128 -26
+ 779 0332 0F       		.uleb128 0xf
+ 780 0333 D1020000 		.4byte	.LASF51
+ 781 0337 01       		.byte	0x1
+ 782 0338 3A       		.byte	0x3a
+ 783 0339 14010000 		.4byte	0x114
+ 784 033d 02       		.uleb128 0x2
+ 785 033e 91       		.byte	0x91
+ 786 033f 50       		.sleb128 -48
+ 787 0340 0F       		.uleb128 0xf
+ 788 0341 67030000 		.4byte	.LASF52
+ 789 0345 01       		.byte	0x1
+ 790 0346 3B       		.byte	0x3b
+ 791 0347 14010000 		.4byte	0x114
+ 792 034b 02       		.uleb128 0x2
+ 793 034c 91       		.byte	0x91
+ 794 034d 4C       		.sleb128 -52
+ 795 034e 0E       		.uleb128 0xe
+ 796 034f 70533100 		.ascii	"pS1\000"
+ 797 0353 01       		.byte	0x1
+ 798 0354 3C       		.byte	0x3c
+ 799 0355 14010000 		.4byte	0x114
+ 800 0359 02       		.uleb128 0x2
+ 801 035a 91       		.byte	0x91
+ 802 035b 60       		.sleb128 -32
+ 803 035c 0E       		.uleb128 0xe
+ 804 035d 70533200 		.ascii	"pS2\000"
+ 805 0361 01       		.byte	0x1
+ 806 0362 3C       		.byte	0x3c
+ 807 0363 14010000 		.4byte	0x114
+ 808 0367 02       		.uleb128 0x2
+ 809 0368 91       		.byte	0x91
+ 810 0369 5C       		.sleb128 -36
+ 811 036a 0F       		.uleb128 0xf
+ 812 036b 24020000 		.4byte	.LASF53
+ 813 036f 01       		.byte	0x1
+ 814 0370 3C       		.byte	0x3c
+ 815 0371 14010000 		.4byte	0x114
+ 816 0375 02       		.uleb128 0x2
+ 817 0376 91       		.byte	0x91
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 22
+
+
+ 818 0377 58       		.sleb128 -40
+ 819 0378 0E       		.uleb128 0xe
+ 820 0379 696E00   		.ascii	"in\000"
+ 821 037c 01       		.byte	0x1
+ 822 037d 3D       		.byte	0x3d
+ 823 037e FC000000 		.4byte	0xfc
+ 824 0382 02       		.uleb128 0x2
+ 825 0383 91       		.byte	0x91
+ 826 0384 54       		.sleb128 -44
+ 827 0385 00       		.byte	0
+ 828 0386 06       		.uleb128 0x6
+ 829 0387 04       		.byte	0x4
+ 830 0388 8C030000 		.4byte	0x38c
+ 831 038c 09       		.uleb128 0x9
+ 832 038d DC020000 		.4byte	0x2dc
+ 833 0391 00       		.byte	0
+ 834              		.section	.debug_abbrev,"",%progbits
+ 835              	.Ldebug_abbrev0:
+ 836 0000 01       		.uleb128 0x1
+ 837 0001 11       		.uleb128 0x11
+ 838 0002 01       		.byte	0x1
+ 839 0003 25       		.uleb128 0x25
+ 840 0004 0E       		.uleb128 0xe
+ 841 0005 13       		.uleb128 0x13
+ 842 0006 0B       		.uleb128 0xb
+ 843 0007 03       		.uleb128 0x3
+ 844 0008 0E       		.uleb128 0xe
+ 845 0009 1B       		.uleb128 0x1b
+ 846 000a 0E       		.uleb128 0xe
+ 847 000b 55       		.uleb128 0x55
+ 848 000c 17       		.uleb128 0x17
+ 849 000d 11       		.uleb128 0x11
+ 850 000e 01       		.uleb128 0x1
+ 851 000f 10       		.uleb128 0x10
+ 852 0010 17       		.uleb128 0x17
+ 853 0011 00       		.byte	0
+ 854 0012 00       		.byte	0
+ 855 0013 02       		.uleb128 0x2
+ 856 0014 24       		.uleb128 0x24
+ 857 0015 00       		.byte	0
+ 858 0016 0B       		.uleb128 0xb
+ 859 0017 0B       		.uleb128 0xb
+ 860 0018 3E       		.uleb128 0x3e
+ 861 0019 0B       		.uleb128 0xb
+ 862 001a 03       		.uleb128 0x3
+ 863 001b 0E       		.uleb128 0xe
+ 864 001c 00       		.byte	0
+ 865 001d 00       		.byte	0
+ 866 001e 03       		.uleb128 0x3
+ 867 001f 16       		.uleb128 0x16
+ 868 0020 00       		.byte	0
+ 869 0021 03       		.uleb128 0x3
+ 870 0022 0E       		.uleb128 0xe
+ 871 0023 3A       		.uleb128 0x3a
+ 872 0024 0B       		.uleb128 0xb
+ 873 0025 3B       		.uleb128 0x3b
+ 874 0026 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 23
+
+
+ 875 0027 49       		.uleb128 0x49
+ 876 0028 13       		.uleb128 0x13
+ 877 0029 00       		.byte	0
+ 878 002a 00       		.byte	0
+ 879 002b 04       		.uleb128 0x4
+ 880 002c 24       		.uleb128 0x24
+ 881 002d 00       		.byte	0
+ 882 002e 0B       		.uleb128 0xb
+ 883 002f 0B       		.uleb128 0xb
+ 884 0030 3E       		.uleb128 0x3e
+ 885 0031 0B       		.uleb128 0xb
+ 886 0032 03       		.uleb128 0x3
+ 887 0033 08       		.uleb128 0x8
+ 888 0034 00       		.byte	0
+ 889 0035 00       		.byte	0
+ 890 0036 05       		.uleb128 0x5
+ 891 0037 16       		.uleb128 0x16
+ 892 0038 00       		.byte	0
+ 893 0039 03       		.uleb128 0x3
+ 894 003a 0E       		.uleb128 0xe
+ 895 003b 3A       		.uleb128 0x3a
+ 896 003c 0B       		.uleb128 0xb
+ 897 003d 3B       		.uleb128 0x3b
+ 898 003e 05       		.uleb128 0x5
+ 899 003f 49       		.uleb128 0x49
+ 900 0040 13       		.uleb128 0x13
+ 901 0041 00       		.byte	0
+ 902 0042 00       		.byte	0
+ 903 0043 06       		.uleb128 0x6
+ 904 0044 0F       		.uleb128 0xf
+ 905 0045 00       		.byte	0
+ 906 0046 0B       		.uleb128 0xb
+ 907 0047 0B       		.uleb128 0xb
+ 908 0048 49       		.uleb128 0x49
+ 909 0049 13       		.uleb128 0x13
+ 910 004a 00       		.byte	0
+ 911 004b 00       		.byte	0
+ 912 004c 07       		.uleb128 0x7
+ 913 004d 13       		.uleb128 0x13
+ 914 004e 01       		.byte	0x1
+ 915 004f 0B       		.uleb128 0xb
+ 916 0050 0B       		.uleb128 0xb
+ 917 0051 3A       		.uleb128 0x3a
+ 918 0052 0B       		.uleb128 0xb
+ 919 0053 3B       		.uleb128 0x3b
+ 920 0054 05       		.uleb128 0x5
+ 921 0055 01       		.uleb128 0x1
+ 922 0056 13       		.uleb128 0x13
+ 923 0057 00       		.byte	0
+ 924 0058 00       		.byte	0
+ 925 0059 08       		.uleb128 0x8
+ 926 005a 0D       		.uleb128 0xd
+ 927 005b 00       		.byte	0
+ 928 005c 03       		.uleb128 0x3
+ 929 005d 0E       		.uleb128 0xe
+ 930 005e 3A       		.uleb128 0x3a
+ 931 005f 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 24
+
+
+ 932 0060 3B       		.uleb128 0x3b
+ 933 0061 05       		.uleb128 0x5
+ 934 0062 49       		.uleb128 0x49
+ 935 0063 13       		.uleb128 0x13
+ 936 0064 38       		.uleb128 0x38
+ 937 0065 0B       		.uleb128 0xb
+ 938 0066 00       		.byte	0
+ 939 0067 00       		.byte	0
+ 940 0068 09       		.uleb128 0x9
+ 941 0069 26       		.uleb128 0x26
+ 942 006a 00       		.byte	0
+ 943 006b 49       		.uleb128 0x49
+ 944 006c 13       		.uleb128 0x13
+ 945 006d 00       		.byte	0
+ 946 006e 00       		.byte	0
+ 947 006f 0A       		.uleb128 0xa
+ 948 0070 0D       		.uleb128 0xd
+ 949 0071 00       		.byte	0
+ 950 0072 03       		.uleb128 0x3
+ 951 0073 08       		.uleb128 0x8
+ 952 0074 3A       		.uleb128 0x3a
+ 953 0075 0B       		.uleb128 0xb
+ 954 0076 3B       		.uleb128 0x3b
+ 955 0077 05       		.uleb128 0x5
+ 956 0078 49       		.uleb128 0x49
+ 957 0079 13       		.uleb128 0x13
+ 958 007a 38       		.uleb128 0x38
+ 959 007b 0B       		.uleb128 0xb
+ 960 007c 00       		.byte	0
+ 961 007d 00       		.byte	0
+ 962 007e 0B       		.uleb128 0xb
+ 963 007f 2E       		.uleb128 0x2e
+ 964 0080 01       		.byte	0x1
+ 965 0081 3F       		.uleb128 0x3f
+ 966 0082 19       		.uleb128 0x19
+ 967 0083 03       		.uleb128 0x3
+ 968 0084 0E       		.uleb128 0xe
+ 969 0085 3A       		.uleb128 0x3a
+ 970 0086 0B       		.uleb128 0xb
+ 971 0087 3B       		.uleb128 0x3b
+ 972 0088 0B       		.uleb128 0xb
+ 973 0089 27       		.uleb128 0x27
+ 974 008a 19       		.uleb128 0x19
+ 975 008b 11       		.uleb128 0x11
+ 976 008c 01       		.uleb128 0x1
+ 977 008d 12       		.uleb128 0x12
+ 978 008e 06       		.uleb128 0x6
+ 979 008f 40       		.uleb128 0x40
+ 980 0090 18       		.uleb128 0x18
+ 981 0091 9642     		.uleb128 0x2116
+ 982 0093 19       		.uleb128 0x19
+ 983 0094 01       		.uleb128 0x1
+ 984 0095 13       		.uleb128 0x13
+ 985 0096 00       		.byte	0
+ 986 0097 00       		.byte	0
+ 987 0098 0C       		.uleb128 0xc
+ 988 0099 05       		.uleb128 0x5
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 25
+
+
+ 989 009a 00       		.byte	0
+ 990 009b 03       		.uleb128 0x3
+ 991 009c 08       		.uleb128 0x8
+ 992 009d 3A       		.uleb128 0x3a
+ 993 009e 0B       		.uleb128 0xb
+ 994 009f 3B       		.uleb128 0x3b
+ 995 00a0 0B       		.uleb128 0xb
+ 996 00a1 49       		.uleb128 0x49
+ 997 00a2 13       		.uleb128 0x13
+ 998 00a3 02       		.uleb128 0x2
+ 999 00a4 18       		.uleb128 0x18
+ 1000 00a5 00       		.byte	0
+ 1001 00a6 00       		.byte	0
+ 1002 00a7 0D       		.uleb128 0xd
+ 1003 00a8 05       		.uleb128 0x5
+ 1004 00a9 00       		.byte	0
+ 1005 00aa 03       		.uleb128 0x3
+ 1006 00ab 0E       		.uleb128 0xe
+ 1007 00ac 3A       		.uleb128 0x3a
+ 1008 00ad 0B       		.uleb128 0xb
+ 1009 00ae 3B       		.uleb128 0x3b
+ 1010 00af 0B       		.uleb128 0xb
+ 1011 00b0 49       		.uleb128 0x49
+ 1012 00b1 13       		.uleb128 0x13
+ 1013 00b2 02       		.uleb128 0x2
+ 1014 00b3 18       		.uleb128 0x18
+ 1015 00b4 00       		.byte	0
+ 1016 00b5 00       		.byte	0
+ 1017 00b6 0E       		.uleb128 0xe
+ 1018 00b7 34       		.uleb128 0x34
+ 1019 00b8 00       		.byte	0
+ 1020 00b9 03       		.uleb128 0x3
+ 1021 00ba 08       		.uleb128 0x8
+ 1022 00bb 3A       		.uleb128 0x3a
+ 1023 00bc 0B       		.uleb128 0xb
+ 1024 00bd 3B       		.uleb128 0x3b
+ 1025 00be 0B       		.uleb128 0xb
+ 1026 00bf 49       		.uleb128 0x49
+ 1027 00c0 13       		.uleb128 0x13
+ 1028 00c1 02       		.uleb128 0x2
+ 1029 00c2 18       		.uleb128 0x18
+ 1030 00c3 00       		.byte	0
+ 1031 00c4 00       		.byte	0
+ 1032 00c5 0F       		.uleb128 0xf
+ 1033 00c6 34       		.uleb128 0x34
+ 1034 00c7 00       		.byte	0
+ 1035 00c8 03       		.uleb128 0x3
+ 1036 00c9 0E       		.uleb128 0xe
+ 1037 00ca 3A       		.uleb128 0x3a
+ 1038 00cb 0B       		.uleb128 0xb
+ 1039 00cc 3B       		.uleb128 0x3b
+ 1040 00cd 0B       		.uleb128 0xb
+ 1041 00ce 49       		.uleb128 0x49
+ 1042 00cf 13       		.uleb128 0x13
+ 1043 00d0 02       		.uleb128 0x2
+ 1044 00d1 18       		.uleb128 0x18
+ 1045 00d2 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 26
+
+
+ 1046 00d3 00       		.byte	0
+ 1047 00d4 00       		.byte	0
+ 1048              		.section	.debug_aranges,"",%progbits
+ 1049 0000 1C000000 		.4byte	0x1c
+ 1050 0004 0200     		.2byte	0x2
+ 1051 0006 00000000 		.4byte	.Ldebug_info0
+ 1052 000a 04       		.byte	0x4
+ 1053 000b 00       		.byte	0
+ 1054 000c 0000     		.2byte	0
+ 1055 000e 0000     		.2byte	0
+ 1056 0010 00000000 		.4byte	.LFB82
+ 1057 0014 50020000 		.4byte	.LFE82-.LFB82
+ 1058 0018 00000000 		.4byte	0
+ 1059 001c 00000000 		.4byte	0
+ 1060              		.section	.debug_ranges,"",%progbits
+ 1061              	.Ldebug_ranges0:
+ 1062 0000 00000000 		.4byte	.LFB82
+ 1063 0004 50020000 		.4byte	.LFE82
+ 1064 0008 00000000 		.4byte	0
+ 1065 000c 00000000 		.4byte	0
+ 1066              		.section	.debug_line,"",%progbits
+ 1067              	.Ldebug_line0:
+ 1068 0000 C6010000 		.section	.debug_str,"MS",%progbits,1
+ 1068      02004F01 
+ 1068      00000201 
+ 1068      FB0E0D00 
+ 1068      01010101 
+ 1069              	.LASF35:
+ 1070 0000 61726D5F 		.ascii	"arm_cfft_instance_q31\000"
+ 1070      63666674 
+ 1070      5F696E73 
+ 1070      74616E63 
+ 1070      655F7133 
+ 1071              	.LASF55:
+ 1072 0016 536F7572 		.ascii	"Source\\TransformFunctions\\arm_dct4_q31.c\000"
+ 1072      63655C54 
+ 1072      72616E73 
+ 1072      666F726D 
+ 1072      46756E63 
+ 1073              	.LASF47:
+ 1074 003f 70526666 		.ascii	"pRfft\000"
+ 1074      7400
+ 1075              	.LASF25:
+ 1076 0045 7136335F 		.ascii	"q63_t\000"
+ 1076      7400
+ 1077              	.LASF3:
+ 1078 004b 5F5F7569 		.ascii	"__uint8_t\000"
+ 1078      6E74385F 
+ 1078      7400
+ 1079              	.LASF43:
+ 1080 0055 61726D5F 		.ascii	"arm_rfft_instance_q31\000"
+ 1080      72666674 
+ 1080      5F696E73 
+ 1080      74616E63 
+ 1080      655F7133 
+ 1081              	.LASF12:
+ 1082 006b 6C6F6E67 		.ascii	"long long unsigned int\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 27
+
+
+ 1082      206C6F6E 
+ 1082      6720756E 
+ 1082      7369676E 
+ 1082      65642069 
+ 1083              	.LASF10:
+ 1084 0082 5F5F696E 		.ascii	"__int64_t\000"
+ 1084      7436345F 
+ 1084      7400
+ 1085              	.LASF33:
+ 1086 008c 61726D5F 		.ascii	"arm_cfft_radix4_instance_q31\000"
+ 1086      63666674 
+ 1086      5F726164 
+ 1086      6978345F 
+ 1086      696E7374 
+ 1087              	.LASF11:
+ 1088 00a9 6C6F6E67 		.ascii	"long long int\000"
+ 1088      206C6F6E 
+ 1088      6720696E 
+ 1088      7400
+ 1089              	.LASF0:
+ 1090 00b7 7369676E 		.ascii	"signed char\000"
+ 1090      65642063 
+ 1090      68617200 
+ 1091              	.LASF44:
+ 1092 00c3 4E627932 		.ascii	"Nby2\000"
+ 1092      00
+ 1093              	.LASF7:
+ 1094 00c8 6C6F6E67 		.ascii	"long int\000"
+ 1094      20696E74 
+ 1094      00
+ 1095              	.LASF30:
+ 1096 00d1 70426974 		.ascii	"pBitRevTable\000"
+ 1096      52657654 
+ 1096      61626C65 
+ 1096      00
+ 1097              	.LASF15:
+ 1098 00de 75696E74 		.ascii	"uint16_t\000"
+ 1098      31365F74 
+ 1098      00
+ 1099              	.LASF21:
+ 1100 00e7 646F7562 		.ascii	"double\000"
+ 1100      6C6500
+ 1101              	.LASF37:
+ 1102 00ee 69666674 		.ascii	"ifftFlagR\000"
+ 1102      466C6167 
+ 1102      5200
+ 1103              	.LASF8:
+ 1104 00f8 5F5F7569 		.ascii	"__uint32_t\000"
+ 1104      6E743332 
+ 1104      5F7400
+ 1105              	.LASF41:
+ 1106 0103 70547769 		.ascii	"pTwiddleBReal\000"
+ 1106      64646C65 
+ 1106      42526561 
+ 1106      6C00
+ 1107              	.LASF26:
+ 1108 0111 6666744C 		.ascii	"fftLen\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 28
+
+
+ 1108      656E00
+ 1109              	.LASF13:
+ 1110 0118 756E7369 		.ascii	"unsigned int\000"
+ 1110      676E6564 
+ 1110      20696E74 
+ 1110      00
+ 1111              	.LASF9:
+ 1112 0125 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1112      20756E73 
+ 1112      69676E65 
+ 1112      6420696E 
+ 1112      7400
+ 1113              	.LASF54:
+ 1114 0137 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 1114      4320342E 
+ 1114      392E3320 
+ 1114      32303135 
+ 1114      30333033 
+ 1115 016a 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 1115      20726576 
+ 1115      6973696F 
+ 1115      6E203232 
+ 1115      31323230 
+ 1116 019d 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 1116      30202D66 
+ 1116      66756E63 
+ 1116      74696F6E 
+ 1116      2D736563 
+ 1117              	.LASF5:
+ 1118 01c9 73686F72 		.ascii	"short unsigned int\000"
+ 1118      7420756E 
+ 1118      7369676E 
+ 1118      65642069 
+ 1118      6E7400
+ 1119              	.LASF32:
+ 1120 01dc 62697452 		.ascii	"bitRevFactor\000"
+ 1120      65764661 
+ 1120      63746F72 
+ 1120      00
+ 1121              	.LASF48:
+ 1122 01e9 61726D5F 		.ascii	"arm_dct4_instance_q31\000"
+ 1122      64637434 
+ 1122      5F696E73 
+ 1122      74616E63 
+ 1122      655F7133 
+ 1123              	.LASF19:
+ 1124 01ff 73697A65 		.ascii	"sizetype\000"
+ 1124      74797065 
+ 1124      00
+ 1125              	.LASF23:
+ 1126 0208 6C6F6E67 		.ascii	"long double\000"
+ 1126      20646F75 
+ 1126      626C6500 
+ 1127              	.LASF38:
+ 1128 0214 62697452 		.ascii	"bitReverseFlagR\000"
+ 1128      65766572 
+ 1128      7365466C 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 29
+
+
+ 1128      61675200 
+ 1129              	.LASF53:
+ 1130 0224 70627566 		.ascii	"pbuff\000"
+ 1130      6600
+ 1131              	.LASF28:
+ 1132 022a 62697452 		.ascii	"bitReverseFlag\000"
+ 1132      65766572 
+ 1132      7365466C 
+ 1132      616700
+ 1133              	.LASF22:
+ 1134 0239 666C6F61 		.ascii	"float\000"
+ 1134      7400
+ 1135              	.LASF34:
+ 1136 023f 62697452 		.ascii	"bitRevLength\000"
+ 1136      65764C65 
+ 1136      6E677468 
+ 1136      00
+ 1137              	.LASF16:
+ 1138 024c 696E7433 		.ascii	"int32_t\000"
+ 1138      325F7400 
+ 1139              	.LASF1:
+ 1140 0254 756E7369 		.ascii	"unsigned char\000"
+ 1140      676E6564 
+ 1140      20636861 
+ 1140      7200
+ 1141              	.LASF49:
+ 1142 0262 70537461 		.ascii	"pState\000"
+ 1142      746500
+ 1143              	.LASF40:
+ 1144 0269 70547769 		.ascii	"pTwiddleAReal\000"
+ 1144      64646C65 
+ 1144      41526561 
+ 1144      6C00
+ 1145              	.LASF2:
+ 1146 0277 73686F72 		.ascii	"short int\000"
+ 1146      7420696E 
+ 1146      7400
+ 1147              	.LASF56:
+ 1148 0281 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 1148      73657273 
+ 1148      5C666E65 
+ 1148      7665735C 
+ 1148      446F6375 
+ 1149 02ae 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 1149      655F7370 
+ 1149      6565645F 
+ 1149      73656E73 
+ 1149      6F722E63 
+ 1150              	.LASF45:
+ 1151 02c7 6E6F726D 		.ascii	"normalize\000"
+ 1151      616C697A 
+ 1151      6500
+ 1152              	.LASF51:
+ 1153 02d1 77656967 		.ascii	"weights\000"
+ 1153      68747300 
+ 1154              	.LASF24:
+ 1155 02d9 7133315F 		.ascii	"q31_t\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 30
+
+
+ 1155      7400
+ 1156              	.LASF17:
+ 1157 02df 75696E74 		.ascii	"uint32_t\000"
+ 1157      33325F74 
+ 1157      00
+ 1158              	.LASF39:
+ 1159 02e8 74776964 		.ascii	"twidCoefRModifier\000"
+ 1159      436F6566 
+ 1159      524D6F64 
+ 1159      69666965 
+ 1159      7200
+ 1160              	.LASF20:
+ 1161 02fa 63686172 		.ascii	"char\000"
+ 1161      00
+ 1162              	.LASF42:
+ 1163 02ff 70436666 		.ascii	"pCfft\000"
+ 1163      7400
+ 1164              	.LASF4:
+ 1165 0305 5F5F7569 		.ascii	"__uint16_t\000"
+ 1165      6E743136 
+ 1165      5F7400
+ 1166              	.LASF6:
+ 1167 0310 5F5F696E 		.ascii	"__int32_t\000"
+ 1167      7433325F 
+ 1167      7400
+ 1168              	.LASF29:
+ 1169 031a 70547769 		.ascii	"pTwiddle\000"
+ 1169      64646C65 
+ 1169      00
+ 1170              	.LASF14:
+ 1171 0323 75696E74 		.ascii	"uint8_t\000"
+ 1171      385F7400 
+ 1172              	.LASF57:
+ 1173 032b 61726D5F 		.ascii	"arm_dct4_q31\000"
+ 1173      64637434 
+ 1173      5F713331 
+ 1173      00
+ 1174              	.LASF31:
+ 1175 0338 74776964 		.ascii	"twidCoefModifier\000"
+ 1175      436F6566 
+ 1175      4D6F6469 
+ 1175      66696572 
+ 1175      00
+ 1176              	.LASF18:
+ 1177 0349 696E7436 		.ascii	"int64_t\000"
+ 1177      345F7400 
+ 1178              	.LASF36:
+ 1179 0351 6666744C 		.ascii	"fftLenReal\000"
+ 1179      656E5265 
+ 1179      616C00
+ 1180              	.LASF46:
+ 1181 035c 70436F73 		.ascii	"pCosFactor\000"
+ 1181      46616374 
+ 1181      6F7200
+ 1182              	.LASF52:
+ 1183 0367 636F7346 		.ascii	"cosFact\000"
+ 1183      61637400 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccAJPHaO.s 			page 31
+
+
+ 1184              	.LASF50:
+ 1185 036f 70496E6C 		.ascii	"pInlineBuffer\000"
+ 1185      696E6542 
+ 1185      75666665 
+ 1185      7200
+ 1186              	.LASF27:
+ 1187 037d 69666674 		.ascii	"ifftFlag\000"
+ 1187      466C6167 
+ 1187      00
+ 1188              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

@@ -1,0 +1,691 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_mean_f32.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_fadd
+  18              		.global	__aeabi_ui2f
+  19              		.global	__aeabi_fdiv
+  20              		.section	.text.arm_mean_f32,"ax",%progbits
+  21              		.align	2
+  22              		.global	arm_mean_f32
+  23              		.code	16
+  24              		.thumb_func
+  25              		.type	arm_mean_f32, %function
+  26              	arm_mean_f32:
+  27              	.LFB82:
+  28              		.file 1 "Source\\StatisticsFunctions\\arm_mean_f32.c"
+   1:Source\StatisticsFunctions/arm_mean_f32.c **** /* ----------------------------------------------------------------------
+   2:Source\StatisticsFunctions/arm_mean_f32.c ****  * Project:      CMSIS DSP Library
+   3:Source\StatisticsFunctions/arm_mean_f32.c ****  * Title:        arm_mean_f32.c
+   4:Source\StatisticsFunctions/arm_mean_f32.c ****  * Description:  Mean value of a floating-point vector
+   5:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+   6:Source\StatisticsFunctions/arm_mean_f32.c ****  * $Date:        27. January 2017
+   7:Source\StatisticsFunctions/arm_mean_f32.c ****  * $Revision:    V.1.5.1
+   8:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+   9:Source\StatisticsFunctions/arm_mean_f32.c ****  * Target Processor: Cortex-M cores
+  10:Source\StatisticsFunctions/arm_mean_f32.c ****  * -------------------------------------------------------------------- */
+  11:Source\StatisticsFunctions/arm_mean_f32.c **** /*
+  12:Source\StatisticsFunctions/arm_mean_f32.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+  14:Source\StatisticsFunctions/arm_mean_f32.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+  16:Source\StatisticsFunctions/arm_mean_f32.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\StatisticsFunctions/arm_mean_f32.c ****  * not use this file except in compliance with the License.
+  18:Source\StatisticsFunctions/arm_mean_f32.c ****  * You may obtain a copy of the License at
+  19:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+  20:Source\StatisticsFunctions/arm_mean_f32.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+  22:Source\StatisticsFunctions/arm_mean_f32.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\StatisticsFunctions/arm_mean_f32.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\StatisticsFunctions/arm_mean_f32.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\StatisticsFunctions/arm_mean_f32.c ****  * See the License for the specific language governing permissions and
+  26:Source\StatisticsFunctions/arm_mean_f32.c ****  * limitations under the License.
+  27:Source\StatisticsFunctions/arm_mean_f32.c ****  */
+  28:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  29:Source\StatisticsFunctions/arm_mean_f32.c **** #include "arm_math.h"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 2
+
+
+  30:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  31:Source\StatisticsFunctions/arm_mean_f32.c **** /**
+  32:Source\StatisticsFunctions/arm_mean_f32.c ****  * @ingroup groupStats
+  33:Source\StatisticsFunctions/arm_mean_f32.c ****  */
+  34:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  35:Source\StatisticsFunctions/arm_mean_f32.c **** /**
+  36:Source\StatisticsFunctions/arm_mean_f32.c ****  * @defgroup mean Mean
+  37:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+  38:Source\StatisticsFunctions/arm_mean_f32.c ****  * Calculates the mean of the input vector. Mean is defined as the average of the elements in the v
+  39:Source\StatisticsFunctions/arm_mean_f32.c ****  * The underlying algorithm is used:
+  40:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+  41:Source\StatisticsFunctions/arm_mean_f32.c ****  * <pre>
+  42:Source\StatisticsFunctions/arm_mean_f32.c ****  * 	Result = (pSrc[0] + pSrc[1] + pSrc[2] + ... + pSrc[blockSize-1]) / blockSize;
+  43:Source\StatisticsFunctions/arm_mean_f32.c ****  * </pre>
+  44:Source\StatisticsFunctions/arm_mean_f32.c ****  *
+  45:Source\StatisticsFunctions/arm_mean_f32.c ****  * There are separate functions for floating-point, Q31, Q15, and Q7 data types.
+  46:Source\StatisticsFunctions/arm_mean_f32.c ****  */
+  47:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  48:Source\StatisticsFunctions/arm_mean_f32.c **** /**
+  49:Source\StatisticsFunctions/arm_mean_f32.c ****  * @addtogroup mean
+  50:Source\StatisticsFunctions/arm_mean_f32.c ****  * @{
+  51:Source\StatisticsFunctions/arm_mean_f32.c ****  */
+  52:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  53:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  54:Source\StatisticsFunctions/arm_mean_f32.c **** /**
+  55:Source\StatisticsFunctions/arm_mean_f32.c ****  * @brief Mean value of a floating-point vector.
+  56:Source\StatisticsFunctions/arm_mean_f32.c ****  * @param[in]       *pSrc points to the input vector
+  57:Source\StatisticsFunctions/arm_mean_f32.c ****  * @param[in]       blockSize length of the input vector
+  58:Source\StatisticsFunctions/arm_mean_f32.c ****  * @param[out]      *pResult mean value returned here
+  59:Source\StatisticsFunctions/arm_mean_f32.c ****  * @return none.
+  60:Source\StatisticsFunctions/arm_mean_f32.c ****  */
+  61:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  62:Source\StatisticsFunctions/arm_mean_f32.c **** void arm_mean_f32(
+  63:Source\StatisticsFunctions/arm_mean_f32.c ****   float32_t * pSrc,
+  64:Source\StatisticsFunctions/arm_mean_f32.c ****   uint32_t blockSize,
+  65:Source\StatisticsFunctions/arm_mean_f32.c ****   float32_t * pResult)
+  66:Source\StatisticsFunctions/arm_mean_f32.c **** {
+  29              		.loc 1 66 0
+  30              		.cfi_startproc
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 86B0     		sub	sp, sp, #24
+  36              		.cfi_def_cfa_offset 32
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 F860     		str	r0, [r7, #12]
+  40 0008 B960     		str	r1, [r7, #8]
+  41 000a 7A60     		str	r2, [r7, #4]
+  67:Source\StatisticsFunctions/arm_mean_f32.c ****   float32_t sum = 0.0f;                          /* Temporary result storage */
+  42              		.loc 1 67 0
+  43 000c 0023     		mov	r3, #0
+  44 000e 7B61     		str	r3, [r7, #20]
+  68:Source\StatisticsFunctions/arm_mean_f32.c ****   uint32_t blkCnt;                               /* loop counter */
+  69:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  70:Source\StatisticsFunctions/arm_mean_f32.c **** #if defined (ARM_MATH_DSP)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 3
+
+
+  71:Source\StatisticsFunctions/arm_mean_f32.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+  72:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  73:Source\StatisticsFunctions/arm_mean_f32.c ****   float32_t in1, in2, in3, in4;
+  74:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  75:Source\StatisticsFunctions/arm_mean_f32.c ****   /*loop Unrolling */
+  76:Source\StatisticsFunctions/arm_mean_f32.c ****   blkCnt = blockSize >> 2u;
+  77:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  78:Source\StatisticsFunctions/arm_mean_f32.c ****   /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+  79:Source\StatisticsFunctions/arm_mean_f32.c ****    ** a second loop below computes the remaining 1 to 3 samples. */
+  80:Source\StatisticsFunctions/arm_mean_f32.c ****   while (blkCnt > 0u)
+  81:Source\StatisticsFunctions/arm_mean_f32.c ****   {
+  82:Source\StatisticsFunctions/arm_mean_f32.c ****     /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
+  83:Source\StatisticsFunctions/arm_mean_f32.c ****     in1 = *pSrc++;
+  84:Source\StatisticsFunctions/arm_mean_f32.c ****     in2 = *pSrc++;
+  85:Source\StatisticsFunctions/arm_mean_f32.c ****     in3 = *pSrc++;
+  86:Source\StatisticsFunctions/arm_mean_f32.c ****     in4 = *pSrc++;
+  87:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  88:Source\StatisticsFunctions/arm_mean_f32.c ****     sum += in1;
+  89:Source\StatisticsFunctions/arm_mean_f32.c ****     sum += in2;
+  90:Source\StatisticsFunctions/arm_mean_f32.c ****     sum += in3;
+  91:Source\StatisticsFunctions/arm_mean_f32.c ****     sum += in4;
+  92:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  93:Source\StatisticsFunctions/arm_mean_f32.c ****     /* Decrement the loop counter */
+  94:Source\StatisticsFunctions/arm_mean_f32.c ****     blkCnt--;
+  95:Source\StatisticsFunctions/arm_mean_f32.c ****   }
+  96:Source\StatisticsFunctions/arm_mean_f32.c **** 
+  97:Source\StatisticsFunctions/arm_mean_f32.c ****   /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+  98:Source\StatisticsFunctions/arm_mean_f32.c ****    ** No loop unrolling is used. */
+  99:Source\StatisticsFunctions/arm_mean_f32.c ****   blkCnt = blockSize % 0x4u;
+ 100:Source\StatisticsFunctions/arm_mean_f32.c **** 
+ 101:Source\StatisticsFunctions/arm_mean_f32.c **** #else
+ 102:Source\StatisticsFunctions/arm_mean_f32.c ****   /* Run the below code for Cortex-M0 */
+ 103:Source\StatisticsFunctions/arm_mean_f32.c **** 
+ 104:Source\StatisticsFunctions/arm_mean_f32.c ****   /* Loop over blockSize number of values */
+ 105:Source\StatisticsFunctions/arm_mean_f32.c ****   blkCnt = blockSize;
+  45              		.loc 1 105 0
+  46 0010 BB68     		ldr	r3, [r7, #8]
+  47 0012 3B61     		str	r3, [r7, #16]
+ 106:Source\StatisticsFunctions/arm_mean_f32.c **** 
+ 107:Source\StatisticsFunctions/arm_mean_f32.c **** #endif /* #if defined (ARM_MATH_DSP) */
+ 108:Source\StatisticsFunctions/arm_mean_f32.c **** 
+ 109:Source\StatisticsFunctions/arm_mean_f32.c ****   while (blkCnt > 0u)
+  48              		.loc 1 109 0
+  49 0014 0CE0     		b	.L2
+  50              	.L3:
+ 110:Source\StatisticsFunctions/arm_mean_f32.c ****   {
+ 111:Source\StatisticsFunctions/arm_mean_f32.c ****     /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) */
+ 112:Source\StatisticsFunctions/arm_mean_f32.c ****     sum += *pSrc++;
+  51              		.loc 1 112 0
+  52 0016 FB68     		ldr	r3, [r7, #12]
+  53 0018 1A1D     		add	r2, r3, #4
+  54 001a FA60     		str	r2, [r7, #12]
+  55 001c 1B68     		ldr	r3, [r3]
+  56 001e 7869     		ldr	r0, [r7, #20]
+  57 0020 191C     		add	r1, r3, #0
+  58 0022 FFF7FEFF 		bl	__aeabi_fadd
+  59 0026 031C     		add	r3, r0, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 4
+
+
+  60 0028 7B61     		str	r3, [r7, #20]
+ 113:Source\StatisticsFunctions/arm_mean_f32.c **** 
+ 114:Source\StatisticsFunctions/arm_mean_f32.c ****     /* Decrement the loop counter */
+ 115:Source\StatisticsFunctions/arm_mean_f32.c ****     blkCnt--;
+  61              		.loc 1 115 0
+  62 002a 3B69     		ldr	r3, [r7, #16]
+  63 002c 013B     		sub	r3, r3, #1
+  64 002e 3B61     		str	r3, [r7, #16]
+  65              	.L2:
+ 109:Source\StatisticsFunctions/arm_mean_f32.c ****   {
+  66              		.loc 1 109 0
+  67 0030 3B69     		ldr	r3, [r7, #16]
+  68 0032 002B     		cmp	r3, #0
+  69 0034 EFD1     		bne	.L3
+ 116:Source\StatisticsFunctions/arm_mean_f32.c ****   }
+ 117:Source\StatisticsFunctions/arm_mean_f32.c **** 
+ 118:Source\StatisticsFunctions/arm_mean_f32.c ****   /* C = (A[0] + A[1] + A[2] + ... + A[blockSize-1]) / blockSize  */
+ 119:Source\StatisticsFunctions/arm_mean_f32.c ****   /* Store the result to the destination */
+ 120:Source\StatisticsFunctions/arm_mean_f32.c ****   *pResult = sum / (float32_t) blockSize;
+  70              		.loc 1 120 0
+  71 0036 B868     		ldr	r0, [r7, #8]
+  72 0038 FFF7FEFF 		bl	__aeabi_ui2f
+  73 003c 031C     		add	r3, r0, #0
+  74 003e 7869     		ldr	r0, [r7, #20]
+  75 0040 191C     		add	r1, r3, #0
+  76 0042 FFF7FEFF 		bl	__aeabi_fdiv
+  77 0046 031C     		add	r3, r0, #0
+  78 0048 1A1C     		add	r2, r3, #0
+  79 004a 7B68     		ldr	r3, [r7, #4]
+  80 004c 1A60     		str	r2, [r3]
+ 121:Source\StatisticsFunctions/arm_mean_f32.c **** }
+  81              		.loc 1 121 0
+  82 004e BD46     		mov	sp, r7
+  83 0050 06B0     		add	sp, sp, #24
+  84              		@ sp needed
+  85 0052 80BD     		pop	{r7, pc}
+  86              		.cfi_endproc
+  87              	.LFE82:
+  88              		.size	arm_mean_f32, .-arm_mean_f32
+  89              		.text
+  90              	.Letext0:
+  91              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+  92              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+  93              		.file 4 ".\\Include/arm_math.h"
+  94              		.section	.debug_info,"",%progbits
+  95              	.Ldebug_info0:
+  96 0000 0B010000 		.4byte	0x10b
+  97 0004 0400     		.2byte	0x4
+  98 0006 00000000 		.4byte	.Ldebug_abbrev0
+  99 000a 04       		.byte	0x4
+ 100 000b 01       		.uleb128 0x1
+ 101 000c 64010000 		.4byte	.LASF21
+ 102 0010 01       		.byte	0x1
+ 103 0011 1B000000 		.4byte	.LASF22
+ 104 0015 01010000 		.4byte	.LASF23
+ 105 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 106 001d 00000000 		.4byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 5
+
+
+ 107 0021 00000000 		.4byte	.Ldebug_line0
+ 108 0025 02       		.uleb128 0x2
+ 109 0026 01       		.byte	0x1
+ 110 0027 06       		.byte	0x6
+ 111 0028 E9000000 		.4byte	.LASF0
+ 112 002c 02       		.uleb128 0x2
+ 113 002d 01       		.byte	0x1
+ 114 002e 08       		.byte	0x8
+ 115 002f 9E000000 		.4byte	.LASF1
+ 116 0033 02       		.uleb128 0x2
+ 117 0034 02       		.byte	0x2
+ 118 0035 05       		.byte	0x5
+ 119 0036 5A010000 		.4byte	.LASF2
+ 120 003a 02       		.uleb128 0x2
+ 121 003b 02       		.byte	0x2
+ 122 003c 07       		.byte	0x7
+ 123 003d D6000000 		.4byte	.LASF3
+ 124 0041 02       		.uleb128 0x2
+ 125 0042 04       		.byte	0x4
+ 126 0043 05       		.byte	0x5
+ 127 0044 BA000000 		.4byte	.LASF4
+ 128 0048 03       		.uleb128 0x3
+ 129 0049 45000000 		.4byte	.LASF9
+ 130 004d 02       		.byte	0x2
+ 131 004e 41       		.byte	0x41
+ 132 004f 53000000 		.4byte	0x53
+ 133 0053 02       		.uleb128 0x2
+ 134 0054 04       		.byte	0x4
+ 135 0055 07       		.byte	0x7
+ 136 0056 5A000000 		.4byte	.LASF5
+ 137 005a 02       		.uleb128 0x2
+ 138 005b 08       		.byte	0x8
+ 139 005c 05       		.byte	0x5
+ 140 005d 00000000 		.4byte	.LASF6
+ 141 0061 02       		.uleb128 0x2
+ 142 0062 08       		.byte	0x8
+ 143 0063 07       		.byte	0x7
+ 144 0064 6C000000 		.4byte	.LASF7
+ 145 0068 04       		.uleb128 0x4
+ 146 0069 04       		.byte	0x4
+ 147 006a 05       		.byte	0x5
+ 148 006b 696E7400 		.ascii	"int\000"
+ 149 006f 02       		.uleb128 0x2
+ 150 0070 04       		.byte	0x4
+ 151 0071 07       		.byte	0x7
+ 152 0072 0E000000 		.4byte	.LASF8
+ 153 0076 03       		.uleb128 0x3
+ 154 0077 B1000000 		.4byte	.LASF10
+ 155 007b 03       		.byte	0x3
+ 156 007c 2D       		.byte	0x2d
+ 157 007d 48000000 		.4byte	0x48
+ 158 0081 02       		.uleb128 0x2
+ 159 0082 04       		.byte	0x4
+ 160 0083 07       		.byte	0x7
+ 161 0084 51010000 		.4byte	.LASF11
+ 162 0088 02       		.uleb128 0x2
+ 163 0089 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 6
+
+
+ 164 008a 08       		.byte	0x8
+ 165 008b AC000000 		.4byte	.LASF12
+ 166 008f 02       		.uleb128 0x2
+ 167 0090 08       		.byte	0x8
+ 168 0091 04       		.byte	0x4
+ 169 0092 C8000000 		.4byte	.LASF13
+ 170 0096 02       		.uleb128 0x2
+ 171 0097 04       		.byte	0x4
+ 172 0098 04       		.byte	0x4
+ 173 0099 83000000 		.4byte	.LASF14
+ 174 009d 02       		.uleb128 0x2
+ 175 009e 08       		.byte	0x8
+ 176 009f 04       		.byte	0x4
+ 177 00a0 F5000000 		.4byte	.LASF15
+ 178 00a4 05       		.uleb128 0x5
+ 179 00a5 47010000 		.4byte	.LASF16
+ 180 00a9 04       		.byte	0x4
+ 181 00aa A501     		.2byte	0x1a5
+ 182 00ac 96000000 		.4byte	0x96
+ 183 00b0 06       		.uleb128 0x6
+ 184 00b1 04       		.byte	0x4
+ 185 00b2 A4000000 		.4byte	0xa4
+ 186 00b6 07       		.uleb128 0x7
+ 187 00b7 89000000 		.4byte	.LASF24
+ 188 00bb 01       		.byte	0x1
+ 189 00bc 3E       		.byte	0x3e
+ 190 00bd 00000000 		.4byte	.LFB82
+ 191 00c1 54000000 		.4byte	.LFE82-.LFB82
+ 192 00c5 01       		.uleb128 0x1
+ 193 00c6 9C       		.byte	0x9c
+ 194 00c7 08       		.uleb128 0x8
+ 195 00c8 C3000000 		.4byte	.LASF17
+ 196 00cc 01       		.byte	0x1
+ 197 00cd 3F       		.byte	0x3f
+ 198 00ce B0000000 		.4byte	0xb0
+ 199 00d2 02       		.uleb128 0x2
+ 200 00d3 91       		.byte	0x91
+ 201 00d4 6C       		.sleb128 -20
+ 202 00d5 08       		.uleb128 0x8
+ 203 00d6 50000000 		.4byte	.LASF18
+ 204 00da 01       		.byte	0x1
+ 205 00db 40       		.byte	0x40
+ 206 00dc 76000000 		.4byte	0x76
+ 207 00e0 02       		.uleb128 0x2
+ 208 00e1 91       		.byte	0x91
+ 209 00e2 68       		.sleb128 -24
+ 210 00e3 08       		.uleb128 0x8
+ 211 00e4 96000000 		.4byte	.LASF19
+ 212 00e8 01       		.byte	0x1
+ 213 00e9 41       		.byte	0x41
+ 214 00ea B0000000 		.4byte	0xb0
+ 215 00ee 02       		.uleb128 0x2
+ 216 00ef 91       		.byte	0x91
+ 217 00f0 64       		.sleb128 -28
+ 218 00f1 09       		.uleb128 0x9
+ 219 00f2 73756D00 		.ascii	"sum\000"
+ 220 00f6 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 7
+
+
+ 221 00f7 43       		.byte	0x43
+ 222 00f8 A4000000 		.4byte	0xa4
+ 223 00fc 02       		.uleb128 0x2
+ 224 00fd 91       		.byte	0x91
+ 225 00fe 74       		.sleb128 -12
+ 226 00ff 0A       		.uleb128 0xa
+ 227 0100 CF000000 		.4byte	.LASF20
+ 228 0104 01       		.byte	0x1
+ 229 0105 44       		.byte	0x44
+ 230 0106 76000000 		.4byte	0x76
+ 231 010a 02       		.uleb128 0x2
+ 232 010b 91       		.byte	0x91
+ 233 010c 70       		.sleb128 -16
+ 234 010d 00       		.byte	0
+ 235 010e 00       		.byte	0
+ 236              		.section	.debug_abbrev,"",%progbits
+ 237              	.Ldebug_abbrev0:
+ 238 0000 01       		.uleb128 0x1
+ 239 0001 11       		.uleb128 0x11
+ 240 0002 01       		.byte	0x1
+ 241 0003 25       		.uleb128 0x25
+ 242 0004 0E       		.uleb128 0xe
+ 243 0005 13       		.uleb128 0x13
+ 244 0006 0B       		.uleb128 0xb
+ 245 0007 03       		.uleb128 0x3
+ 246 0008 0E       		.uleb128 0xe
+ 247 0009 1B       		.uleb128 0x1b
+ 248 000a 0E       		.uleb128 0xe
+ 249 000b 55       		.uleb128 0x55
+ 250 000c 17       		.uleb128 0x17
+ 251 000d 11       		.uleb128 0x11
+ 252 000e 01       		.uleb128 0x1
+ 253 000f 10       		.uleb128 0x10
+ 254 0010 17       		.uleb128 0x17
+ 255 0011 00       		.byte	0
+ 256 0012 00       		.byte	0
+ 257 0013 02       		.uleb128 0x2
+ 258 0014 24       		.uleb128 0x24
+ 259 0015 00       		.byte	0
+ 260 0016 0B       		.uleb128 0xb
+ 261 0017 0B       		.uleb128 0xb
+ 262 0018 3E       		.uleb128 0x3e
+ 263 0019 0B       		.uleb128 0xb
+ 264 001a 03       		.uleb128 0x3
+ 265 001b 0E       		.uleb128 0xe
+ 266 001c 00       		.byte	0
+ 267 001d 00       		.byte	0
+ 268 001e 03       		.uleb128 0x3
+ 269 001f 16       		.uleb128 0x16
+ 270 0020 00       		.byte	0
+ 271 0021 03       		.uleb128 0x3
+ 272 0022 0E       		.uleb128 0xe
+ 273 0023 3A       		.uleb128 0x3a
+ 274 0024 0B       		.uleb128 0xb
+ 275 0025 3B       		.uleb128 0x3b
+ 276 0026 0B       		.uleb128 0xb
+ 277 0027 49       		.uleb128 0x49
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 8
+
+
+ 278 0028 13       		.uleb128 0x13
+ 279 0029 00       		.byte	0
+ 280 002a 00       		.byte	0
+ 281 002b 04       		.uleb128 0x4
+ 282 002c 24       		.uleb128 0x24
+ 283 002d 00       		.byte	0
+ 284 002e 0B       		.uleb128 0xb
+ 285 002f 0B       		.uleb128 0xb
+ 286 0030 3E       		.uleb128 0x3e
+ 287 0031 0B       		.uleb128 0xb
+ 288 0032 03       		.uleb128 0x3
+ 289 0033 08       		.uleb128 0x8
+ 290 0034 00       		.byte	0
+ 291 0035 00       		.byte	0
+ 292 0036 05       		.uleb128 0x5
+ 293 0037 16       		.uleb128 0x16
+ 294 0038 00       		.byte	0
+ 295 0039 03       		.uleb128 0x3
+ 296 003a 0E       		.uleb128 0xe
+ 297 003b 3A       		.uleb128 0x3a
+ 298 003c 0B       		.uleb128 0xb
+ 299 003d 3B       		.uleb128 0x3b
+ 300 003e 05       		.uleb128 0x5
+ 301 003f 49       		.uleb128 0x49
+ 302 0040 13       		.uleb128 0x13
+ 303 0041 00       		.byte	0
+ 304 0042 00       		.byte	0
+ 305 0043 06       		.uleb128 0x6
+ 306 0044 0F       		.uleb128 0xf
+ 307 0045 00       		.byte	0
+ 308 0046 0B       		.uleb128 0xb
+ 309 0047 0B       		.uleb128 0xb
+ 310 0048 49       		.uleb128 0x49
+ 311 0049 13       		.uleb128 0x13
+ 312 004a 00       		.byte	0
+ 313 004b 00       		.byte	0
+ 314 004c 07       		.uleb128 0x7
+ 315 004d 2E       		.uleb128 0x2e
+ 316 004e 01       		.byte	0x1
+ 317 004f 3F       		.uleb128 0x3f
+ 318 0050 19       		.uleb128 0x19
+ 319 0051 03       		.uleb128 0x3
+ 320 0052 0E       		.uleb128 0xe
+ 321 0053 3A       		.uleb128 0x3a
+ 322 0054 0B       		.uleb128 0xb
+ 323 0055 3B       		.uleb128 0x3b
+ 324 0056 0B       		.uleb128 0xb
+ 325 0057 27       		.uleb128 0x27
+ 326 0058 19       		.uleb128 0x19
+ 327 0059 11       		.uleb128 0x11
+ 328 005a 01       		.uleb128 0x1
+ 329 005b 12       		.uleb128 0x12
+ 330 005c 06       		.uleb128 0x6
+ 331 005d 40       		.uleb128 0x40
+ 332 005e 18       		.uleb128 0x18
+ 333 005f 9642     		.uleb128 0x2116
+ 334 0061 19       		.uleb128 0x19
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 9
+
+
+ 335 0062 00       		.byte	0
+ 336 0063 00       		.byte	0
+ 337 0064 08       		.uleb128 0x8
+ 338 0065 05       		.uleb128 0x5
+ 339 0066 00       		.byte	0
+ 340 0067 03       		.uleb128 0x3
+ 341 0068 0E       		.uleb128 0xe
+ 342 0069 3A       		.uleb128 0x3a
+ 343 006a 0B       		.uleb128 0xb
+ 344 006b 3B       		.uleb128 0x3b
+ 345 006c 0B       		.uleb128 0xb
+ 346 006d 49       		.uleb128 0x49
+ 347 006e 13       		.uleb128 0x13
+ 348 006f 02       		.uleb128 0x2
+ 349 0070 18       		.uleb128 0x18
+ 350 0071 00       		.byte	0
+ 351 0072 00       		.byte	0
+ 352 0073 09       		.uleb128 0x9
+ 353 0074 34       		.uleb128 0x34
+ 354 0075 00       		.byte	0
+ 355 0076 03       		.uleb128 0x3
+ 356 0077 08       		.uleb128 0x8
+ 357 0078 3A       		.uleb128 0x3a
+ 358 0079 0B       		.uleb128 0xb
+ 359 007a 3B       		.uleb128 0x3b
+ 360 007b 0B       		.uleb128 0xb
+ 361 007c 49       		.uleb128 0x49
+ 362 007d 13       		.uleb128 0x13
+ 363 007e 02       		.uleb128 0x2
+ 364 007f 18       		.uleb128 0x18
+ 365 0080 00       		.byte	0
+ 366 0081 00       		.byte	0
+ 367 0082 0A       		.uleb128 0xa
+ 368 0083 34       		.uleb128 0x34
+ 369 0084 00       		.byte	0
+ 370 0085 03       		.uleb128 0x3
+ 371 0086 0E       		.uleb128 0xe
+ 372 0087 3A       		.uleb128 0x3a
+ 373 0088 0B       		.uleb128 0xb
+ 374 0089 3B       		.uleb128 0x3b
+ 375 008a 0B       		.uleb128 0xb
+ 376 008b 49       		.uleb128 0x49
+ 377 008c 13       		.uleb128 0x13
+ 378 008d 02       		.uleb128 0x2
+ 379 008e 18       		.uleb128 0x18
+ 380 008f 00       		.byte	0
+ 381 0090 00       		.byte	0
+ 382 0091 00       		.byte	0
+ 383              		.section	.debug_aranges,"",%progbits
+ 384 0000 1C000000 		.4byte	0x1c
+ 385 0004 0200     		.2byte	0x2
+ 386 0006 00000000 		.4byte	.Ldebug_info0
+ 387 000a 04       		.byte	0x4
+ 388 000b 00       		.byte	0
+ 389 000c 0000     		.2byte	0
+ 390 000e 0000     		.2byte	0
+ 391 0010 00000000 		.4byte	.LFB82
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 10
+
+
+ 392 0014 54000000 		.4byte	.LFE82-.LFB82
+ 393 0018 00000000 		.4byte	0
+ 394 001c 00000000 		.4byte	0
+ 395              		.section	.debug_ranges,"",%progbits
+ 396              	.Ldebug_ranges0:
+ 397 0000 00000000 		.4byte	.LFB82
+ 398 0004 54000000 		.4byte	.LFE82
+ 399 0008 00000000 		.4byte	0
+ 400 000c 00000000 		.4byte	0
+ 401              		.section	.debug_line,"",%progbits
+ 402              	.Ldebug_line0:
+ 403 0000 74010000 		.section	.debug_str,"MS",%progbits,1
+ 403      02005001 
+ 403      00000201 
+ 403      FB0E0D00 
+ 403      01010101 
+ 404              	.LASF6:
+ 405 0000 6C6F6E67 		.ascii	"long long int\000"
+ 405      206C6F6E 
+ 405      6720696E 
+ 405      7400
+ 406              	.LASF8:
+ 407 000e 756E7369 		.ascii	"unsigned int\000"
+ 407      676E6564 
+ 407      20696E74 
+ 407      00
+ 408              	.LASF22:
+ 409 001b 536F7572 		.ascii	"Source\\StatisticsFunctions\\arm_mean_f32.c\000"
+ 409      63655C53 
+ 409      74617469 
+ 409      73746963 
+ 409      7346756E 
+ 410              	.LASF9:
+ 411 0045 5F5F7569 		.ascii	"__uint32_t\000"
+ 411      6E743332 
+ 411      5F7400
+ 412              	.LASF18:
+ 413 0050 626C6F63 		.ascii	"blockSize\000"
+ 413      6B53697A 
+ 413      6500
+ 414              	.LASF5:
+ 415 005a 6C6F6E67 		.ascii	"long unsigned int\000"
+ 415      20756E73 
+ 415      69676E65 
+ 415      6420696E 
+ 415      7400
+ 416              	.LASF7:
+ 417 006c 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 417      206C6F6E 
+ 417      6720756E 
+ 417      7369676E 
+ 417      65642069 
+ 418              	.LASF14:
+ 419 0083 666C6F61 		.ascii	"float\000"
+ 419      7400
+ 420              	.LASF24:
+ 421 0089 61726D5F 		.ascii	"arm_mean_f32\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 11
+
+
+ 421      6D65616E 
+ 421      5F663332 
+ 421      00
+ 422              	.LASF19:
+ 423 0096 70526573 		.ascii	"pResult\000"
+ 423      756C7400 
+ 424              	.LASF1:
+ 425 009e 756E7369 		.ascii	"unsigned char\000"
+ 425      676E6564 
+ 425      20636861 
+ 425      7200
+ 426              	.LASF12:
+ 427 00ac 63686172 		.ascii	"char\000"
+ 427      00
+ 428              	.LASF10:
+ 429 00b1 75696E74 		.ascii	"uint32_t\000"
+ 429      33325F74 
+ 429      00
+ 430              	.LASF4:
+ 431 00ba 6C6F6E67 		.ascii	"long int\000"
+ 431      20696E74 
+ 431      00
+ 432              	.LASF17:
+ 433 00c3 70537263 		.ascii	"pSrc\000"
+ 433      00
+ 434              	.LASF13:
+ 435 00c8 646F7562 		.ascii	"double\000"
+ 435      6C6500
+ 436              	.LASF20:
+ 437 00cf 626C6B43 		.ascii	"blkCnt\000"
+ 437      6E7400
+ 438              	.LASF3:
+ 439 00d6 73686F72 		.ascii	"short unsigned int\000"
+ 439      7420756E 
+ 439      7369676E 
+ 439      65642069 
+ 439      6E7400
+ 440              	.LASF0:
+ 441 00e9 7369676E 		.ascii	"signed char\000"
+ 441      65642063 
+ 441      68617200 
+ 442              	.LASF15:
+ 443 00f5 6C6F6E67 		.ascii	"long double\000"
+ 443      20646F75 
+ 443      626C6500 
+ 444              	.LASF23:
+ 445 0101 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 445      73657273 
+ 445      5C666E65 
+ 445      7665735C 
+ 445      446F6375 
+ 446 012e 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 446      655F7370 
+ 446      6565645F 
+ 446      73656E73 
+ 446      6F722E63 
+ 447              	.LASF16:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccfhElsR.s 			page 12
+
+
+ 448 0147 666C6F61 		.ascii	"float32_t\000"
+ 448      7433325F 
+ 448      7400
+ 449              	.LASF11:
+ 450 0151 73697A65 		.ascii	"sizetype\000"
+ 450      74797065 
+ 450      00
+ 451              	.LASF2:
+ 452 015a 73686F72 		.ascii	"short int\000"
+ 452      7420696E 
+ 452      7400
+ 453              	.LASF21:
+ 454 0164 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 454      4320342E 
+ 454      392E3320 
+ 454      32303135 
+ 454      30333033 
+ 455 0197 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 455      20726576 
+ 455      6973696F 
+ 455      6E203232 
+ 455      31323230 
+ 456 01ca 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 456      30202D66 
+ 456      66756E63 
+ 456      74696F6E 
+ 456      2D736563 
+ 457              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

@@ -1,0 +1,104 @@
+ARM GAS  Source\TransformFunctions\arm_bitreversal2.s 			page 1
+
+
+   1              	;/* ----------------------------------------------------------------------
+   2              	; * Project:      CMSIS DSP Library
+   3              	; * Title:        arm_bitreversal2.S
+   4              	; * Description:  arm_bitreversal_32 function done in assembly for maximum speed.
+   5              	; *               Called after doing an fft to reorder the output.
+   6              	; *               The function is loop unrolled by 2. arm_bitreversal_16 as well.
+   7              	; *
+   8              	; * $Date:        27. January 2017
+   9              	; * $Revision:    V.1.5.1
+  10              	; *
+  11              	; * Target Processor: Cortex-M cores
+  12              	; * -------------------------------------------------------------------- */
+  13              	;/*
+  14              	; * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  15              	; *
+  16              	; * SPDX-License-Identifier: Apache-2.0
+  17              	; *
+  18              	; * Licensed under the Apache License, Version 2.0 (the License); you may
+  19              	; * not use this file except in compliance with the License.
+  20              	; * You may obtain a copy of the License at
+  21              	; *
+  22              	; * www.apache.org/licenses/LICENSE-2.0
+  23              	; *
+  24              	; * Unless required by applicable law or agreed to in writing, software
+  25              	; * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  26              	; * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  27              	; * See the License for the specific language governing permissions and
+  28              	; * limitations under the License.
+  29              	; */
+  30              	
+  31              	    .syntax unified
+  32              	
+  33              		.section .text
+  34              		.thumb
+  35              	
+  36              	;/*
+  37              	;* @brief  In-place bit reversal function.
+  38              	;* @param[in, out] *pSrc        points to the in-place buffer of unknown 32-bit data type.
+  39              	;* @param[in]      bitRevLen    bit reversal table length
+  40              	;* @param[in]      *pBitRevTab  points to bit reversal table.
+  41              	;* @return none.
+  42              	;*/
+  43              		.global arm_bitreversal_32
+  44              		.global arm_bitreversal_16
+  45              	
+  46              		.type   arm_bitreversal_16, %function
+  47              		.type   arm_bitreversal_32, %function
+  48              	
+  49              	#if defined(ARM_MATH_CM0) || defined(ARM_MATH_CM0PLUS) || defined(ARM_MATH_ARMV8MBL)
+  50              	arm_bitreversal_32:
+  51 0000 4B1C     		ADDS     r3,r1,#1
+  52 0002 70B4     		PUSH     {r4-r6}
+  53 0004 111C     		ADDS     r1,r2,#0
+  54 0006 5B08     		LSRS     r3,r3,#1
+  55              	arm_bitreversal_32_0:
+  56 0008 4A88     		LDRH     r2,[r1,#2]
+  57 000a 0E88     		LDRH     r6,[r1,#0]
+ARM GAS  Source\TransformFunctions\arm_bitreversal2.s 			page 2
+
+
+  58 000c 0244     		ADD      r2,r0,r2
+  59 000e 0644     		ADD      r6,r0,r6
+  60 0010 1568     		LDR      r5,[r2,#0]
+  61 0012 3468     		LDR      r4,[r6,#0]
+  62 0014 3560     		STR      r5,[r6,#0]
+  63 0016 1460     		STR      r4,[r2,#0]
+  64 0018 5568     		LDR      r5,[r2,#4]
+  65 001a 7468     		LDR      r4,[r6,#4]
+  66 001c 7560     		STR      r5,[r6,#4]
+  67 001e 5460     		STR      r4,[r2,#4]
+  68 0020 0431     		ADDS     r1,r1,#4
+  69 0022 013B     		SUBS     r3,r3,#1
+  70 0024 F0D1     		BNE      arm_bitreversal_32_0
+  71 0026 70BC     		POP      {r4-r6}
+  72 0028 7047     		BX       lr
+  73              	
+  74              	
+  75              	arm_bitreversal_16:
+  76 002a 4B1C     		ADDS     r3,r1,#1
+  77 002c 70B4     		PUSH     {r4-r6}
+  78 002e 111C     		ADDS     r1,r2,#0
+  79 0030 5B08     		LSRS     r3,r3,#1
+  80              	arm_bitreversal_16_0:
+  81 0032 4A88     		LDRH     r2,[r1,#2]
+  82 0034 0E88     		LDRH     r6,[r1,#0]
+  83 0036 5208     	    LSRS     r2,r2,#1
+  84 0038 7608     	    LSRS     r6,r6,#1
+  85 003a 0244     		ADD      r2,r0,r2
+  86 003c 0644     		ADD      r6,r0,r6
+  87 003e 1568     		LDR      r5,[r2,#0]
+  88 0040 3468     		LDR      r4,[r6,#0]
+  89 0042 3560     		STR      r5,[r6,#0]
+  90 0044 1460     		STR      r4,[r2,#0]
+  91 0046 0431     		ADDS     r1,r1,#4
+  92 0048 013B     		SUBS     r3,r3,#1
+  93 004a F2D1     		BNE      arm_bitreversal_16_0
+  94 004c 70BC     		POP      {r4-r6}
+  95 004e 7047     		BX       lr
+  96              	
+  97              	#endif
+  98              	    .end

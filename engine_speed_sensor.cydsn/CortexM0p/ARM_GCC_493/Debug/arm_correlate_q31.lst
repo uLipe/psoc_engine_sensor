@@ -1,0 +1,1536 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_correlate_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_lmul
+  18              		.section	.text.arm_correlate_q31,"ax",%progbits
+  19              		.align	2
+  20              		.global	arm_correlate_q31
+  21              		.code	16
+  22              		.thumb_func
+  23              		.type	arm_correlate_q31, %function
+  24              	arm_correlate_q31:
+  25              	.LFB82:
+  26              		.file 1 "Source\\FilteringFunctions\\arm_correlate_q31.c"
+   1:Source\FilteringFunctions/arm_correlate_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_correlate_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_correlate_q31.c ****  * Title:        arm_correlate_q31.c
+   4:Source\FilteringFunctions/arm_correlate_q31.c ****  * Description:  Correlation of Q31 sequences
+   5:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+   6:Source\FilteringFunctions/arm_correlate_q31.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_correlate_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+   9:Source\FilteringFunctions/arm_correlate_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_correlate_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_correlate_q31.c **** /*
+  12:Source\FilteringFunctions/arm_correlate_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+  14:Source\FilteringFunctions/arm_correlate_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+  16:Source\FilteringFunctions/arm_correlate_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_correlate_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_correlate_q31.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+  20:Source\FilteringFunctions/arm_correlate_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+  22:Source\FilteringFunctions/arm_correlate_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_correlate_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_correlate_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_correlate_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_correlate_q31.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_correlate_q31.c ****  */
+  28:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  29:Source\FilteringFunctions/arm_correlate_q31.c **** #include "arm_math.h"
+  30:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  31:Source\FilteringFunctions/arm_correlate_q31.c **** /**
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 2
+
+
+  32:Source\FilteringFunctions/arm_correlate_q31.c ****  * @ingroup groupFilters
+  33:Source\FilteringFunctions/arm_correlate_q31.c ****  */
+  34:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  35:Source\FilteringFunctions/arm_correlate_q31.c **** /**
+  36:Source\FilteringFunctions/arm_correlate_q31.c ****  * @addtogroup Corr
+  37:Source\FilteringFunctions/arm_correlate_q31.c ****  * @{
+  38:Source\FilteringFunctions/arm_correlate_q31.c ****  */
+  39:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  40:Source\FilteringFunctions/arm_correlate_q31.c **** /**
+  41:Source\FilteringFunctions/arm_correlate_q31.c ****  * @brief Correlation of Q31 sequences.
+  42:Source\FilteringFunctions/arm_correlate_q31.c ****  * @param[in] *pSrcA points to the first input sequence.
+  43:Source\FilteringFunctions/arm_correlate_q31.c ****  * @param[in] srcALen length of the first input sequence.
+  44:Source\FilteringFunctions/arm_correlate_q31.c ****  * @param[in] *pSrcB points to the second input sequence.
+  45:Source\FilteringFunctions/arm_correlate_q31.c ****  * @param[in] srcBLen length of the second input sequence.
+  46:Source\FilteringFunctions/arm_correlate_q31.c ****  * @param[out] *pDst points to the location where the output result is written.  Length 2 * max(src
+  47:Source\FilteringFunctions/arm_correlate_q31.c ****  * @return none.
+  48:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+  49:Source\FilteringFunctions/arm_correlate_q31.c ****  * @details
+  50:Source\FilteringFunctions/arm_correlate_q31.c ****  * <b>Scaling and Overflow Behavior:</b>
+  51:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+  52:Source\FilteringFunctions/arm_correlate_q31.c ****  * \par
+  53:Source\FilteringFunctions/arm_correlate_q31.c ****  * The function is implemented using an internal 64-bit accumulator.
+  54:Source\FilteringFunctions/arm_correlate_q31.c ****  * The accumulator has a 2.62 format and maintains full precision of the intermediate multiplicatio
+  55:Source\FilteringFunctions/arm_correlate_q31.c ****  * There is no saturation on intermediate additions.
+  56:Source\FilteringFunctions/arm_correlate_q31.c ****  * Thus, if the accumulator overflows it wraps around and distorts the result.
+  57:Source\FilteringFunctions/arm_correlate_q31.c ****  * The input signals should be scaled down to avoid intermediate overflows.
+  58:Source\FilteringFunctions/arm_correlate_q31.c ****  * Scale down one of the inputs by 1/min(srcALen, srcBLen)to avoid overflows since a
+  59:Source\FilteringFunctions/arm_correlate_q31.c ****  * maximum of min(srcALen, srcBLen) number of additions is carried internally.
+  60:Source\FilteringFunctions/arm_correlate_q31.c ****  * The 2.62 accumulator is right shifted by 31 bits and saturated to 1.31 format to yield the final
+  61:Source\FilteringFunctions/arm_correlate_q31.c ****  *
+  62:Source\FilteringFunctions/arm_correlate_q31.c ****  * \par
+  63:Source\FilteringFunctions/arm_correlate_q31.c ****  * See <code>arm_correlate_fast_q31()</code> for a faster but less precise implementation of this f
+  64:Source\FilteringFunctions/arm_correlate_q31.c ****  */
+  65:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  66:Source\FilteringFunctions/arm_correlate_q31.c **** void arm_correlate_q31(
+  67:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t * pSrcA,
+  68:Source\FilteringFunctions/arm_correlate_q31.c ****   uint32_t srcALen,
+  69:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t * pSrcB,
+  70:Source\FilteringFunctions/arm_correlate_q31.c ****   uint32_t srcBLen,
+  71:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t * pDst)
+  72:Source\FilteringFunctions/arm_correlate_q31.c **** {
+  27              		.loc 1 72 0
+  28              		.cfi_startproc
+  29 0000 B0B5     		push	{r4, r5, r7, lr}
+  30              		.cfi_def_cfa_offset 16
+  31              		.cfi_offset 4, -16
+  32              		.cfi_offset 5, -12
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 92B0     		sub	sp, sp, #72
+  36              		.cfi_def_cfa_offset 88
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 7862     		str	r0, [r7, #36]
+  40 0008 3962     		str	r1, [r7, #32]
+  41 000a FA61     		str	r2, [r7, #28]
+  42 000c BB61     		str	r3, [r7, #24]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 3
+
+
+  73:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  74:Source\FilteringFunctions/arm_correlate_q31.c **** #if defined (ARM_MATH_DSP)
+  75:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  76:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+  77:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  78:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t *pIn1;                                   /* inputA pointer               */
+  79:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t *pIn2;                                   /* inputB pointer               */
+  80:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t *pOut = pDst;                            /* output pointer               */
+  81:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t *px;                                     /* Intermediate inputA pointer  */
+  82:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t *py;                                     /* Intermediate inputB pointer  */
+  83:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t *pSrc1;                                  /* Intermediate pointers        */
+  84:Source\FilteringFunctions/arm_correlate_q31.c ****   q63_t sum, acc0, acc1, acc2;                   /* Accumulators                  */
+  85:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t x0, x1, x2, c0;                          /* temporary variables for holding input and coeff
+  86:Source\FilteringFunctions/arm_correlate_q31.c ****   uint32_t j, k = 0u, count, blkCnt, outBlockSize, blockSize1, blockSize2, blockSize3;  /* loop cou
+  87:Source\FilteringFunctions/arm_correlate_q31.c ****   int32_t inc = 1;                               /* Destination address modifier */
+  88:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  89:Source\FilteringFunctions/arm_correlate_q31.c **** 
+  90:Source\FilteringFunctions/arm_correlate_q31.c ****   /* The algorithm implementation is based on the lengths of the inputs. */
+  91:Source\FilteringFunctions/arm_correlate_q31.c ****   /* srcB is always made to slide across srcA. */
+  92:Source\FilteringFunctions/arm_correlate_q31.c ****   /* So srcBLen is always considered as shorter or equal to srcALen */
+  93:Source\FilteringFunctions/arm_correlate_q31.c ****   /* But CORR(x, y) is reverse of CORR(y, x) */
+  94:Source\FilteringFunctions/arm_correlate_q31.c ****   /* So, when srcBLen > srcALen, output pointer is made to point to the end of the output buffer */
+  95:Source\FilteringFunctions/arm_correlate_q31.c ****   /* and the destination pointer modifier, inc is set to -1 */
+  96:Source\FilteringFunctions/arm_correlate_q31.c ****   /* If srcALen > srcBLen, zero pad has to be done to srcB to make the two inputs of same length */
+  97:Source\FilteringFunctions/arm_correlate_q31.c ****   /* But to improve the performance,
+  98:Source\FilteringFunctions/arm_correlate_q31.c ****    * we include zeroes in the output instead of zero padding either of the the inputs*/
+  99:Source\FilteringFunctions/arm_correlate_q31.c ****   /* If srcALen > srcBLen,
+ 100:Source\FilteringFunctions/arm_correlate_q31.c ****    * (srcALen - srcBLen) zeroes has to included in the starting of the output buffer */
+ 101:Source\FilteringFunctions/arm_correlate_q31.c ****   /* If srcALen < srcBLen,
+ 102:Source\FilteringFunctions/arm_correlate_q31.c ****    * (srcALen - srcBLen) zeroes has to included in the ending of the output buffer */
+ 103:Source\FilteringFunctions/arm_correlate_q31.c ****   if (srcALen >= srcBLen)
+ 104:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 105:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialization of inputA pointer */
+ 106:Source\FilteringFunctions/arm_correlate_q31.c ****     pIn1 = (pSrcA);
+ 107:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 108:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialization of inputB pointer */
+ 109:Source\FilteringFunctions/arm_correlate_q31.c ****     pIn2 = (pSrcB);
+ 110:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 111:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Number of output samples is calculated */
+ 112:Source\FilteringFunctions/arm_correlate_q31.c ****     outBlockSize = (2u * srcALen) - 1u;
+ 113:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 114:Source\FilteringFunctions/arm_correlate_q31.c ****     /* When srcALen > srcBLen, zero padding is done to srcB
+ 115:Source\FilteringFunctions/arm_correlate_q31.c ****      * to make their lengths equal.
+ 116:Source\FilteringFunctions/arm_correlate_q31.c ****      * Instead, (outBlockSize - (srcALen + srcBLen - 1))
+ 117:Source\FilteringFunctions/arm_correlate_q31.c ****      * number of output samples are made zero */
+ 118:Source\FilteringFunctions/arm_correlate_q31.c ****     j = outBlockSize - (srcALen + (srcBLen - 1u));
+ 119:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 120:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Updating the pointer position to non zero value */
+ 121:Source\FilteringFunctions/arm_correlate_q31.c ****     pOut += j;
+ 122:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 123:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 124:Source\FilteringFunctions/arm_correlate_q31.c ****   else
+ 125:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 126:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialization of inputA pointer */
+ 127:Source\FilteringFunctions/arm_correlate_q31.c ****     pIn1 = (pSrcB);
+ 128:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 129:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialization of inputB pointer */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 4
+
+
+ 130:Source\FilteringFunctions/arm_correlate_q31.c ****     pIn2 = (pSrcA);
+ 131:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 132:Source\FilteringFunctions/arm_correlate_q31.c ****     /* srcBLen is always considered as shorter or equal to srcALen */
+ 133:Source\FilteringFunctions/arm_correlate_q31.c ****     j = srcBLen;
+ 134:Source\FilteringFunctions/arm_correlate_q31.c ****     srcBLen = srcALen;
+ 135:Source\FilteringFunctions/arm_correlate_q31.c ****     srcALen = j;
+ 136:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 137:Source\FilteringFunctions/arm_correlate_q31.c ****     /* CORR(x, y) = Reverse order(CORR(y, x)) */
+ 138:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Hence set the destination pointer to point to the last output sample */
+ 139:Source\FilteringFunctions/arm_correlate_q31.c ****     pOut = pDst + ((srcALen + srcBLen) - 2u);
+ 140:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 141:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Destination address modifier is set to -1 */
+ 142:Source\FilteringFunctions/arm_correlate_q31.c ****     inc = -1;
+ 143:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 144:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 145:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 146:Source\FilteringFunctions/arm_correlate_q31.c ****   /* The function is internally
+ 147:Source\FilteringFunctions/arm_correlate_q31.c ****    * divided into three parts according to the number of multiplications that has to be
+ 148:Source\FilteringFunctions/arm_correlate_q31.c ****    * taken place between inputA samples and inputB samples. In the first part of the
+ 149:Source\FilteringFunctions/arm_correlate_q31.c ****    * algorithm, the multiplications increase by one for every iteration.
+ 150:Source\FilteringFunctions/arm_correlate_q31.c ****    * In the second part of the algorithm, srcBLen number of multiplications are done.
+ 151:Source\FilteringFunctions/arm_correlate_q31.c ****    * In the third part of the algorithm, the multiplications decrease by one
+ 152:Source\FilteringFunctions/arm_correlate_q31.c ****    * for every iteration.*/
+ 153:Source\FilteringFunctions/arm_correlate_q31.c ****   /* The algorithm is implemented in three stages.
+ 154:Source\FilteringFunctions/arm_correlate_q31.c ****    * The loop counters of each stage is initiated here. */
+ 155:Source\FilteringFunctions/arm_correlate_q31.c ****   blockSize1 = srcBLen - 1u;
+ 156:Source\FilteringFunctions/arm_correlate_q31.c ****   blockSize2 = srcALen - (srcBLen - 1u);
+ 157:Source\FilteringFunctions/arm_correlate_q31.c ****   blockSize3 = blockSize1;
+ 158:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 159:Source\FilteringFunctions/arm_correlate_q31.c ****   /* --------------------------
+ 160:Source\FilteringFunctions/arm_correlate_q31.c ****    * Initializations of stage1
+ 161:Source\FilteringFunctions/arm_correlate_q31.c ****    * -------------------------*/
+ 162:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 163:Source\FilteringFunctions/arm_correlate_q31.c ****   /* sum = x[0] * y[srcBlen - 1]
+ 164:Source\FilteringFunctions/arm_correlate_q31.c ****    * sum = x[0] * y[srcBlen - 2] + x[1] * y[srcBlen - 1]
+ 165:Source\FilteringFunctions/arm_correlate_q31.c ****    * ....
+ 166:Source\FilteringFunctions/arm_correlate_q31.c ****    * sum = x[0] * y[0] + x[1] * y[1] +...+ x[srcBLen - 1] * y[srcBLen - 1]
+ 167:Source\FilteringFunctions/arm_correlate_q31.c ****    */
+ 168:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 169:Source\FilteringFunctions/arm_correlate_q31.c ****   /* In this stage the MAC operations are increased by 1 for every iteration.
+ 170:Source\FilteringFunctions/arm_correlate_q31.c ****      The count variable holds the number of MAC operations performed */
+ 171:Source\FilteringFunctions/arm_correlate_q31.c ****   count = 1u;
+ 172:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 173:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Working pointer of inputA */
+ 174:Source\FilteringFunctions/arm_correlate_q31.c ****   px = pIn1;
+ 175:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 176:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Working pointer of inputB */
+ 177:Source\FilteringFunctions/arm_correlate_q31.c ****   pSrc1 = pIn2 + (srcBLen - 1u);
+ 178:Source\FilteringFunctions/arm_correlate_q31.c ****   py = pSrc1;
+ 179:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 180:Source\FilteringFunctions/arm_correlate_q31.c ****   /* ------------------------
+ 181:Source\FilteringFunctions/arm_correlate_q31.c ****    * Stage1 process
+ 182:Source\FilteringFunctions/arm_correlate_q31.c ****    * ----------------------*/
+ 183:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 184:Source\FilteringFunctions/arm_correlate_q31.c ****   /* The first stage starts here */
+ 185:Source\FilteringFunctions/arm_correlate_q31.c ****   while (blockSize1 > 0u)
+ 186:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 5
+
+
+ 187:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Accumulator is made zero for every iteration */
+ 188:Source\FilteringFunctions/arm_correlate_q31.c ****     sum = 0;
+ 189:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 190:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Apply loop unrolling and compute 4 MACs simultaneously. */
+ 191:Source\FilteringFunctions/arm_correlate_q31.c ****     k = count >> 2;
+ 192:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 193:Source\FilteringFunctions/arm_correlate_q31.c ****     /* First part of the processing with loop unrolling.  Compute 4 MACs at a time.
+ 194:Source\FilteringFunctions/arm_correlate_q31.c ****      ** a second loop below computes MACs for the remaining 1 to 3 samples. */
+ 195:Source\FilteringFunctions/arm_correlate_q31.c ****     while (k > 0u)
+ 196:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 197:Source\FilteringFunctions/arm_correlate_q31.c ****       /* x[0] * y[srcBLen - 4] */
+ 198:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 199:Source\FilteringFunctions/arm_correlate_q31.c ****       /* x[1] * y[srcBLen - 3] */
+ 200:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 201:Source\FilteringFunctions/arm_correlate_q31.c ****       /* x[2] * y[srcBLen - 2] */
+ 202:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 203:Source\FilteringFunctions/arm_correlate_q31.c ****       /* x[3] * y[srcBLen - 1] */
+ 204:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 205:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 206:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Decrement the loop counter */
+ 207:Source\FilteringFunctions/arm_correlate_q31.c ****       k--;
+ 208:Source\FilteringFunctions/arm_correlate_q31.c ****     }
+ 209:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 210:Source\FilteringFunctions/arm_correlate_q31.c ****     /* If the count is not a multiple of 4, compute any remaining MACs here.
+ 211:Source\FilteringFunctions/arm_correlate_q31.c ****      ** No loop unrolling is used. */
+ 212:Source\FilteringFunctions/arm_correlate_q31.c ****     k = count % 0x4u;
+ 213:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 214:Source\FilteringFunctions/arm_correlate_q31.c ****     while (k > 0u)
+ 215:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 216:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Perform the multiply-accumulates */
+ 217:Source\FilteringFunctions/arm_correlate_q31.c ****       /* x[0] * y[srcBLen - 1] */
+ 218:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 219:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 220:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Decrement the loop counter */
+ 221:Source\FilteringFunctions/arm_correlate_q31.c ****       k--;
+ 222:Source\FilteringFunctions/arm_correlate_q31.c ****     }
+ 223:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 224:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Store the result in the accumulator in the destination buffer. */
+ 225:Source\FilteringFunctions/arm_correlate_q31.c ****     *pOut = (q31_t) (sum >> 31);
+ 226:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Destination pointer is updated according to the address modifier, inc */
+ 227:Source\FilteringFunctions/arm_correlate_q31.c ****     pOut += inc;
+ 228:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 229:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Update the inputA and inputB pointers for next MAC calculation */
+ 230:Source\FilteringFunctions/arm_correlate_q31.c ****     py = pSrc1 - count;
+ 231:Source\FilteringFunctions/arm_correlate_q31.c ****     px = pIn1;
+ 232:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 233:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Increment the MAC count */
+ 234:Source\FilteringFunctions/arm_correlate_q31.c ****     count++;
+ 235:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 236:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Decrement the loop counter */
+ 237:Source\FilteringFunctions/arm_correlate_q31.c ****     blockSize1--;
+ 238:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 239:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 240:Source\FilteringFunctions/arm_correlate_q31.c ****   /* --------------------------
+ 241:Source\FilteringFunctions/arm_correlate_q31.c ****    * Initializations of stage2
+ 242:Source\FilteringFunctions/arm_correlate_q31.c ****    * ------------------------*/
+ 243:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 6
+
+
+ 244:Source\FilteringFunctions/arm_correlate_q31.c ****   /* sum = x[0] * y[0] + x[1] * y[1] +...+ x[srcBLen-1] * y[srcBLen-1]
+ 245:Source\FilteringFunctions/arm_correlate_q31.c ****    * sum = x[1] * y[0] + x[2] * y[1] +...+ x[srcBLen] * y[srcBLen-1]
+ 246:Source\FilteringFunctions/arm_correlate_q31.c ****    * ....
+ 247:Source\FilteringFunctions/arm_correlate_q31.c ****    * sum = x[srcALen-srcBLen-2] * y[0] + x[srcALen-srcBLen-1] * y[1] +...+ x[srcALen-1] * y[srcBLen
+ 248:Source\FilteringFunctions/arm_correlate_q31.c ****    */
+ 249:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 250:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Working pointer of inputA */
+ 251:Source\FilteringFunctions/arm_correlate_q31.c ****   px = pIn1;
+ 252:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 253:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Working pointer of inputB */
+ 254:Source\FilteringFunctions/arm_correlate_q31.c ****   py = pIn2;
+ 255:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 256:Source\FilteringFunctions/arm_correlate_q31.c ****   /* count is index by which the pointer pIn1 to be incremented */
+ 257:Source\FilteringFunctions/arm_correlate_q31.c ****   count = 0u;
+ 258:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 259:Source\FilteringFunctions/arm_correlate_q31.c ****   /* -------------------
+ 260:Source\FilteringFunctions/arm_correlate_q31.c ****    * Stage2 process
+ 261:Source\FilteringFunctions/arm_correlate_q31.c ****    * ------------------*/
+ 262:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 263:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Stage2 depends on srcBLen as in this stage srcBLen number of MACS are performed.
+ 264:Source\FilteringFunctions/arm_correlate_q31.c ****    * So, to loop unroll over blockSize2,
+ 265:Source\FilteringFunctions/arm_correlate_q31.c ****    * srcBLen should be greater than or equal to 4 */
+ 266:Source\FilteringFunctions/arm_correlate_q31.c ****   if (srcBLen >= 4u)
+ 267:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 268:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Loop unroll by 3 */
+ 269:Source\FilteringFunctions/arm_correlate_q31.c ****     blkCnt = blockSize2 / 3;
+ 270:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 271:Source\FilteringFunctions/arm_correlate_q31.c ****     while (blkCnt > 0u)
+ 272:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 273:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Set all accumulators to zero */
+ 274:Source\FilteringFunctions/arm_correlate_q31.c ****       acc0 = 0;
+ 275:Source\FilteringFunctions/arm_correlate_q31.c ****       acc1 = 0;
+ 276:Source\FilteringFunctions/arm_correlate_q31.c ****       acc2 = 0;
+ 277:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 278:Source\FilteringFunctions/arm_correlate_q31.c ****       /* read x[0], x[1] samples */
+ 279:Source\FilteringFunctions/arm_correlate_q31.c ****       x0 = *(px++);
+ 280:Source\FilteringFunctions/arm_correlate_q31.c ****       x1 = *(px++);
+ 281:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 282:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Apply loop unrolling and compute 3 MACs simultaneously. */
+ 283:Source\FilteringFunctions/arm_correlate_q31.c ****       k = srcBLen / 3;
+ 284:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 285:Source\FilteringFunctions/arm_correlate_q31.c ****       /* First part of the processing with loop unrolling.  Compute 3 MACs at a time.
+ 286:Source\FilteringFunctions/arm_correlate_q31.c ****        ** a second loop below computes MACs for the remaining 1 to 2 samples. */
+ 287:Source\FilteringFunctions/arm_correlate_q31.c ****       do
+ 288:Source\FilteringFunctions/arm_correlate_q31.c ****       {
+ 289:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Read y[0] sample */
+ 290:Source\FilteringFunctions/arm_correlate_q31.c ****         c0 = *(py);
+ 291:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 292:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Read x[2] sample */
+ 293:Source\FilteringFunctions/arm_correlate_q31.c ****         x2 = *(px);
+ 294:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 295:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Perform the multiply-accumulate */
+ 296:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc0 +=  x[0] * y[0] */
+ 297:Source\FilteringFunctions/arm_correlate_q31.c ****         acc0 += ((q63_t) x0 * c0);
+ 298:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc1 +=  x[1] * y[0] */
+ 299:Source\FilteringFunctions/arm_correlate_q31.c ****         acc1 += ((q63_t) x1 * c0);
+ 300:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc2 +=  x[2] * y[0] */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 7
+
+
+ 301:Source\FilteringFunctions/arm_correlate_q31.c ****         acc2 += ((q63_t) x2 * c0);
+ 302:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 303:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Read y[1] sample */
+ 304:Source\FilteringFunctions/arm_correlate_q31.c ****         c0 = *(py + 1u);
+ 305:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 306:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Read x[3] sample */
+ 307:Source\FilteringFunctions/arm_correlate_q31.c ****         x0 = *(px + 1u);
+ 308:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 309:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Perform the multiply-accumulates */
+ 310:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc0 +=  x[1] * y[1] */
+ 311:Source\FilteringFunctions/arm_correlate_q31.c ****         acc0 += ((q63_t) x1 * c0);
+ 312:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc1 +=  x[2] * y[1] */
+ 313:Source\FilteringFunctions/arm_correlate_q31.c ****         acc1 += ((q63_t) x2 * c0);
+ 314:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc2 +=  x[3] * y[1] */
+ 315:Source\FilteringFunctions/arm_correlate_q31.c ****         acc2 += ((q63_t) x0 * c0);
+ 316:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 317:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Read y[2] sample */
+ 318:Source\FilteringFunctions/arm_correlate_q31.c ****         c0 = *(py + 2u);
+ 319:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 320:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Read x[4] sample */
+ 321:Source\FilteringFunctions/arm_correlate_q31.c ****         x1 = *(px + 2u);
+ 322:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 323:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Perform the multiply-accumulates */
+ 324:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc0 +=  x[2] * y[2] */
+ 325:Source\FilteringFunctions/arm_correlate_q31.c ****         acc0 += ((q63_t) x2 * c0);
+ 326:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc1 +=  x[3] * y[2] */
+ 327:Source\FilteringFunctions/arm_correlate_q31.c ****         acc1 += ((q63_t) x0 * c0);
+ 328:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc2 +=  x[4] * y[2] */
+ 329:Source\FilteringFunctions/arm_correlate_q31.c ****         acc2 += ((q63_t) x1 * c0);
+ 330:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 331:Source\FilteringFunctions/arm_correlate_q31.c ****         /* update scratch pointers */
+ 332:Source\FilteringFunctions/arm_correlate_q31.c ****         px += 3u;
+ 333:Source\FilteringFunctions/arm_correlate_q31.c ****         py += 3u;
+ 334:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 335:Source\FilteringFunctions/arm_correlate_q31.c ****       } while (--k);
+ 336:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 337:Source\FilteringFunctions/arm_correlate_q31.c ****       /* If the srcBLen is not a multiple of 3, compute any remaining MACs here.
+ 338:Source\FilteringFunctions/arm_correlate_q31.c ****        ** No loop unrolling is used. */
+ 339:Source\FilteringFunctions/arm_correlate_q31.c ****       k = srcBLen - (3 * (srcBLen / 3));
+ 340:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 341:Source\FilteringFunctions/arm_correlate_q31.c ****       while (k > 0u)
+ 342:Source\FilteringFunctions/arm_correlate_q31.c ****       {
+ 343:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Read y[4] sample */
+ 344:Source\FilteringFunctions/arm_correlate_q31.c ****         c0 = *(py++);
+ 345:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 346:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Read x[7] sample */
+ 347:Source\FilteringFunctions/arm_correlate_q31.c ****         x2 = *(px++);
+ 348:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 349:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Perform the multiply-accumulates */
+ 350:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc0 +=  x[4] * y[4] */
+ 351:Source\FilteringFunctions/arm_correlate_q31.c ****         acc0 += ((q63_t) x0 * c0);
+ 352:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc1 +=  x[5] * y[4] */
+ 353:Source\FilteringFunctions/arm_correlate_q31.c ****         acc1 += ((q63_t) x1 * c0);
+ 354:Source\FilteringFunctions/arm_correlate_q31.c ****         /* acc2 +=  x[6] * y[4] */
+ 355:Source\FilteringFunctions/arm_correlate_q31.c ****         acc2 += ((q63_t) x2 * c0);
+ 356:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 357:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Reuse the present samples for the next MAC */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 8
+
+
+ 358:Source\FilteringFunctions/arm_correlate_q31.c ****         x0 = x1;
+ 359:Source\FilteringFunctions/arm_correlate_q31.c ****         x1 = x2;
+ 360:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 361:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Decrement the loop counter */
+ 362:Source\FilteringFunctions/arm_correlate_q31.c ****         k--;
+ 363:Source\FilteringFunctions/arm_correlate_q31.c ****       }
+ 364:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 365:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Store the result in the accumulator in the destination buffer. */
+ 366:Source\FilteringFunctions/arm_correlate_q31.c ****       *pOut = (q31_t) (acc0 >> 31);
+ 367:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Destination pointer is updated according to the address modifier, inc */
+ 368:Source\FilteringFunctions/arm_correlate_q31.c ****       pOut += inc;
+ 369:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 370:Source\FilteringFunctions/arm_correlate_q31.c ****       *pOut = (q31_t) (acc1 >> 31);
+ 371:Source\FilteringFunctions/arm_correlate_q31.c ****       pOut += inc;
+ 372:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 373:Source\FilteringFunctions/arm_correlate_q31.c ****       *pOut = (q31_t) (acc2 >> 31);
+ 374:Source\FilteringFunctions/arm_correlate_q31.c ****       pOut += inc;
+ 375:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 376:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Increment the pointer pIn1 index, count by 3 */
+ 377:Source\FilteringFunctions/arm_correlate_q31.c ****       count += 3u;
+ 378:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 379:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Update the inputA and inputB pointers for next MAC calculation */
+ 380:Source\FilteringFunctions/arm_correlate_q31.c ****       px = pIn1 + count;
+ 381:Source\FilteringFunctions/arm_correlate_q31.c ****       py = pIn2;
+ 382:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 383:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 384:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Decrement the loop counter */
+ 385:Source\FilteringFunctions/arm_correlate_q31.c ****       blkCnt--;
+ 386:Source\FilteringFunctions/arm_correlate_q31.c ****     }
+ 387:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 388:Source\FilteringFunctions/arm_correlate_q31.c ****     /* If the blockSize2 is not a multiple of 3, compute any remaining output samples here.
+ 389:Source\FilteringFunctions/arm_correlate_q31.c ****      ** No loop unrolling is used. */
+ 390:Source\FilteringFunctions/arm_correlate_q31.c ****     blkCnt = blockSize2 - 3 * (blockSize2 / 3);
+ 391:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 392:Source\FilteringFunctions/arm_correlate_q31.c ****     while (blkCnt > 0u)
+ 393:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 394:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Accumulator is made zero for every iteration */
+ 395:Source\FilteringFunctions/arm_correlate_q31.c ****       sum = 0;
+ 396:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 397:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Apply loop unrolling and compute 4 MACs simultaneously. */
+ 398:Source\FilteringFunctions/arm_correlate_q31.c ****       k = srcBLen >> 2u;
+ 399:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 400:Source\FilteringFunctions/arm_correlate_q31.c ****       /* First part of the processing with loop unrolling.  Compute 4 MACs at a time.
+ 401:Source\FilteringFunctions/arm_correlate_q31.c ****        ** a second loop below computes MACs for the remaining 1 to 3 samples. */
+ 402:Source\FilteringFunctions/arm_correlate_q31.c ****       while (k > 0u)
+ 403:Source\FilteringFunctions/arm_correlate_q31.c ****       {
+ 404:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Perform the multiply-accumulates */
+ 405:Source\FilteringFunctions/arm_correlate_q31.c ****         sum += (q63_t) * px++ * (*py++);
+ 406:Source\FilteringFunctions/arm_correlate_q31.c ****         sum += (q63_t) * px++ * (*py++);
+ 407:Source\FilteringFunctions/arm_correlate_q31.c ****         sum += (q63_t) * px++ * (*py++);
+ 408:Source\FilteringFunctions/arm_correlate_q31.c ****         sum += (q63_t) * px++ * (*py++);
+ 409:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 410:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Decrement the loop counter */
+ 411:Source\FilteringFunctions/arm_correlate_q31.c ****         k--;
+ 412:Source\FilteringFunctions/arm_correlate_q31.c ****       }
+ 413:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 414:Source\FilteringFunctions/arm_correlate_q31.c ****       /* If the srcBLen is not a multiple of 4, compute any remaining MACs here.
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 9
+
+
+ 415:Source\FilteringFunctions/arm_correlate_q31.c ****        ** No loop unrolling is used. */
+ 416:Source\FilteringFunctions/arm_correlate_q31.c ****       k = srcBLen % 0x4u;
+ 417:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 418:Source\FilteringFunctions/arm_correlate_q31.c ****       while (k > 0u)
+ 419:Source\FilteringFunctions/arm_correlate_q31.c ****       {
+ 420:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Perform the multiply-accumulate */
+ 421:Source\FilteringFunctions/arm_correlate_q31.c ****         sum += (q63_t) * px++ * (*py++);
+ 422:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 423:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Decrement the loop counter */
+ 424:Source\FilteringFunctions/arm_correlate_q31.c ****         k--;
+ 425:Source\FilteringFunctions/arm_correlate_q31.c ****       }
+ 426:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 427:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Store the result in the accumulator in the destination buffer. */
+ 428:Source\FilteringFunctions/arm_correlate_q31.c ****       *pOut = (q31_t) (sum >> 31);
+ 429:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Destination pointer is updated according to the address modifier, inc */
+ 430:Source\FilteringFunctions/arm_correlate_q31.c ****       pOut += inc;
+ 431:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 432:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Increment the MAC count */
+ 433:Source\FilteringFunctions/arm_correlate_q31.c ****       count++;
+ 434:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 435:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Update the inputA and inputB pointers for next MAC calculation */
+ 436:Source\FilteringFunctions/arm_correlate_q31.c ****       px = pIn1 + count;
+ 437:Source\FilteringFunctions/arm_correlate_q31.c ****       py = pIn2;
+ 438:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 439:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Decrement the loop counter */
+ 440:Source\FilteringFunctions/arm_correlate_q31.c ****       blkCnt--;
+ 441:Source\FilteringFunctions/arm_correlate_q31.c ****     }
+ 442:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 443:Source\FilteringFunctions/arm_correlate_q31.c ****   else
+ 444:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 445:Source\FilteringFunctions/arm_correlate_q31.c ****     /* If the srcBLen is not a multiple of 4,
+ 446:Source\FilteringFunctions/arm_correlate_q31.c ****      * the blockSize2 loop cannot be unrolled by 4 */
+ 447:Source\FilteringFunctions/arm_correlate_q31.c ****     blkCnt = blockSize2;
+ 448:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 449:Source\FilteringFunctions/arm_correlate_q31.c ****     while (blkCnt > 0u)
+ 450:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 451:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Accumulator is made zero for every iteration */
+ 452:Source\FilteringFunctions/arm_correlate_q31.c ****       sum = 0;
+ 453:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 454:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Loop over srcBLen */
+ 455:Source\FilteringFunctions/arm_correlate_q31.c ****       k = srcBLen;
+ 456:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 457:Source\FilteringFunctions/arm_correlate_q31.c ****       while (k > 0u)
+ 458:Source\FilteringFunctions/arm_correlate_q31.c ****       {
+ 459:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Perform the multiply-accumulate */
+ 460:Source\FilteringFunctions/arm_correlate_q31.c ****         sum += (q63_t) * px++ * (*py++);
+ 461:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 462:Source\FilteringFunctions/arm_correlate_q31.c ****         /* Decrement the loop counter */
+ 463:Source\FilteringFunctions/arm_correlate_q31.c ****         k--;
+ 464:Source\FilteringFunctions/arm_correlate_q31.c ****       }
+ 465:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 466:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Store the result in the accumulator in the destination buffer. */
+ 467:Source\FilteringFunctions/arm_correlate_q31.c ****       *pOut = (q31_t) (sum >> 31);
+ 468:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Destination pointer is updated according to the address modifier, inc */
+ 469:Source\FilteringFunctions/arm_correlate_q31.c ****       pOut += inc;
+ 470:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 471:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Increment the MAC count */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 10
+
+
+ 472:Source\FilteringFunctions/arm_correlate_q31.c ****       count++;
+ 473:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 474:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Update the inputA and inputB pointers for next MAC calculation */
+ 475:Source\FilteringFunctions/arm_correlate_q31.c ****       px = pIn1 + count;
+ 476:Source\FilteringFunctions/arm_correlate_q31.c ****       py = pIn2;
+ 477:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 478:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Decrement the loop counter */
+ 479:Source\FilteringFunctions/arm_correlate_q31.c ****       blkCnt--;
+ 480:Source\FilteringFunctions/arm_correlate_q31.c ****     }
+ 481:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 482:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 483:Source\FilteringFunctions/arm_correlate_q31.c ****   /* --------------------------
+ 484:Source\FilteringFunctions/arm_correlate_q31.c ****    * Initializations of stage3
+ 485:Source\FilteringFunctions/arm_correlate_q31.c ****    * -------------------------*/
+ 486:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 487:Source\FilteringFunctions/arm_correlate_q31.c ****   /* sum += x[srcALen-srcBLen+1] * y[0] + x[srcALen-srcBLen+2] * y[1] +...+ x[srcALen-1] * y[srcBLe
+ 488:Source\FilteringFunctions/arm_correlate_q31.c ****    * sum += x[srcALen-srcBLen+2] * y[0] + x[srcALen-srcBLen+3] * y[1] +...+ x[srcALen-1] * y[srcBLe
+ 489:Source\FilteringFunctions/arm_correlate_q31.c ****    * ....
+ 490:Source\FilteringFunctions/arm_correlate_q31.c ****    * sum +=  x[srcALen-2] * y[0] + x[srcALen-1] * y[1]
+ 491:Source\FilteringFunctions/arm_correlate_q31.c ****    * sum +=  x[srcALen-1] * y[0]
+ 492:Source\FilteringFunctions/arm_correlate_q31.c ****    */
+ 493:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 494:Source\FilteringFunctions/arm_correlate_q31.c ****   /* In this stage the MAC operations are decreased by 1 for every iteration.
+ 495:Source\FilteringFunctions/arm_correlate_q31.c ****      The count variable holds the number of MAC operations performed */
+ 496:Source\FilteringFunctions/arm_correlate_q31.c ****   count = srcBLen - 1u;
+ 497:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 498:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Working pointer of inputA */
+ 499:Source\FilteringFunctions/arm_correlate_q31.c ****   pSrc1 = pIn1 + (srcALen - (srcBLen - 1u));
+ 500:Source\FilteringFunctions/arm_correlate_q31.c ****   px = pSrc1;
+ 501:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 502:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Working pointer of inputB */
+ 503:Source\FilteringFunctions/arm_correlate_q31.c ****   py = pIn2;
+ 504:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 505:Source\FilteringFunctions/arm_correlate_q31.c ****   /* -------------------
+ 506:Source\FilteringFunctions/arm_correlate_q31.c ****    * Stage3 process
+ 507:Source\FilteringFunctions/arm_correlate_q31.c ****    * ------------------*/
+ 508:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 509:Source\FilteringFunctions/arm_correlate_q31.c ****   while (blockSize3 > 0u)
+ 510:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 511:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Accumulator is made zero for every iteration */
+ 512:Source\FilteringFunctions/arm_correlate_q31.c ****     sum = 0;
+ 513:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 514:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Apply loop unrolling and compute 4 MACs simultaneously. */
+ 515:Source\FilteringFunctions/arm_correlate_q31.c ****     k = count >> 2u;
+ 516:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 517:Source\FilteringFunctions/arm_correlate_q31.c ****     /* First part of the processing with loop unrolling.  Compute 4 MACs at a time.
+ 518:Source\FilteringFunctions/arm_correlate_q31.c ****      ** a second loop below computes MACs for the remaining 1 to 3 samples. */
+ 519:Source\FilteringFunctions/arm_correlate_q31.c ****     while (k > 0u)
+ 520:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 521:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Perform the multiply-accumulates */
+ 522:Source\FilteringFunctions/arm_correlate_q31.c ****       /* sum += x[srcALen - srcBLen + 4] * y[3] */
+ 523:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 524:Source\FilteringFunctions/arm_correlate_q31.c ****       /* sum += x[srcALen - srcBLen + 3] * y[2] */
+ 525:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 526:Source\FilteringFunctions/arm_correlate_q31.c ****       /* sum += x[srcALen - srcBLen + 2] * y[1] */
+ 527:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 528:Source\FilteringFunctions/arm_correlate_q31.c ****       /* sum += x[srcALen - srcBLen + 1] * y[0] */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 11
+
+
+ 529:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 530:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 531:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Decrement the loop counter */
+ 532:Source\FilteringFunctions/arm_correlate_q31.c ****       k--;
+ 533:Source\FilteringFunctions/arm_correlate_q31.c ****     }
+ 534:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 535:Source\FilteringFunctions/arm_correlate_q31.c ****     /* If the count is not a multiple of 4, compute any remaining MACs here.
+ 536:Source\FilteringFunctions/arm_correlate_q31.c ****      ** No loop unrolling is used. */
+ 537:Source\FilteringFunctions/arm_correlate_q31.c ****     k = count % 0x4u;
+ 538:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 539:Source\FilteringFunctions/arm_correlate_q31.c ****     while (k > 0u)
+ 540:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 541:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Perform the multiply-accumulates */
+ 542:Source\FilteringFunctions/arm_correlate_q31.c ****       sum += (q63_t) * px++ * (*py++);
+ 543:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 544:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Decrement the loop counter */
+ 545:Source\FilteringFunctions/arm_correlate_q31.c ****       k--;
+ 546:Source\FilteringFunctions/arm_correlate_q31.c ****     }
+ 547:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 548:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Store the result in the accumulator in the destination buffer. */
+ 549:Source\FilteringFunctions/arm_correlate_q31.c ****     *pOut = (q31_t) (sum >> 31);
+ 550:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Destination pointer is updated according to the address modifier, inc */
+ 551:Source\FilteringFunctions/arm_correlate_q31.c ****     pOut += inc;
+ 552:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 553:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Update the inputA and inputB pointers for next MAC calculation */
+ 554:Source\FilteringFunctions/arm_correlate_q31.c ****     px = ++pSrc1;
+ 555:Source\FilteringFunctions/arm_correlate_q31.c ****     py = pIn2;
+ 556:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 557:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Decrement the MAC count */
+ 558:Source\FilteringFunctions/arm_correlate_q31.c ****     count--;
+ 559:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 560:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Decrement the loop counter */
+ 561:Source\FilteringFunctions/arm_correlate_q31.c ****     blockSize3--;
+ 562:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 563:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 564:Source\FilteringFunctions/arm_correlate_q31.c **** #else
+ 565:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 566:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Run the below code for Cortex-M0 */
+ 567:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 568:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t *pIn1 = pSrcA;                           /* inputA pointer               */
+  43              		.loc 1 568 0
+  44 000e 7B6A     		ldr	r3, [r7, #36]
+  45 0010 7B64     		str	r3, [r7, #68]
+ 569:Source\FilteringFunctions/arm_correlate_q31.c ****   q31_t *pIn2 = pSrcB + (srcBLen - 1u);          /* inputB pointer               */
+  46              		.loc 1 569 0
+  47 0012 BB69     		ldr	r3, [r7, #24]
+  48 0014 504A     		ldr	r2, .L11
+  49 0016 9446     		mov	ip, r2
+  50 0018 6344     		add	r3, r3, ip
+  51 001a 9B00     		lsl	r3, r3, #2
+  52 001c FA69     		ldr	r2, [r7, #28]
+  53 001e D318     		add	r3, r2, r3
+  54 0020 3B64     		str	r3, [r7, #64]
+ 570:Source\FilteringFunctions/arm_correlate_q31.c ****   q63_t sum;                                     /* Accumulators                  */
+ 571:Source\FilteringFunctions/arm_correlate_q31.c ****   uint32_t i = 0u, j;                            /* loop counters */
+  55              		.loc 1 571 0
+  56 0022 0023     		mov	r3, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 12
+
+
+  57 0024 7B63     		str	r3, [r7, #52]
+ 572:Source\FilteringFunctions/arm_correlate_q31.c ****   uint32_t inv = 0u;                             /* Reverse order flag */
+  58              		.loc 1 572 0
+  59 0026 0023     		mov	r3, #0
+  60 0028 FB62     		str	r3, [r7, #44]
+ 573:Source\FilteringFunctions/arm_correlate_q31.c ****   uint32_t tot = 0u;                             /* Length */
+  61              		.loc 1 573 0
+  62 002a 0023     		mov	r3, #0
+  63 002c BB62     		str	r3, [r7, #40]
+ 574:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 575:Source\FilteringFunctions/arm_correlate_q31.c ****   /* The algorithm implementation is based on the lengths of the inputs. */
+ 576:Source\FilteringFunctions/arm_correlate_q31.c ****   /* srcB is always made to slide across srcA. */
+ 577:Source\FilteringFunctions/arm_correlate_q31.c ****   /* So srcBLen is always considered as shorter or equal to srcALen */
+ 578:Source\FilteringFunctions/arm_correlate_q31.c ****   /* But CORR(x, y) is reverse of CORR(y, x) */
+ 579:Source\FilteringFunctions/arm_correlate_q31.c ****   /* So, when srcBLen > srcALen, output pointer is made to point to the end of the output buffer */
+ 580:Source\FilteringFunctions/arm_correlate_q31.c ****   /* and a varaible, inv is set to 1 */
+ 581:Source\FilteringFunctions/arm_correlate_q31.c ****   /* If lengths are not equal then zero pad has to be done to  make the two
+ 582:Source\FilteringFunctions/arm_correlate_q31.c ****    * inputs of same length. But to improve the performance, we include zeroes
+ 583:Source\FilteringFunctions/arm_correlate_q31.c ****    * in the output instead of zero padding either of the the inputs*/
+ 584:Source\FilteringFunctions/arm_correlate_q31.c ****   /* If srcALen > srcBLen, (srcALen - srcBLen) zeroes has to included in the
+ 585:Source\FilteringFunctions/arm_correlate_q31.c ****    * starting of the output buffer */
+ 586:Source\FilteringFunctions/arm_correlate_q31.c ****   /* If srcALen < srcBLen, (srcALen - srcBLen) zeroes has to included in the
+ 587:Source\FilteringFunctions/arm_correlate_q31.c ****    * ending of the output buffer */
+ 588:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Once the zero padding is done the remaining of the output is calcualted
+ 589:Source\FilteringFunctions/arm_correlate_q31.c ****    * using correlation but with the shorter signal time shifted. */
+ 590:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 591:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Calculate the length of the remaining sequence */
+ 592:Source\FilteringFunctions/arm_correlate_q31.c ****   tot = ((srcALen + srcBLen) - 2u);
+  64              		.loc 1 592 0
+  65 002e 3A6A     		ldr	r2, [r7, #32]
+  66 0030 BB69     		ldr	r3, [r7, #24]
+  67 0032 D318     		add	r3, r2, r3
+  68 0034 023B     		sub	r3, r3, #2
+  69 0036 BB62     		str	r3, [r7, #40]
+ 593:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 594:Source\FilteringFunctions/arm_correlate_q31.c ****   if (srcALen > srcBLen)
+  70              		.loc 1 594 0
+  71 0038 3A6A     		ldr	r2, [r7, #32]
+  72 003a BB69     		ldr	r3, [r7, #24]
+  73 003c 9A42     		cmp	r2, r3
+  74 003e 09D9     		bls	.L2
+ 595:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 596:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Calculating the number of zeros to be padded to the output */
+ 597:Source\FilteringFunctions/arm_correlate_q31.c ****     j = srcALen - srcBLen;
+  75              		.loc 1 597 0
+  76 0040 3A6A     		ldr	r2, [r7, #32]
+  77 0042 BB69     		ldr	r3, [r7, #24]
+  78 0044 D31A     		sub	r3, r2, r3
+  79 0046 3B63     		str	r3, [r7, #48]
+ 598:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 599:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialise the pointer after zero padding */
+ 600:Source\FilteringFunctions/arm_correlate_q31.c ****     pDst += j;
+  80              		.loc 1 600 0
+  81 0048 3B6B     		ldr	r3, [r7, #48]
+  82 004a 9B00     		lsl	r3, r3, #2
+  83 004c BA6D     		ldr	r2, [r7, #88]
+  84 004e D318     		add	r3, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 13
+
+
+  85 0050 BB65     		str	r3, [r7, #88]
+  86 0052 1AE0     		b	.L3
+  87              	.L2:
+ 601:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 602:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 603:Source\FilteringFunctions/arm_correlate_q31.c ****   else if (srcALen < srcBLen)
+  88              		.loc 1 603 0
+  89 0054 3A6A     		ldr	r2, [r7, #32]
+  90 0056 BB69     		ldr	r3, [r7, #24]
+  91 0058 9A42     		cmp	r2, r3
+  92 005a 16D2     		bcs	.L3
+ 604:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 605:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialization to inputB pointer */
+ 606:Source\FilteringFunctions/arm_correlate_q31.c ****     pIn1 = pSrcB;
+  93              		.loc 1 606 0
+  94 005c FB69     		ldr	r3, [r7, #28]
+  95 005e 7B64     		str	r3, [r7, #68]
+ 607:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 608:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialization to the end of inputA pointer */
+ 609:Source\FilteringFunctions/arm_correlate_q31.c ****     pIn2 = pSrcA + (srcALen - 1u);
+  96              		.loc 1 609 0
+  97 0060 3B6A     		ldr	r3, [r7, #32]
+  98 0062 3D4A     		ldr	r2, .L11
+  99 0064 9446     		mov	ip, r2
+ 100 0066 6344     		add	r3, r3, ip
+ 101 0068 9B00     		lsl	r3, r3, #2
+ 102 006a 7A6A     		ldr	r2, [r7, #36]
+ 103 006c D318     		add	r3, r2, r3
+ 104 006e 3B64     		str	r3, [r7, #64]
+ 610:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 611:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialisation of the pointer after zero padding */
+ 612:Source\FilteringFunctions/arm_correlate_q31.c ****     pDst = pDst + tot;
+ 105              		.loc 1 612 0
+ 106 0070 BB6A     		ldr	r3, [r7, #40]
+ 107 0072 9B00     		lsl	r3, r3, #2
+ 108 0074 BA6D     		ldr	r2, [r7, #88]
+ 109 0076 D318     		add	r3, r2, r3
+ 110 0078 BB65     		str	r3, [r7, #88]
+ 613:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 614:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Swapping the lengths */
+ 615:Source\FilteringFunctions/arm_correlate_q31.c ****     j = srcALen;
+ 111              		.loc 1 615 0
+ 112 007a 3B6A     		ldr	r3, [r7, #32]
+ 113 007c 3B63     		str	r3, [r7, #48]
+ 616:Source\FilteringFunctions/arm_correlate_q31.c ****     srcALen = srcBLen;
+ 114              		.loc 1 616 0
+ 115 007e BB69     		ldr	r3, [r7, #24]
+ 116 0080 3B62     		str	r3, [r7, #32]
+ 617:Source\FilteringFunctions/arm_correlate_q31.c ****     srcBLen = j;
+ 117              		.loc 1 617 0
+ 118 0082 3B6B     		ldr	r3, [r7, #48]
+ 119 0084 BB61     		str	r3, [r7, #24]
+ 618:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 619:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Setting the reverse flag */
+ 620:Source\FilteringFunctions/arm_correlate_q31.c ****     inv = 1;
+ 120              		.loc 1 620 0
+ 121 0086 0123     		mov	r3, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 14
+
+
+ 122 0088 FB62     		str	r3, [r7, #44]
+ 123              	.L3:
+ 621:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 622:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 623:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 624:Source\FilteringFunctions/arm_correlate_q31.c ****   /* Loop to calculate correlation for output length number of times */
+ 625:Source\FilteringFunctions/arm_correlate_q31.c ****   for (i = 0u; i <= tot; i++)
+ 124              		.loc 1 625 0
+ 125 008a 0023     		mov	r3, #0
+ 126 008c 7B63     		str	r3, [r7, #52]
+ 127 008e 5CE0     		b	.L4
+ 128              	.L10:
+ 626:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 627:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Initialize sum with zero to carry on MAC operations */
+ 628:Source\FilteringFunctions/arm_correlate_q31.c ****     sum = 0;
+ 129              		.loc 1 628 0
+ 130 0090 0022     		mov	r2, #0
+ 131 0092 0023     		mov	r3, #0
+ 132 0094 BA63     		str	r2, [r7, #56]
+ 133 0096 FB63     		str	r3, [r7, #60]
+ 629:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 630:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Loop to perform MAC operations according to correlation equation */
+ 631:Source\FilteringFunctions/arm_correlate_q31.c ****     for (j = 0u; j <= i; j++)
+ 134              		.loc 1 631 0
+ 135 0098 0023     		mov	r3, #0
+ 136 009a 3B63     		str	r3, [r7, #48]
+ 137 009c 2EE0     		b	.L5
+ 138              	.L7:
+ 632:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 633:Source\FilteringFunctions/arm_correlate_q31.c ****       /* Check the array limitations */
+ 634:Source\FilteringFunctions/arm_correlate_q31.c ****       if ((((i - j) < srcBLen) && (j < srcALen)))
+ 139              		.loc 1 634 0
+ 140 009e 7A6B     		ldr	r2, [r7, #52]
+ 141 00a0 3B6B     		ldr	r3, [r7, #48]
+ 142 00a2 D21A     		sub	r2, r2, r3
+ 143 00a4 BB69     		ldr	r3, [r7, #24]
+ 144 00a6 9A42     		cmp	r2, r3
+ 145 00a8 25D2     		bcs	.L6
+ 146              		.loc 1 634 0 is_stmt 0 discriminator 1
+ 147 00aa 3A6B     		ldr	r2, [r7, #48]
+ 148 00ac 3B6A     		ldr	r3, [r7, #32]
+ 149 00ae 9A42     		cmp	r2, r3
+ 150 00b0 21D2     		bcs	.L6
+ 635:Source\FilteringFunctions/arm_correlate_q31.c ****       {
+ 636:Source\FilteringFunctions/arm_correlate_q31.c ****         /* z[i] += x[i-j] * y[j] */
+ 637:Source\FilteringFunctions/arm_correlate_q31.c ****         sum += ((q63_t) pIn1[j] * pIn2[-((int32_t) i - j)]);
+ 151              		.loc 1 637 0 is_stmt 1
+ 152 00b2 3B6B     		ldr	r3, [r7, #48]
+ 153 00b4 9B00     		lsl	r3, r3, #2
+ 154 00b6 7A6C     		ldr	r2, [r7, #68]
+ 155 00b8 D318     		add	r3, r2, r3
+ 156 00ba 1B68     		ldr	r3, [r3]
+ 157 00bc BB60     		str	r3, [r7, #8]
+ 158 00be DB17     		asr	r3, r3, #31
+ 159 00c0 FB60     		str	r3, [r7, #12]
+ 160 00c2 3A6B     		ldr	r2, [r7, #48]
+ 161 00c4 7B6B     		ldr	r3, [r7, #52]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 15
+
+
+ 162 00c6 D31A     		sub	r3, r2, r3
+ 163 00c8 9B00     		lsl	r3, r3, #2
+ 164 00ca 3A6C     		ldr	r2, [r7, #64]
+ 165 00cc D318     		add	r3, r2, r3
+ 166 00ce 1B68     		ldr	r3, [r3]
+ 167 00d0 3B60     		str	r3, [r7]
+ 168 00d2 DB17     		asr	r3, r3, #31
+ 169 00d4 7B60     		str	r3, [r7, #4]
+ 170 00d6 B868     		ldr	r0, [r7, #8]
+ 171 00d8 F968     		ldr	r1, [r7, #12]
+ 172 00da 3A68     		ldr	r2, [r7]
+ 173 00dc 7B68     		ldr	r3, [r7, #4]
+ 174 00de FFF7FEFF 		bl	__aeabi_lmul
+ 175 00e2 021C     		mov	r2, r0
+ 176 00e4 0B1C     		mov	r3, r1
+ 177 00e6 101C     		mov	r0, r2
+ 178 00e8 191C     		mov	r1, r3
+ 179 00ea BA6B     		ldr	r2, [r7, #56]
+ 180 00ec FB6B     		ldr	r3, [r7, #60]
+ 181 00ee 1218     		add	r2, r2, r0
+ 182 00f0 4B41     		adc	r3, r3, r1
+ 183 00f2 BA63     		str	r2, [r7, #56]
+ 184 00f4 FB63     		str	r3, [r7, #60]
+ 185              	.L6:
+ 631:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 186              		.loc 1 631 0 discriminator 2
+ 187 00f6 3B6B     		ldr	r3, [r7, #48]
+ 188 00f8 0133     		add	r3, r3, #1
+ 189 00fa 3B63     		str	r3, [r7, #48]
+ 190              	.L5:
+ 631:Source\FilteringFunctions/arm_correlate_q31.c ****     {
+ 191              		.loc 1 631 0 is_stmt 0 discriminator 1
+ 192 00fc 3A6B     		ldr	r2, [r7, #48]
+ 193 00fe 7B6B     		ldr	r3, [r7, #52]
+ 194 0100 9A42     		cmp	r2, r3
+ 195 0102 CCD9     		bls	.L7
+ 638:Source\FilteringFunctions/arm_correlate_q31.c ****       }
+ 639:Source\FilteringFunctions/arm_correlate_q31.c ****     }
+ 640:Source\FilteringFunctions/arm_correlate_q31.c ****     /* Store the output in the destination buffer */
+ 641:Source\FilteringFunctions/arm_correlate_q31.c ****     if (inv == 1)
+ 196              		.loc 1 641 0 is_stmt 1
+ 197 0104 FB6A     		ldr	r3, [r7, #44]
+ 198 0106 012B     		cmp	r3, #1
+ 199 0108 0CD1     		bne	.L8
+ 642:Source\FilteringFunctions/arm_correlate_q31.c ****       *pDst-- = (q31_t) (sum >> 31u);
+ 200              		.loc 1 642 0
+ 201 010a BB6D     		ldr	r3, [r7, #88]
+ 202 010c 1A1F     		sub	r2, r3, #4
+ 203 010e BA65     		str	r2, [r7, #88]
+ 204 0110 FA6B     		ldr	r2, [r7, #60]
+ 205 0112 5200     		lsl	r2, r2, #1
+ 206 0114 B96B     		ldr	r1, [r7, #56]
+ 207 0116 CC0F     		lsr	r4, r1, #31
+ 208 0118 1443     		orr	r4, r2
+ 209 011a FA6B     		ldr	r2, [r7, #60]
+ 210 011c D517     		asr	r5, r2, #31
+ 211 011e 221C     		mov	r2, r4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 16
+
+
+ 212 0120 1A60     		str	r2, [r3]
+ 213 0122 0FE0     		b	.L9
+ 214              	.L8:
+ 643:Source\FilteringFunctions/arm_correlate_q31.c ****     else
+ 644:Source\FilteringFunctions/arm_correlate_q31.c ****       *pDst++ = (q31_t) (sum >> 31u);
+ 215              		.loc 1 644 0
+ 216 0124 BB6D     		ldr	r3, [r7, #88]
+ 217 0126 1A1D     		add	r2, r3, #4
+ 218 0128 BA65     		str	r2, [r7, #88]
+ 219 012a FA6B     		ldr	r2, [r7, #60]
+ 220 012c 5200     		lsl	r2, r2, #1
+ 221 012e B96B     		ldr	r1, [r7, #56]
+ 222 0130 C90F     		lsr	r1, r1, #31
+ 223 0132 3961     		str	r1, [r7, #16]
+ 224 0134 3969     		ldr	r1, [r7, #16]
+ 225 0136 1143     		orr	r1, r2
+ 226 0138 3961     		str	r1, [r7, #16]
+ 227 013a FA6B     		ldr	r2, [r7, #60]
+ 228 013c D217     		asr	r2, r2, #31
+ 229 013e 7A61     		str	r2, [r7, #20]
+ 230 0140 3A69     		ldr	r2, [r7, #16]
+ 231 0142 1A60     		str	r2, [r3]
+ 232              	.L9:
+ 625:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 233              		.loc 1 625 0 discriminator 2
+ 234 0144 7B6B     		ldr	r3, [r7, #52]
+ 235 0146 0133     		add	r3, r3, #1
+ 236 0148 7B63     		str	r3, [r7, #52]
+ 237              	.L4:
+ 625:Source\FilteringFunctions/arm_correlate_q31.c ****   {
+ 238              		.loc 1 625 0 is_stmt 0 discriminator 1
+ 239 014a 7A6B     		ldr	r2, [r7, #52]
+ 240 014c BB6A     		ldr	r3, [r7, #40]
+ 241 014e 9A42     		cmp	r2, r3
+ 242 0150 9ED9     		bls	.L10
+ 645:Source\FilteringFunctions/arm_correlate_q31.c ****   }
+ 646:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 647:Source\FilteringFunctions/arm_correlate_q31.c **** #endif /*   #if defined (ARM_MATH_DSP) */
+ 648:Source\FilteringFunctions/arm_correlate_q31.c **** 
+ 649:Source\FilteringFunctions/arm_correlate_q31.c **** }
+ 243              		.loc 1 649 0 is_stmt 1
+ 244 0152 BD46     		mov	sp, r7
+ 245 0154 12B0     		add	sp, sp, #72
+ 246              		@ sp needed
+ 247 0156 B0BD     		pop	{r4, r5, r7, pc}
+ 248              	.L12:
+ 249              		.align	2
+ 250              	.L11:
+ 251 0158 FFFFFF3F 		.word	1073741823
+ 252              		.cfi_endproc
+ 253              	.LFE82:
+ 254              		.size	arm_correlate_q31, .-arm_correlate_q31
+ 255              		.text
+ 256              	.Letext0:
+ 257              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 258              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 259              		.file 4 ".\\Include/arm_math.h"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 17
+
+
+ 260              		.section	.debug_info,"",%progbits
+ 261              	.Ldebug_info0:
+ 262 0000 A8010000 		.4byte	0x1a8
+ 263 0004 0400     		.2byte	0x4
+ 264 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 265 000a 04       		.byte	0x4
+ 266 000b 01       		.uleb128 0x1
+ 267 000c 28010000 		.4byte	.LASF29
+ 268 0010 01       		.byte	0x1
+ 269 0011 CB000000 		.4byte	.LASF30
+ 270 0015 30000000 		.4byte	.LASF31
+ 271 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 272 001d 00000000 		.4byte	0
+ 273 0021 00000000 		.4byte	.Ldebug_line0
+ 274 0025 02       		.uleb128 0x2
+ 275 0026 01       		.byte	0x1
+ 276 0027 06       		.byte	0x6
+ 277 0028 14020000 		.4byte	.LASF0
+ 278 002c 02       		.uleb128 0x2
+ 279 002d 01       		.byte	0x1
+ 280 002e 08       		.byte	0x8
+ 281 002f 82000000 		.4byte	.LASF1
+ 282 0033 02       		.uleb128 0x2
+ 283 0034 02       		.byte	0x2
+ 284 0035 05       		.byte	0x5
+ 285 0036 EC010000 		.4byte	.LASF2
+ 286 003a 02       		.uleb128 0x2
+ 287 003b 02       		.byte	0x2
+ 288 003c 07       		.byte	0x7
+ 289 003d A2000000 		.4byte	.LASF3
+ 290 0041 03       		.uleb128 0x3
+ 291 0042 26000000 		.4byte	.LASF5
+ 292 0046 02       		.byte	0x2
+ 293 0047 3F       		.byte	0x3f
+ 294 0048 4C000000 		.4byte	0x4c
+ 295 004c 02       		.uleb128 0x2
+ 296 004d 04       		.byte	0x4
+ 297 004e 05       		.byte	0x5
+ 298 004f FF010000 		.4byte	.LASF4
+ 299 0053 03       		.uleb128 0x3
+ 300 0054 F9000000 		.4byte	.LASF6
+ 301 0058 02       		.byte	0x2
+ 302 0059 41       		.byte	0x41
+ 303 005a 5E000000 		.4byte	0x5e
+ 304 005e 02       		.uleb128 0x2
+ 305 005f 04       		.byte	0x4
+ 306 0060 07       		.byte	0x7
+ 307 0061 90000000 		.4byte	.LASF7
+ 308 0065 03       		.uleb128 0x3
+ 309 0066 BA000000 		.4byte	.LASF8
+ 310 006a 02       		.byte	0x2
+ 311 006b 59       		.byte	0x59
+ 312 006c 70000000 		.4byte	0x70
+ 313 0070 02       		.uleb128 0x2
+ 314 0071 08       		.byte	0x8
+ 315 0072 05       		.byte	0x5
+ 316 0073 D1010000 		.4byte	.LASF9
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 18
+
+
+ 317 0077 02       		.uleb128 0x2
+ 318 0078 08       		.byte	0x8
+ 319 0079 07       		.byte	0x7
+ 320 007a 11010000 		.4byte	.LASF10
+ 321 007e 04       		.uleb128 0x4
+ 322 007f 04       		.byte	0x4
+ 323 0080 05       		.byte	0x5
+ 324 0081 696E7400 		.ascii	"int\000"
+ 325 0085 02       		.uleb128 0x2
+ 326 0086 04       		.byte	0x4
+ 327 0087 07       		.byte	0x7
+ 328 0088 04010000 		.4byte	.LASF11
+ 329 008c 03       		.uleb128 0x3
+ 330 008d C0010000 		.4byte	.LASF12
+ 331 0091 03       		.byte	0x3
+ 332 0092 2C       		.byte	0x2c
+ 333 0093 41000000 		.4byte	0x41
+ 334 0097 03       		.uleb128 0x3
+ 335 0098 F6010000 		.4byte	.LASF13
+ 336 009c 03       		.byte	0x3
+ 337 009d 2D       		.byte	0x2d
+ 338 009e 53000000 		.4byte	0x53
+ 339 00a2 03       		.uleb128 0x3
+ 340 00a3 00000000 		.4byte	.LASF14
+ 341 00a7 03       		.byte	0x3
+ 342 00a8 38       		.byte	0x38
+ 343 00a9 65000000 		.4byte	0x65
+ 344 00ad 02       		.uleb128 0x2
+ 345 00ae 04       		.byte	0x4
+ 346 00af 07       		.byte	0x7
+ 347 00b0 C8010000 		.4byte	.LASF15
+ 348 00b4 02       		.uleb128 0x2
+ 349 00b5 01       		.byte	0x1
+ 350 00b6 08       		.byte	0x8
+ 351 00b7 DF010000 		.4byte	.LASF16
+ 352 00bb 02       		.uleb128 0x2
+ 353 00bc 08       		.byte	0x8
+ 354 00bd 04       		.byte	0x4
+ 355 00be C4000000 		.4byte	.LASF17
+ 356 00c2 02       		.uleb128 0x2
+ 357 00c3 04       		.byte	0x4
+ 358 00c4 04       		.byte	0x4
+ 359 00c5 76000000 		.4byte	.LASF18
+ 360 00c9 02       		.uleb128 0x2
+ 361 00ca 08       		.byte	0x8
+ 362 00cb 04       		.byte	0x4
+ 363 00cc 08020000 		.4byte	.LASF19
+ 364 00d0 05       		.uleb128 0x5
+ 365 00d1 7C000000 		.4byte	.LASF20
+ 366 00d5 04       		.byte	0x4
+ 367 00d6 9B01     		.2byte	0x19b
+ 368 00d8 8C000000 		.4byte	0x8c
+ 369 00dc 05       		.uleb128 0x5
+ 370 00dd BA010000 		.4byte	.LASF21
+ 371 00e1 04       		.byte	0x4
+ 372 00e2 A001     		.2byte	0x1a0
+ 373 00e4 A2000000 		.4byte	0xa2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 19
+
+
+ 374 00e8 06       		.uleb128 0x6
+ 375 00e9 04       		.byte	0x4
+ 376 00ea D0000000 		.4byte	0xd0
+ 377 00ee 07       		.uleb128 0x7
+ 378 00ef 08000000 		.4byte	.LASF32
+ 379 00f3 01       		.byte	0x1
+ 380 00f4 42       		.byte	0x42
+ 381 00f5 00000000 		.4byte	.LFB82
+ 382 00f9 5C010000 		.4byte	.LFE82-.LFB82
+ 383 00fd 01       		.uleb128 0x1
+ 384 00fe 9C       		.byte	0x9c
+ 385 00ff 08       		.uleb128 0x8
+ 386 0100 1A000000 		.4byte	.LASF22
+ 387 0104 01       		.byte	0x1
+ 388 0105 43       		.byte	0x43
+ 389 0106 E8000000 		.4byte	0xe8
+ 390 010a 02       		.uleb128 0x2
+ 391 010b 91       		.byte	0x91
+ 392 010c 4C       		.sleb128 -52
+ 393 010d 08       		.uleb128 0x8
+ 394 010e E4010000 		.4byte	.LASF23
+ 395 0112 01       		.byte	0x1
+ 396 0113 44       		.byte	0x44
+ 397 0114 97000000 		.4byte	0x97
+ 398 0118 02       		.uleb128 0x2
+ 399 0119 91       		.byte	0x91
+ 400 011a 48       		.sleb128 -56
+ 401 011b 08       		.uleb128 0x8
+ 402 011c 20000000 		.4byte	.LASF24
+ 403 0120 01       		.byte	0x1
+ 404 0121 45       		.byte	0x45
+ 405 0122 E8000000 		.4byte	0xe8
+ 406 0126 02       		.uleb128 0x2
+ 407 0127 91       		.byte	0x91
+ 408 0128 44       		.sleb128 -60
+ 409 0129 08       		.uleb128 0x8
+ 410 012a 20020000 		.4byte	.LASF25
+ 411 012e 01       		.byte	0x1
+ 412 012f 46       		.byte	0x46
+ 413 0130 97000000 		.4byte	0x97
+ 414 0134 02       		.uleb128 0x2
+ 415 0135 91       		.byte	0x91
+ 416 0136 40       		.sleb128 -64
+ 417 0137 08       		.uleb128 0x8
+ 418 0138 B5000000 		.4byte	.LASF26
+ 419 013c 01       		.byte	0x1
+ 420 013d 47       		.byte	0x47
+ 421 013e E8000000 		.4byte	0xe8
+ 422 0142 02       		.uleb128 0x2
+ 423 0143 91       		.byte	0x91
+ 424 0144 00       		.sleb128 0
+ 425 0145 09       		.uleb128 0x9
+ 426 0146 28020000 		.4byte	.LASF27
+ 427 014a 01       		.byte	0x1
+ 428 014b 3802     		.2byte	0x238
+ 429 014d E8000000 		.4byte	0xe8
+ 430 0151 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 20
+
+
+ 431 0152 91       		.byte	0x91
+ 432 0153 6C       		.sleb128 -20
+ 433 0154 09       		.uleb128 0x9
+ 434 0155 2D020000 		.4byte	.LASF28
+ 435 0159 01       		.byte	0x1
+ 436 015a 3902     		.2byte	0x239
+ 437 015c E8000000 		.4byte	0xe8
+ 438 0160 02       		.uleb128 0x2
+ 439 0161 91       		.byte	0x91
+ 440 0162 68       		.sleb128 -24
+ 441 0163 0A       		.uleb128 0xa
+ 442 0164 73756D00 		.ascii	"sum\000"
+ 443 0168 01       		.byte	0x1
+ 444 0169 3A02     		.2byte	0x23a
+ 445 016b DC000000 		.4byte	0xdc
+ 446 016f 02       		.uleb128 0x2
+ 447 0170 91       		.byte	0x91
+ 448 0171 60       		.sleb128 -32
+ 449 0172 0A       		.uleb128 0xa
+ 450 0173 6900     		.ascii	"i\000"
+ 451 0175 01       		.byte	0x1
+ 452 0176 3B02     		.2byte	0x23b
+ 453 0178 97000000 		.4byte	0x97
+ 454 017c 02       		.uleb128 0x2
+ 455 017d 91       		.byte	0x91
+ 456 017e 5C       		.sleb128 -36
+ 457 017f 0A       		.uleb128 0xa
+ 458 0180 6A00     		.ascii	"j\000"
+ 459 0182 01       		.byte	0x1
+ 460 0183 3B02     		.2byte	0x23b
+ 461 0185 97000000 		.4byte	0x97
+ 462 0189 02       		.uleb128 0x2
+ 463 018a 91       		.byte	0x91
+ 464 018b 58       		.sleb128 -40
+ 465 018c 0A       		.uleb128 0xa
+ 466 018d 696E7600 		.ascii	"inv\000"
+ 467 0191 01       		.byte	0x1
+ 468 0192 3C02     		.2byte	0x23c
+ 469 0194 97000000 		.4byte	0x97
+ 470 0198 02       		.uleb128 0x2
+ 471 0199 91       		.byte	0x91
+ 472 019a 54       		.sleb128 -44
+ 473 019b 0A       		.uleb128 0xa
+ 474 019c 746F7400 		.ascii	"tot\000"
+ 475 01a0 01       		.byte	0x1
+ 476 01a1 3D02     		.2byte	0x23d
+ 477 01a3 97000000 		.4byte	0x97
+ 478 01a7 02       		.uleb128 0x2
+ 479 01a8 91       		.byte	0x91
+ 480 01a9 50       		.sleb128 -48
+ 481 01aa 00       		.byte	0
+ 482 01ab 00       		.byte	0
+ 483              		.section	.debug_abbrev,"",%progbits
+ 484              	.Ldebug_abbrev0:
+ 485 0000 01       		.uleb128 0x1
+ 486 0001 11       		.uleb128 0x11
+ 487 0002 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 21
+
+
+ 488 0003 25       		.uleb128 0x25
+ 489 0004 0E       		.uleb128 0xe
+ 490 0005 13       		.uleb128 0x13
+ 491 0006 0B       		.uleb128 0xb
+ 492 0007 03       		.uleb128 0x3
+ 493 0008 0E       		.uleb128 0xe
+ 494 0009 1B       		.uleb128 0x1b
+ 495 000a 0E       		.uleb128 0xe
+ 496 000b 55       		.uleb128 0x55
+ 497 000c 17       		.uleb128 0x17
+ 498 000d 11       		.uleb128 0x11
+ 499 000e 01       		.uleb128 0x1
+ 500 000f 10       		.uleb128 0x10
+ 501 0010 17       		.uleb128 0x17
+ 502 0011 00       		.byte	0
+ 503 0012 00       		.byte	0
+ 504 0013 02       		.uleb128 0x2
+ 505 0014 24       		.uleb128 0x24
+ 506 0015 00       		.byte	0
+ 507 0016 0B       		.uleb128 0xb
+ 508 0017 0B       		.uleb128 0xb
+ 509 0018 3E       		.uleb128 0x3e
+ 510 0019 0B       		.uleb128 0xb
+ 511 001a 03       		.uleb128 0x3
+ 512 001b 0E       		.uleb128 0xe
+ 513 001c 00       		.byte	0
+ 514 001d 00       		.byte	0
+ 515 001e 03       		.uleb128 0x3
+ 516 001f 16       		.uleb128 0x16
+ 517 0020 00       		.byte	0
+ 518 0021 03       		.uleb128 0x3
+ 519 0022 0E       		.uleb128 0xe
+ 520 0023 3A       		.uleb128 0x3a
+ 521 0024 0B       		.uleb128 0xb
+ 522 0025 3B       		.uleb128 0x3b
+ 523 0026 0B       		.uleb128 0xb
+ 524 0027 49       		.uleb128 0x49
+ 525 0028 13       		.uleb128 0x13
+ 526 0029 00       		.byte	0
+ 527 002a 00       		.byte	0
+ 528 002b 04       		.uleb128 0x4
+ 529 002c 24       		.uleb128 0x24
+ 530 002d 00       		.byte	0
+ 531 002e 0B       		.uleb128 0xb
+ 532 002f 0B       		.uleb128 0xb
+ 533 0030 3E       		.uleb128 0x3e
+ 534 0031 0B       		.uleb128 0xb
+ 535 0032 03       		.uleb128 0x3
+ 536 0033 08       		.uleb128 0x8
+ 537 0034 00       		.byte	0
+ 538 0035 00       		.byte	0
+ 539 0036 05       		.uleb128 0x5
+ 540 0037 16       		.uleb128 0x16
+ 541 0038 00       		.byte	0
+ 542 0039 03       		.uleb128 0x3
+ 543 003a 0E       		.uleb128 0xe
+ 544 003b 3A       		.uleb128 0x3a
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 22
+
+
+ 545 003c 0B       		.uleb128 0xb
+ 546 003d 3B       		.uleb128 0x3b
+ 547 003e 05       		.uleb128 0x5
+ 548 003f 49       		.uleb128 0x49
+ 549 0040 13       		.uleb128 0x13
+ 550 0041 00       		.byte	0
+ 551 0042 00       		.byte	0
+ 552 0043 06       		.uleb128 0x6
+ 553 0044 0F       		.uleb128 0xf
+ 554 0045 00       		.byte	0
+ 555 0046 0B       		.uleb128 0xb
+ 556 0047 0B       		.uleb128 0xb
+ 557 0048 49       		.uleb128 0x49
+ 558 0049 13       		.uleb128 0x13
+ 559 004a 00       		.byte	0
+ 560 004b 00       		.byte	0
+ 561 004c 07       		.uleb128 0x7
+ 562 004d 2E       		.uleb128 0x2e
+ 563 004e 01       		.byte	0x1
+ 564 004f 3F       		.uleb128 0x3f
+ 565 0050 19       		.uleb128 0x19
+ 566 0051 03       		.uleb128 0x3
+ 567 0052 0E       		.uleb128 0xe
+ 568 0053 3A       		.uleb128 0x3a
+ 569 0054 0B       		.uleb128 0xb
+ 570 0055 3B       		.uleb128 0x3b
+ 571 0056 0B       		.uleb128 0xb
+ 572 0057 27       		.uleb128 0x27
+ 573 0058 19       		.uleb128 0x19
+ 574 0059 11       		.uleb128 0x11
+ 575 005a 01       		.uleb128 0x1
+ 576 005b 12       		.uleb128 0x12
+ 577 005c 06       		.uleb128 0x6
+ 578 005d 40       		.uleb128 0x40
+ 579 005e 18       		.uleb128 0x18
+ 580 005f 9642     		.uleb128 0x2116
+ 581 0061 19       		.uleb128 0x19
+ 582 0062 00       		.byte	0
+ 583 0063 00       		.byte	0
+ 584 0064 08       		.uleb128 0x8
+ 585 0065 05       		.uleb128 0x5
+ 586 0066 00       		.byte	0
+ 587 0067 03       		.uleb128 0x3
+ 588 0068 0E       		.uleb128 0xe
+ 589 0069 3A       		.uleb128 0x3a
+ 590 006a 0B       		.uleb128 0xb
+ 591 006b 3B       		.uleb128 0x3b
+ 592 006c 0B       		.uleb128 0xb
+ 593 006d 49       		.uleb128 0x49
+ 594 006e 13       		.uleb128 0x13
+ 595 006f 02       		.uleb128 0x2
+ 596 0070 18       		.uleb128 0x18
+ 597 0071 00       		.byte	0
+ 598 0072 00       		.byte	0
+ 599 0073 09       		.uleb128 0x9
+ 600 0074 34       		.uleb128 0x34
+ 601 0075 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 23
+
+
+ 602 0076 03       		.uleb128 0x3
+ 603 0077 0E       		.uleb128 0xe
+ 604 0078 3A       		.uleb128 0x3a
+ 605 0079 0B       		.uleb128 0xb
+ 606 007a 3B       		.uleb128 0x3b
+ 607 007b 05       		.uleb128 0x5
+ 608 007c 49       		.uleb128 0x49
+ 609 007d 13       		.uleb128 0x13
+ 610 007e 02       		.uleb128 0x2
+ 611 007f 18       		.uleb128 0x18
+ 612 0080 00       		.byte	0
+ 613 0081 00       		.byte	0
+ 614 0082 0A       		.uleb128 0xa
+ 615 0083 34       		.uleb128 0x34
+ 616 0084 00       		.byte	0
+ 617 0085 03       		.uleb128 0x3
+ 618 0086 08       		.uleb128 0x8
+ 619 0087 3A       		.uleb128 0x3a
+ 620 0088 0B       		.uleb128 0xb
+ 621 0089 3B       		.uleb128 0x3b
+ 622 008a 05       		.uleb128 0x5
+ 623 008b 49       		.uleb128 0x49
+ 624 008c 13       		.uleb128 0x13
+ 625 008d 02       		.uleb128 0x2
+ 626 008e 18       		.uleb128 0x18
+ 627 008f 00       		.byte	0
+ 628 0090 00       		.byte	0
+ 629 0091 00       		.byte	0
+ 630              		.section	.debug_aranges,"",%progbits
+ 631 0000 1C000000 		.4byte	0x1c
+ 632 0004 0200     		.2byte	0x2
+ 633 0006 00000000 		.4byte	.Ldebug_info0
+ 634 000a 04       		.byte	0x4
+ 635 000b 00       		.byte	0
+ 636 000c 0000     		.2byte	0
+ 637 000e 0000     		.2byte	0
+ 638 0010 00000000 		.4byte	.LFB82
+ 639 0014 5C010000 		.4byte	.LFE82-.LFB82
+ 640 0018 00000000 		.4byte	0
+ 641 001c 00000000 		.4byte	0
+ 642              		.section	.debug_ranges,"",%progbits
+ 643              	.Ldebug_ranges0:
+ 644 0000 00000000 		.4byte	.LFB82
+ 645 0004 5C010000 		.4byte	.LFE82
+ 646 0008 00000000 		.4byte	0
+ 647 000c 00000000 		.4byte	0
+ 648              		.section	.debug_line,"",%progbits
+ 649              	.Ldebug_line0:
+ 650 0000 B2010000 		.section	.debug_str,"MS",%progbits,1
+ 650      02005401 
+ 650      00000201 
+ 650      FB0E0D00 
+ 650      01010101 
+ 651              	.LASF14:
+ 652 0000 696E7436 		.ascii	"int64_t\000"
+ 652      345F7400 
+ 653              	.LASF32:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 24
+
+
+ 654 0008 61726D5F 		.ascii	"arm_correlate_q31\000"
+ 654      636F7272 
+ 654      656C6174 
+ 654      655F7133 
+ 654      3100
+ 655              	.LASF22:
+ 656 001a 70537263 		.ascii	"pSrcA\000"
+ 656      4100
+ 657              	.LASF24:
+ 658 0020 70537263 		.ascii	"pSrcB\000"
+ 658      4200
+ 659              	.LASF5:
+ 660 0026 5F5F696E 		.ascii	"__int32_t\000"
+ 660      7433325F 
+ 660      7400
+ 661              	.LASF31:
+ 662 0030 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 662      73657273 
+ 662      5C666E65 
+ 662      7665735C 
+ 662      446F6375 
+ 663 005d 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 663      655F7370 
+ 663      6565645F 
+ 663      73656E73 
+ 663      6F722E63 
+ 664              	.LASF18:
+ 665 0076 666C6F61 		.ascii	"float\000"
+ 665      7400
+ 666              	.LASF20:
+ 667 007c 7133315F 		.ascii	"q31_t\000"
+ 667      7400
+ 668              	.LASF1:
+ 669 0082 756E7369 		.ascii	"unsigned char\000"
+ 669      676E6564 
+ 669      20636861 
+ 669      7200
+ 670              	.LASF7:
+ 671 0090 6C6F6E67 		.ascii	"long unsigned int\000"
+ 671      20756E73 
+ 671      69676E65 
+ 671      6420696E 
+ 671      7400
+ 672              	.LASF3:
+ 673 00a2 73686F72 		.ascii	"short unsigned int\000"
+ 673      7420756E 
+ 673      7369676E 
+ 673      65642069 
+ 673      6E7400
+ 674              	.LASF26:
+ 675 00b5 70447374 		.ascii	"pDst\000"
+ 675      00
+ 676              	.LASF8:
+ 677 00ba 5F5F696E 		.ascii	"__int64_t\000"
+ 677      7436345F 
+ 677      7400
+ 678              	.LASF17:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 25
+
+
+ 679 00c4 646F7562 		.ascii	"double\000"
+ 679      6C6500
+ 680              	.LASF30:
+ 681 00cb 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_correlate_q31.c\000"
+ 681      63655C46 
+ 681      696C7465 
+ 681      72696E67 
+ 681      46756E63 
+ 682              	.LASF6:
+ 683 00f9 5F5F7569 		.ascii	"__uint32_t\000"
+ 683      6E743332 
+ 683      5F7400
+ 684              	.LASF11:
+ 685 0104 756E7369 		.ascii	"unsigned int\000"
+ 685      676E6564 
+ 685      20696E74 
+ 685      00
+ 686              	.LASF10:
+ 687 0111 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 687      206C6F6E 
+ 687      6720756E 
+ 687      7369676E 
+ 687      65642069 
+ 688              	.LASF29:
+ 689 0128 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 689      4320342E 
+ 689      392E3320 
+ 689      32303135 
+ 689      30333033 
+ 690 015b 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 690      20726576 
+ 690      6973696F 
+ 690      6E203232 
+ 690      31323230 
+ 691 018e 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 691      30202D66 
+ 691      66756E63 
+ 691      74696F6E 
+ 691      2D736563 
+ 692              	.LASF21:
+ 693 01ba 7136335F 		.ascii	"q63_t\000"
+ 693      7400
+ 694              	.LASF12:
+ 695 01c0 696E7433 		.ascii	"int32_t\000"
+ 695      325F7400 
+ 696              	.LASF15:
+ 697 01c8 73697A65 		.ascii	"sizetype\000"
+ 697      74797065 
+ 697      00
+ 698              	.LASF9:
+ 699 01d1 6C6F6E67 		.ascii	"long long int\000"
+ 699      206C6F6E 
+ 699      6720696E 
+ 699      7400
+ 700              	.LASF16:
+ 701 01df 63686172 		.ascii	"char\000"
+ 701      00
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccYMa0ZG.s 			page 26
+
+
+ 702              	.LASF23:
+ 703 01e4 73726341 		.ascii	"srcALen\000"
+ 703      4C656E00 
+ 704              	.LASF2:
+ 705 01ec 73686F72 		.ascii	"short int\000"
+ 705      7420696E 
+ 705      7400
+ 706              	.LASF13:
+ 707 01f6 75696E74 		.ascii	"uint32_t\000"
+ 707      33325F74 
+ 707      00
+ 708              	.LASF4:
+ 709 01ff 6C6F6E67 		.ascii	"long int\000"
+ 709      20696E74 
+ 709      00
+ 710              	.LASF19:
+ 711 0208 6C6F6E67 		.ascii	"long double\000"
+ 711      20646F75 
+ 711      626C6500 
+ 712              	.LASF0:
+ 713 0214 7369676E 		.ascii	"signed char\000"
+ 713      65642063 
+ 713      68617200 
+ 714              	.LASF25:
+ 715 0220 73726342 		.ascii	"srcBLen\000"
+ 715      4C656E00 
+ 716              	.LASF27:
+ 717 0228 70496E31 		.ascii	"pIn1\000"
+ 717      00
+ 718              	.LASF28:
+ 719 022d 70496E32 		.ascii	"pIn2\000"
+ 719      00
+ 720              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

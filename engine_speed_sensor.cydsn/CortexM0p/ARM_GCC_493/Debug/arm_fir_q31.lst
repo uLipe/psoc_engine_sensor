@@ -1,0 +1,1315 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_fir_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_lmul
+  18              		.section	.text.arm_fir_q31,"ax",%progbits
+  19              		.align	2
+  20              		.global	arm_fir_q31
+  21              		.code	16
+  22              		.thumb_func
+  23              		.type	arm_fir_q31, %function
+  24              	arm_fir_q31:
+  25              	.LFB82:
+  26              		.file 1 "Source\\FilteringFunctions\\arm_fir_q31.c"
+   1:Source\FilteringFunctions/arm_fir_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_fir_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_fir_q31.c ****  * Title:        arm_fir_q31.c
+   4:Source\FilteringFunctions/arm_fir_q31.c ****  * Description:  Q31 FIR filter processing function
+   5:Source\FilteringFunctions/arm_fir_q31.c ****  *
+   6:Source\FilteringFunctions/arm_fir_q31.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_fir_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_fir_q31.c ****  *
+   9:Source\FilteringFunctions/arm_fir_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_fir_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_fir_q31.c **** /*
+  12:Source\FilteringFunctions/arm_fir_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_fir_q31.c ****  *
+  14:Source\FilteringFunctions/arm_fir_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_fir_q31.c ****  *
+  16:Source\FilteringFunctions/arm_fir_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_fir_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_fir_q31.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_fir_q31.c ****  *
+  20:Source\FilteringFunctions/arm_fir_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_fir_q31.c ****  *
+  22:Source\FilteringFunctions/arm_fir_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_fir_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_fir_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_fir_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_fir_q31.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_fir_q31.c ****  */
+  28:Source\FilteringFunctions/arm_fir_q31.c **** 
+  29:Source\FilteringFunctions/arm_fir_q31.c **** #include "arm_math.h"
+  30:Source\FilteringFunctions/arm_fir_q31.c **** 
+  31:Source\FilteringFunctions/arm_fir_q31.c **** /**
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 2
+
+
+  32:Source\FilteringFunctions/arm_fir_q31.c ****  * @ingroup groupFilters
+  33:Source\FilteringFunctions/arm_fir_q31.c ****  */
+  34:Source\FilteringFunctions/arm_fir_q31.c **** 
+  35:Source\FilteringFunctions/arm_fir_q31.c **** /**
+  36:Source\FilteringFunctions/arm_fir_q31.c ****  * @addtogroup FIR
+  37:Source\FilteringFunctions/arm_fir_q31.c ****  * @{
+  38:Source\FilteringFunctions/arm_fir_q31.c ****  */
+  39:Source\FilteringFunctions/arm_fir_q31.c **** 
+  40:Source\FilteringFunctions/arm_fir_q31.c **** /**
+  41:Source\FilteringFunctions/arm_fir_q31.c ****  * @param[in] *S points to an instance of the Q31 FIR filter structure.
+  42:Source\FilteringFunctions/arm_fir_q31.c ****  * @param[in] *pSrc points to the block of input data.
+  43:Source\FilteringFunctions/arm_fir_q31.c ****  * @param[out] *pDst points to the block of output data.
+  44:Source\FilteringFunctions/arm_fir_q31.c ****  * @param[in] blockSize number of samples to process per call.
+  45:Source\FilteringFunctions/arm_fir_q31.c ****  * @return none.
+  46:Source\FilteringFunctions/arm_fir_q31.c ****  *
+  47:Source\FilteringFunctions/arm_fir_q31.c ****  * @details
+  48:Source\FilteringFunctions/arm_fir_q31.c ****  * <b>Scaling and Overflow Behavior:</b>
+  49:Source\FilteringFunctions/arm_fir_q31.c ****  * \par
+  50:Source\FilteringFunctions/arm_fir_q31.c ****  * The function is implemented using an internal 64-bit accumulator.
+  51:Source\FilteringFunctions/arm_fir_q31.c ****  * The accumulator has a 2.62 format and maintains full precision of the intermediate multiplicatio
+  52:Source\FilteringFunctions/arm_fir_q31.c ****  * Thus, if the accumulator result overflows it wraps around rather than clip.
+  53:Source\FilteringFunctions/arm_fir_q31.c ****  * In order to avoid overflows completely the input signal must be scaled down by log2(numTaps) bit
+  54:Source\FilteringFunctions/arm_fir_q31.c ****  * After all multiply-accumulates are performed, the 2.62 accumulator is right shifted by 31 bits a
+  55:Source\FilteringFunctions/arm_fir_q31.c ****  *
+  56:Source\FilteringFunctions/arm_fir_q31.c ****  * \par
+  57:Source\FilteringFunctions/arm_fir_q31.c ****  * Refer to the function <code>arm_fir_fast_q31()</code> for a faster but less precise implementati
+  58:Source\FilteringFunctions/arm_fir_q31.c ****  */
+  59:Source\FilteringFunctions/arm_fir_q31.c **** 
+  60:Source\FilteringFunctions/arm_fir_q31.c **** void arm_fir_q31(
+  61:Source\FilteringFunctions/arm_fir_q31.c ****   const arm_fir_instance_q31 * S,
+  62:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t * pSrc,
+  63:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t * pDst,
+  64:Source\FilteringFunctions/arm_fir_q31.c ****   uint32_t blockSize)
+  65:Source\FilteringFunctions/arm_fir_q31.c **** {
+  27              		.loc 1 65 0
+  28              		.cfi_startproc
+  29 0000 B0B5     		push	{r4, r5, r7, lr}
+  30              		.cfi_def_cfa_offset 16
+  31              		.cfi_offset 4, -16
+  32              		.cfi_offset 5, -12
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 94B0     		sub	sp, sp, #80
+  36              		.cfi_def_cfa_offset 96
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 F861     		str	r0, [r7, #28]
+  40 0008 B961     		str	r1, [r7, #24]
+  41 000a 7A61     		str	r2, [r7, #20]
+  42 000c 3B61     		str	r3, [r7, #16]
+  66:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t *pState = S->pState;                     /* State pointer */
+  43              		.loc 1 66 0
+  44 000e FB69     		ldr	r3, [r7, #28]
+  45 0010 5B68     		ldr	r3, [r3, #4]
+  46 0012 FB64     		str	r3, [r7, #76]
+  67:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t *pCoeffs = S->pCoeffs;                   /* Coefficient pointer */
+  47              		.loc 1 67 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 3
+
+
+  48 0014 FB69     		ldr	r3, [r7, #28]
+  49 0016 9B68     		ldr	r3, [r3, #8]
+  50 0018 BB62     		str	r3, [r7, #40]
+  68:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t *pStateCurnt;                            /* Points to the current sample of the state */
+  69:Source\FilteringFunctions/arm_fir_q31.c **** 
+  70:Source\FilteringFunctions/arm_fir_q31.c **** 
+  71:Source\FilteringFunctions/arm_fir_q31.c **** #if defined (ARM_MATH_DSP)
+  72:Source\FilteringFunctions/arm_fir_q31.c **** 
+  73:Source\FilteringFunctions/arm_fir_q31.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+  74:Source\FilteringFunctions/arm_fir_q31.c **** 
+  75:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t x0, x1, x2;                              /* Temporary variables to hold state */
+  76:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t c0;                                      /* Temporary variable to hold coefficient value */
+  77:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t *px;                                     /* Temporary pointer for state */
+  78:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t *pb;                                     /* Temporary pointer for coefficient buffer */
+  79:Source\FilteringFunctions/arm_fir_q31.c ****   q63_t acc0, acc1, acc2;                        /* Accumulators */
+  80:Source\FilteringFunctions/arm_fir_q31.c ****   uint32_t numTaps = S->numTaps;                 /* Number of filter coefficients in the filter */
+  81:Source\FilteringFunctions/arm_fir_q31.c ****   uint32_t i, tapCnt, blkCnt, tapCntN3;          /* Loop counters */
+  82:Source\FilteringFunctions/arm_fir_q31.c **** 
+  83:Source\FilteringFunctions/arm_fir_q31.c ****   /* S->pState points to state array which contains previous frame (numTaps - 1) samples */
+  84:Source\FilteringFunctions/arm_fir_q31.c ****   /* pStateCurnt points to the location where the new input data should be written */
+  85:Source\FilteringFunctions/arm_fir_q31.c ****   pStateCurnt = &(S->pState[(numTaps - 1u)]);
+  86:Source\FilteringFunctions/arm_fir_q31.c **** 
+  87:Source\FilteringFunctions/arm_fir_q31.c ****   /* Apply loop unrolling and compute 4 output values simultaneously.
+  88:Source\FilteringFunctions/arm_fir_q31.c ****    * The variables acc0 ... acc3 hold output values that are being computed:
+  89:Source\FilteringFunctions/arm_fir_q31.c ****    *
+  90:Source\FilteringFunctions/arm_fir_q31.c ****    *    acc0 =  b[numTaps-1] * x[n-numTaps-1] + b[numTaps-2] * x[n-numTaps-2] + b[numTaps-3] * x[n-
+  91:Source\FilteringFunctions/arm_fir_q31.c ****    *    acc1 =  b[numTaps-1] * x[n-numTaps] +   b[numTaps-2] * x[n-numTaps-1] + b[numTaps-3] * x[n-
+  92:Source\FilteringFunctions/arm_fir_q31.c ****    *    acc2 =  b[numTaps-1] * x[n-numTaps+1] + b[numTaps-2] * x[n-numTaps] +   b[numTaps-3] * x[n-
+  93:Source\FilteringFunctions/arm_fir_q31.c ****    *    acc3 =  b[numTaps-1] * x[n-numTaps+2] + b[numTaps-2] * x[n-numTaps+1] + b[numTaps-3] * x[n-
+  94:Source\FilteringFunctions/arm_fir_q31.c ****    */
+  95:Source\FilteringFunctions/arm_fir_q31.c ****   blkCnt = blockSize / 3;
+  96:Source\FilteringFunctions/arm_fir_q31.c ****   blockSize = blockSize - (3 * blkCnt);
+  97:Source\FilteringFunctions/arm_fir_q31.c **** 
+  98:Source\FilteringFunctions/arm_fir_q31.c ****   tapCnt = numTaps / 3;
+  99:Source\FilteringFunctions/arm_fir_q31.c ****   tapCntN3 = numTaps - (3 * tapCnt);
+ 100:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 101:Source\FilteringFunctions/arm_fir_q31.c ****   /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+ 102:Source\FilteringFunctions/arm_fir_q31.c ****    ** a second loop below computes the remaining 1 to 3 samples. */
+ 103:Source\FilteringFunctions/arm_fir_q31.c ****   while (blkCnt > 0u)
+ 104:Source\FilteringFunctions/arm_fir_q31.c ****   {
+ 105:Source\FilteringFunctions/arm_fir_q31.c ****     /* Copy three new input samples into the state buffer */
+ 106:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pSrc++;
+ 107:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pSrc++;
+ 108:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pSrc++;
+ 109:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 110:Source\FilteringFunctions/arm_fir_q31.c ****     /* Set all accumulators to zero */
+ 111:Source\FilteringFunctions/arm_fir_q31.c ****     acc0 = 0;
+ 112:Source\FilteringFunctions/arm_fir_q31.c ****     acc1 = 0;
+ 113:Source\FilteringFunctions/arm_fir_q31.c ****     acc2 = 0;
+ 114:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 115:Source\FilteringFunctions/arm_fir_q31.c ****     /* Initialize state pointer */
+ 116:Source\FilteringFunctions/arm_fir_q31.c ****     px = pState;
+ 117:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 118:Source\FilteringFunctions/arm_fir_q31.c ****     /* Initialize coefficient pointer */
+ 119:Source\FilteringFunctions/arm_fir_q31.c ****     pb = pCoeffs;
+ 120:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 121:Source\FilteringFunctions/arm_fir_q31.c ****     /* Read the first two samples from the state buffer:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 4
+
+
+ 122:Source\FilteringFunctions/arm_fir_q31.c ****      *  x[n-numTaps], x[n-numTaps-1] */
+ 123:Source\FilteringFunctions/arm_fir_q31.c ****     x0 = *(px++);
+ 124:Source\FilteringFunctions/arm_fir_q31.c ****     x1 = *(px++);
+ 125:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 126:Source\FilteringFunctions/arm_fir_q31.c ****     /* Loop unrolling.  Process 3 taps at a time. */
+ 127:Source\FilteringFunctions/arm_fir_q31.c ****     i = tapCnt;
+ 128:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 129:Source\FilteringFunctions/arm_fir_q31.c ****     while (i > 0u)
+ 130:Source\FilteringFunctions/arm_fir_q31.c ****     {
+ 131:Source\FilteringFunctions/arm_fir_q31.c ****       /* Read the b[numTaps] coefficient */
+ 132:Source\FilteringFunctions/arm_fir_q31.c ****       c0 = *pb;
+ 133:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 134:Source\FilteringFunctions/arm_fir_q31.c ****       /* Read x[n-numTaps-2] sample */
+ 135:Source\FilteringFunctions/arm_fir_q31.c ****       x2 = *(px++);
+ 136:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 137:Source\FilteringFunctions/arm_fir_q31.c ****       /* Perform the multiply-accumulates */
+ 138:Source\FilteringFunctions/arm_fir_q31.c ****       acc0 += ((q63_t) x0 * c0);
+ 139:Source\FilteringFunctions/arm_fir_q31.c ****       acc1 += ((q63_t) x1 * c0);
+ 140:Source\FilteringFunctions/arm_fir_q31.c ****       acc2 += ((q63_t) x2 * c0);
+ 141:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 142:Source\FilteringFunctions/arm_fir_q31.c ****       /* Read the coefficient and state */
+ 143:Source\FilteringFunctions/arm_fir_q31.c ****       c0 = *(pb + 1u);
+ 144:Source\FilteringFunctions/arm_fir_q31.c ****       x0 = *(px++);
+ 145:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 146:Source\FilteringFunctions/arm_fir_q31.c ****       /* Perform the multiply-accumulates */
+ 147:Source\FilteringFunctions/arm_fir_q31.c ****       acc0 += ((q63_t) x1 * c0);
+ 148:Source\FilteringFunctions/arm_fir_q31.c ****       acc1 += ((q63_t) x2 * c0);
+ 149:Source\FilteringFunctions/arm_fir_q31.c ****       acc2 += ((q63_t) x0 * c0);
+ 150:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 151:Source\FilteringFunctions/arm_fir_q31.c ****       /* Read the coefficient and state */
+ 152:Source\FilteringFunctions/arm_fir_q31.c ****       c0 = *(pb + 2u);
+ 153:Source\FilteringFunctions/arm_fir_q31.c ****       x1 = *(px++);
+ 154:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 155:Source\FilteringFunctions/arm_fir_q31.c ****       /* update coefficient pointer */
+ 156:Source\FilteringFunctions/arm_fir_q31.c ****       pb += 3u;
+ 157:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 158:Source\FilteringFunctions/arm_fir_q31.c ****       /* Perform the multiply-accumulates */
+ 159:Source\FilteringFunctions/arm_fir_q31.c ****       acc0 += ((q63_t) x2 * c0);
+ 160:Source\FilteringFunctions/arm_fir_q31.c ****       acc1 += ((q63_t) x0 * c0);
+ 161:Source\FilteringFunctions/arm_fir_q31.c ****       acc2 += ((q63_t) x1 * c0);
+ 162:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 163:Source\FilteringFunctions/arm_fir_q31.c ****       /* Decrement the loop counter */
+ 164:Source\FilteringFunctions/arm_fir_q31.c ****       i--;
+ 165:Source\FilteringFunctions/arm_fir_q31.c ****     }
+ 166:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 167:Source\FilteringFunctions/arm_fir_q31.c ****     /* If the filter length is not a multiple of 3, compute the remaining filter taps */
+ 168:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 169:Source\FilteringFunctions/arm_fir_q31.c ****     i = tapCntN3;
+ 170:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 171:Source\FilteringFunctions/arm_fir_q31.c ****     while (i > 0u)
+ 172:Source\FilteringFunctions/arm_fir_q31.c ****     {
+ 173:Source\FilteringFunctions/arm_fir_q31.c ****       /* Read coefficients */
+ 174:Source\FilteringFunctions/arm_fir_q31.c ****       c0 = *(pb++);
+ 175:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 176:Source\FilteringFunctions/arm_fir_q31.c ****       /* Fetch 1 state variable */
+ 177:Source\FilteringFunctions/arm_fir_q31.c ****       x2 = *(px++);
+ 178:Source\FilteringFunctions/arm_fir_q31.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 5
+
+
+ 179:Source\FilteringFunctions/arm_fir_q31.c ****       /* Perform the multiply-accumulates */
+ 180:Source\FilteringFunctions/arm_fir_q31.c ****       acc0 += ((q63_t) x0 * c0);
+ 181:Source\FilteringFunctions/arm_fir_q31.c ****       acc1 += ((q63_t) x1 * c0);
+ 182:Source\FilteringFunctions/arm_fir_q31.c ****       acc2 += ((q63_t) x2 * c0);
+ 183:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 184:Source\FilteringFunctions/arm_fir_q31.c ****       /* Reuse the present sample states for next sample */
+ 185:Source\FilteringFunctions/arm_fir_q31.c ****       x0 = x1;
+ 186:Source\FilteringFunctions/arm_fir_q31.c ****       x1 = x2;
+ 187:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 188:Source\FilteringFunctions/arm_fir_q31.c ****       /* Decrement the loop counter */
+ 189:Source\FilteringFunctions/arm_fir_q31.c ****       i--;
+ 190:Source\FilteringFunctions/arm_fir_q31.c ****     }
+ 191:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 192:Source\FilteringFunctions/arm_fir_q31.c ****     /* Advance the state pointer by 3 to process the next group of 3 samples */
+ 193:Source\FilteringFunctions/arm_fir_q31.c ****     pState = pState + 3;
+ 194:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 195:Source\FilteringFunctions/arm_fir_q31.c ****     /* The results in the 3 accumulators are in 2.30 format.  Convert to 1.31
+ 196:Source\FilteringFunctions/arm_fir_q31.c ****      ** Then store the 3 outputs in the destination buffer. */
+ 197:Source\FilteringFunctions/arm_fir_q31.c ****     *pDst++ = (q31_t) (acc0 >> 31u);
+ 198:Source\FilteringFunctions/arm_fir_q31.c ****     *pDst++ = (q31_t) (acc1 >> 31u);
+ 199:Source\FilteringFunctions/arm_fir_q31.c ****     *pDst++ = (q31_t) (acc2 >> 31u);
+ 200:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 201:Source\FilteringFunctions/arm_fir_q31.c ****     /* Decrement the samples loop counter */
+ 202:Source\FilteringFunctions/arm_fir_q31.c ****     blkCnt--;
+ 203:Source\FilteringFunctions/arm_fir_q31.c ****   }
+ 204:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 205:Source\FilteringFunctions/arm_fir_q31.c ****   /* If the blockSize is not a multiple of 3, compute any remaining output samples here.
+ 206:Source\FilteringFunctions/arm_fir_q31.c ****    ** No loop unrolling is used. */
+ 207:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 208:Source\FilteringFunctions/arm_fir_q31.c ****   while (blockSize > 0u)
+ 209:Source\FilteringFunctions/arm_fir_q31.c ****   {
+ 210:Source\FilteringFunctions/arm_fir_q31.c ****     /* Copy one sample at a time into state buffer */
+ 211:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pSrc++;
+ 212:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 213:Source\FilteringFunctions/arm_fir_q31.c ****     /* Set the accumulator to zero */
+ 214:Source\FilteringFunctions/arm_fir_q31.c ****     acc0 = 0;
+ 215:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 216:Source\FilteringFunctions/arm_fir_q31.c ****     /* Initialize state pointer */
+ 217:Source\FilteringFunctions/arm_fir_q31.c ****     px = pState;
+ 218:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 219:Source\FilteringFunctions/arm_fir_q31.c ****     /* Initialize Coefficient pointer */
+ 220:Source\FilteringFunctions/arm_fir_q31.c ****     pb = (pCoeffs);
+ 221:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 222:Source\FilteringFunctions/arm_fir_q31.c ****     i = numTaps;
+ 223:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 224:Source\FilteringFunctions/arm_fir_q31.c ****     /* Perform the multiply-accumulates */
+ 225:Source\FilteringFunctions/arm_fir_q31.c ****     do
+ 226:Source\FilteringFunctions/arm_fir_q31.c ****     {
+ 227:Source\FilteringFunctions/arm_fir_q31.c ****       acc0 += (q63_t) * (px++) * (*(pb++));
+ 228:Source\FilteringFunctions/arm_fir_q31.c ****       i--;
+ 229:Source\FilteringFunctions/arm_fir_q31.c ****     } while (i > 0u);
+ 230:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 231:Source\FilteringFunctions/arm_fir_q31.c ****     /* The result is in 2.62 format.  Convert to 1.31
+ 232:Source\FilteringFunctions/arm_fir_q31.c ****      ** Then store the output in the destination buffer. */
+ 233:Source\FilteringFunctions/arm_fir_q31.c ****     *pDst++ = (q31_t) (acc0 >> 31u);
+ 234:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 235:Source\FilteringFunctions/arm_fir_q31.c ****     /* Advance state pointer by 1 for the next sample */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 6
+
+
+ 236:Source\FilteringFunctions/arm_fir_q31.c ****     pState = pState + 1;
+ 237:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 238:Source\FilteringFunctions/arm_fir_q31.c ****     /* Decrement the samples loop counter */
+ 239:Source\FilteringFunctions/arm_fir_q31.c ****     blockSize--;
+ 240:Source\FilteringFunctions/arm_fir_q31.c ****   }
+ 241:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 242:Source\FilteringFunctions/arm_fir_q31.c ****   /* Processing is complete.
+ 243:Source\FilteringFunctions/arm_fir_q31.c ****    ** Now copy the last numTaps - 1 samples to the satrt of the state buffer.
+ 244:Source\FilteringFunctions/arm_fir_q31.c ****    ** This prepares the state buffer for the next function call. */
+ 245:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 246:Source\FilteringFunctions/arm_fir_q31.c ****   /* Points to the start of the state buffer */
+ 247:Source\FilteringFunctions/arm_fir_q31.c ****   pStateCurnt = S->pState;
+ 248:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 249:Source\FilteringFunctions/arm_fir_q31.c ****   tapCnt = (numTaps - 1u) >> 2u;
+ 250:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 251:Source\FilteringFunctions/arm_fir_q31.c ****   /* copy data */
+ 252:Source\FilteringFunctions/arm_fir_q31.c ****   while (tapCnt > 0u)
+ 253:Source\FilteringFunctions/arm_fir_q31.c ****   {
+ 254:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pState++;
+ 255:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pState++;
+ 256:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pState++;
+ 257:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pState++;
+ 258:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 259:Source\FilteringFunctions/arm_fir_q31.c ****     /* Decrement the loop counter */
+ 260:Source\FilteringFunctions/arm_fir_q31.c ****     tapCnt--;
+ 261:Source\FilteringFunctions/arm_fir_q31.c ****   }
+ 262:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 263:Source\FilteringFunctions/arm_fir_q31.c ****   /* Calculate remaining number of copies */
+ 264:Source\FilteringFunctions/arm_fir_q31.c ****   tapCnt = (numTaps - 1u) % 0x4u;
+ 265:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 266:Source\FilteringFunctions/arm_fir_q31.c ****   /* Copy the remaining q31_t data */
+ 267:Source\FilteringFunctions/arm_fir_q31.c ****   while (tapCnt > 0u)
+ 268:Source\FilteringFunctions/arm_fir_q31.c ****   {
+ 269:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pState++;
+ 270:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 271:Source\FilteringFunctions/arm_fir_q31.c ****     /* Decrement the loop counter */
+ 272:Source\FilteringFunctions/arm_fir_q31.c ****     tapCnt--;
+ 273:Source\FilteringFunctions/arm_fir_q31.c ****   }
+ 274:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 275:Source\FilteringFunctions/arm_fir_q31.c **** #else
+ 276:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 277:Source\FilteringFunctions/arm_fir_q31.c **** /* Run the below code for Cortex-M0 */
+ 278:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 279:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t *px;                                     /* Temporary pointer for state */
+ 280:Source\FilteringFunctions/arm_fir_q31.c ****   q31_t *pb;                                     /* Temporary pointer for coefficient buffer */
+ 281:Source\FilteringFunctions/arm_fir_q31.c ****   q63_t acc;                                     /* Accumulator */
+ 282:Source\FilteringFunctions/arm_fir_q31.c ****   uint32_t numTaps = S->numTaps;                 /* Length of the filter */
+  51              		.loc 1 282 0
+  52 001a FB69     		ldr	r3, [r7, #28]
+  53 001c 1B88     		ldrh	r3, [r3]
+  54 001e 7B62     		str	r3, [r7, #36]
+ 283:Source\FilteringFunctions/arm_fir_q31.c ****   uint32_t i, tapCnt, blkCnt;                    /* Loop counters */
+ 284:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 285:Source\FilteringFunctions/arm_fir_q31.c ****   /* S->pState buffer contains previous frame (numTaps - 1) samples */
+ 286:Source\FilteringFunctions/arm_fir_q31.c ****   /* pStateCurnt points to the location where the new input data should be written */
+ 287:Source\FilteringFunctions/arm_fir_q31.c ****   pStateCurnt = &(S->pState[(numTaps - 1u)]);
+  55              		.loc 1 287 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 7
+
+
+  56 0020 FB69     		ldr	r3, [r7, #28]
+  57 0022 5A68     		ldr	r2, [r3, #4]
+  58 0024 7B6A     		ldr	r3, [r7, #36]
+  59 0026 3649     		ldr	r1, .L7
+  60 0028 8C46     		mov	ip, r1
+  61 002a 6344     		add	r3, r3, ip
+  62 002c 9B00     		lsl	r3, r3, #2
+  63 002e D318     		add	r3, r2, r3
+  64 0030 BB64     		str	r3, [r7, #72]
+ 288:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 289:Source\FilteringFunctions/arm_fir_q31.c ****   /* Initialize blkCnt with blockSize */
+ 290:Source\FilteringFunctions/arm_fir_q31.c ****   blkCnt = blockSize;
+  65              		.loc 1 290 0
+  66 0032 3B69     		ldr	r3, [r7, #16]
+  67 0034 FB62     		str	r3, [r7, #44]
+ 291:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 292:Source\FilteringFunctions/arm_fir_q31.c ****   while (blkCnt > 0u)
+  68              		.loc 1 292 0
+  69 0036 47E0     		b	.L2
+  70              	.L4:
+ 293:Source\FilteringFunctions/arm_fir_q31.c ****   {
+ 294:Source\FilteringFunctions/arm_fir_q31.c ****     /* Copy one sample at a time into state buffer */
+ 295:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pSrc++;
+  71              		.loc 1 295 0
+  72 0038 BB6C     		ldr	r3, [r7, #72]
+  73 003a 1A1D     		add	r2, r3, #4
+  74 003c BA64     		str	r2, [r7, #72]
+  75 003e BA69     		ldr	r2, [r7, #24]
+  76 0040 111D     		add	r1, r2, #4
+  77 0042 B961     		str	r1, [r7, #24]
+  78 0044 1268     		ldr	r2, [r2]
+  79 0046 1A60     		str	r2, [r3]
+ 296:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 297:Source\FilteringFunctions/arm_fir_q31.c ****     /* Set the accumulator to zero */
+ 298:Source\FilteringFunctions/arm_fir_q31.c ****     acc = 0;
+  80              		.loc 1 298 0
+  81 0048 0022     		mov	r2, #0
+  82 004a 0023     		mov	r3, #0
+  83 004c BA63     		str	r2, [r7, #56]
+  84 004e FB63     		str	r3, [r7, #60]
+ 299:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 300:Source\FilteringFunctions/arm_fir_q31.c ****     /* Initialize state pointer */
+ 301:Source\FilteringFunctions/arm_fir_q31.c ****     px = pState;
+  85              		.loc 1 301 0
+  86 0050 FB6C     		ldr	r3, [r7, #76]
+  87 0052 7B64     		str	r3, [r7, #68]
+ 302:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 303:Source\FilteringFunctions/arm_fir_q31.c ****     /* Initialize Coefficient pointer */
+ 304:Source\FilteringFunctions/arm_fir_q31.c ****     pb = pCoeffs;
+  88              		.loc 1 304 0
+  89 0054 BB6A     		ldr	r3, [r7, #40]
+  90 0056 3B64     		str	r3, [r7, #64]
+ 305:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 306:Source\FilteringFunctions/arm_fir_q31.c ****     i = numTaps;
+  91              		.loc 1 306 0
+  92 0058 7B6A     		ldr	r3, [r7, #36]
+  93 005a 7B63     		str	r3, [r7, #52]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 8
+
+
+  94              	.L3:
+ 307:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 308:Source\FilteringFunctions/arm_fir_q31.c ****     /* Perform the multiply-accumulates */
+ 309:Source\FilteringFunctions/arm_fir_q31.c ****     do
+ 310:Source\FilteringFunctions/arm_fir_q31.c ****     {
+ 311:Source\FilteringFunctions/arm_fir_q31.c ****       /* acc =  b[numTaps-1] * x[n-numTaps-1] + b[numTaps-2] * x[n-numTaps-2] + b[numTaps-3] * x[n-
+ 312:Source\FilteringFunctions/arm_fir_q31.c ****       acc += (q63_t) * px++ * *pb++;
+  95              		.loc 1 312 0 discriminator 1
+  96 005c 7B6C     		ldr	r3, [r7, #68]
+  97 005e 1A1D     		add	r2, r3, #4
+  98 0060 7A64     		str	r2, [r7, #68]
+  99 0062 1B68     		ldr	r3, [r3]
+ 100 0064 BB60     		str	r3, [r7, #8]
+ 101 0066 DB17     		asr	r3, r3, #31
+ 102 0068 FB60     		str	r3, [r7, #12]
+ 103 006a 3B6C     		ldr	r3, [r7, #64]
+ 104 006c 1A1D     		add	r2, r3, #4
+ 105 006e 3A64     		str	r2, [r7, #64]
+ 106 0070 1B68     		ldr	r3, [r3]
+ 107 0072 3B60     		str	r3, [r7]
+ 108 0074 DB17     		asr	r3, r3, #31
+ 109 0076 7B60     		str	r3, [r7, #4]
+ 110 0078 B868     		ldr	r0, [r7, #8]
+ 111 007a F968     		ldr	r1, [r7, #12]
+ 112 007c 3A68     		ldr	r2, [r7]
+ 113 007e 7B68     		ldr	r3, [r7, #4]
+ 114 0080 FFF7FEFF 		bl	__aeabi_lmul
+ 115 0084 021C     		mov	r2, r0
+ 116 0086 0B1C     		mov	r3, r1
+ 117 0088 101C     		mov	r0, r2
+ 118 008a 191C     		mov	r1, r3
+ 119 008c BA6B     		ldr	r2, [r7, #56]
+ 120 008e FB6B     		ldr	r3, [r7, #60]
+ 121 0090 1218     		add	r2, r2, r0
+ 122 0092 4B41     		adc	r3, r3, r1
+ 123 0094 BA63     		str	r2, [r7, #56]
+ 124 0096 FB63     		str	r3, [r7, #60]
+ 313:Source\FilteringFunctions/arm_fir_q31.c ****       i--;
+ 125              		.loc 1 313 0 discriminator 1
+ 126 0098 7B6B     		ldr	r3, [r7, #52]
+ 127 009a 013B     		sub	r3, r3, #1
+ 128 009c 7B63     		str	r3, [r7, #52]
+ 314:Source\FilteringFunctions/arm_fir_q31.c ****     } while (i > 0u);
+ 129              		.loc 1 314 0 discriminator 1
+ 130 009e 7B6B     		ldr	r3, [r7, #52]
+ 131 00a0 002B     		cmp	r3, #0
+ 132 00a2 DBD1     		bne	.L3
+ 315:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 316:Source\FilteringFunctions/arm_fir_q31.c ****     /* The result is in 2.62 format.  Convert to 1.31
+ 317:Source\FilteringFunctions/arm_fir_q31.c ****      ** Then store the output in the destination buffer. */
+ 318:Source\FilteringFunctions/arm_fir_q31.c ****     *pDst++ = (q31_t) (acc >> 31u);
+ 133              		.loc 1 318 0
+ 134 00a4 7B69     		ldr	r3, [r7, #20]
+ 135 00a6 1A1D     		add	r2, r3, #4
+ 136 00a8 7A61     		str	r2, [r7, #20]
+ 137 00aa FA6B     		ldr	r2, [r7, #60]
+ 138 00ac 5200     		lsl	r2, r2, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 9
+
+
+ 139 00ae B96B     		ldr	r1, [r7, #56]
+ 140 00b0 CC0F     		lsr	r4, r1, #31
+ 141 00b2 1443     		orr	r4, r2
+ 142 00b4 FA6B     		ldr	r2, [r7, #60]
+ 143 00b6 D517     		asr	r5, r2, #31
+ 144 00b8 221C     		mov	r2, r4
+ 145 00ba 1A60     		str	r2, [r3]
+ 319:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 320:Source\FilteringFunctions/arm_fir_q31.c ****     /* Advance state pointer by 1 for the next sample */
+ 321:Source\FilteringFunctions/arm_fir_q31.c ****     pState = pState + 1;
+ 146              		.loc 1 321 0
+ 147 00bc FB6C     		ldr	r3, [r7, #76]
+ 148 00be 0433     		add	r3, r3, #4
+ 149 00c0 FB64     		str	r3, [r7, #76]
+ 322:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 323:Source\FilteringFunctions/arm_fir_q31.c ****     /* Decrement the samples loop counter */
+ 324:Source\FilteringFunctions/arm_fir_q31.c ****     blkCnt--;
+ 150              		.loc 1 324 0
+ 151 00c2 FB6A     		ldr	r3, [r7, #44]
+ 152 00c4 013B     		sub	r3, r3, #1
+ 153 00c6 FB62     		str	r3, [r7, #44]
+ 154              	.L2:
+ 292:Source\FilteringFunctions/arm_fir_q31.c ****   {
+ 155              		.loc 1 292 0
+ 156 00c8 FB6A     		ldr	r3, [r7, #44]
+ 157 00ca 002B     		cmp	r3, #0
+ 158 00cc B4D1     		bne	.L4
+ 325:Source\FilteringFunctions/arm_fir_q31.c ****   }
+ 326:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 327:Source\FilteringFunctions/arm_fir_q31.c ****   /* Processing is complete.
+ 328:Source\FilteringFunctions/arm_fir_q31.c ****    ** Now copy the last numTaps - 1 samples to the starting of the state buffer.
+ 329:Source\FilteringFunctions/arm_fir_q31.c ****    ** This prepares the state buffer for the next function call. */
+ 330:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 331:Source\FilteringFunctions/arm_fir_q31.c ****   /* Points to the start of the state buffer */
+ 332:Source\FilteringFunctions/arm_fir_q31.c ****   pStateCurnt = S->pState;
+ 159              		.loc 1 332 0
+ 160 00ce FB69     		ldr	r3, [r7, #28]
+ 161 00d0 5B68     		ldr	r3, [r3, #4]
+ 162 00d2 BB64     		str	r3, [r7, #72]
+ 333:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 334:Source\FilteringFunctions/arm_fir_q31.c ****   /* Copy numTaps number of values */
+ 335:Source\FilteringFunctions/arm_fir_q31.c ****   tapCnt = numTaps - 1u;
+ 163              		.loc 1 335 0
+ 164 00d4 7B6A     		ldr	r3, [r7, #36]
+ 165 00d6 013B     		sub	r3, r3, #1
+ 166 00d8 3B63     		str	r3, [r7, #48]
+ 336:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 337:Source\FilteringFunctions/arm_fir_q31.c ****   /* Copy the data */
+ 338:Source\FilteringFunctions/arm_fir_q31.c ****   while (tapCnt > 0u)
+ 167              		.loc 1 338 0
+ 168 00da 0AE0     		b	.L5
+ 169              	.L6:
+ 339:Source\FilteringFunctions/arm_fir_q31.c ****   {
+ 340:Source\FilteringFunctions/arm_fir_q31.c ****     *pStateCurnt++ = *pState++;
+ 170              		.loc 1 340 0
+ 171 00dc BB6C     		ldr	r3, [r7, #72]
+ 172 00de 1A1D     		add	r2, r3, #4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 10
+
+
+ 173 00e0 BA64     		str	r2, [r7, #72]
+ 174 00e2 FA6C     		ldr	r2, [r7, #76]
+ 175 00e4 111D     		add	r1, r2, #4
+ 176 00e6 F964     		str	r1, [r7, #76]
+ 177 00e8 1268     		ldr	r2, [r2]
+ 178 00ea 1A60     		str	r2, [r3]
+ 341:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 342:Source\FilteringFunctions/arm_fir_q31.c ****     /* Decrement the loop counter */
+ 343:Source\FilteringFunctions/arm_fir_q31.c ****     tapCnt--;
+ 179              		.loc 1 343 0
+ 180 00ec 3B6B     		ldr	r3, [r7, #48]
+ 181 00ee 013B     		sub	r3, r3, #1
+ 182 00f0 3B63     		str	r3, [r7, #48]
+ 183              	.L5:
+ 338:Source\FilteringFunctions/arm_fir_q31.c ****   {
+ 184              		.loc 1 338 0
+ 185 00f2 3B6B     		ldr	r3, [r7, #48]
+ 186 00f4 002B     		cmp	r3, #0
+ 187 00f6 F1D1     		bne	.L6
+ 344:Source\FilteringFunctions/arm_fir_q31.c ****   }
+ 345:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 346:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 347:Source\FilteringFunctions/arm_fir_q31.c **** #endif /*  #if defined (ARM_MATH_DSP) */
+ 348:Source\FilteringFunctions/arm_fir_q31.c **** 
+ 349:Source\FilteringFunctions/arm_fir_q31.c **** }
+ 188              		.loc 1 349 0
+ 189 00f8 BD46     		mov	sp, r7
+ 190 00fa 14B0     		add	sp, sp, #80
+ 191              		@ sp needed
+ 192 00fc B0BD     		pop	{r4, r5, r7, pc}
+ 193              	.L8:
+ 194 00fe C046     		.align	2
+ 195              	.L7:
+ 196 0100 FFFFFF3F 		.word	1073741823
+ 197              		.cfi_endproc
+ 198              	.LFE82:
+ 199              		.size	arm_fir_q31, .-arm_fir_q31
+ 200              		.text
+ 201              	.Letext0:
+ 202              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 203              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 204              		.file 4 ".\\Include/arm_math.h"
+ 205              		.section	.debug_info,"",%progbits
+ 206              	.Ldebug_info0:
+ 207 0000 28020000 		.4byte	0x228
+ 208 0004 0400     		.2byte	0x4
+ 209 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 210 000a 04       		.byte	0x4
+ 211 000b 01       		.uleb128 0x1
+ 212 000c 46010000 		.4byte	.LASF34
+ 213 0010 01       		.byte	0x1
+ 214 0011 0F000000 		.4byte	.LASF35
+ 215 0015 41000000 		.4byte	.LASF36
+ 216 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 217 001d 00000000 		.4byte	0
+ 218 0021 00000000 		.4byte	.Ldebug_line0
+ 219 0025 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 11
+
+
+ 220 0026 01       		.byte	0x1
+ 221 0027 06       		.byte	0x6
+ 222 0028 58020000 		.4byte	.LASF0
+ 223 002c 02       		.uleb128 0x2
+ 224 002d 01       		.byte	0x1
+ 225 002e 08       		.byte	0x8
+ 226 002f 93000000 		.4byte	.LASF1
+ 227 0033 02       		.uleb128 0x2
+ 228 0034 02       		.byte	0x2
+ 229 0035 05       		.byte	0x5
+ 230 0036 0C020000 		.4byte	.LASF2
+ 231 003a 03       		.uleb128 0x3
+ 232 003b 1E020000 		.4byte	.LASF4
+ 233 003f 02       		.byte	0x2
+ 234 0040 2B       		.byte	0x2b
+ 235 0041 45000000 		.4byte	0x45
+ 236 0045 02       		.uleb128 0x2
+ 237 0046 02       		.byte	0x2
+ 238 0047 07       		.byte	0x7
+ 239 0048 BA000000 		.4byte	.LASF3
+ 240 004c 03       		.uleb128 0x3
+ 241 004d 37000000 		.4byte	.LASF5
+ 242 0051 02       		.byte	0x2
+ 243 0052 3F       		.byte	0x3f
+ 244 0053 57000000 		.4byte	0x57
+ 245 0057 02       		.uleb128 0x2
+ 246 0058 04       		.byte	0x4
+ 247 0059 05       		.byte	0x5
+ 248 005a 43020000 		.4byte	.LASF6
+ 249 005e 03       		.uleb128 0x3
+ 250 005f 0B010000 		.4byte	.LASF7
+ 251 0063 02       		.byte	0x2
+ 252 0064 41       		.byte	0x41
+ 253 0065 69000000 		.4byte	0x69
+ 254 0069 02       		.uleb128 0x2
+ 255 006a 04       		.byte	0x4
+ 256 006b 07       		.byte	0x7
+ 257 006c A8000000 		.4byte	.LASF8
+ 258 0070 03       		.uleb128 0x3
+ 259 0071 F3000000 		.4byte	.LASF9
+ 260 0075 02       		.byte	0x2
+ 261 0076 59       		.byte	0x59
+ 262 0077 7B000000 		.4byte	0x7b
+ 263 007b 02       		.uleb128 0x2
+ 264 007c 08       		.byte	0x8
+ 265 007d 05       		.byte	0x5
+ 266 007e EF010000 		.4byte	.LASF10
+ 267 0082 02       		.uleb128 0x2
+ 268 0083 08       		.byte	0x8
+ 269 0084 07       		.byte	0x7
+ 270 0085 2F010000 		.4byte	.LASF11
+ 271 0089 04       		.uleb128 0x4
+ 272 008a 04       		.byte	0x4
+ 273 008b 05       		.byte	0x5
+ 274 008c 696E7400 		.ascii	"int\000"
+ 275 0090 02       		.uleb128 0x2
+ 276 0091 04       		.byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 12
+
+
+ 277 0092 07       		.byte	0x7
+ 278 0093 22010000 		.4byte	.LASF12
+ 279 0097 03       		.uleb128 0x3
+ 280 0098 29020000 		.4byte	.LASF13
+ 281 009c 03       		.byte	0x3
+ 282 009d 21       		.byte	0x21
+ 283 009e 3A000000 		.4byte	0x3a
+ 284 00a2 03       		.uleb128 0x3
+ 285 00a3 DE010000 		.4byte	.LASF14
+ 286 00a7 03       		.byte	0x3
+ 287 00a8 2C       		.byte	0x2c
+ 288 00a9 4C000000 		.4byte	0x4c
+ 289 00ad 03       		.uleb128 0x3
+ 290 00ae 3A020000 		.4byte	.LASF15
+ 291 00b2 03       		.byte	0x3
+ 292 00b3 2D       		.byte	0x2d
+ 293 00b4 5E000000 		.4byte	0x5e
+ 294 00b8 03       		.uleb128 0x3
+ 295 00b9 00000000 		.4byte	.LASF16
+ 296 00bd 03       		.byte	0x3
+ 297 00be 38       		.byte	0x38
+ 298 00bf 70000000 		.4byte	0x70
+ 299 00c3 02       		.uleb128 0x2
+ 300 00c4 04       		.byte	0x4
+ 301 00c5 07       		.byte	0x7
+ 302 00c6 E6010000 		.4byte	.LASF17
+ 303 00ca 02       		.uleb128 0x2
+ 304 00cb 01       		.byte	0x1
+ 305 00cc 08       		.byte	0x8
+ 306 00cd 07020000 		.4byte	.LASF18
+ 307 00d1 02       		.uleb128 0x2
+ 308 00d2 08       		.byte	0x8
+ 309 00d3 04       		.byte	0x4
+ 310 00d4 04010000 		.4byte	.LASF19
+ 311 00d8 02       		.uleb128 0x2
+ 312 00d9 04       		.byte	0x4
+ 313 00da 04       		.byte	0x4
+ 314 00db 87000000 		.4byte	.LASF20
+ 315 00df 02       		.uleb128 0x2
+ 316 00e0 08       		.byte	0x8
+ 317 00e1 04       		.byte	0x4
+ 318 00e2 4C020000 		.4byte	.LASF21
+ 319 00e6 05       		.uleb128 0x5
+ 320 00e7 8D000000 		.4byte	.LASF22
+ 321 00eb 04       		.byte	0x4
+ 322 00ec 9B01     		.2byte	0x19b
+ 323 00ee A2000000 		.4byte	0xa2
+ 324 00f2 05       		.uleb128 0x5
+ 325 00f3 D8010000 		.4byte	.LASF23
+ 326 00f7 04       		.byte	0x4
+ 327 00f8 A001     		.2byte	0x1a0
+ 328 00fa B8000000 		.4byte	0xb8
+ 329 00fe 06       		.uleb128 0x6
+ 330 00ff 0C       		.byte	0xc
+ 331 0100 04       		.byte	0x4
+ 332 0101 5A04     		.2byte	0x45a
+ 333 0103 2F010000 		.4byte	0x12f
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 13
+
+
+ 334 0107 07       		.uleb128 0x7
+ 335 0108 16020000 		.4byte	.LASF24
+ 336 010c 04       		.byte	0x4
+ 337 010d 5C04     		.2byte	0x45c
+ 338 010f 97000000 		.4byte	0x97
+ 339 0113 00       		.byte	0
+ 340 0114 07       		.uleb128 0x7
+ 341 0115 08000000 		.4byte	.LASF25
+ 342 0119 04       		.byte	0x4
+ 343 011a 5D04     		.2byte	0x45d
+ 344 011c 2F010000 		.4byte	0x12f
+ 345 0120 04       		.byte	0x4
+ 346 0121 07       		.uleb128 0x7
+ 347 0122 32020000 		.4byte	.LASF26
+ 348 0126 04       		.byte	0x4
+ 349 0127 5E04     		.2byte	0x45e
+ 350 0129 2F010000 		.4byte	0x12f
+ 351 012d 08       		.byte	0x8
+ 352 012e 00       		.byte	0
+ 353 012f 08       		.uleb128 0x8
+ 354 0130 04       		.byte	0x4
+ 355 0131 E6000000 		.4byte	0xe6
+ 356 0135 05       		.uleb128 0x5
+ 357 0136 DE000000 		.4byte	.LASF27
+ 358 013a 04       		.byte	0x4
+ 359 013b 5F04     		.2byte	0x45f
+ 360 013d FE000000 		.4byte	0xfe
+ 361 0141 09       		.uleb128 0x9
+ 362 0142 D2000000 		.4byte	.LASF37
+ 363 0146 01       		.byte	0x1
+ 364 0147 3C       		.byte	0x3c
+ 365 0148 00000000 		.4byte	.LFB82
+ 366 014c 04010000 		.4byte	.LFE82-.LFB82
+ 367 0150 01       		.uleb128 0x1
+ 368 0151 9C       		.byte	0x9c
+ 369 0152 20020000 		.4byte	0x220
+ 370 0156 0A       		.uleb128 0xa
+ 371 0157 5300     		.ascii	"S\000"
+ 372 0159 01       		.byte	0x1
+ 373 015a 3D       		.byte	0x3d
+ 374 015b 20020000 		.4byte	0x220
+ 375 015f 03       		.uleb128 0x3
+ 376 0160 91       		.byte	0x91
+ 377 0161 BC7F     		.sleb128 -68
+ 378 0163 0B       		.uleb128 0xb
+ 379 0164 64020000 		.4byte	.LASF28
+ 380 0168 01       		.byte	0x1
+ 381 0169 3E       		.byte	0x3e
+ 382 016a 2F010000 		.4byte	0x12f
+ 383 016e 03       		.uleb128 0x3
+ 384 016f 91       		.byte	0x91
+ 385 0170 B87F     		.sleb128 -72
+ 386 0172 0B       		.uleb128 0xb
+ 387 0173 CD000000 		.4byte	.LASF29
+ 388 0177 01       		.byte	0x1
+ 389 0178 3F       		.byte	0x3f
+ 390 0179 2F010000 		.4byte	0x12f
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 14
+
+
+ 391 017d 03       		.uleb128 0x3
+ 392 017e 91       		.byte	0x91
+ 393 017f B47F     		.sleb128 -76
+ 394 0181 0B       		.uleb128 0xb
+ 395 0182 FD010000 		.4byte	.LASF30
+ 396 0186 01       		.byte	0x1
+ 397 0187 40       		.byte	0x40
+ 398 0188 AD000000 		.4byte	0xad
+ 399 018c 03       		.uleb128 0x3
+ 400 018d 91       		.byte	0x91
+ 401 018e B07F     		.sleb128 -80
+ 402 0190 0C       		.uleb128 0xc
+ 403 0191 08000000 		.4byte	.LASF25
+ 404 0195 01       		.byte	0x1
+ 405 0196 42       		.byte	0x42
+ 406 0197 2F010000 		.4byte	0x12f
+ 407 019b 02       		.uleb128 0x2
+ 408 019c 91       		.byte	0x91
+ 409 019d 6C       		.sleb128 -20
+ 410 019e 0C       		.uleb128 0xc
+ 411 019f 32020000 		.4byte	.LASF26
+ 412 01a3 01       		.byte	0x1
+ 413 01a4 43       		.byte	0x43
+ 414 01a5 2F010000 		.4byte	0x12f
+ 415 01a9 02       		.uleb128 0x2
+ 416 01aa 91       		.byte	0x91
+ 417 01ab 48       		.sleb128 -56
+ 418 01ac 0C       		.uleb128 0xc
+ 419 01ad 16010000 		.4byte	.LASF31
+ 420 01b1 01       		.byte	0x1
+ 421 01b2 44       		.byte	0x44
+ 422 01b3 2F010000 		.4byte	0x12f
+ 423 01b7 02       		.uleb128 0x2
+ 424 01b8 91       		.byte	0x91
+ 425 01b9 68       		.sleb128 -24
+ 426 01ba 0D       		.uleb128 0xd
+ 427 01bb 707800   		.ascii	"px\000"
+ 428 01be 01       		.byte	0x1
+ 429 01bf 1701     		.2byte	0x117
+ 430 01c1 2F010000 		.4byte	0x12f
+ 431 01c5 02       		.uleb128 0x2
+ 432 01c6 91       		.byte	0x91
+ 433 01c7 64       		.sleb128 -28
+ 434 01c8 0D       		.uleb128 0xd
+ 435 01c9 706200   		.ascii	"pb\000"
+ 436 01cc 01       		.byte	0x1
+ 437 01cd 1801     		.2byte	0x118
+ 438 01cf 2F010000 		.4byte	0x12f
+ 439 01d3 02       		.uleb128 0x2
+ 440 01d4 91       		.byte	0x91
+ 441 01d5 60       		.sleb128 -32
+ 442 01d6 0D       		.uleb128 0xd
+ 443 01d7 61636300 		.ascii	"acc\000"
+ 444 01db 01       		.byte	0x1
+ 445 01dc 1901     		.2byte	0x119
+ 446 01de F2000000 		.4byte	0xf2
+ 447 01e2 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 15
+
+
+ 448 01e3 91       		.byte	0x91
+ 449 01e4 58       		.sleb128 -40
+ 450 01e5 0E       		.uleb128 0xe
+ 451 01e6 16020000 		.4byte	.LASF24
+ 452 01ea 01       		.byte	0x1
+ 453 01eb 1A01     		.2byte	0x11a
+ 454 01ed AD000000 		.4byte	0xad
+ 455 01f1 02       		.uleb128 0x2
+ 456 01f2 91       		.byte	0x91
+ 457 01f3 44       		.sleb128 -60
+ 458 01f4 0D       		.uleb128 0xd
+ 459 01f5 6900     		.ascii	"i\000"
+ 460 01f7 01       		.byte	0x1
+ 461 01f8 1B01     		.2byte	0x11b
+ 462 01fa AD000000 		.4byte	0xad
+ 463 01fe 02       		.uleb128 0x2
+ 464 01ff 91       		.byte	0x91
+ 465 0200 54       		.sleb128 -44
+ 466 0201 0E       		.uleb128 0xe
+ 467 0202 FD000000 		.4byte	.LASF32
+ 468 0206 01       		.byte	0x1
+ 469 0207 1B01     		.2byte	0x11b
+ 470 0209 AD000000 		.4byte	0xad
+ 471 020d 02       		.uleb128 0x2
+ 472 020e 91       		.byte	0x91
+ 473 020f 50       		.sleb128 -48
+ 474 0210 0E       		.uleb128 0xe
+ 475 0211 A1000000 		.4byte	.LASF33
+ 476 0215 01       		.byte	0x1
+ 477 0216 1B01     		.2byte	0x11b
+ 478 0218 AD000000 		.4byte	0xad
+ 479 021c 02       		.uleb128 0x2
+ 480 021d 91       		.byte	0x91
+ 481 021e 4C       		.sleb128 -52
+ 482 021f 00       		.byte	0
+ 483 0220 08       		.uleb128 0x8
+ 484 0221 04       		.byte	0x4
+ 485 0222 26020000 		.4byte	0x226
+ 486 0226 0F       		.uleb128 0xf
+ 487 0227 35010000 		.4byte	0x135
+ 488 022b 00       		.byte	0
+ 489              		.section	.debug_abbrev,"",%progbits
+ 490              	.Ldebug_abbrev0:
+ 491 0000 01       		.uleb128 0x1
+ 492 0001 11       		.uleb128 0x11
+ 493 0002 01       		.byte	0x1
+ 494 0003 25       		.uleb128 0x25
+ 495 0004 0E       		.uleb128 0xe
+ 496 0005 13       		.uleb128 0x13
+ 497 0006 0B       		.uleb128 0xb
+ 498 0007 03       		.uleb128 0x3
+ 499 0008 0E       		.uleb128 0xe
+ 500 0009 1B       		.uleb128 0x1b
+ 501 000a 0E       		.uleb128 0xe
+ 502 000b 55       		.uleb128 0x55
+ 503 000c 17       		.uleb128 0x17
+ 504 000d 11       		.uleb128 0x11
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 16
+
+
+ 505 000e 01       		.uleb128 0x1
+ 506 000f 10       		.uleb128 0x10
+ 507 0010 17       		.uleb128 0x17
+ 508 0011 00       		.byte	0
+ 509 0012 00       		.byte	0
+ 510 0013 02       		.uleb128 0x2
+ 511 0014 24       		.uleb128 0x24
+ 512 0015 00       		.byte	0
+ 513 0016 0B       		.uleb128 0xb
+ 514 0017 0B       		.uleb128 0xb
+ 515 0018 3E       		.uleb128 0x3e
+ 516 0019 0B       		.uleb128 0xb
+ 517 001a 03       		.uleb128 0x3
+ 518 001b 0E       		.uleb128 0xe
+ 519 001c 00       		.byte	0
+ 520 001d 00       		.byte	0
+ 521 001e 03       		.uleb128 0x3
+ 522 001f 16       		.uleb128 0x16
+ 523 0020 00       		.byte	0
+ 524 0021 03       		.uleb128 0x3
+ 525 0022 0E       		.uleb128 0xe
+ 526 0023 3A       		.uleb128 0x3a
+ 527 0024 0B       		.uleb128 0xb
+ 528 0025 3B       		.uleb128 0x3b
+ 529 0026 0B       		.uleb128 0xb
+ 530 0027 49       		.uleb128 0x49
+ 531 0028 13       		.uleb128 0x13
+ 532 0029 00       		.byte	0
+ 533 002a 00       		.byte	0
+ 534 002b 04       		.uleb128 0x4
+ 535 002c 24       		.uleb128 0x24
+ 536 002d 00       		.byte	0
+ 537 002e 0B       		.uleb128 0xb
+ 538 002f 0B       		.uleb128 0xb
+ 539 0030 3E       		.uleb128 0x3e
+ 540 0031 0B       		.uleb128 0xb
+ 541 0032 03       		.uleb128 0x3
+ 542 0033 08       		.uleb128 0x8
+ 543 0034 00       		.byte	0
+ 544 0035 00       		.byte	0
+ 545 0036 05       		.uleb128 0x5
+ 546 0037 16       		.uleb128 0x16
+ 547 0038 00       		.byte	0
+ 548 0039 03       		.uleb128 0x3
+ 549 003a 0E       		.uleb128 0xe
+ 550 003b 3A       		.uleb128 0x3a
+ 551 003c 0B       		.uleb128 0xb
+ 552 003d 3B       		.uleb128 0x3b
+ 553 003e 05       		.uleb128 0x5
+ 554 003f 49       		.uleb128 0x49
+ 555 0040 13       		.uleb128 0x13
+ 556 0041 00       		.byte	0
+ 557 0042 00       		.byte	0
+ 558 0043 06       		.uleb128 0x6
+ 559 0044 13       		.uleb128 0x13
+ 560 0045 01       		.byte	0x1
+ 561 0046 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 17
+
+
+ 562 0047 0B       		.uleb128 0xb
+ 563 0048 3A       		.uleb128 0x3a
+ 564 0049 0B       		.uleb128 0xb
+ 565 004a 3B       		.uleb128 0x3b
+ 566 004b 05       		.uleb128 0x5
+ 567 004c 01       		.uleb128 0x1
+ 568 004d 13       		.uleb128 0x13
+ 569 004e 00       		.byte	0
+ 570 004f 00       		.byte	0
+ 571 0050 07       		.uleb128 0x7
+ 572 0051 0D       		.uleb128 0xd
+ 573 0052 00       		.byte	0
+ 574 0053 03       		.uleb128 0x3
+ 575 0054 0E       		.uleb128 0xe
+ 576 0055 3A       		.uleb128 0x3a
+ 577 0056 0B       		.uleb128 0xb
+ 578 0057 3B       		.uleb128 0x3b
+ 579 0058 05       		.uleb128 0x5
+ 580 0059 49       		.uleb128 0x49
+ 581 005a 13       		.uleb128 0x13
+ 582 005b 38       		.uleb128 0x38
+ 583 005c 0B       		.uleb128 0xb
+ 584 005d 00       		.byte	0
+ 585 005e 00       		.byte	0
+ 586 005f 08       		.uleb128 0x8
+ 587 0060 0F       		.uleb128 0xf
+ 588 0061 00       		.byte	0
+ 589 0062 0B       		.uleb128 0xb
+ 590 0063 0B       		.uleb128 0xb
+ 591 0064 49       		.uleb128 0x49
+ 592 0065 13       		.uleb128 0x13
+ 593 0066 00       		.byte	0
+ 594 0067 00       		.byte	0
+ 595 0068 09       		.uleb128 0x9
+ 596 0069 2E       		.uleb128 0x2e
+ 597 006a 01       		.byte	0x1
+ 598 006b 3F       		.uleb128 0x3f
+ 599 006c 19       		.uleb128 0x19
+ 600 006d 03       		.uleb128 0x3
+ 601 006e 0E       		.uleb128 0xe
+ 602 006f 3A       		.uleb128 0x3a
+ 603 0070 0B       		.uleb128 0xb
+ 604 0071 3B       		.uleb128 0x3b
+ 605 0072 0B       		.uleb128 0xb
+ 606 0073 27       		.uleb128 0x27
+ 607 0074 19       		.uleb128 0x19
+ 608 0075 11       		.uleb128 0x11
+ 609 0076 01       		.uleb128 0x1
+ 610 0077 12       		.uleb128 0x12
+ 611 0078 06       		.uleb128 0x6
+ 612 0079 40       		.uleb128 0x40
+ 613 007a 18       		.uleb128 0x18
+ 614 007b 9642     		.uleb128 0x2116
+ 615 007d 19       		.uleb128 0x19
+ 616 007e 01       		.uleb128 0x1
+ 617 007f 13       		.uleb128 0x13
+ 618 0080 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 18
+
+
+ 619 0081 00       		.byte	0
+ 620 0082 0A       		.uleb128 0xa
+ 621 0083 05       		.uleb128 0x5
+ 622 0084 00       		.byte	0
+ 623 0085 03       		.uleb128 0x3
+ 624 0086 08       		.uleb128 0x8
+ 625 0087 3A       		.uleb128 0x3a
+ 626 0088 0B       		.uleb128 0xb
+ 627 0089 3B       		.uleb128 0x3b
+ 628 008a 0B       		.uleb128 0xb
+ 629 008b 49       		.uleb128 0x49
+ 630 008c 13       		.uleb128 0x13
+ 631 008d 02       		.uleb128 0x2
+ 632 008e 18       		.uleb128 0x18
+ 633 008f 00       		.byte	0
+ 634 0090 00       		.byte	0
+ 635 0091 0B       		.uleb128 0xb
+ 636 0092 05       		.uleb128 0x5
+ 637 0093 00       		.byte	0
+ 638 0094 03       		.uleb128 0x3
+ 639 0095 0E       		.uleb128 0xe
+ 640 0096 3A       		.uleb128 0x3a
+ 641 0097 0B       		.uleb128 0xb
+ 642 0098 3B       		.uleb128 0x3b
+ 643 0099 0B       		.uleb128 0xb
+ 644 009a 49       		.uleb128 0x49
+ 645 009b 13       		.uleb128 0x13
+ 646 009c 02       		.uleb128 0x2
+ 647 009d 18       		.uleb128 0x18
+ 648 009e 00       		.byte	0
+ 649 009f 00       		.byte	0
+ 650 00a0 0C       		.uleb128 0xc
+ 651 00a1 34       		.uleb128 0x34
+ 652 00a2 00       		.byte	0
+ 653 00a3 03       		.uleb128 0x3
+ 654 00a4 0E       		.uleb128 0xe
+ 655 00a5 3A       		.uleb128 0x3a
+ 656 00a6 0B       		.uleb128 0xb
+ 657 00a7 3B       		.uleb128 0x3b
+ 658 00a8 0B       		.uleb128 0xb
+ 659 00a9 49       		.uleb128 0x49
+ 660 00aa 13       		.uleb128 0x13
+ 661 00ab 02       		.uleb128 0x2
+ 662 00ac 18       		.uleb128 0x18
+ 663 00ad 00       		.byte	0
+ 664 00ae 00       		.byte	0
+ 665 00af 0D       		.uleb128 0xd
+ 666 00b0 34       		.uleb128 0x34
+ 667 00b1 00       		.byte	0
+ 668 00b2 03       		.uleb128 0x3
+ 669 00b3 08       		.uleb128 0x8
+ 670 00b4 3A       		.uleb128 0x3a
+ 671 00b5 0B       		.uleb128 0xb
+ 672 00b6 3B       		.uleb128 0x3b
+ 673 00b7 05       		.uleb128 0x5
+ 674 00b8 49       		.uleb128 0x49
+ 675 00b9 13       		.uleb128 0x13
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 19
+
+
+ 676 00ba 02       		.uleb128 0x2
+ 677 00bb 18       		.uleb128 0x18
+ 678 00bc 00       		.byte	0
+ 679 00bd 00       		.byte	0
+ 680 00be 0E       		.uleb128 0xe
+ 681 00bf 34       		.uleb128 0x34
+ 682 00c0 00       		.byte	0
+ 683 00c1 03       		.uleb128 0x3
+ 684 00c2 0E       		.uleb128 0xe
+ 685 00c3 3A       		.uleb128 0x3a
+ 686 00c4 0B       		.uleb128 0xb
+ 687 00c5 3B       		.uleb128 0x3b
+ 688 00c6 05       		.uleb128 0x5
+ 689 00c7 49       		.uleb128 0x49
+ 690 00c8 13       		.uleb128 0x13
+ 691 00c9 02       		.uleb128 0x2
+ 692 00ca 18       		.uleb128 0x18
+ 693 00cb 00       		.byte	0
+ 694 00cc 00       		.byte	0
+ 695 00cd 0F       		.uleb128 0xf
+ 696 00ce 26       		.uleb128 0x26
+ 697 00cf 00       		.byte	0
+ 698 00d0 49       		.uleb128 0x49
+ 699 00d1 13       		.uleb128 0x13
+ 700 00d2 00       		.byte	0
+ 701 00d3 00       		.byte	0
+ 702 00d4 00       		.byte	0
+ 703              		.section	.debug_aranges,"",%progbits
+ 704 0000 1C000000 		.4byte	0x1c
+ 705 0004 0200     		.2byte	0x2
+ 706 0006 00000000 		.4byte	.Ldebug_info0
+ 707 000a 04       		.byte	0x4
+ 708 000b 00       		.byte	0
+ 709 000c 0000     		.2byte	0
+ 710 000e 0000     		.2byte	0
+ 711 0010 00000000 		.4byte	.LFB82
+ 712 0014 04010000 		.4byte	.LFE82-.LFB82
+ 713 0018 00000000 		.4byte	0
+ 714 001c 00000000 		.4byte	0
+ 715              		.section	.debug_ranges,"",%progbits
+ 716              	.Ldebug_ranges0:
+ 717 0000 00000000 		.4byte	.LFB82
+ 718 0004 04010000 		.4byte	.LFE82
+ 719 0008 00000000 		.4byte	0
+ 720 000c 00000000 		.4byte	0
+ 721              		.section	.debug_line,"",%progbits
+ 722              	.Ldebug_line0:
+ 723 0000 93010000 		.section	.debug_str,"MS",%progbits,1
+ 723      02004E01 
+ 723      00000201 
+ 723      FB0E0D00 
+ 723      01010101 
+ 724              	.LASF16:
+ 725 0000 696E7436 		.ascii	"int64_t\000"
+ 725      345F7400 
+ 726              	.LASF25:
+ 727 0008 70537461 		.ascii	"pState\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 20
+
+
+ 727      746500
+ 728              	.LASF35:
+ 729 000f 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_fir_q31.c\000"
+ 729      63655C46 
+ 729      696C7465 
+ 729      72696E67 
+ 729      46756E63 
+ 730              	.LASF5:
+ 731 0037 5F5F696E 		.ascii	"__int32_t\000"
+ 731      7433325F 
+ 731      7400
+ 732              	.LASF36:
+ 733 0041 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 733      73657273 
+ 733      5C666E65 
+ 733      7665735C 
+ 733      446F6375 
+ 734 006e 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 734      655F7370 
+ 734      6565645F 
+ 734      73656E73 
+ 734      6F722E63 
+ 735              	.LASF20:
+ 736 0087 666C6F61 		.ascii	"float\000"
+ 736      7400
+ 737              	.LASF22:
+ 738 008d 7133315F 		.ascii	"q31_t\000"
+ 738      7400
+ 739              	.LASF1:
+ 740 0093 756E7369 		.ascii	"unsigned char\000"
+ 740      676E6564 
+ 740      20636861 
+ 740      7200
+ 741              	.LASF33:
+ 742 00a1 626C6B43 		.ascii	"blkCnt\000"
+ 742      6E7400
+ 743              	.LASF8:
+ 744 00a8 6C6F6E67 		.ascii	"long unsigned int\000"
+ 744      20756E73 
+ 744      69676E65 
+ 744      6420696E 
+ 744      7400
+ 745              	.LASF3:
+ 746 00ba 73686F72 		.ascii	"short unsigned int\000"
+ 746      7420756E 
+ 746      7369676E 
+ 746      65642069 
+ 746      6E7400
+ 747              	.LASF29:
+ 748 00cd 70447374 		.ascii	"pDst\000"
+ 748      00
+ 749              	.LASF37:
+ 750 00d2 61726D5F 		.ascii	"arm_fir_q31\000"
+ 750      6669725F 
+ 750      71333100 
+ 751              	.LASF27:
+ 752 00de 61726D5F 		.ascii	"arm_fir_instance_q31\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 21
+
+
+ 752      6669725F 
+ 752      696E7374 
+ 752      616E6365 
+ 752      5F713331 
+ 753              	.LASF9:
+ 754 00f3 5F5F696E 		.ascii	"__int64_t\000"
+ 754      7436345F 
+ 754      7400
+ 755              	.LASF32:
+ 756 00fd 74617043 		.ascii	"tapCnt\000"
+ 756      6E7400
+ 757              	.LASF19:
+ 758 0104 646F7562 		.ascii	"double\000"
+ 758      6C6500
+ 759              	.LASF7:
+ 760 010b 5F5F7569 		.ascii	"__uint32_t\000"
+ 760      6E743332 
+ 760      5F7400
+ 761              	.LASF31:
+ 762 0116 70537461 		.ascii	"pStateCurnt\000"
+ 762      74654375 
+ 762      726E7400 
+ 763              	.LASF12:
+ 764 0122 756E7369 		.ascii	"unsigned int\000"
+ 764      676E6564 
+ 764      20696E74 
+ 764      00
+ 765              	.LASF11:
+ 766 012f 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 766      206C6F6E 
+ 766      6720756E 
+ 766      7369676E 
+ 766      65642069 
+ 767              	.LASF34:
+ 768 0146 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 768      4320342E 
+ 768      392E3320 
+ 768      32303135 
+ 768      30333033 
+ 769 0179 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 769      20726576 
+ 769      6973696F 
+ 769      6E203232 
+ 769      31323230 
+ 770 01ac 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 770      30202D66 
+ 770      66756E63 
+ 770      74696F6E 
+ 770      2D736563 
+ 771              	.LASF23:
+ 772 01d8 7136335F 		.ascii	"q63_t\000"
+ 772      7400
+ 773              	.LASF14:
+ 774 01de 696E7433 		.ascii	"int32_t\000"
+ 774      325F7400 
+ 775              	.LASF17:
+ 776 01e6 73697A65 		.ascii	"sizetype\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccIPL1jR.s 			page 22
+
+
+ 776      74797065 
+ 776      00
+ 777              	.LASF10:
+ 778 01ef 6C6F6E67 		.ascii	"long long int\000"
+ 778      206C6F6E 
+ 778      6720696E 
+ 778      7400
+ 779              	.LASF30:
+ 780 01fd 626C6F63 		.ascii	"blockSize\000"
+ 780      6B53697A 
+ 780      6500
+ 781              	.LASF18:
+ 782 0207 63686172 		.ascii	"char\000"
+ 782      00
+ 783              	.LASF2:
+ 784 020c 73686F72 		.ascii	"short int\000"
+ 784      7420696E 
+ 784      7400
+ 785              	.LASF24:
+ 786 0216 6E756D54 		.ascii	"numTaps\000"
+ 786      61707300 
+ 787              	.LASF4:
+ 788 021e 5F5F7569 		.ascii	"__uint16_t\000"
+ 788      6E743136 
+ 788      5F7400
+ 789              	.LASF13:
+ 790 0229 75696E74 		.ascii	"uint16_t\000"
+ 790      31365F74 
+ 790      00
+ 791              	.LASF26:
+ 792 0232 70436F65 		.ascii	"pCoeffs\000"
+ 792      66667300 
+ 793              	.LASF15:
+ 794 023a 75696E74 		.ascii	"uint32_t\000"
+ 794      33325F74 
+ 794      00
+ 795              	.LASF6:
+ 796 0243 6C6F6E67 		.ascii	"long int\000"
+ 796      20696E74 
+ 796      00
+ 797              	.LASF21:
+ 798 024c 6C6F6E67 		.ascii	"long double\000"
+ 798      20646F75 
+ 798      626C6500 
+ 799              	.LASF0:
+ 800 0258 7369676E 		.ascii	"signed char\000"
+ 800      65642063 
+ 800      68617200 
+ 801              	.LASF28:
+ 802 0264 70537263 		.ascii	"pSrc\000"
+ 802      00
+ 803              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

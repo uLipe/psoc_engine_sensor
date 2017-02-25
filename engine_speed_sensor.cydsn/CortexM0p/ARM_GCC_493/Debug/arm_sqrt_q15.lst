@@ -1,0 +1,1327 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_sqrt_q15.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__clzsi2
+  18              		.global	__aeabi_i2f
+  19              		.global	__aeabi_fmul
+  20              		.global	__aeabi_f2iz
+  21              		.section	.text.arm_sqrt_q15,"ax",%progbits
+  22              		.align	2
+  23              		.global	arm_sqrt_q15
+  24              		.code	16
+  25              		.thumb_func
+  26              		.type	arm_sqrt_q15, %function
+  27              	arm_sqrt_q15:
+  28              	.LFB82:
+  29              		.file 1 "Source\\FastMathFunctions\\arm_sqrt_q15.c"
+   1:Source\FastMathFunctions/arm_sqrt_q15.c **** /* ----------------------------------------------------------------------
+   2:Source\FastMathFunctions/arm_sqrt_q15.c ****  * Project:      CMSIS DSP Library
+   3:Source\FastMathFunctions/arm_sqrt_q15.c ****  * Title:        arm_sqrt_q15.c
+   4:Source\FastMathFunctions/arm_sqrt_q15.c ****  * Description:  Q15 square root function
+   5:Source\FastMathFunctions/arm_sqrt_q15.c ****  *
+   6:Source\FastMathFunctions/arm_sqrt_q15.c ****  * $Date:        27. January 2017
+   7:Source\FastMathFunctions/arm_sqrt_q15.c ****  * $Revision:    V.1.5.1
+   8:Source\FastMathFunctions/arm_sqrt_q15.c ****  *
+   9:Source\FastMathFunctions/arm_sqrt_q15.c ****  * Target Processor: Cortex-M cores
+  10:Source\FastMathFunctions/arm_sqrt_q15.c ****  * -------------------------------------------------------------------- */
+  11:Source\FastMathFunctions/arm_sqrt_q15.c **** /*
+  12:Source\FastMathFunctions/arm_sqrt_q15.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FastMathFunctions/arm_sqrt_q15.c ****  *
+  14:Source\FastMathFunctions/arm_sqrt_q15.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FastMathFunctions/arm_sqrt_q15.c ****  *
+  16:Source\FastMathFunctions/arm_sqrt_q15.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FastMathFunctions/arm_sqrt_q15.c ****  * not use this file except in compliance with the License.
+  18:Source\FastMathFunctions/arm_sqrt_q15.c ****  * You may obtain a copy of the License at
+  19:Source\FastMathFunctions/arm_sqrt_q15.c ****  *
+  20:Source\FastMathFunctions/arm_sqrt_q15.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FastMathFunctions/arm_sqrt_q15.c ****  *
+  22:Source\FastMathFunctions/arm_sqrt_q15.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FastMathFunctions/arm_sqrt_q15.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FastMathFunctions/arm_sqrt_q15.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FastMathFunctions/arm_sqrt_q15.c ****  * See the License for the specific language governing permissions and
+  26:Source\FastMathFunctions/arm_sqrt_q15.c ****  * limitations under the License.
+  27:Source\FastMathFunctions/arm_sqrt_q15.c ****  */
+  28:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 2
+
+
+  29:Source\FastMathFunctions/arm_sqrt_q15.c **** #include "arm_math.h"
+  30:Source\FastMathFunctions/arm_sqrt_q15.c **** #include "arm_common_tables.h"
+  31:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  32:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  33:Source\FastMathFunctions/arm_sqrt_q15.c **** /**
+  34:Source\FastMathFunctions/arm_sqrt_q15.c ****  * @ingroup groupFastMath
+  35:Source\FastMathFunctions/arm_sqrt_q15.c ****  */
+  36:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  37:Source\FastMathFunctions/arm_sqrt_q15.c **** /**
+  38:Source\FastMathFunctions/arm_sqrt_q15.c ****  * @addtogroup SQRT
+  39:Source\FastMathFunctions/arm_sqrt_q15.c ****  * @{
+  40:Source\FastMathFunctions/arm_sqrt_q15.c ****  */
+  41:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  42:Source\FastMathFunctions/arm_sqrt_q15.c ****   /**
+  43:Source\FastMathFunctions/arm_sqrt_q15.c ****    * @brief  Q15 square root function.
+  44:Source\FastMathFunctions/arm_sqrt_q15.c ****    * @param[in]   in     input value.  The range of the input value is [0 +1) or 0x0000 to 0x7FFF.
+  45:Source\FastMathFunctions/arm_sqrt_q15.c ****    * @param[out]  *pOut  square root of input value.
+  46:Source\FastMathFunctions/arm_sqrt_q15.c ****    * @return The function returns ARM_MATH_SUCCESS if the input value is positive
+  47:Source\FastMathFunctions/arm_sqrt_q15.c ****    * and ARM_MATH_ARGUMENT_ERROR if the input is negative.  For
+  48:Source\FastMathFunctions/arm_sqrt_q15.c ****    * negative inputs, the function returns *pOut = 0.
+  49:Source\FastMathFunctions/arm_sqrt_q15.c ****    */
+  50:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  51:Source\FastMathFunctions/arm_sqrt_q15.c **** arm_status arm_sqrt_q15(
+  52:Source\FastMathFunctions/arm_sqrt_q15.c ****   q15_t in,
+  53:Source\FastMathFunctions/arm_sqrt_q15.c ****   q15_t * pOut)
+  54:Source\FastMathFunctions/arm_sqrt_q15.c **** {
+  30              		.loc 1 54 0
+  31              		.cfi_startproc
+  32 0000 80B5     		push	{r7, lr}
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 7, -8
+  35              		.cfi_offset 14, -4
+  36 0002 88B0     		sub	sp, sp, #32
+  37              		.cfi_def_cfa_offset 40
+  38 0004 00AF     		add	r7, sp, #0
+  39              		.cfi_def_cfa_register 7
+  40 0006 021C     		mov	r2, r0
+  41 0008 3960     		str	r1, [r7]
+  42 000a BB1D     		add	r3, r7, #6
+  43 000c 1A80     		strh	r2, [r3]
+  55:Source\FastMathFunctions/arm_sqrt_q15.c ****   q15_t number, temp1, var1, signBits1, half;
+  56:Source\FastMathFunctions/arm_sqrt_q15.c ****   q31_t bits_val1;
+  57:Source\FastMathFunctions/arm_sqrt_q15.c ****   float32_t temp_float1;
+  58:Source\FastMathFunctions/arm_sqrt_q15.c ****   union
+  59:Source\FastMathFunctions/arm_sqrt_q15.c ****   {
+  60:Source\FastMathFunctions/arm_sqrt_q15.c ****     q31_t fracval;
+  61:Source\FastMathFunctions/arm_sqrt_q15.c ****     float32_t floatval;
+  62:Source\FastMathFunctions/arm_sqrt_q15.c ****   } tempconv;
+  63:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  64:Source\FastMathFunctions/arm_sqrt_q15.c ****   number = in;
+  44              		.loc 1 64 0
+  45 000e 1E23     		mov	r3, #30
+  46 0010 FB18     		add	r3, r7, r3
+  47 0012 BA1D     		add	r2, r7, #6
+  48 0014 1288     		ldrh	r2, [r2]
+  49 0016 1A80     		strh	r2, [r3]
+  65:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 3
+
+
+  66:Source\FastMathFunctions/arm_sqrt_q15.c ****   /* If the input is a positive number then compute the signBits. */
+  67:Source\FastMathFunctions/arm_sqrt_q15.c ****   if (number > 0)
+  50              		.loc 1 67 0
+  51 0018 1E23     		mov	r3, #30
+  52 001a FB18     		add	r3, r7, r3
+  53 001c 0022     		mov	r2, #0
+  54 001e 9B5E     		ldrsh	r3, [r3, r2]
+  55 0020 002B     		cmp	r3, #0
+  56 0022 00DC     		bgt	.LCB25
+  57 0024 12E1     		b	.L2	@long jump
+  58              	.LCB25:
+  68:Source\FastMathFunctions/arm_sqrt_q15.c ****   {
+  69:Source\FastMathFunctions/arm_sqrt_q15.c ****     signBits1 = __CLZ(number) - 17;
+  59              		.loc 1 69 0
+  60 0026 1E23     		mov	r3, #30
+  61 0028 FB18     		add	r3, r7, r3
+  62 002a 0022     		mov	r2, #0
+  63 002c 9B5E     		ldrsh	r3, [r3, r2]
+  64 002e 181C     		mov	r0, r3
+  65 0030 FFF7FEFF 		bl	__clzsi2
+  66 0034 031C     		mov	r3, r0
+  67 0036 9BB2     		uxth	r3, r3
+  68 0038 113B     		sub	r3, r3, #17
+  69 003a 9AB2     		uxth	r2, r3
+  70 003c 1A23     		mov	r3, #26
+  71 003e FB18     		add	r3, r7, r3
+  72 0040 1A80     		strh	r2, [r3]
+  70:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  71:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Shift by the number of signBits1 */
+  72:Source\FastMathFunctions/arm_sqrt_q15.c ****     if ((signBits1 % 2) == 0)
+  73              		.loc 1 72 0
+  74 0042 1A23     		mov	r3, #26
+  75 0044 FB18     		add	r3, r7, r3
+  76 0046 1B88     		ldrh	r3, [r3]
+  77 0048 0122     		mov	r2, #1
+  78 004a 1340     		and	r3, r2
+  79 004c 9BB2     		uxth	r3, r3
+  80 004e 002B     		cmp	r3, #0
+  81 0050 0CD1     		bne	.L3
+  73:Source\FastMathFunctions/arm_sqrt_q15.c ****     {
+  74:Source\FastMathFunctions/arm_sqrt_q15.c ****       number = number << signBits1;
+  82              		.loc 1 74 0
+  83 0052 1E23     		mov	r3, #30
+  84 0054 FB18     		add	r3, r7, r3
+  85 0056 0022     		mov	r2, #0
+  86 0058 9A5E     		ldrsh	r2, [r3, r2]
+  87 005a 1A23     		mov	r3, #26
+  88 005c FB18     		add	r3, r7, r3
+  89 005e 0021     		mov	r1, #0
+  90 0060 5B5E     		ldrsh	r3, [r3, r1]
+  91 0062 9A40     		lsl	r2, r2, r3
+  92 0064 1E23     		mov	r3, #30
+  93 0066 FB18     		add	r3, r7, r3
+  94 0068 1A80     		strh	r2, [r3]
+  95 006a 0CE0     		b	.L4
+  96              	.L3:
+  75:Source\FastMathFunctions/arm_sqrt_q15.c ****     }
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 4
+
+
+  76:Source\FastMathFunctions/arm_sqrt_q15.c ****     else
+  77:Source\FastMathFunctions/arm_sqrt_q15.c ****     {
+  78:Source\FastMathFunctions/arm_sqrt_q15.c ****       number = number << (signBits1 - 1);
+  97              		.loc 1 78 0
+  98 006c 1E23     		mov	r3, #30
+  99 006e FB18     		add	r3, r7, r3
+ 100 0070 0022     		mov	r2, #0
+ 101 0072 9A5E     		ldrsh	r2, [r3, r2]
+ 102 0074 1A23     		mov	r3, #26
+ 103 0076 FB18     		add	r3, r7, r3
+ 104 0078 0021     		mov	r1, #0
+ 105 007a 5B5E     		ldrsh	r3, [r3, r1]
+ 106 007c 013B     		sub	r3, r3, #1
+ 107 007e 9A40     		lsl	r2, r2, r3
+ 108 0080 1E23     		mov	r3, #30
+ 109 0082 FB18     		add	r3, r7, r3
+ 110 0084 1A80     		strh	r2, [r3]
+ 111              	.L4:
+  79:Source\FastMathFunctions/arm_sqrt_q15.c ****     }
+  80:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  81:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Calculate half value of the number */
+  82:Source\FastMathFunctions/arm_sqrt_q15.c ****     half = number >> 1;
+ 112              		.loc 1 82 0
+ 113 0086 1823     		mov	r3, #24
+ 114 0088 FB18     		add	r3, r7, r3
+ 115 008a 1E22     		mov	r2, #30
+ 116 008c BA18     		add	r2, r7, r2
+ 117 008e 0021     		mov	r1, #0
+ 118 0090 525E     		ldrsh	r2, [r2, r1]
+ 119 0092 5210     		asr	r2, r2, #1
+ 120 0094 1A80     		strh	r2, [r3]
+  83:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Store the number for later use */
+  84:Source\FastMathFunctions/arm_sqrt_q15.c ****     temp1 = number;
+ 121              		.loc 1 84 0
+ 122 0096 1623     		mov	r3, #22
+ 123 0098 FB18     		add	r3, r7, r3
+ 124 009a 1E22     		mov	r2, #30
+ 125 009c BA18     		add	r2, r7, r2
+ 126 009e 1288     		ldrh	r2, [r2]
+ 127 00a0 1A80     		strh	r2, [r3]
+  85:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  86:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Convert to float */
+  87:Source\FastMathFunctions/arm_sqrt_q15.c ****     temp_float1 = number * 3.051757812500000e-005f;
+ 128              		.loc 1 87 0
+ 129 00a2 1E23     		mov	r3, #30
+ 130 00a4 FB18     		add	r3, r7, r3
+ 131 00a6 0022     		mov	r2, #0
+ 132 00a8 9B5E     		ldrsh	r3, [r3, r2]
+ 133 00aa 181C     		mov	r0, r3
+ 134 00ac FFF7FEFF 		bl	__aeabi_i2f
+ 135 00b0 031C     		add	r3, r0, #0
+ 136 00b2 181C     		add	r0, r3, #0
+ 137 00b4 E021     		mov	r1, #224
+ 138 00b6 8905     		lsl	r1, r1, #22
+ 139 00b8 FFF7FEFF 		bl	__aeabi_fmul
+ 140 00bc 031C     		add	r3, r0, #0
+ 141 00be 3B61     		str	r3, [r7, #16]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 5
+
+
+  88:Source\FastMathFunctions/arm_sqrt_q15.c ****     /*Store as integer */
+  89:Source\FastMathFunctions/arm_sqrt_q15.c ****     tempconv.floatval = temp_float1;
+ 142              		.loc 1 89 0
+ 143 00c0 3B69     		ldr	r3, [r7, #16]
+ 144 00c2 BB60     		str	r3, [r7, #8]
+  90:Source\FastMathFunctions/arm_sqrt_q15.c ****     bits_val1 = tempconv.fracval;
+ 145              		.loc 1 90 0
+ 146 00c4 BB68     		ldr	r3, [r7, #8]
+ 147 00c6 FB60     		str	r3, [r7, #12]
+  91:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Subtract the shifted value from the magic number to give intial guess */
+  92:Source\FastMathFunctions/arm_sqrt_q15.c ****     bits_val1 = 0x5f3759df - (bits_val1 >> 1);  /* gives initial guess */
+ 148              		.loc 1 92 0
+ 149 00c8 FB68     		ldr	r3, [r7, #12]
+ 150 00ca 5B10     		asr	r3, r3, #1
+ 151 00cc 644A     		ldr	r2, .L11
+ 152 00ce D31A     		sub	r3, r2, r3
+ 153 00d0 FB60     		str	r3, [r7, #12]
+  93:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Store as float */
+  94:Source\FastMathFunctions/arm_sqrt_q15.c ****     tempconv.fracval = bits_val1;
+ 154              		.loc 1 94 0
+ 155 00d2 FB68     		ldr	r3, [r7, #12]
+ 156 00d4 BB60     		str	r3, [r7, #8]
+  95:Source\FastMathFunctions/arm_sqrt_q15.c ****     temp_float1 = tempconv.floatval;
+ 157              		.loc 1 95 0
+ 158 00d6 BB68     		ldr	r3, [r7, #8]
+ 159 00d8 3B61     		str	r3, [r7, #16]
+  96:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Convert to integer format */
+  97:Source\FastMathFunctions/arm_sqrt_q15.c ****     var1 = (q31_t) (temp_float1 * 16384);
+ 160              		.loc 1 97 0
+ 161 00da 3869     		ldr	r0, [r7, #16]
+ 162 00dc 8D21     		mov	r1, #141
+ 163 00de C905     		lsl	r1, r1, #23
+ 164 00e0 FFF7FEFF 		bl	__aeabi_fmul
+ 165 00e4 031C     		add	r3, r0, #0
+ 166 00e6 181C     		add	r0, r3, #0
+ 167 00e8 FFF7FEFF 		bl	__aeabi_f2iz
+ 168 00ec 021C     		mov	r2, r0
+ 169 00ee 1C23     		mov	r3, #28
+ 170 00f0 FB18     		add	r3, r7, r3
+ 171 00f2 1A80     		strh	r2, [r3]
+  98:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+  99:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* 1st iteration */
+ 100:Source\FastMathFunctions/arm_sqrt_q15.c ****     var1 = ((q15_t) ((q31_t) var1 * (0x3000 -
+ 172              		.loc 1 100 0
+ 173 00f4 1C23     		mov	r3, #28
+ 174 00f6 FB18     		add	r3, r7, r3
+ 175 00f8 0022     		mov	r2, #0
+ 176 00fa 9B5E     		ldrsh	r3, [r3, r2]
+ 101:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 102:Source\FastMathFunctions/arm_sqrt_q15.c ****                                       ((((q15_t)
+ 103:Source\FastMathFunctions/arm_sqrt_q15.c ****                                          (((q31_t) var1 * var1) >> 15)) *
+ 177              		.loc 1 103 0
+ 178 00fc 1C22     		mov	r2, #28
+ 179 00fe BA18     		add	r2, r7, r2
+ 180 0100 0021     		mov	r1, #0
+ 181 0102 525E     		ldrsh	r2, [r2, r1]
+ 182 0104 1C21     		mov	r1, #28
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 6
+
+
+ 183 0106 7918     		add	r1, r7, r1
+ 184 0108 0020     		mov	r0, #0
+ 185 010a 095E     		ldrsh	r1, [r1, r0]
+ 186 010c 4A43     		mul	r2, r1
+ 187 010e D213     		asr	r2, r2, #15
+ 102:Source\FastMathFunctions/arm_sqrt_q15.c ****                                          (((q31_t) var1 * var1) >> 15)) *
+ 188              		.loc 1 102 0
+ 189 0110 92B2     		uxth	r2, r2
+ 190              		.loc 1 103 0
+ 191 0112 12B2     		sxth	r2, r2
+ 104:Source\FastMathFunctions/arm_sqrt_q15.c ****                                         (q31_t) half) >> 15))) >> 15)) << 2;
+ 192              		.loc 1 104 0
+ 193 0114 1821     		mov	r1, #24
+ 194 0116 7918     		add	r1, r7, r1
+ 195 0118 0020     		mov	r0, #0
+ 196 011a 095E     		ldrsh	r1, [r1, r0]
+ 103:Source\FastMathFunctions/arm_sqrt_q15.c ****                                         (q31_t) half) >> 15))) >> 15)) << 2;
+ 197              		.loc 1 103 0
+ 198 011c 4A43     		mul	r2, r1
+ 199              		.loc 1 104 0
+ 200 011e D213     		asr	r2, r2, #15
+ 101:Source\FastMathFunctions/arm_sqrt_q15.c ****                                       ((((q15_t)
+ 201              		.loc 1 101 0
+ 202 0120 92B2     		uxth	r2, r2
+ 100:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 203              		.loc 1 100 0
+ 204 0122 12B2     		sxth	r2, r2
+ 205 0124 C021     		mov	r1, #192
+ 206 0126 8901     		lsl	r1, r1, #6
+ 207 0128 8A1A     		sub	r2, r1, r2
+ 208 012a 5343     		mul	r3, r2
+ 209              		.loc 1 104 0
+ 210 012c DB13     		asr	r3, r3, #15
+ 100:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 211              		.loc 1 100 0
+ 212 012e 9BB2     		uxth	r3, r3
+ 213              		.loc 1 104 0
+ 214 0130 1BB2     		sxth	r3, r3
+ 215 0132 9A00     		lsl	r2, r3, #2
+ 100:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 216              		.loc 1 100 0
+ 217 0134 1C23     		mov	r3, #28
+ 218 0136 FB18     		add	r3, r7, r3
+ 219 0138 1A80     		strh	r2, [r3]
+ 105:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* 2nd iteration */
+ 106:Source\FastMathFunctions/arm_sqrt_q15.c ****     var1 = ((q15_t) ((q31_t) var1 * (0x3000 -
+ 220              		.loc 1 106 0
+ 221 013a 1C23     		mov	r3, #28
+ 222 013c FB18     		add	r3, r7, r3
+ 223 013e 0022     		mov	r2, #0
+ 224 0140 9B5E     		ldrsh	r3, [r3, r2]
+ 107:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 108:Source\FastMathFunctions/arm_sqrt_q15.c ****                                       ((((q15_t)
+ 109:Source\FastMathFunctions/arm_sqrt_q15.c ****                                          (((q31_t) var1 * var1) >> 15)) *
+ 225              		.loc 1 109 0
+ 226 0142 1C22     		mov	r2, #28
+ 227 0144 BA18     		add	r2, r7, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 7
+
+
+ 228 0146 0021     		mov	r1, #0
+ 229 0148 525E     		ldrsh	r2, [r2, r1]
+ 230 014a 1C21     		mov	r1, #28
+ 231 014c 7918     		add	r1, r7, r1
+ 232 014e 0020     		mov	r0, #0
+ 233 0150 095E     		ldrsh	r1, [r1, r0]
+ 234 0152 4A43     		mul	r2, r1
+ 235 0154 D213     		asr	r2, r2, #15
+ 108:Source\FastMathFunctions/arm_sqrt_q15.c ****                                          (((q31_t) var1 * var1) >> 15)) *
+ 236              		.loc 1 108 0
+ 237 0156 92B2     		uxth	r2, r2
+ 238              		.loc 1 109 0
+ 239 0158 12B2     		sxth	r2, r2
+ 110:Source\FastMathFunctions/arm_sqrt_q15.c ****                                         (q31_t) half) >> 15))) >> 15)) << 2;
+ 240              		.loc 1 110 0
+ 241 015a 1821     		mov	r1, #24
+ 242 015c 7918     		add	r1, r7, r1
+ 243 015e 0020     		mov	r0, #0
+ 244 0160 095E     		ldrsh	r1, [r1, r0]
+ 109:Source\FastMathFunctions/arm_sqrt_q15.c ****                                         (q31_t) half) >> 15))) >> 15)) << 2;
+ 245              		.loc 1 109 0
+ 246 0162 4A43     		mul	r2, r1
+ 247              		.loc 1 110 0
+ 248 0164 D213     		asr	r2, r2, #15
+ 107:Source\FastMathFunctions/arm_sqrt_q15.c ****                                       ((((q15_t)
+ 249              		.loc 1 107 0
+ 250 0166 92B2     		uxth	r2, r2
+ 106:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 251              		.loc 1 106 0
+ 252 0168 12B2     		sxth	r2, r2
+ 253 016a C021     		mov	r1, #192
+ 254 016c 8901     		lsl	r1, r1, #6
+ 255 016e 8A1A     		sub	r2, r1, r2
+ 256 0170 5343     		mul	r3, r2
+ 257              		.loc 1 110 0
+ 258 0172 DB13     		asr	r3, r3, #15
+ 106:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 259              		.loc 1 106 0
+ 260 0174 9BB2     		uxth	r3, r3
+ 261              		.loc 1 110 0
+ 262 0176 1BB2     		sxth	r3, r3
+ 263 0178 9A00     		lsl	r2, r3, #2
+ 106:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 264              		.loc 1 106 0
+ 265 017a 1C23     		mov	r3, #28
+ 266 017c FB18     		add	r3, r7, r3
+ 267 017e 1A80     		strh	r2, [r3]
+ 111:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* 3rd iteration */
+ 112:Source\FastMathFunctions/arm_sqrt_q15.c ****     var1 = ((q15_t) ((q31_t) var1 * (0x3000 -
+ 268              		.loc 1 112 0
+ 269 0180 1C23     		mov	r3, #28
+ 270 0182 FB18     		add	r3, r7, r3
+ 271 0184 0022     		mov	r2, #0
+ 272 0186 9B5E     		ldrsh	r3, [r3, r2]
+ 113:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 114:Source\FastMathFunctions/arm_sqrt_q15.c ****                                       ((((q15_t)
+ 115:Source\FastMathFunctions/arm_sqrt_q15.c ****                                          (((q31_t) var1 * var1) >> 15)) *
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 8
+
+
+ 273              		.loc 1 115 0
+ 274 0188 1C22     		mov	r2, #28
+ 275 018a BA18     		add	r2, r7, r2
+ 276 018c 0021     		mov	r1, #0
+ 277 018e 525E     		ldrsh	r2, [r2, r1]
+ 278 0190 1C21     		mov	r1, #28
+ 279 0192 7918     		add	r1, r7, r1
+ 280 0194 0020     		mov	r0, #0
+ 281 0196 095E     		ldrsh	r1, [r1, r0]
+ 282 0198 4A43     		mul	r2, r1
+ 283 019a D213     		asr	r2, r2, #15
+ 114:Source\FastMathFunctions/arm_sqrt_q15.c ****                                          (((q31_t) var1 * var1) >> 15)) *
+ 284              		.loc 1 114 0
+ 285 019c 92B2     		uxth	r2, r2
+ 286              		.loc 1 115 0
+ 287 019e 12B2     		sxth	r2, r2
+ 116:Source\FastMathFunctions/arm_sqrt_q15.c ****                                         (q31_t) half) >> 15))) >> 15)) << 2;
+ 288              		.loc 1 116 0
+ 289 01a0 1821     		mov	r1, #24
+ 290 01a2 7918     		add	r1, r7, r1
+ 291 01a4 0020     		mov	r0, #0
+ 292 01a6 095E     		ldrsh	r1, [r1, r0]
+ 115:Source\FastMathFunctions/arm_sqrt_q15.c ****                                         (q31_t) half) >> 15))) >> 15)) << 2;
+ 293              		.loc 1 115 0
+ 294 01a8 4A43     		mul	r2, r1
+ 295              		.loc 1 116 0
+ 296 01aa D213     		asr	r2, r2, #15
+ 113:Source\FastMathFunctions/arm_sqrt_q15.c ****                                       ((((q15_t)
+ 297              		.loc 1 113 0
+ 298 01ac 92B2     		uxth	r2, r2
+ 112:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 299              		.loc 1 112 0
+ 300 01ae 12B2     		sxth	r2, r2
+ 301 01b0 C021     		mov	r1, #192
+ 302 01b2 8901     		lsl	r1, r1, #6
+ 303 01b4 8A1A     		sub	r2, r1, r2
+ 304 01b6 5343     		mul	r3, r2
+ 305              		.loc 1 116 0
+ 306 01b8 DB13     		asr	r3, r3, #15
+ 112:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 307              		.loc 1 112 0
+ 308 01ba 9BB2     		uxth	r3, r3
+ 309              		.loc 1 116 0
+ 310 01bc 1BB2     		sxth	r3, r3
+ 311 01be 9A00     		lsl	r2, r3, #2
+ 112:Source\FastMathFunctions/arm_sqrt_q15.c ****                                      ((q15_t)
+ 312              		.loc 1 112 0
+ 313 01c0 1C23     		mov	r3, #28
+ 314 01c2 FB18     		add	r3, r7, r3
+ 315 01c4 1A80     		strh	r2, [r3]
+ 117:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+ 118:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Multiply the inverse square root with the original value */
+ 119:Source\FastMathFunctions/arm_sqrt_q15.c ****     var1 = ((q15_t) (((q31_t) temp1 * var1) >> 15)) << 1;
+ 316              		.loc 1 119 0
+ 317 01c6 1623     		mov	r3, #22
+ 318 01c8 FB18     		add	r3, r7, r3
+ 319 01ca 0022     		mov	r2, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 9
+
+
+ 320 01cc 9B5E     		ldrsh	r3, [r3, r2]
+ 321 01ce 1C22     		mov	r2, #28
+ 322 01d0 BA18     		add	r2, r7, r2
+ 323 01d2 0021     		mov	r1, #0
+ 324 01d4 525E     		ldrsh	r2, [r2, r1]
+ 325 01d6 5343     		mul	r3, r2
+ 326 01d8 DB13     		asr	r3, r3, #15
+ 327 01da 9BB2     		uxth	r3, r3
+ 328 01dc 1BB2     		sxth	r3, r3
+ 329 01de 5A00     		lsl	r2, r3, #1
+ 330 01e0 1C23     		mov	r3, #28
+ 331 01e2 FB18     		add	r3, r7, r3
+ 332 01e4 1A80     		strh	r2, [r3]
+ 120:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+ 121:Source\FastMathFunctions/arm_sqrt_q15.c ****     /* Shift the output down accordingly */
+ 122:Source\FastMathFunctions/arm_sqrt_q15.c ****     if ((signBits1 % 2) == 0)
+ 333              		.loc 1 122 0
+ 334 01e6 1A23     		mov	r3, #26
+ 335 01e8 FB18     		add	r3, r7, r3
+ 336 01ea 1B88     		ldrh	r3, [r3]
+ 337 01ec 0122     		mov	r2, #1
+ 338 01ee 1340     		and	r3, r2
+ 339 01f0 9BB2     		uxth	r3, r3
+ 340 01f2 002B     		cmp	r3, #0
+ 341 01f4 12D1     		bne	.L5
+ 123:Source\FastMathFunctions/arm_sqrt_q15.c ****     {
+ 124:Source\FastMathFunctions/arm_sqrt_q15.c ****       var1 = var1 >> (signBits1 / 2);
+ 342              		.loc 1 124 0
+ 343 01f6 1C23     		mov	r3, #28
+ 344 01f8 FB18     		add	r3, r7, r3
+ 345 01fa 0022     		mov	r2, #0
+ 346 01fc 9A5E     		ldrsh	r2, [r3, r2]
+ 347 01fe 1A23     		mov	r3, #26
+ 348 0200 FB18     		add	r3, r7, r3
+ 349 0202 0021     		mov	r1, #0
+ 350 0204 5B5E     		ldrsh	r3, [r3, r1]
+ 351 0206 002B     		cmp	r3, #0
+ 352 0208 00DA     		bge	.L6
+ 353 020a 0133     		add	r3, r3, #1
+ 354              	.L6:
+ 355 020c 5B10     		asr	r3, r3, #1
+ 356 020e 9BB2     		uxth	r3, r3
+ 357 0210 1BB2     		sxth	r3, r3
+ 358 0212 1A41     		asr	r2, r2, r3
+ 359 0214 1C23     		mov	r3, #28
+ 360 0216 FB18     		add	r3, r7, r3
+ 361 0218 1A80     		strh	r2, [r3]
+ 362 021a 10E0     		b	.L7
+ 363              	.L5:
+ 125:Source\FastMathFunctions/arm_sqrt_q15.c ****     }
+ 126:Source\FastMathFunctions/arm_sqrt_q15.c ****     else
+ 127:Source\FastMathFunctions/arm_sqrt_q15.c ****     {
+ 128:Source\FastMathFunctions/arm_sqrt_q15.c ****       var1 = var1 >> ((signBits1 - 1) / 2);
+ 364              		.loc 1 128 0
+ 365 021c 1C23     		mov	r3, #28
+ 366 021e FB18     		add	r3, r7, r3
+ 367 0220 0022     		mov	r2, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 10
+
+
+ 368 0222 9A5E     		ldrsh	r2, [r3, r2]
+ 369 0224 1A23     		mov	r3, #26
+ 370 0226 FB18     		add	r3, r7, r3
+ 371 0228 0021     		mov	r1, #0
+ 372 022a 5B5E     		ldrsh	r3, [r3, r1]
+ 373 022c 013B     		sub	r3, r3, #1
+ 374 022e 002B     		cmp	r3, #0
+ 375 0230 00DA     		bge	.L8
+ 376 0232 0133     		add	r3, r3, #1
+ 377              	.L8:
+ 378 0234 5B10     		asr	r3, r3, #1
+ 379 0236 1A41     		asr	r2, r2, r3
+ 380 0238 1C23     		mov	r3, #28
+ 381 023a FB18     		add	r3, r7, r3
+ 382 023c 1A80     		strh	r2, [r3]
+ 383              	.L7:
+ 129:Source\FastMathFunctions/arm_sqrt_q15.c ****     }
+ 130:Source\FastMathFunctions/arm_sqrt_q15.c ****     *pOut = var1;
+ 384              		.loc 1 130 0
+ 385 023e 3B68     		ldr	r3, [r7]
+ 386 0240 1C22     		mov	r2, #28
+ 387 0242 BA18     		add	r2, r7, r2
+ 388 0244 1288     		ldrh	r2, [r2]
+ 389 0246 1A80     		strh	r2, [r3]
+ 131:Source\FastMathFunctions/arm_sqrt_q15.c **** 
+ 132:Source\FastMathFunctions/arm_sqrt_q15.c ****     return (ARM_MATH_SUCCESS);
+ 390              		.loc 1 132 0
+ 391 0248 0023     		mov	r3, #0
+ 392 024a 03E0     		b	.L10
+ 393              	.L2:
+ 133:Source\FastMathFunctions/arm_sqrt_q15.c ****   }
+ 134:Source\FastMathFunctions/arm_sqrt_q15.c ****   /* If the number is a negative number then store zero as its square root value */
+ 135:Source\FastMathFunctions/arm_sqrt_q15.c ****   else
+ 136:Source\FastMathFunctions/arm_sqrt_q15.c ****   {
+ 137:Source\FastMathFunctions/arm_sqrt_q15.c ****     *pOut = 0;
+ 394              		.loc 1 137 0
+ 395 024c 3B68     		ldr	r3, [r7]
+ 396 024e 0022     		mov	r2, #0
+ 397 0250 1A80     		strh	r2, [r3]
+ 138:Source\FastMathFunctions/arm_sqrt_q15.c ****     return (ARM_MATH_ARGUMENT_ERROR);
+ 398              		.loc 1 138 0
+ 399 0252 FF23     		mov	r3, #255
+ 400              	.L10:
+ 401 0254 5BB2     		sxtb	r3, r3
+ 139:Source\FastMathFunctions/arm_sqrt_q15.c ****   }
+ 140:Source\FastMathFunctions/arm_sqrt_q15.c **** }
+ 402              		.loc 1 140 0 discriminator 1
+ 403 0256 181C     		mov	r0, r3
+ 404 0258 BD46     		mov	sp, r7
+ 405 025a 08B0     		add	sp, sp, #32
+ 406              		@ sp needed
+ 407 025c 80BD     		pop	{r7, pc}
+ 408              	.L12:
+ 409 025e C046     		.align	2
+ 410              	.L11:
+ 411 0260 DF59375F 		.word	1597463007
+ 412              		.cfi_endproc
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 11
+
+
+ 413              	.LFE82:
+ 414              		.size	arm_sqrt_q15, .-arm_sqrt_q15
+ 415              		.text
+ 416              	.Letext0:
+ 417              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 418              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 419              		.file 4 ".\\Include/arm_math.h"
+ 420              		.section	.debug_info,"",%progbits
+ 421              	.Ldebug_info0:
+ 422 0000 E1010000 		.4byte	0x1e1
+ 423 0004 0400     		.2byte	0x4
+ 424 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 425 000a 04       		.byte	0x4
+ 426 000b 01       		.uleb128 0x1
+ 427 000c 78010000 		.4byte	.LASF40
+ 428 0010 01       		.byte	0x1
+ 429 0011 02010000 		.4byte	.LASF41
+ 430 0015 38000000 		.4byte	.LASF42
+ 431 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 432 001d 00000000 		.4byte	0
+ 433 0021 00000000 		.4byte	.Ldebug_line0
+ 434 0025 02       		.uleb128 0x2
+ 435 0026 01       		.byte	0x1
+ 436 0027 06       		.byte	0x6
+ 437 0028 AE020000 		.4byte	.LASF0
+ 438 002c 02       		.uleb128 0x2
+ 439 002d 01       		.byte	0x1
+ 440 002e 08       		.byte	0x8
+ 441 002f B2000000 		.4byte	.LASF1
+ 442 0033 03       		.uleb128 0x3
+ 443 0034 1B000000 		.4byte	.LASF4
+ 444 0038 02       		.byte	0x2
+ 445 0039 29       		.byte	0x29
+ 446 003a 3E000000 		.4byte	0x3e
+ 447 003e 02       		.uleb128 0x2
+ 448 003f 02       		.byte	0x2
+ 449 0040 05       		.byte	0x5
+ 450 0041 81020000 		.4byte	.LASF2
+ 451 0045 02       		.uleb128 0x2
+ 452 0046 02       		.byte	0x2
+ 453 0047 07       		.byte	0x7
+ 454 0048 D2000000 		.4byte	.LASF3
+ 455 004c 03       		.uleb128 0x3
+ 456 004d 2E000000 		.4byte	.LASF5
+ 457 0051 02       		.byte	0x2
+ 458 0052 3F       		.byte	0x3f
+ 459 0053 57000000 		.4byte	0x57
+ 460 0057 02       		.uleb128 0x2
+ 461 0058 04       		.byte	0x4
+ 462 0059 05       		.byte	0x5
+ 463 005a 93020000 		.4byte	.LASF6
+ 464 005e 02       		.uleb128 0x2
+ 465 005f 04       		.byte	0x4
+ 466 0060 07       		.byte	0x7
+ 467 0061 C0000000 		.4byte	.LASF7
+ 468 0065 02       		.uleb128 0x2
+ 469 0066 08       		.byte	0x8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 12
+
+
+ 470 0067 05       		.byte	0x5
+ 471 0068 44020000 		.4byte	.LASF8
+ 472 006c 02       		.uleb128 0x2
+ 473 006d 08       		.byte	0x8
+ 474 006e 07       		.byte	0x7
+ 475 006f 61010000 		.4byte	.LASF9
+ 476 0073 04       		.uleb128 0x4
+ 477 0074 04       		.byte	0x4
+ 478 0075 05       		.byte	0x5
+ 479 0076 696E7400 		.ascii	"int\000"
+ 480 007a 02       		.uleb128 0x2
+ 481 007b 04       		.byte	0x4
+ 482 007c 07       		.byte	0x7
+ 483 007d 47010000 		.4byte	.LASF10
+ 484 0081 03       		.uleb128 0x3
+ 485 0082 1A020000 		.4byte	.LASF11
+ 486 0086 03       		.byte	0x3
+ 487 0087 20       		.byte	0x20
+ 488 0088 33000000 		.4byte	0x33
+ 489 008c 03       		.uleb128 0x3
+ 490 008d 29020000 		.4byte	.LASF12
+ 491 0091 03       		.byte	0x3
+ 492 0092 2C       		.byte	0x2c
+ 493 0093 4C000000 		.4byte	0x4c
+ 494 0097 02       		.uleb128 0x2
+ 495 0098 04       		.byte	0x4
+ 496 0099 07       		.byte	0x7
+ 497 009a 31020000 		.4byte	.LASF13
+ 498 009e 02       		.uleb128 0x2
+ 499 009f 01       		.byte	0x1
+ 500 00a0 08       		.byte	0x8
+ 501 00a1 5B020000 		.4byte	.LASF14
+ 502 00a5 02       		.uleb128 0x2
+ 503 00a6 08       		.byte	0x8
+ 504 00a7 04       		.byte	0x4
+ 505 00a8 FB000000 		.4byte	.LASF15
+ 506 00ac 02       		.uleb128 0x2
+ 507 00ad 04       		.byte	0x4
+ 508 00ae 04       		.byte	0x4
+ 509 00af A8020000 		.4byte	.LASF16
+ 510 00b3 02       		.uleb128 0x2
+ 511 00b4 08       		.byte	0x8
+ 512 00b5 04       		.byte	0x4
+ 513 00b6 9C020000 		.4byte	.LASF17
+ 514 00ba 05       		.uleb128 0x5
+ 515 00bb 01       		.byte	0x1
+ 516 00bc 04       		.byte	0x4
+ 517 00bd 8401     		.2byte	0x184
+ 518 00bf EE000000 		.4byte	0xee
+ 519 00c3 06       		.uleb128 0x6
+ 520 00c4 70020000 		.4byte	.LASF18
+ 521 00c8 00       		.sleb128 0
+ 522 00c9 06       		.uleb128 0x6
+ 523 00ca 2A010000 		.4byte	.LASF19
+ 524 00ce 7F       		.sleb128 -1
+ 525 00cf 06       		.uleb128 0x6
+ 526 00d0 05000000 		.4byte	.LASF20
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 13
+
+
+ 527 00d4 7E       		.sleb128 -2
+ 528 00d5 06       		.uleb128 0x6
+ 529 00d6 7E000000 		.4byte	.LASF21
+ 530 00da 7D       		.sleb128 -3
+ 531 00db 06       		.uleb128 0x6
+ 532 00dc 0A020000 		.4byte	.LASF22
+ 533 00e0 7C       		.sleb128 -4
+ 534 00e1 06       		.uleb128 0x6
+ 535 00e2 CF020000 		.4byte	.LASF23
+ 536 00e6 7B       		.sleb128 -5
+ 537 00e7 06       		.uleb128 0x6
+ 538 00e8 E5000000 		.4byte	.LASF24
+ 539 00ec 7A       		.sleb128 -6
+ 540 00ed 00       		.byte	0
+ 541 00ee 07       		.uleb128 0x7
+ 542 00ef C4020000 		.4byte	.LASF25
+ 543 00f3 04       		.byte	0x4
+ 544 00f4 8C01     		.2byte	0x18c
+ 545 00f6 BA000000 		.4byte	0xba
+ 546 00fa 07       		.uleb128 0x7
+ 547 00fb 95000000 		.4byte	.LASF26
+ 548 00ff 04       		.byte	0x4
+ 549 0100 9601     		.2byte	0x196
+ 550 0102 81000000 		.4byte	0x81
+ 551 0106 07       		.uleb128 0x7
+ 552 0107 AC000000 		.4byte	.LASF27
+ 553 010b 04       		.byte	0x4
+ 554 010c 9B01     		.2byte	0x19b
+ 555 010e 8C000000 		.4byte	0x8c
+ 556 0112 07       		.uleb128 0x7
+ 557 0113 66020000 		.4byte	.LASF28
+ 558 0117 04       		.byte	0x4
+ 559 0118 A501     		.2byte	0x1a5
+ 560 011a AC000000 		.4byte	0xac
+ 561 011e 08       		.uleb128 0x8
+ 562 011f 04       		.byte	0x4
+ 563 0120 FA000000 		.4byte	0xfa
+ 564 0124 09       		.uleb128 0x9
+ 565 0125 54010000 		.4byte	.LASF43
+ 566 0129 01       		.byte	0x1
+ 567 012a 33       		.byte	0x33
+ 568 012b EE000000 		.4byte	0xee
+ 569 012f 00000000 		.4byte	.LFB82
+ 570 0133 64020000 		.4byte	.LFE82-.LFB82
+ 571 0137 01       		.uleb128 0x1
+ 572 0138 9C       		.byte	0x9c
+ 573 0139 0A       		.uleb128 0xa
+ 574 013a 696E00   		.ascii	"in\000"
+ 575 013d 01       		.byte	0x1
+ 576 013e 34       		.byte	0x34
+ 577 013f FA000000 		.4byte	0xfa
+ 578 0143 02       		.uleb128 0x2
+ 579 0144 91       		.byte	0x91
+ 580 0145 5E       		.sleb128 -34
+ 581 0146 0B       		.uleb128 0xb
+ 582 0147 9B000000 		.4byte	.LASF29
+ 583 014b 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 14
+
+
+ 584 014c 35       		.byte	0x35
+ 585 014d 1E010000 		.4byte	0x11e
+ 586 0151 02       		.uleb128 0x2
+ 587 0152 91       		.byte	0x91
+ 588 0153 58       		.sleb128 -40
+ 589 0154 0C       		.uleb128 0xc
+ 590 0155 22020000 		.4byte	.LASF30
+ 591 0159 01       		.byte	0x1
+ 592 015a 37       		.byte	0x37
+ 593 015b FA000000 		.4byte	0xfa
+ 594 015f 02       		.uleb128 0x2
+ 595 0160 91       		.byte	0x91
+ 596 0161 76       		.sleb128 -10
+ 597 0162 0C       		.uleb128 0xc
+ 598 0163 60020000 		.4byte	.LASF31
+ 599 0167 01       		.byte	0x1
+ 600 0168 37       		.byte	0x37
+ 601 0169 FA000000 		.4byte	0xfa
+ 602 016d 02       		.uleb128 0x2
+ 603 016e 91       		.byte	0x91
+ 604 016f 6E       		.sleb128 -18
+ 605 0170 0C       		.uleb128 0xc
+ 606 0171 42010000 		.4byte	.LASF32
+ 607 0175 01       		.byte	0x1
+ 608 0176 37       		.byte	0x37
+ 609 0177 FA000000 		.4byte	0xfa
+ 610 017b 02       		.uleb128 0x2
+ 611 017c 91       		.byte	0x91
+ 612 017d 74       		.sleb128 -12
+ 613 017e 0C       		.uleb128 0xc
+ 614 017f BA020000 		.4byte	.LASF33
+ 615 0183 01       		.byte	0x1
+ 616 0184 37       		.byte	0x37
+ 617 0185 FA000000 		.4byte	0xfa
+ 618 0189 02       		.uleb128 0x2
+ 619 018a 91       		.byte	0x91
+ 620 018b 72       		.sleb128 -14
+ 621 018c 0C       		.uleb128 0xc
+ 622 018d 00000000 		.4byte	.LASF34
+ 623 0191 01       		.byte	0x1
+ 624 0192 37       		.byte	0x37
+ 625 0193 FA000000 		.4byte	0xfa
+ 626 0197 02       		.uleb128 0x2
+ 627 0198 91       		.byte	0x91
+ 628 0199 70       		.sleb128 -16
+ 629 019a 0C       		.uleb128 0xc
+ 630 019b 3A020000 		.4byte	.LASF35
+ 631 019f 01       		.byte	0x1
+ 632 01a0 38       		.byte	0x38
+ 633 01a1 06010000 		.4byte	0x106
+ 634 01a5 02       		.uleb128 0x2
+ 635 01a6 91       		.byte	0x91
+ 636 01a7 64       		.sleb128 -28
+ 637 01a8 0C       		.uleb128 0xc
+ 638 01a9 A0000000 		.4byte	.LASF36
+ 639 01ad 01       		.byte	0x1
+ 640 01ae 39       		.byte	0x39
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 15
+
+
+ 641 01af 12010000 		.4byte	0x112
+ 642 01b3 02       		.uleb128 0x2
+ 643 01b4 91       		.byte	0x91
+ 644 01b5 68       		.sleb128 -24
+ 645 01b6 0D       		.uleb128 0xd
+ 646 01b7 04       		.byte	0x4
+ 647 01b8 01       		.byte	0x1
+ 648 01b9 3A       		.byte	0x3a
+ 649 01ba D5010000 		.4byte	0x1d5
+ 650 01be 0E       		.uleb128 0xe
+ 651 01bf 8B020000 		.4byte	.LASF37
+ 652 01c3 01       		.byte	0x1
+ 653 01c4 3C       		.byte	0x3c
+ 654 01c5 06010000 		.4byte	0x106
+ 655 01c9 0E       		.uleb128 0xe
+ 656 01ca 25000000 		.4byte	.LASF38
+ 657 01ce 01       		.byte	0x1
+ 658 01cf 3D       		.byte	0x3d
+ 659 01d0 12010000 		.4byte	0x112
+ 660 01d4 00       		.byte	0
+ 661 01d5 0C       		.uleb128 0xc
+ 662 01d6 52020000 		.4byte	.LASF39
+ 663 01da 01       		.byte	0x1
+ 664 01db 3E       		.byte	0x3e
+ 665 01dc B6010000 		.4byte	0x1b6
+ 666 01e0 02       		.uleb128 0x2
+ 667 01e1 91       		.byte	0x91
+ 668 01e2 60       		.sleb128 -32
+ 669 01e3 00       		.byte	0
+ 670 01e4 00       		.byte	0
+ 671              		.section	.debug_abbrev,"",%progbits
+ 672              	.Ldebug_abbrev0:
+ 673 0000 01       		.uleb128 0x1
+ 674 0001 11       		.uleb128 0x11
+ 675 0002 01       		.byte	0x1
+ 676 0003 25       		.uleb128 0x25
+ 677 0004 0E       		.uleb128 0xe
+ 678 0005 13       		.uleb128 0x13
+ 679 0006 0B       		.uleb128 0xb
+ 680 0007 03       		.uleb128 0x3
+ 681 0008 0E       		.uleb128 0xe
+ 682 0009 1B       		.uleb128 0x1b
+ 683 000a 0E       		.uleb128 0xe
+ 684 000b 55       		.uleb128 0x55
+ 685 000c 17       		.uleb128 0x17
+ 686 000d 11       		.uleb128 0x11
+ 687 000e 01       		.uleb128 0x1
+ 688 000f 10       		.uleb128 0x10
+ 689 0010 17       		.uleb128 0x17
+ 690 0011 00       		.byte	0
+ 691 0012 00       		.byte	0
+ 692 0013 02       		.uleb128 0x2
+ 693 0014 24       		.uleb128 0x24
+ 694 0015 00       		.byte	0
+ 695 0016 0B       		.uleb128 0xb
+ 696 0017 0B       		.uleb128 0xb
+ 697 0018 3E       		.uleb128 0x3e
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 16
+
+
+ 698 0019 0B       		.uleb128 0xb
+ 699 001a 03       		.uleb128 0x3
+ 700 001b 0E       		.uleb128 0xe
+ 701 001c 00       		.byte	0
+ 702 001d 00       		.byte	0
+ 703 001e 03       		.uleb128 0x3
+ 704 001f 16       		.uleb128 0x16
+ 705 0020 00       		.byte	0
+ 706 0021 03       		.uleb128 0x3
+ 707 0022 0E       		.uleb128 0xe
+ 708 0023 3A       		.uleb128 0x3a
+ 709 0024 0B       		.uleb128 0xb
+ 710 0025 3B       		.uleb128 0x3b
+ 711 0026 0B       		.uleb128 0xb
+ 712 0027 49       		.uleb128 0x49
+ 713 0028 13       		.uleb128 0x13
+ 714 0029 00       		.byte	0
+ 715 002a 00       		.byte	0
+ 716 002b 04       		.uleb128 0x4
+ 717 002c 24       		.uleb128 0x24
+ 718 002d 00       		.byte	0
+ 719 002e 0B       		.uleb128 0xb
+ 720 002f 0B       		.uleb128 0xb
+ 721 0030 3E       		.uleb128 0x3e
+ 722 0031 0B       		.uleb128 0xb
+ 723 0032 03       		.uleb128 0x3
+ 724 0033 08       		.uleb128 0x8
+ 725 0034 00       		.byte	0
+ 726 0035 00       		.byte	0
+ 727 0036 05       		.uleb128 0x5
+ 728 0037 04       		.uleb128 0x4
+ 729 0038 01       		.byte	0x1
+ 730 0039 0B       		.uleb128 0xb
+ 731 003a 0B       		.uleb128 0xb
+ 732 003b 3A       		.uleb128 0x3a
+ 733 003c 0B       		.uleb128 0xb
+ 734 003d 3B       		.uleb128 0x3b
+ 735 003e 05       		.uleb128 0x5
+ 736 003f 01       		.uleb128 0x1
+ 737 0040 13       		.uleb128 0x13
+ 738 0041 00       		.byte	0
+ 739 0042 00       		.byte	0
+ 740 0043 06       		.uleb128 0x6
+ 741 0044 28       		.uleb128 0x28
+ 742 0045 00       		.byte	0
+ 743 0046 03       		.uleb128 0x3
+ 744 0047 0E       		.uleb128 0xe
+ 745 0048 1C       		.uleb128 0x1c
+ 746 0049 0D       		.uleb128 0xd
+ 747 004a 00       		.byte	0
+ 748 004b 00       		.byte	0
+ 749 004c 07       		.uleb128 0x7
+ 750 004d 16       		.uleb128 0x16
+ 751 004e 00       		.byte	0
+ 752 004f 03       		.uleb128 0x3
+ 753 0050 0E       		.uleb128 0xe
+ 754 0051 3A       		.uleb128 0x3a
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 17
+
+
+ 755 0052 0B       		.uleb128 0xb
+ 756 0053 3B       		.uleb128 0x3b
+ 757 0054 05       		.uleb128 0x5
+ 758 0055 49       		.uleb128 0x49
+ 759 0056 13       		.uleb128 0x13
+ 760 0057 00       		.byte	0
+ 761 0058 00       		.byte	0
+ 762 0059 08       		.uleb128 0x8
+ 763 005a 0F       		.uleb128 0xf
+ 764 005b 00       		.byte	0
+ 765 005c 0B       		.uleb128 0xb
+ 766 005d 0B       		.uleb128 0xb
+ 767 005e 49       		.uleb128 0x49
+ 768 005f 13       		.uleb128 0x13
+ 769 0060 00       		.byte	0
+ 770 0061 00       		.byte	0
+ 771 0062 09       		.uleb128 0x9
+ 772 0063 2E       		.uleb128 0x2e
+ 773 0064 01       		.byte	0x1
+ 774 0065 3F       		.uleb128 0x3f
+ 775 0066 19       		.uleb128 0x19
+ 776 0067 03       		.uleb128 0x3
+ 777 0068 0E       		.uleb128 0xe
+ 778 0069 3A       		.uleb128 0x3a
+ 779 006a 0B       		.uleb128 0xb
+ 780 006b 3B       		.uleb128 0x3b
+ 781 006c 0B       		.uleb128 0xb
+ 782 006d 27       		.uleb128 0x27
+ 783 006e 19       		.uleb128 0x19
+ 784 006f 49       		.uleb128 0x49
+ 785 0070 13       		.uleb128 0x13
+ 786 0071 11       		.uleb128 0x11
+ 787 0072 01       		.uleb128 0x1
+ 788 0073 12       		.uleb128 0x12
+ 789 0074 06       		.uleb128 0x6
+ 790 0075 40       		.uleb128 0x40
+ 791 0076 18       		.uleb128 0x18
+ 792 0077 9642     		.uleb128 0x2116
+ 793 0079 19       		.uleb128 0x19
+ 794 007a 00       		.byte	0
+ 795 007b 00       		.byte	0
+ 796 007c 0A       		.uleb128 0xa
+ 797 007d 05       		.uleb128 0x5
+ 798 007e 00       		.byte	0
+ 799 007f 03       		.uleb128 0x3
+ 800 0080 08       		.uleb128 0x8
+ 801 0081 3A       		.uleb128 0x3a
+ 802 0082 0B       		.uleb128 0xb
+ 803 0083 3B       		.uleb128 0x3b
+ 804 0084 0B       		.uleb128 0xb
+ 805 0085 49       		.uleb128 0x49
+ 806 0086 13       		.uleb128 0x13
+ 807 0087 02       		.uleb128 0x2
+ 808 0088 18       		.uleb128 0x18
+ 809 0089 00       		.byte	0
+ 810 008a 00       		.byte	0
+ 811 008b 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 18
+
+
+ 812 008c 05       		.uleb128 0x5
+ 813 008d 00       		.byte	0
+ 814 008e 03       		.uleb128 0x3
+ 815 008f 0E       		.uleb128 0xe
+ 816 0090 3A       		.uleb128 0x3a
+ 817 0091 0B       		.uleb128 0xb
+ 818 0092 3B       		.uleb128 0x3b
+ 819 0093 0B       		.uleb128 0xb
+ 820 0094 49       		.uleb128 0x49
+ 821 0095 13       		.uleb128 0x13
+ 822 0096 02       		.uleb128 0x2
+ 823 0097 18       		.uleb128 0x18
+ 824 0098 00       		.byte	0
+ 825 0099 00       		.byte	0
+ 826 009a 0C       		.uleb128 0xc
+ 827 009b 34       		.uleb128 0x34
+ 828 009c 00       		.byte	0
+ 829 009d 03       		.uleb128 0x3
+ 830 009e 0E       		.uleb128 0xe
+ 831 009f 3A       		.uleb128 0x3a
+ 832 00a0 0B       		.uleb128 0xb
+ 833 00a1 3B       		.uleb128 0x3b
+ 834 00a2 0B       		.uleb128 0xb
+ 835 00a3 49       		.uleb128 0x49
+ 836 00a4 13       		.uleb128 0x13
+ 837 00a5 02       		.uleb128 0x2
+ 838 00a6 18       		.uleb128 0x18
+ 839 00a7 00       		.byte	0
+ 840 00a8 00       		.byte	0
+ 841 00a9 0D       		.uleb128 0xd
+ 842 00aa 17       		.uleb128 0x17
+ 843 00ab 01       		.byte	0x1
+ 844 00ac 0B       		.uleb128 0xb
+ 845 00ad 0B       		.uleb128 0xb
+ 846 00ae 3A       		.uleb128 0x3a
+ 847 00af 0B       		.uleb128 0xb
+ 848 00b0 3B       		.uleb128 0x3b
+ 849 00b1 0B       		.uleb128 0xb
+ 850 00b2 01       		.uleb128 0x1
+ 851 00b3 13       		.uleb128 0x13
+ 852 00b4 00       		.byte	0
+ 853 00b5 00       		.byte	0
+ 854 00b6 0E       		.uleb128 0xe
+ 855 00b7 0D       		.uleb128 0xd
+ 856 00b8 00       		.byte	0
+ 857 00b9 03       		.uleb128 0x3
+ 858 00ba 0E       		.uleb128 0xe
+ 859 00bb 3A       		.uleb128 0x3a
+ 860 00bc 0B       		.uleb128 0xb
+ 861 00bd 3B       		.uleb128 0x3b
+ 862 00be 0B       		.uleb128 0xb
+ 863 00bf 49       		.uleb128 0x49
+ 864 00c0 13       		.uleb128 0x13
+ 865 00c1 00       		.byte	0
+ 866 00c2 00       		.byte	0
+ 867 00c3 00       		.byte	0
+ 868              		.section	.debug_aranges,"",%progbits
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 19
+
+
+ 869 0000 1C000000 		.4byte	0x1c
+ 870 0004 0200     		.2byte	0x2
+ 871 0006 00000000 		.4byte	.Ldebug_info0
+ 872 000a 04       		.byte	0x4
+ 873 000b 00       		.byte	0
+ 874 000c 0000     		.2byte	0
+ 875 000e 0000     		.2byte	0
+ 876 0010 00000000 		.4byte	.LFB82
+ 877 0014 64020000 		.4byte	.LFE82-.LFB82
+ 878 0018 00000000 		.4byte	0
+ 879 001c 00000000 		.4byte	0
+ 880              		.section	.debug_ranges,"",%progbits
+ 881              	.Ldebug_ranges0:
+ 882 0000 00000000 		.4byte	.LFB82
+ 883 0004 64020000 		.4byte	.LFE82
+ 884 0008 00000000 		.4byte	0
+ 885 000c 00000000 		.4byte	0
+ 886              		.section	.debug_line,"",%progbits
+ 887              	.Ldebug_line0:
+ 888 0000 AA010000 		.section	.debug_str,"MS",%progbits,1
+ 888      02004E01 
+ 888      00000201 
+ 888      FB0E0D00 
+ 888      01010101 
+ 889              	.LASF34:
+ 890 0000 68616C66 		.ascii	"half\000"
+ 890      00
+ 891              	.LASF20:
+ 892 0005 41524D5F 		.ascii	"ARM_MATH_LENGTH_ERROR\000"
+ 892      4D415448 
+ 892      5F4C454E 
+ 892      4754485F 
+ 892      4552524F 
+ 893              	.LASF4:
+ 894 001b 5F5F696E 		.ascii	"__int16_t\000"
+ 894      7431365F 
+ 894      7400
+ 895              	.LASF38:
+ 896 0025 666C6F61 		.ascii	"floatval\000"
+ 896      7476616C 
+ 896      00
+ 897              	.LASF5:
+ 898 002e 5F5F696E 		.ascii	"__int32_t\000"
+ 898      7433325F 
+ 898      7400
+ 899              	.LASF42:
+ 900 0038 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 900      73657273 
+ 900      5C666E65 
+ 900      7665735C 
+ 900      446F6375 
+ 901 0065 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 901      655F7370 
+ 901      6565645F 
+ 901      73656E73 
+ 901      6F722E63 
+ 902              	.LASF21:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 20
+
+
+ 903 007e 41524D5F 		.ascii	"ARM_MATH_SIZE_MISMATCH\000"
+ 903      4D415448 
+ 903      5F53495A 
+ 903      455F4D49 
+ 903      534D4154 
+ 904              	.LASF26:
+ 905 0095 7131355F 		.ascii	"q15_t\000"
+ 905      7400
+ 906              	.LASF29:
+ 907 009b 704F7574 		.ascii	"pOut\000"
+ 907      00
+ 908              	.LASF36:
+ 909 00a0 74656D70 		.ascii	"temp_float1\000"
+ 909      5F666C6F 
+ 909      61743100 
+ 910              	.LASF27:
+ 911 00ac 7133315F 		.ascii	"q31_t\000"
+ 911      7400
+ 912              	.LASF1:
+ 913 00b2 756E7369 		.ascii	"unsigned char\000"
+ 913      676E6564 
+ 913      20636861 
+ 913      7200
+ 914              	.LASF7:
+ 915 00c0 6C6F6E67 		.ascii	"long unsigned int\000"
+ 915      20756E73 
+ 915      69676E65 
+ 915      6420696E 
+ 915      7400
+ 916              	.LASF3:
+ 917 00d2 73686F72 		.ascii	"short unsigned int\000"
+ 917      7420756E 
+ 917      7369676E 
+ 917      65642069 
+ 917      6E7400
+ 918              	.LASF24:
+ 919 00e5 41524D5F 		.ascii	"ARM_MATH_TEST_FAILURE\000"
+ 919      4D415448 
+ 919      5F544553 
+ 919      545F4641 
+ 919      494C5552 
+ 920              	.LASF15:
+ 921 00fb 646F7562 		.ascii	"double\000"
+ 921      6C6500
+ 922              	.LASF41:
+ 923 0102 536F7572 		.ascii	"Source\\FastMathFunctions\\arm_sqrt_q15.c\000"
+ 923      63655C46 
+ 923      6173744D 
+ 923      61746846 
+ 923      756E6374 
+ 924              	.LASF19:
+ 925 012a 41524D5F 		.ascii	"ARM_MATH_ARGUMENT_ERROR\000"
+ 925      4D415448 
+ 925      5F415247 
+ 925      554D454E 
+ 925      545F4552 
+ 926              	.LASF32:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 21
+
+
+ 927 0142 76617231 		.ascii	"var1\000"
+ 927      00
+ 928              	.LASF10:
+ 929 0147 756E7369 		.ascii	"unsigned int\000"
+ 929      676E6564 
+ 929      20696E74 
+ 929      00
+ 930              	.LASF43:
+ 931 0154 61726D5F 		.ascii	"arm_sqrt_q15\000"
+ 931      73717274 
+ 931      5F713135 
+ 931      00
+ 932              	.LASF9:
+ 933 0161 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 933      206C6F6E 
+ 933      6720756E 
+ 933      7369676E 
+ 933      65642069 
+ 934              	.LASF40:
+ 935 0178 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 935      4320342E 
+ 935      392E3320 
+ 935      32303135 
+ 935      30333033 
+ 936 01ab 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 936      20726576 
+ 936      6973696F 
+ 936      6E203232 
+ 936      31323230 
+ 937 01de 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 937      30202D66 
+ 937      66756E63 
+ 937      74696F6E 
+ 937      2D736563 
+ 938              	.LASF22:
+ 939 020a 41524D5F 		.ascii	"ARM_MATH_NANINF\000"
+ 939      4D415448 
+ 939      5F4E414E 
+ 939      494E4600 
+ 940              	.LASF11:
+ 941 021a 696E7431 		.ascii	"int16_t\000"
+ 941      365F7400 
+ 942              	.LASF30:
+ 943 0222 6E756D62 		.ascii	"number\000"
+ 943      657200
+ 944              	.LASF12:
+ 945 0229 696E7433 		.ascii	"int32_t\000"
+ 945      325F7400 
+ 946              	.LASF13:
+ 947 0231 73697A65 		.ascii	"sizetype\000"
+ 947      74797065 
+ 947      00
+ 948              	.LASF35:
+ 949 023a 62697473 		.ascii	"bits_val1\000"
+ 949      5F76616C 
+ 949      3100
+ 950              	.LASF8:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 22
+
+
+ 951 0244 6C6F6E67 		.ascii	"long long int\000"
+ 951      206C6F6E 
+ 951      6720696E 
+ 951      7400
+ 952              	.LASF39:
+ 953 0252 74656D70 		.ascii	"tempconv\000"
+ 953      636F6E76 
+ 953      00
+ 954              	.LASF14:
+ 955 025b 63686172 		.ascii	"char\000"
+ 955      00
+ 956              	.LASF31:
+ 957 0260 74656D70 		.ascii	"temp1\000"
+ 957      3100
+ 958              	.LASF28:
+ 959 0266 666C6F61 		.ascii	"float32_t\000"
+ 959      7433325F 
+ 959      7400
+ 960              	.LASF18:
+ 961 0270 41524D5F 		.ascii	"ARM_MATH_SUCCESS\000"
+ 961      4D415448 
+ 961      5F535543 
+ 961      43455353 
+ 961      00
+ 962              	.LASF2:
+ 963 0281 73686F72 		.ascii	"short int\000"
+ 963      7420696E 
+ 963      7400
+ 964              	.LASF37:
+ 965 028b 66726163 		.ascii	"fracval\000"
+ 965      76616C00 
+ 966              	.LASF6:
+ 967 0293 6C6F6E67 		.ascii	"long int\000"
+ 967      20696E74 
+ 967      00
+ 968              	.LASF17:
+ 969 029c 6C6F6E67 		.ascii	"long double\000"
+ 969      20646F75 
+ 969      626C6500 
+ 970              	.LASF16:
+ 971 02a8 666C6F61 		.ascii	"float\000"
+ 971      7400
+ 972              	.LASF0:
+ 973 02ae 7369676E 		.ascii	"signed char\000"
+ 973      65642063 
+ 973      68617200 
+ 974              	.LASF33:
+ 975 02ba 7369676E 		.ascii	"signBits1\000"
+ 975      42697473 
+ 975      3100
+ 976              	.LASF25:
+ 977 02c4 61726D5F 		.ascii	"arm_status\000"
+ 977      73746174 
+ 977      757300
+ 978              	.LASF23:
+ 979 02cf 41524D5F 		.ascii	"ARM_MATH_SINGULAR\000"
+ 979      4D415448 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc7FsGJ9.s 			page 23
+
+
+ 979      5F53494E 
+ 979      47554C41 
+ 979      5200
+ 980              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

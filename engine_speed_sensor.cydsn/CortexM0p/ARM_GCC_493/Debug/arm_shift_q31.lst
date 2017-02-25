@@ -1,0 +1,1592 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_shift_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.arm_shift_q31,"ax",%progbits
+  18              		.align	2
+  19              		.global	arm_shift_q31
+  20              		.code	16
+  21              		.thumb_func
+  22              		.type	arm_shift_q31, %function
+  23              	arm_shift_q31:
+  24              	.LFB82:
+  25              		.file 1 "Source\\BasicMathFunctions\\arm_shift_q31.c"
+   1:Source\BasicMathFunctions/arm_shift_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\BasicMathFunctions/arm_shift_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\BasicMathFunctions/arm_shift_q31.c ****  * Title:        arm_shift_q31.c
+   4:Source\BasicMathFunctions/arm_shift_q31.c ****  * Description:  Shifts the elements of a Q31 vector by a specified number of bits
+   5:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+   6:Source\BasicMathFunctions/arm_shift_q31.c ****  * $Date:        27. January 2017
+   7:Source\BasicMathFunctions/arm_shift_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+   9:Source\BasicMathFunctions/arm_shift_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\BasicMathFunctions/arm_shift_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\BasicMathFunctions/arm_shift_q31.c **** /*
+  12:Source\BasicMathFunctions/arm_shift_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  14:Source\BasicMathFunctions/arm_shift_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  16:Source\BasicMathFunctions/arm_shift_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\BasicMathFunctions/arm_shift_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\BasicMathFunctions/arm_shift_q31.c ****  * You may obtain a copy of the License at
+  19:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  20:Source\BasicMathFunctions/arm_shift_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  22:Source\BasicMathFunctions/arm_shift_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\BasicMathFunctions/arm_shift_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\BasicMathFunctions/arm_shift_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\BasicMathFunctions/arm_shift_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\BasicMathFunctions/arm_shift_q31.c ****  * limitations under the License.
+  27:Source\BasicMathFunctions/arm_shift_q31.c ****  */
+  28:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  29:Source\BasicMathFunctions/arm_shift_q31.c **** #include "arm_math.h"
+  30:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  31:Source\BasicMathFunctions/arm_shift_q31.c **** /**
+  32:Source\BasicMathFunctions/arm_shift_q31.c ****  * @ingroup groupMath
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 2
+
+
+  33:Source\BasicMathFunctions/arm_shift_q31.c ****  */
+  34:Source\BasicMathFunctions/arm_shift_q31.c **** /**
+  35:Source\BasicMathFunctions/arm_shift_q31.c ****  * @defgroup shift Vector Shift
+  36:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  37:Source\BasicMathFunctions/arm_shift_q31.c ****  * Shifts the elements of a fixed-point vector by a specified number of bits.
+  38:Source\BasicMathFunctions/arm_shift_q31.c ****  * There are separate functions for Q7, Q15, and Q31 data types.
+  39:Source\BasicMathFunctions/arm_shift_q31.c ****  * The underlying algorithm used is:
+  40:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  41:Source\BasicMathFunctions/arm_shift_q31.c ****  * <pre>
+  42:Source\BasicMathFunctions/arm_shift_q31.c ****  *     pDst[n] = pSrc[n] << shift,   0 <= n < blockSize.
+  43:Source\BasicMathFunctions/arm_shift_q31.c ****  * </pre>
+  44:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  45:Source\BasicMathFunctions/arm_shift_q31.c ****  * If <code>shift</code> is positive then the elements of the vector are shifted to the left.
+  46:Source\BasicMathFunctions/arm_shift_q31.c ****  * If <code>shift</code> is negative then the elements of the vector are shifted to the right.
+  47:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  48:Source\BasicMathFunctions/arm_shift_q31.c ****  * The functions support in-place computation allowing the source and destination
+  49:Source\BasicMathFunctions/arm_shift_q31.c ****  * pointers to reference the same memory buffer.
+  50:Source\BasicMathFunctions/arm_shift_q31.c ****  */
+  51:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  52:Source\BasicMathFunctions/arm_shift_q31.c **** /**
+  53:Source\BasicMathFunctions/arm_shift_q31.c ****  * @addtogroup shift
+  54:Source\BasicMathFunctions/arm_shift_q31.c ****  * @{
+  55:Source\BasicMathFunctions/arm_shift_q31.c ****  */
+  56:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  57:Source\BasicMathFunctions/arm_shift_q31.c **** /**
+  58:Source\BasicMathFunctions/arm_shift_q31.c ****  * @brief  Shifts the elements of a Q31 vector a specified number of bits.
+  59:Source\BasicMathFunctions/arm_shift_q31.c ****  * @param[in]  *pSrc points to the input vector
+  60:Source\BasicMathFunctions/arm_shift_q31.c ****  * @param[in]  shiftBits number of bits to shift.  A positive value shifts left; a negative value s
+  61:Source\BasicMathFunctions/arm_shift_q31.c ****  * @param[out]  *pDst points to the output vector
+  62:Source\BasicMathFunctions/arm_shift_q31.c ****  * @param[in]  blockSize number of samples in the vector
+  63:Source\BasicMathFunctions/arm_shift_q31.c ****  * @return none.
+  64:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  65:Source\BasicMathFunctions/arm_shift_q31.c ****  *
+  66:Source\BasicMathFunctions/arm_shift_q31.c ****  * <b>Scaling and Overflow Behavior:</b>
+  67:Source\BasicMathFunctions/arm_shift_q31.c ****  * \par
+  68:Source\BasicMathFunctions/arm_shift_q31.c ****  * The function uses saturating arithmetic.
+  69:Source\BasicMathFunctions/arm_shift_q31.c ****  * Results outside of the allowable Q31 range [0x80000000 0x7FFFFFFF] will be saturated.
+  70:Source\BasicMathFunctions/arm_shift_q31.c ****  */
+  71:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  72:Source\BasicMathFunctions/arm_shift_q31.c **** void arm_shift_q31(
+  73:Source\BasicMathFunctions/arm_shift_q31.c ****   q31_t * pSrc,
+  74:Source\BasicMathFunctions/arm_shift_q31.c ****   int8_t shiftBits,
+  75:Source\BasicMathFunctions/arm_shift_q31.c ****   q31_t * pDst,
+  76:Source\BasicMathFunctions/arm_shift_q31.c ****   uint32_t blockSize)
+  77:Source\BasicMathFunctions/arm_shift_q31.c **** {
+  26              		.loc 1 77 0
+  27              		.cfi_startproc
+  28 0000 B0B5     		push	{r4, r5, r7, lr}
+  29              		.cfi_def_cfa_offset 16
+  30              		.cfi_offset 4, -16
+  31              		.cfi_offset 5, -12
+  32              		.cfi_offset 7, -8
+  33              		.cfi_offset 14, -4
+  34 0002 8EB0     		sub	sp, sp, #56
+  35              		.cfi_def_cfa_offset 72
+  36 0004 00AF     		add	r7, sp, #0
+  37              		.cfi_def_cfa_register 7
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 3
+
+
+  38 0006 7862     		str	r0, [r7, #36]
+  39 0008 FA61     		str	r2, [r7, #28]
+  40 000a BB61     		str	r3, [r7, #24]
+  41 000c 0B23     		mov	r3, #11
+  42 000e 1822     		mov	r2, #24
+  43 0010 9446     		mov	ip, r2
+  44 0012 BC44     		add	ip, ip, r7
+  45 0014 6344     		add	r3, r3, ip
+  46 0016 0A1C     		add	r2, r1, #0
+  47 0018 1A70     		strb	r2, [r3]
+  78:Source\BasicMathFunctions/arm_shift_q31.c ****   uint32_t blkCnt;                               /* loop counter */
+  79:Source\BasicMathFunctions/arm_shift_q31.c ****   uint8_t sign = (shiftBits & 0x80);             /* Sign of shiftBits */
+  48              		.loc 1 79 0
+  49 001a 0B23     		mov	r3, #11
+  50 001c 1822     		mov	r2, #24
+  51 001e 9446     		mov	ip, r2
+  52 0020 BC44     		add	ip, ip, r7
+  53 0022 6344     		add	r3, r3, ip
+  54 0024 1A78     		ldrb	r2, [r3]
+  55 0026 1B23     		mov	r3, #27
+  56 0028 1821     		mov	r1, #24
+  57 002a 8C46     		mov	ip, r1
+  58 002c BC44     		add	ip, ip, r7
+  59 002e 6344     		add	r3, r3, ip
+  60 0030 7F21     		mov	r1, #127
+  61 0032 8A43     		bic	r2, r1
+  62 0034 1A70     		strb	r2, [r3]
+  80:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  81:Source\BasicMathFunctions/arm_shift_q31.c **** #if defined (ARM_MATH_DSP)
+  82:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  83:Source\BasicMathFunctions/arm_shift_q31.c ****   q31_t in1, in2, in3, in4;                      /* Temporary input variables */
+  84:Source\BasicMathFunctions/arm_shift_q31.c ****   q31_t out1, out2, out3, out4;                  /* Temporary output variables */
+  85:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  86:Source\BasicMathFunctions/arm_shift_q31.c ****   /*loop Unrolling */
+  87:Source\BasicMathFunctions/arm_shift_q31.c ****   blkCnt = blockSize >> 2u;
+  88:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  89:Source\BasicMathFunctions/arm_shift_q31.c **** 
+  90:Source\BasicMathFunctions/arm_shift_q31.c ****   if (sign == 0u)
+  91:Source\BasicMathFunctions/arm_shift_q31.c ****   {
+  92:Source\BasicMathFunctions/arm_shift_q31.c ****     /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+  93:Source\BasicMathFunctions/arm_shift_q31.c ****      ** a second loop below computes the remaining 1 to 3 samples. */
+  94:Source\BasicMathFunctions/arm_shift_q31.c ****     while (blkCnt > 0u)
+  95:Source\BasicMathFunctions/arm_shift_q31.c ****     {
+  96:Source\BasicMathFunctions/arm_shift_q31.c ****       /* C = A  << shiftBits */
+  97:Source\BasicMathFunctions/arm_shift_q31.c ****       /* Shift the input and then store the results in the destination buffer. */
+  98:Source\BasicMathFunctions/arm_shift_q31.c ****       in1 = *pSrc;
+  99:Source\BasicMathFunctions/arm_shift_q31.c ****       in2 = *(pSrc + 1);
+ 100:Source\BasicMathFunctions/arm_shift_q31.c ****       out1 = in1 << shiftBits;
+ 101:Source\BasicMathFunctions/arm_shift_q31.c ****       in3 = *(pSrc + 2);
+ 102:Source\BasicMathFunctions/arm_shift_q31.c ****       out2 = in2 << shiftBits;
+ 103:Source\BasicMathFunctions/arm_shift_q31.c ****       in4 = *(pSrc + 3);
+ 104:Source\BasicMathFunctions/arm_shift_q31.c ****       if (in1 != (out1 >> shiftBits))
+ 105:Source\BasicMathFunctions/arm_shift_q31.c ****         out1 = 0x7FFFFFFF ^ (in1 >> 31);
+ 106:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 107:Source\BasicMathFunctions/arm_shift_q31.c ****       if (in2 != (out2 >> shiftBits))
+ 108:Source\BasicMathFunctions/arm_shift_q31.c ****         out2 = 0x7FFFFFFF ^ (in2 >> 31);
+ 109:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 4
+
+
+ 110:Source\BasicMathFunctions/arm_shift_q31.c ****       *pDst = out1;
+ 111:Source\BasicMathFunctions/arm_shift_q31.c ****       out3 = in3 << shiftBits;
+ 112:Source\BasicMathFunctions/arm_shift_q31.c ****       *(pDst + 1) = out2;
+ 113:Source\BasicMathFunctions/arm_shift_q31.c ****       out4 = in4 << shiftBits;
+ 114:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 115:Source\BasicMathFunctions/arm_shift_q31.c ****       if (in3 != (out3 >> shiftBits))
+ 116:Source\BasicMathFunctions/arm_shift_q31.c ****         out3 = 0x7FFFFFFF ^ (in3 >> 31);
+ 117:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 118:Source\BasicMathFunctions/arm_shift_q31.c ****       if (in4 != (out4 >> shiftBits))
+ 119:Source\BasicMathFunctions/arm_shift_q31.c ****         out4 = 0x7FFFFFFF ^ (in4 >> 31);
+ 120:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 121:Source\BasicMathFunctions/arm_shift_q31.c ****       *(pDst + 2) = out3;
+ 122:Source\BasicMathFunctions/arm_shift_q31.c ****       *(pDst + 3) = out4;
+ 123:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 124:Source\BasicMathFunctions/arm_shift_q31.c ****       /* Update destination pointer to process next sampels */
+ 125:Source\BasicMathFunctions/arm_shift_q31.c ****       pSrc += 4u;
+ 126:Source\BasicMathFunctions/arm_shift_q31.c ****       pDst += 4u;
+ 127:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 128:Source\BasicMathFunctions/arm_shift_q31.c ****       /* Decrement the loop counter */
+ 129:Source\BasicMathFunctions/arm_shift_q31.c ****       blkCnt--;
+ 130:Source\BasicMathFunctions/arm_shift_q31.c ****     }
+ 131:Source\BasicMathFunctions/arm_shift_q31.c ****   }
+ 132:Source\BasicMathFunctions/arm_shift_q31.c ****   else
+ 133:Source\BasicMathFunctions/arm_shift_q31.c ****   {
+ 134:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 135:Source\BasicMathFunctions/arm_shift_q31.c ****     /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+ 136:Source\BasicMathFunctions/arm_shift_q31.c ****      ** a second loop below computes the remaining 1 to 3 samples. */
+ 137:Source\BasicMathFunctions/arm_shift_q31.c ****     while (blkCnt > 0u)
+ 138:Source\BasicMathFunctions/arm_shift_q31.c ****     {
+ 139:Source\BasicMathFunctions/arm_shift_q31.c ****       /* C = A >>  shiftBits */
+ 140:Source\BasicMathFunctions/arm_shift_q31.c ****       /* Shift the input and then store the results in the destination buffer. */
+ 141:Source\BasicMathFunctions/arm_shift_q31.c ****       in1 = *pSrc;
+ 142:Source\BasicMathFunctions/arm_shift_q31.c ****       in2 = *(pSrc + 1);
+ 143:Source\BasicMathFunctions/arm_shift_q31.c ****       in3 = *(pSrc + 2);
+ 144:Source\BasicMathFunctions/arm_shift_q31.c ****       in4 = *(pSrc + 3);
+ 145:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 146:Source\BasicMathFunctions/arm_shift_q31.c ****       *pDst = (in1 >> -shiftBits);
+ 147:Source\BasicMathFunctions/arm_shift_q31.c ****       *(pDst + 1) = (in2 >> -shiftBits);
+ 148:Source\BasicMathFunctions/arm_shift_q31.c ****       *(pDst + 2) = (in3 >> -shiftBits);
+ 149:Source\BasicMathFunctions/arm_shift_q31.c ****       *(pDst + 3) = (in4 >> -shiftBits);
+ 150:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 151:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 152:Source\BasicMathFunctions/arm_shift_q31.c ****       pSrc += 4u;
+ 153:Source\BasicMathFunctions/arm_shift_q31.c ****       pDst += 4u;
+ 154:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 155:Source\BasicMathFunctions/arm_shift_q31.c ****       blkCnt--;
+ 156:Source\BasicMathFunctions/arm_shift_q31.c ****     }
+ 157:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 158:Source\BasicMathFunctions/arm_shift_q31.c ****   }
+ 159:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 160:Source\BasicMathFunctions/arm_shift_q31.c ****   /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+ 161:Source\BasicMathFunctions/arm_shift_q31.c ****    ** No loop unrolling is used. */
+ 162:Source\BasicMathFunctions/arm_shift_q31.c ****   blkCnt = blockSize % 0x4u;
+ 163:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 164:Source\BasicMathFunctions/arm_shift_q31.c **** #else
+ 165:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 166:Source\BasicMathFunctions/arm_shift_q31.c ****   /* Run the below code for Cortex-M0 */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 5
+
+
+ 167:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 168:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 169:Source\BasicMathFunctions/arm_shift_q31.c ****   /* Initialize blkCnt with number of samples */
+ 170:Source\BasicMathFunctions/arm_shift_q31.c ****   blkCnt = blockSize;
+  63              		.loc 1 170 0
+  64 0036 BB69     		ldr	r3, [r7, #24]
+  65 0038 7B63     		str	r3, [r7, #52]
+ 171:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 172:Source\BasicMathFunctions/arm_shift_q31.c **** #endif /* #if defined (ARM_MATH_DSP) */
+ 173:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 174:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 175:Source\BasicMathFunctions/arm_shift_q31.c ****   while (blkCnt > 0u)
+  66              		.loc 1 175 0
+  67 003a 57E0     		b	.L2
+  68              	.L10:
+ 176:Source\BasicMathFunctions/arm_shift_q31.c ****   {
+ 177:Source\BasicMathFunctions/arm_shift_q31.c ****     /* C = A (>> or <<) shiftBits */
+ 178:Source\BasicMathFunctions/arm_shift_q31.c ****     /* Shift the input and then store the result in the destination buffer. */
+ 179:Source\BasicMathFunctions/arm_shift_q31.c ****     *pDst++ = (sign == 0u) ? clip_q63_to_q31((q63_t) * pSrc++ << shiftBits) :
+  69              		.loc 1 179 0
+  70 003c FA69     		ldr	r2, [r7, #28]
+  71 003e 131D     		add	r3, r2, #4
+  72 0040 FB61     		str	r3, [r7, #28]
+  73 0042 1B23     		mov	r3, #27
+  74 0044 1821     		mov	r1, #24
+  75 0046 8C46     		mov	ip, r1
+  76 0048 BC44     		add	ip, ip, r7
+  77 004a 6344     		add	r3, r3, ip
+  78 004c 1B78     		ldrb	r3, [r3]
+  79 004e 002B     		cmp	r3, #0
+  80 0050 3AD1     		bne	.L3
+  81              		.loc 1 179 0 is_stmt 0 discriminator 1
+  82 0052 7B6A     		ldr	r3, [r7, #36]
+  83 0054 191D     		add	r1, r3, #4
+  84 0056 7962     		str	r1, [r7, #36]
+  85 0058 1B68     		ldr	r3, [r3]
+  86 005a 3B61     		str	r3, [r7, #16]
+  87 005c DB17     		asr	r3, r3, #31
+  88 005e 7B61     		str	r3, [r7, #20]
+  89 0060 0B23     		mov	r3, #11
+  90 0062 1821     		mov	r1, #24
+  91 0064 8C46     		mov	ip, r1
+  92 0066 BC44     		add	ip, ip, r7
+  93 0068 6344     		add	r3, r3, ip
+  94 006a 1B78     		ldrb	r3, [r3]
+  95 006c 5BB2     		sxtb	r3, r3
+  96 006e 191C     		mov	r1, r3
+  97 0070 2039     		sub	r1, r1, #32
+  98 0072 0029     		cmp	r1, #0
+  99 0074 03DB     		blt	.L4
+ 100 0076 3869     		ldr	r0, [r7, #16]
+ 101 0078 8840     		lsl	r0, r0, r1
+ 102 007a 051C     		mov	r5, r0
+ 103 007c 08E0     		b	.L5
+ 104              	.L4:
+ 105 007e 2021     		mov	r1, #32
+ 106 0080 C91A     		sub	r1, r1, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 6
+
+
+ 107 0082 3869     		ldr	r0, [r7, #16]
+ 108 0084 C840     		lsr	r0, r0, r1
+ 109 0086 011C     		mov	r1, r0
+ 110 0088 7869     		ldr	r0, [r7, #20]
+ 111 008a 9840     		lsl	r0, r0, r3
+ 112 008c 051C     		mov	r5, r0
+ 113 008e 0D43     		orr	r5, r1
+ 114              	.L5:
+ 115 0090 3969     		ldr	r1, [r7, #16]
+ 116 0092 9940     		lsl	r1, r1, r3
+ 117 0094 0C1C     		mov	r4, r1
+ 118 0096 BC62     		str	r4, [r7, #40]
+ 119 0098 FD62     		str	r5, [r7, #44]
+ 120              	.LBB4:
+ 121              	.LBB5:
+ 122              		.file 2 ".\\Include/arm_math.h"
+   1:.\Include/arm_math.h **** /* ----------------------------------------------------------------------
+   2:.\Include/arm_math.h ****  * Project:      CMSIS DSP Library
+   3:.\Include/arm_math.h ****  * Title:        arm_math.h
+   4:.\Include/arm_math.h ****  * Description:  Public header file for CMSIS DSP Library
+   5:.\Include/arm_math.h ****  *
+   6:.\Include/arm_math.h ****  * $Date:        27. January 2017
+   7:.\Include/arm_math.h ****  * $Revision:    V.1.5.1
+   8:.\Include/arm_math.h ****  *
+   9:.\Include/arm_math.h ****  * Target Processor: Cortex-M cores
+  10:.\Include/arm_math.h ****  * -------------------------------------------------------------------- */
+  11:.\Include/arm_math.h **** /*
+  12:.\Include/arm_math.h ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:.\Include/arm_math.h ****  *
+  14:.\Include/arm_math.h ****  * SPDX-License-Identifier: Apache-2.0
+  15:.\Include/arm_math.h ****  *
+  16:.\Include/arm_math.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:.\Include/arm_math.h ****  * not use this file except in compliance with the License.
+  18:.\Include/arm_math.h ****  * You may obtain a copy of the License at
+  19:.\Include/arm_math.h ****  *
+  20:.\Include/arm_math.h ****  * www.apache.org/licenses/LICENSE-2.0
+  21:.\Include/arm_math.h ****  *
+  22:.\Include/arm_math.h ****  * Unless required by applicable law or agreed to in writing, software
+  23:.\Include/arm_math.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:.\Include/arm_math.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:.\Include/arm_math.h ****  * See the License for the specific language governing permissions and
+  26:.\Include/arm_math.h ****  * limitations under the License.
+  27:.\Include/arm_math.h ****  */
+  28:.\Include/arm_math.h **** 
+  29:.\Include/arm_math.h **** /**
+  30:.\Include/arm_math.h ****    \mainpage CMSIS DSP Software Library
+  31:.\Include/arm_math.h ****    *
+  32:.\Include/arm_math.h ****    * Introduction
+  33:.\Include/arm_math.h ****    * ------------
+  34:.\Include/arm_math.h ****    *
+  35:.\Include/arm_math.h ****    * This user manual describes the CMSIS DSP software library,
+  36:.\Include/arm_math.h ****    * a suite of common signal processing functions for use on Cortex-M processor based devices.
+  37:.\Include/arm_math.h ****    *
+  38:.\Include/arm_math.h ****    * The library is divided into a number of functions each covering a specific category:
+  39:.\Include/arm_math.h ****    * - Basic math functions
+  40:.\Include/arm_math.h ****    * - Fast math functions
+  41:.\Include/arm_math.h ****    * - Complex math functions
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 7
+
+
+  42:.\Include/arm_math.h ****    * - Filters
+  43:.\Include/arm_math.h ****    * - Matrix functions
+  44:.\Include/arm_math.h ****    * - Transforms
+  45:.\Include/arm_math.h ****    * - Motor control functions
+  46:.\Include/arm_math.h ****    * - Statistical functions
+  47:.\Include/arm_math.h ****    * - Support functions
+  48:.\Include/arm_math.h ****    * - Interpolation functions
+  49:.\Include/arm_math.h ****    *
+  50:.\Include/arm_math.h ****    * The library has separate functions for operating on 8-bit integers, 16-bit integers,
+  51:.\Include/arm_math.h ****    * 32-bit integer and 32-bit floating-point values.
+  52:.\Include/arm_math.h ****    *
+  53:.\Include/arm_math.h ****    * Using the Library
+  54:.\Include/arm_math.h ****    * ------------
+  55:.\Include/arm_math.h ****    *
+  56:.\Include/arm_math.h ****    * The library installer contains prebuilt versions of the libraries in the <code>Lib</code> fold
+  57:.\Include/arm_math.h ****    * - arm_cortexM7lfdp_math.lib (Cortex-M7, Little endian, Double Precision Floating Point Unit)
+  58:.\Include/arm_math.h ****    * - arm_cortexM7bfdp_math.lib (Cortex-M7, Big endian, Double Precision Floating Point Unit)
+  59:.\Include/arm_math.h ****    * - arm_cortexM7lfsp_math.lib (Cortex-M7, Little endian, Single Precision Floating Point Unit)
+  60:.\Include/arm_math.h ****    * - arm_cortexM7bfsp_math.lib (Cortex-M7, Big endian and Single Precision Floating Point Unit on
+  61:.\Include/arm_math.h ****    * - arm_cortexM7l_math.lib (Cortex-M7, Little endian)
+  62:.\Include/arm_math.h ****    * - arm_cortexM7b_math.lib (Cortex-M7, Big endian)
+  63:.\Include/arm_math.h ****    * - arm_cortexM4lf_math.lib (Cortex-M4, Little endian, Floating Point Unit)
+  64:.\Include/arm_math.h ****    * - arm_cortexM4bf_math.lib (Cortex-M4, Big endian, Floating Point Unit)
+  65:.\Include/arm_math.h ****    * - arm_cortexM4l_math.lib (Cortex-M4, Little endian)
+  66:.\Include/arm_math.h ****    * - arm_cortexM4b_math.lib (Cortex-M4, Big endian)
+  67:.\Include/arm_math.h ****    * - arm_cortexM3l_math.lib (Cortex-M3, Little endian)
+  68:.\Include/arm_math.h ****    * - arm_cortexM3b_math.lib (Cortex-M3, Big endian)
+  69:.\Include/arm_math.h ****    * - arm_cortexM0l_math.lib (Cortex-M0 / Cortex-M0+, Little endian)
+  70:.\Include/arm_math.h ****    * - arm_cortexM0b_math.lib (Cortex-M0 / Cortex-M0+, Big endian)
+  71:.\Include/arm_math.h ****    * - arm_ARMv8MBLl_math.lib (ARMv8M Baseline, Little endian)
+  72:.\Include/arm_math.h ****    * - arm_ARMv8MMLl_math.lib (ARMv8M Mainline, Little endian)
+  73:.\Include/arm_math.h ****    * - arm_ARMv8MMLlfsp_math.lib (ARMv8M Mainline, Little endian, Single Precision Floating Point U
+  74:.\Include/arm_math.h ****    * - arm_ARMv8MMLld_math.lib (ARMv8M Mainline, Little endian, DSP instructions)
+  75:.\Include/arm_math.h ****    * - arm_ARMv8MMLldfsp_math.lib (ARMv8M Mainline, Little endian, DSP instructions, Single Precisi
+  76:.\Include/arm_math.h ****    *
+  77:.\Include/arm_math.h ****    * The library functions are declared in the public file <code>arm_math.h</code> which is placed 
+  78:.\Include/arm_math.h ****    * Simply include this file and link the appropriate library in the application and begin calling
+  79:.\Include/arm_math.h ****    * public header file <code> arm_math.h</code> for Cortex-M cores with little endian and big endi
+  80:.\Include/arm_math.h ****    * Define the appropriate pre processor MACRO ARM_MATH_CM7 or ARM_MATH_CM4 or  ARM_MATH_CM3 or
+  81:.\Include/arm_math.h ****    * ARM_MATH_CM0 or ARM_MATH_CM0PLUS depending on the target processor in the application.
+  82:.\Include/arm_math.h ****    * For ARMv8M cores define pre processor MACRO ARM_MATH_ARMV8MBL or ARM_MATH_ARMV8MML.
+  83:.\Include/arm_math.h ****    * Set Pre processor MACRO __DSP_PRESENT if ARMv8M Mainline core supports DSP instructions.
+  84:.\Include/arm_math.h ****    * 
+  85:.\Include/arm_math.h ****    *
+  86:.\Include/arm_math.h ****    * Examples
+  87:.\Include/arm_math.h ****    * --------
+  88:.\Include/arm_math.h ****    *
+  89:.\Include/arm_math.h ****    * The library ships with a number of examples which demonstrate how to use the library functions
+  90:.\Include/arm_math.h ****    *
+  91:.\Include/arm_math.h ****    * Toolchain Support
+  92:.\Include/arm_math.h ****    * ------------
+  93:.\Include/arm_math.h ****    *
+  94:.\Include/arm_math.h ****    * The library has been developed and tested with MDK-ARM version 5.14.0.0
+  95:.\Include/arm_math.h ****    * The library is being tested in GCC and IAR toolchains and updates on this activity will be mad
+  96:.\Include/arm_math.h ****    *
+  97:.\Include/arm_math.h ****    * Building the Library
+  98:.\Include/arm_math.h ****    * ------------
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 8
+
+
+  99:.\Include/arm_math.h ****    *
+ 100:.\Include/arm_math.h ****    * The library installer contains a project file to re build libraries on MDK-ARM Tool chain in t
+ 101:.\Include/arm_math.h ****    * - arm_cortexM_math.uvprojx
+ 102:.\Include/arm_math.h ****    *
+ 103:.\Include/arm_math.h ****    *
+ 104:.\Include/arm_math.h ****    * The libraries can be built by opening the arm_cortexM_math.uvprojx project in MDK-ARM, selecti
+ 105:.\Include/arm_math.h ****    *
+ 106:.\Include/arm_math.h ****    * Pre-processor Macros
+ 107:.\Include/arm_math.h ****    * ------------
+ 108:.\Include/arm_math.h ****    *
+ 109:.\Include/arm_math.h ****    * Each library project have differant pre-processor macros.
+ 110:.\Include/arm_math.h ****    *
+ 111:.\Include/arm_math.h ****    * - UNALIGNED_SUPPORT_DISABLE:
+ 112:.\Include/arm_math.h ****    *
+ 113:.\Include/arm_math.h ****    * Define macro UNALIGNED_SUPPORT_DISABLE, If the silicon does not support unaligned memory acces
+ 114:.\Include/arm_math.h ****    *
+ 115:.\Include/arm_math.h ****    * - ARM_MATH_BIG_ENDIAN:
+ 116:.\Include/arm_math.h ****    *
+ 117:.\Include/arm_math.h ****    * Define macro ARM_MATH_BIG_ENDIAN to build the library for big endian targets. By default libra
+ 118:.\Include/arm_math.h ****    *
+ 119:.\Include/arm_math.h ****    * - ARM_MATH_MATRIX_CHECK:
+ 120:.\Include/arm_math.h ****    *
+ 121:.\Include/arm_math.h ****    * Define macro ARM_MATH_MATRIX_CHECK for checking on the input and output sizes of matrices
+ 122:.\Include/arm_math.h ****    *
+ 123:.\Include/arm_math.h ****    * - ARM_MATH_ROUNDING:
+ 124:.\Include/arm_math.h ****    *
+ 125:.\Include/arm_math.h ****    * Define macro ARM_MATH_ROUNDING for rounding on support functions
+ 126:.\Include/arm_math.h ****    *
+ 127:.\Include/arm_math.h ****    * - ARM_MATH_CMx:
+ 128:.\Include/arm_math.h ****    *
+ 129:.\Include/arm_math.h ****    * Define macro ARM_MATH_CM4 for building the library on Cortex-M4 target, ARM_MATH_CM3 for build
+ 130:.\Include/arm_math.h ****    * and ARM_MATH_CM0 for building library on Cortex-M0 target, ARM_MATH_CM0PLUS for building libra
+ 131:.\Include/arm_math.h ****    * ARM_MATH_CM7 for building the library on cortex-M7.
+ 132:.\Include/arm_math.h ****    *
+ 133:.\Include/arm_math.h ****    * - ARM_MATH_ARMV8MxL:
+ 134:.\Include/arm_math.h ****    *
+ 135:.\Include/arm_math.h ****    * Define macro ARM_MATH_ARMV8MBL for building the library on ARMv8M Baseline target, ARM_MATH_AR
+ 136:.\Include/arm_math.h ****    * on ARMv8M Mainline target.
+ 137:.\Include/arm_math.h ****    *
+ 138:.\Include/arm_math.h ****    * - __FPU_PRESENT:
+ 139:.\Include/arm_math.h ****    *
+ 140:.\Include/arm_math.h ****    * Initialize macro __FPU_PRESENT = 1 when building on FPU supported Targets. Enable this macro f
+ 141:.\Include/arm_math.h ****    *
+ 142:.\Include/arm_math.h ****    * - __DSP_PRESENT:
+ 143:.\Include/arm_math.h ****    *
+ 144:.\Include/arm_math.h ****    * Initialize macro __DSP_PRESENT = 1 when ARMv8M Mainline core supports DSP instructions.
+ 145:.\Include/arm_math.h ****    *
+ 146:.\Include/arm_math.h ****    * <hr>
+ 147:.\Include/arm_math.h ****    * CMSIS-DSP in ARM::CMSIS Pack
+ 148:.\Include/arm_math.h ****    * -----------------------------
+ 149:.\Include/arm_math.h ****    *
+ 150:.\Include/arm_math.h ****    * The following files relevant to CMSIS-DSP are present in the <b>ARM::CMSIS</b> Pack directorie
+ 151:.\Include/arm_math.h ****    * |File/Folder                   |Content                                                       
+ 152:.\Include/arm_math.h ****    * |------------------------------|--------------------------------------------------------------
+ 153:.\Include/arm_math.h ****    * |\b CMSIS\\Documentation\\DSP  | This documentation                                           
+ 154:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib             | Software license agreement (license.txt)                     
+ 155:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib\\Examples   | Example projects demonstrating the usage of the library funct
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 9
+
+
+ 156:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib\\Source     | Source files for rebuilding the library                      
+ 157:.\Include/arm_math.h ****    *
+ 158:.\Include/arm_math.h ****    * <hr>
+ 159:.\Include/arm_math.h ****    * Revision History of CMSIS-DSP
+ 160:.\Include/arm_math.h ****    * ------------
+ 161:.\Include/arm_math.h ****    * Please refer to \ref ChangeLog_pg.
+ 162:.\Include/arm_math.h ****    *
+ 163:.\Include/arm_math.h ****    * Copyright Notice
+ 164:.\Include/arm_math.h ****    * ------------
+ 165:.\Include/arm_math.h ****    *
+ 166:.\Include/arm_math.h ****    * Copyright (C) 2010-2015 ARM Limited. All rights reserved.
+ 167:.\Include/arm_math.h ****    */
+ 168:.\Include/arm_math.h **** 
+ 169:.\Include/arm_math.h **** 
+ 170:.\Include/arm_math.h **** /**
+ 171:.\Include/arm_math.h ****  * @defgroup groupMath Basic Math Functions
+ 172:.\Include/arm_math.h ****  */
+ 173:.\Include/arm_math.h **** 
+ 174:.\Include/arm_math.h **** /**
+ 175:.\Include/arm_math.h ****  * @defgroup groupFastMath Fast Math Functions
+ 176:.\Include/arm_math.h ****  * This set of functions provides a fast approximation to sine, cosine, and square root.
+ 177:.\Include/arm_math.h ****  * As compared to most of the other functions in the CMSIS math library, the fast math functions
+ 178:.\Include/arm_math.h ****  * operate on individual values and not arrays.
+ 179:.\Include/arm_math.h ****  * There are separate functions for Q15, Q31, and floating-point data.
+ 180:.\Include/arm_math.h ****  *
+ 181:.\Include/arm_math.h ****  */
+ 182:.\Include/arm_math.h **** 
+ 183:.\Include/arm_math.h **** /**
+ 184:.\Include/arm_math.h ****  * @defgroup groupCmplxMath Complex Math Functions
+ 185:.\Include/arm_math.h ****  * This set of functions operates on complex data vectors.
+ 186:.\Include/arm_math.h ****  * The data in the complex arrays is stored in an interleaved fashion
+ 187:.\Include/arm_math.h ****  * (real, imag, real, imag, ...).
+ 188:.\Include/arm_math.h ****  * In the API functions, the number of samples in a complex array refers
+ 189:.\Include/arm_math.h ****  * to the number of complex values; the array contains twice this number of
+ 190:.\Include/arm_math.h ****  * real values.
+ 191:.\Include/arm_math.h ****  */
+ 192:.\Include/arm_math.h **** 
+ 193:.\Include/arm_math.h **** /**
+ 194:.\Include/arm_math.h ****  * @defgroup groupFilters Filtering Functions
+ 195:.\Include/arm_math.h ****  */
+ 196:.\Include/arm_math.h **** 
+ 197:.\Include/arm_math.h **** /**
+ 198:.\Include/arm_math.h ****  * @defgroup groupMatrix Matrix Functions
+ 199:.\Include/arm_math.h ****  *
+ 200:.\Include/arm_math.h ****  * This set of functions provides basic matrix math operations.
+ 201:.\Include/arm_math.h ****  * The functions operate on matrix data structures.  For example,
+ 202:.\Include/arm_math.h ****  * the type
+ 203:.\Include/arm_math.h ****  * definition for the floating-point matrix structure is shown
+ 204:.\Include/arm_math.h ****  * below:
+ 205:.\Include/arm_math.h ****  * <pre>
+ 206:.\Include/arm_math.h ****  *     typedef struct
+ 207:.\Include/arm_math.h ****  *     {
+ 208:.\Include/arm_math.h ****  *       uint16_t numRows;     // number of rows of the matrix.
+ 209:.\Include/arm_math.h ****  *       uint16_t numCols;     // number of columns of the matrix.
+ 210:.\Include/arm_math.h ****  *       float32_t *pData;     // points to the data of the matrix.
+ 211:.\Include/arm_math.h ****  *     } arm_matrix_instance_f32;
+ 212:.\Include/arm_math.h ****  * </pre>
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 10
+
+
+ 213:.\Include/arm_math.h ****  * There are similar definitions for Q15 and Q31 data types.
+ 214:.\Include/arm_math.h ****  *
+ 215:.\Include/arm_math.h ****  * The structure specifies the size of the matrix and then points to
+ 216:.\Include/arm_math.h ****  * an array of data.  The array is of size <code>numRows X numCols</code>
+ 217:.\Include/arm_math.h ****  * and the values are arranged in row order.  That is, the
+ 218:.\Include/arm_math.h ****  * matrix element (i, j) is stored at:
+ 219:.\Include/arm_math.h ****  * <pre>
+ 220:.\Include/arm_math.h ****  *     pData[i*numCols + j]
+ 221:.\Include/arm_math.h ****  * </pre>
+ 222:.\Include/arm_math.h ****  *
+ 223:.\Include/arm_math.h ****  * \par Init Functions
+ 224:.\Include/arm_math.h ****  * There is an associated initialization function for each type of matrix
+ 225:.\Include/arm_math.h ****  * data structure.
+ 226:.\Include/arm_math.h ****  * The initialization function sets the values of the internal structure fields.
+ 227:.\Include/arm_math.h ****  * Refer to the function <code>arm_mat_init_f32()</code>, <code>arm_mat_init_q31()</code>
+ 228:.\Include/arm_math.h ****  * and <code>arm_mat_init_q15()</code> for floating-point, Q31 and Q15 types,  respectively.
+ 229:.\Include/arm_math.h ****  *
+ 230:.\Include/arm_math.h ****  * \par
+ 231:.\Include/arm_math.h ****  * Use of the initialization function is optional. However, if initialization function is used
+ 232:.\Include/arm_math.h ****  * then the instance structure cannot be placed into a const data section.
+ 233:.\Include/arm_math.h ****  * To place the instance structure in a const data
+ 234:.\Include/arm_math.h ****  * section, manually initialize the data structure.  For example:
+ 235:.\Include/arm_math.h ****  * <pre>
+ 236:.\Include/arm_math.h ****  * <code>arm_matrix_instance_f32 S = {nRows, nColumns, pData};</code>
+ 237:.\Include/arm_math.h ****  * <code>arm_matrix_instance_q31 S = {nRows, nColumns, pData};</code>
+ 238:.\Include/arm_math.h ****  * <code>arm_matrix_instance_q15 S = {nRows, nColumns, pData};</code>
+ 239:.\Include/arm_math.h ****  * </pre>
+ 240:.\Include/arm_math.h ****  * where <code>nRows</code> specifies the number of rows, <code>nColumns</code>
+ 241:.\Include/arm_math.h ****  * specifies the number of columns, and <code>pData</code> points to the
+ 242:.\Include/arm_math.h ****  * data array.
+ 243:.\Include/arm_math.h ****  *
+ 244:.\Include/arm_math.h ****  * \par Size Checking
+ 245:.\Include/arm_math.h ****  * By default all of the matrix functions perform size checking on the input and
+ 246:.\Include/arm_math.h ****  * output matrices.  For example, the matrix addition function verifies that the
+ 247:.\Include/arm_math.h ****  * two input matrices and the output matrix all have the same number of rows and
+ 248:.\Include/arm_math.h ****  * columns.  If the size check fails the functions return:
+ 249:.\Include/arm_math.h ****  * <pre>
+ 250:.\Include/arm_math.h ****  *     ARM_MATH_SIZE_MISMATCH
+ 251:.\Include/arm_math.h ****  * </pre>
+ 252:.\Include/arm_math.h ****  * Otherwise the functions return
+ 253:.\Include/arm_math.h ****  * <pre>
+ 254:.\Include/arm_math.h ****  *     ARM_MATH_SUCCESS
+ 255:.\Include/arm_math.h ****  * </pre>
+ 256:.\Include/arm_math.h ****  * There is some overhead associated with this matrix size checking.
+ 257:.\Include/arm_math.h ****  * The matrix size checking is enabled via the \#define
+ 258:.\Include/arm_math.h ****  * <pre>
+ 259:.\Include/arm_math.h ****  *     ARM_MATH_MATRIX_CHECK
+ 260:.\Include/arm_math.h ****  * </pre>
+ 261:.\Include/arm_math.h ****  * within the library project settings.  By default this macro is defined
+ 262:.\Include/arm_math.h ****  * and size checking is enabled.  By changing the project settings and
+ 263:.\Include/arm_math.h ****  * undefining this macro size checking is eliminated and the functions
+ 264:.\Include/arm_math.h ****  * run a bit faster.  With size checking disabled the functions always
+ 265:.\Include/arm_math.h ****  * return <code>ARM_MATH_SUCCESS</code>.
+ 266:.\Include/arm_math.h ****  */
+ 267:.\Include/arm_math.h **** 
+ 268:.\Include/arm_math.h **** /**
+ 269:.\Include/arm_math.h ****  * @defgroup groupTransforms Transform Functions
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 11
+
+
+ 270:.\Include/arm_math.h ****  */
+ 271:.\Include/arm_math.h **** 
+ 272:.\Include/arm_math.h **** /**
+ 273:.\Include/arm_math.h ****  * @defgroup groupController Controller Functions
+ 274:.\Include/arm_math.h ****  */
+ 275:.\Include/arm_math.h **** 
+ 276:.\Include/arm_math.h **** /**
+ 277:.\Include/arm_math.h ****  * @defgroup groupStats Statistics Functions
+ 278:.\Include/arm_math.h ****  */
+ 279:.\Include/arm_math.h **** /**
+ 280:.\Include/arm_math.h ****  * @defgroup groupSupport Support Functions
+ 281:.\Include/arm_math.h ****  */
+ 282:.\Include/arm_math.h **** 
+ 283:.\Include/arm_math.h **** /**
+ 284:.\Include/arm_math.h ****  * @defgroup groupInterpolation Interpolation Functions
+ 285:.\Include/arm_math.h ****  * These functions perform 1- and 2-dimensional interpolation of data.
+ 286:.\Include/arm_math.h ****  * Linear interpolation is used for 1-dimensional data and
+ 287:.\Include/arm_math.h ****  * bilinear interpolation is used for 2-dimensional data.
+ 288:.\Include/arm_math.h ****  */
+ 289:.\Include/arm_math.h **** 
+ 290:.\Include/arm_math.h **** /**
+ 291:.\Include/arm_math.h ****  * @defgroup groupExamples Examples
+ 292:.\Include/arm_math.h ****  */
+ 293:.\Include/arm_math.h **** #ifndef _ARM_MATH_H
+ 294:.\Include/arm_math.h **** #define _ARM_MATH_H
+ 295:.\Include/arm_math.h **** 
+ 296:.\Include/arm_math.h **** /* ignore some GCC warnings */
+ 297:.\Include/arm_math.h **** #if defined ( __GNUC__ )
+ 298:.\Include/arm_math.h **** #pragma GCC diagnostic push
+ 299:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+ 300:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wconversion"
+ 301:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+ 302:.\Include/arm_math.h **** #endif
+ 303:.\Include/arm_math.h **** 
+ 304:.\Include/arm_math.h **** #define __CMSIS_GENERIC         /* disable NVIC and Systick functions */
+ 305:.\Include/arm_math.h **** 
+ 306:.\Include/arm_math.h **** #if defined(ARM_MATH_CM7)
+ 307:.\Include/arm_math.h ****   #include "core_cm7.h"
+ 308:.\Include/arm_math.h ****   #define ARM_MATH_DSP
+ 309:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM4)
+ 310:.\Include/arm_math.h ****   #include "core_cm4.h"
+ 311:.\Include/arm_math.h ****   #define ARM_MATH_DSP
+ 312:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM3)
+ 313:.\Include/arm_math.h ****   #include "core_cm3.h"
+ 314:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM0)
+ 315:.\Include/arm_math.h ****   #include "core_cm0.h"
+ 316:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 317:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM0PLUS)
+ 318:.\Include/arm_math.h ****   #include "core_cm0plus.h"
+ 319:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 320:.\Include/arm_math.h **** #elif defined (ARM_MATH_ARMV8MBL)
+ 321:.\Include/arm_math.h ****   #include "core_armv8mbl.h"
+ 322:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 323:.\Include/arm_math.h **** #elif defined (ARM_MATH_ARMV8MML)
+ 324:.\Include/arm_math.h ****   #include "core_armv8mml.h"
+ 325:.\Include/arm_math.h ****   #if (defined (__DSP_PRESENT) && (__DSP_PRESENT == 1))
+ 326:.\Include/arm_math.h ****     #define ARM_MATH_DSP
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 12
+
+
+ 327:.\Include/arm_math.h ****   #endif
+ 328:.\Include/arm_math.h **** #else
+ 329:.\Include/arm_math.h ****   #error "Define according the used Cortex core ARM_MATH_CM7, ARM_MATH_CM4, ARM_MATH_CM3, ARM_MATH_
+ 330:.\Include/arm_math.h **** #endif
+ 331:.\Include/arm_math.h **** 
+ 332:.\Include/arm_math.h **** #undef  __CMSIS_GENERIC         /* enable NVIC and Systick functions */
+ 333:.\Include/arm_math.h **** #include "string.h"
+ 334:.\Include/arm_math.h **** #include "math.h"
+ 335:.\Include/arm_math.h **** #ifdef   __cplusplus
+ 336:.\Include/arm_math.h **** extern "C"
+ 337:.\Include/arm_math.h **** {
+ 338:.\Include/arm_math.h **** #endif
+ 339:.\Include/arm_math.h **** 
+ 340:.\Include/arm_math.h **** 
+ 341:.\Include/arm_math.h ****   /**
+ 342:.\Include/arm_math.h ****    * @brief Macros required for reciprocal calculation in Normalized LMS
+ 343:.\Include/arm_math.h ****    */
+ 344:.\Include/arm_math.h **** 
+ 345:.\Include/arm_math.h **** #define DELTA_Q31          (0x100)
+ 346:.\Include/arm_math.h **** #define DELTA_Q15          0x5
+ 347:.\Include/arm_math.h **** #define INDEX_MASK         0x0000003F
+ 348:.\Include/arm_math.h **** #ifndef PI
+ 349:.\Include/arm_math.h ****   #define PI               3.14159265358979f
+ 350:.\Include/arm_math.h **** #endif
+ 351:.\Include/arm_math.h **** 
+ 352:.\Include/arm_math.h ****   /**
+ 353:.\Include/arm_math.h ****    * @brief Macros required for SINE and COSINE Fast math approximations
+ 354:.\Include/arm_math.h ****    */
+ 355:.\Include/arm_math.h **** 
+ 356:.\Include/arm_math.h **** #define FAST_MATH_TABLE_SIZE  512
+ 357:.\Include/arm_math.h **** #define FAST_MATH_Q31_SHIFT   (32 - 10)
+ 358:.\Include/arm_math.h **** #define FAST_MATH_Q15_SHIFT   (16 - 10)
+ 359:.\Include/arm_math.h **** #define CONTROLLER_Q31_SHIFT  (32 - 9)
+ 360:.\Include/arm_math.h **** #define TABLE_SPACING_Q31     0x400000
+ 361:.\Include/arm_math.h **** #define TABLE_SPACING_Q15     0x80
+ 362:.\Include/arm_math.h **** 
+ 363:.\Include/arm_math.h ****   /**
+ 364:.\Include/arm_math.h ****    * @brief Macros required for SINE and COSINE Controller functions
+ 365:.\Include/arm_math.h ****    */
+ 366:.\Include/arm_math.h ****   /* 1.31(q31) Fixed value of 2/360 */
+ 367:.\Include/arm_math.h ****   /* -1 to +1 is divided into 360 values so total spacing is (2/360) */
+ 368:.\Include/arm_math.h **** #define INPUT_SPACING         0xB60B61
+ 369:.\Include/arm_math.h **** 
+ 370:.\Include/arm_math.h ****   /**
+ 371:.\Include/arm_math.h ****    * @brief Macro for Unaligned Support
+ 372:.\Include/arm_math.h ****    */
+ 373:.\Include/arm_math.h **** #ifndef UNALIGNED_SUPPORT_DISABLE
+ 374:.\Include/arm_math.h ****     #define ALIGN4
+ 375:.\Include/arm_math.h **** #else
+ 376:.\Include/arm_math.h ****   #if defined  (__GNUC__)
+ 377:.\Include/arm_math.h ****     #define ALIGN4 __attribute__((aligned(4)))
+ 378:.\Include/arm_math.h ****   #else
+ 379:.\Include/arm_math.h ****     #define ALIGN4 __align(4)
+ 380:.\Include/arm_math.h ****   #endif
+ 381:.\Include/arm_math.h **** #endif   /* #ifndef UNALIGNED_SUPPORT_DISABLE */
+ 382:.\Include/arm_math.h **** 
+ 383:.\Include/arm_math.h ****   /**
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 13
+
+
+ 384:.\Include/arm_math.h ****    * @brief Error status returned by some functions in the library.
+ 385:.\Include/arm_math.h ****    */
+ 386:.\Include/arm_math.h **** 
+ 387:.\Include/arm_math.h ****   typedef enum
+ 388:.\Include/arm_math.h ****   {
+ 389:.\Include/arm_math.h ****     ARM_MATH_SUCCESS = 0,                /**< No error */
+ 390:.\Include/arm_math.h ****     ARM_MATH_ARGUMENT_ERROR = -1,        /**< One or more arguments are incorrect */
+ 391:.\Include/arm_math.h ****     ARM_MATH_LENGTH_ERROR = -2,          /**< Length of data buffer is incorrect */
+ 392:.\Include/arm_math.h ****     ARM_MATH_SIZE_MISMATCH = -3,         /**< Size of matrices is not compatible with the operation
+ 393:.\Include/arm_math.h ****     ARM_MATH_NANINF = -4,                /**< Not-a-number (NaN) or infinity is generated */
+ 394:.\Include/arm_math.h ****     ARM_MATH_SINGULAR = -5,              /**< Generated by matrix inversion if the input matrix is 
+ 395:.\Include/arm_math.h ****     ARM_MATH_TEST_FAILURE = -6           /**< Test Failed  */
+ 396:.\Include/arm_math.h ****   } arm_status;
+ 397:.\Include/arm_math.h **** 
+ 398:.\Include/arm_math.h ****   /**
+ 399:.\Include/arm_math.h ****    * @brief 8-bit fractional data type in 1.7 format.
+ 400:.\Include/arm_math.h ****    */
+ 401:.\Include/arm_math.h ****   typedef int8_t q7_t;
+ 402:.\Include/arm_math.h **** 
+ 403:.\Include/arm_math.h ****   /**
+ 404:.\Include/arm_math.h ****    * @brief 16-bit fractional data type in 1.15 format.
+ 405:.\Include/arm_math.h ****    */
+ 406:.\Include/arm_math.h ****   typedef int16_t q15_t;
+ 407:.\Include/arm_math.h **** 
+ 408:.\Include/arm_math.h ****   /**
+ 409:.\Include/arm_math.h ****    * @brief 32-bit fractional data type in 1.31 format.
+ 410:.\Include/arm_math.h ****    */
+ 411:.\Include/arm_math.h ****   typedef int32_t q31_t;
+ 412:.\Include/arm_math.h **** 
+ 413:.\Include/arm_math.h ****   /**
+ 414:.\Include/arm_math.h ****    * @brief 64-bit fractional data type in 1.63 format.
+ 415:.\Include/arm_math.h ****    */
+ 416:.\Include/arm_math.h ****   typedef int64_t q63_t;
+ 417:.\Include/arm_math.h **** 
+ 418:.\Include/arm_math.h ****   /**
+ 419:.\Include/arm_math.h ****    * @brief 32-bit floating-point type definition.
+ 420:.\Include/arm_math.h ****    */
+ 421:.\Include/arm_math.h ****   typedef float float32_t;
+ 422:.\Include/arm_math.h **** 
+ 423:.\Include/arm_math.h ****   /**
+ 424:.\Include/arm_math.h ****    * @brief 64-bit floating-point type definition.
+ 425:.\Include/arm_math.h ****    */
+ 426:.\Include/arm_math.h ****   typedef double float64_t;
+ 427:.\Include/arm_math.h **** 
+ 428:.\Include/arm_math.h ****   /**
+ 429:.\Include/arm_math.h ****    * @brief definition to read/write two 16 bit values.
+ 430:.\Include/arm_math.h ****    */
+ 431:.\Include/arm_math.h **** #if   defined ( __CC_ARM )
+ 432:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t __packed
+ 433:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 434:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 435:.\Include/arm_math.h **** 
+ 436:.\Include/arm_math.h **** #elif defined ( __ARMCC_VERSION ) && ( __ARMCC_VERSION >= 6010050 )
+ 437:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 438:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 439:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 440:.\Include/arm_math.h **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 14
+
+
+ 441:.\Include/arm_math.h **** #elif defined ( __GNUC__ )
+ 442:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 443:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 444:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 445:.\Include/arm_math.h **** 
+ 446:.\Include/arm_math.h **** #elif defined ( __ICCARM__ )
+ 447:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t __packed
+ 448:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 449:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 450:.\Include/arm_math.h **** 
+ 451:.\Include/arm_math.h **** #elif defined ( __TI_ARM__ )
+ 452:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 453:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 454:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 455:.\Include/arm_math.h **** 
+ 456:.\Include/arm_math.h **** #elif defined ( __CSMC__ )
+ 457:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 458:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 459:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 460:.\Include/arm_math.h **** 
+ 461:.\Include/arm_math.h **** #elif defined ( __TASKING__ )
+ 462:.\Include/arm_math.h ****   #define __SIMD32_TYPE __unaligned int32_t
+ 463:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 464:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 465:.\Include/arm_math.h **** 
+ 466:.\Include/arm_math.h **** #else
+ 467:.\Include/arm_math.h ****   #error Unknown compiler
+ 468:.\Include/arm_math.h **** #endif
+ 469:.\Include/arm_math.h **** 
+ 470:.\Include/arm_math.h **** #define __SIMD32(addr)        (*(__SIMD32_TYPE **) & (addr))
+ 471:.\Include/arm_math.h **** #define __SIMD32_CONST(addr)  ((__SIMD32_TYPE *)(addr))
+ 472:.\Include/arm_math.h **** #define _SIMD32_OFFSET(addr)  (*(__SIMD32_TYPE *)  (addr))
+ 473:.\Include/arm_math.h **** #define __SIMD64(addr)        (*(int64_t **) & (addr))
+ 474:.\Include/arm_math.h **** 
+ 475:.\Include/arm_math.h **** /* #if defined (ARM_MATH_CM3) || defined (ARM_MATH_CM0_FAMILY) */
+ 476:.\Include/arm_math.h **** #if !defined (ARM_MATH_DSP)
+ 477:.\Include/arm_math.h ****   /**
+ 478:.\Include/arm_math.h ****    * @brief definition to pack two 16 bit values.
+ 479:.\Include/arm_math.h ****    */
+ 480:.\Include/arm_math.h **** #define __PKHBT(ARG1, ARG2, ARG3) ( (((int32_t)(ARG1) <<    0) & (int32_t)0x0000FFFF) | \
+ 481:.\Include/arm_math.h ****                                     (((int32_t)(ARG2) << ARG3) & (int32_t)0xFFFF0000)  )
+ 482:.\Include/arm_math.h **** #define __PKHTB(ARG1, ARG2, ARG3) ( (((int32_t)(ARG1) <<    0) & (int32_t)0xFFFF0000) | \
+ 483:.\Include/arm_math.h ****                                     (((int32_t)(ARG2) >> ARG3) & (int32_t)0x0000FFFF)  )
+ 484:.\Include/arm_math.h **** 
+ 485:.\Include/arm_math.h **** /* #endif // defined (ARM_MATH_CM3) || defined (ARM_MATH_CM0_FAMILY) */
+ 486:.\Include/arm_math.h **** #endif /* !defined (ARM_MATH_DSP) */
+ 487:.\Include/arm_math.h **** 
+ 488:.\Include/arm_math.h ****    /**
+ 489:.\Include/arm_math.h ****    * @brief definition to pack four 8 bit values.
+ 490:.\Include/arm_math.h ****    */
+ 491:.\Include/arm_math.h **** #ifndef ARM_MATH_BIG_ENDIAN
+ 492:.\Include/arm_math.h **** 
+ 493:.\Include/arm_math.h **** #define __PACKq7(v0,v1,v2,v3) ( (((int32_t)(v0) <<  0) & (int32_t)0x000000FF) | \
+ 494:.\Include/arm_math.h ****                                 (((int32_t)(v1) <<  8) & (int32_t)0x0000FF00) | \
+ 495:.\Include/arm_math.h ****                                 (((int32_t)(v2) << 16) & (int32_t)0x00FF0000) | \
+ 496:.\Include/arm_math.h ****                                 (((int32_t)(v3) << 24) & (int32_t)0xFF000000)  )
+ 497:.\Include/arm_math.h **** #else
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 15
+
+
+ 498:.\Include/arm_math.h **** 
+ 499:.\Include/arm_math.h **** #define __PACKq7(v0,v1,v2,v3) ( (((int32_t)(v3) <<  0) & (int32_t)0x000000FF) | \
+ 500:.\Include/arm_math.h ****                                 (((int32_t)(v2) <<  8) & (int32_t)0x0000FF00) | \
+ 501:.\Include/arm_math.h ****                                 (((int32_t)(v1) << 16) & (int32_t)0x00FF0000) | \
+ 502:.\Include/arm_math.h ****                                 (((int32_t)(v0) << 24) & (int32_t)0xFF000000)  )
+ 503:.\Include/arm_math.h **** 
+ 504:.\Include/arm_math.h **** #endif
+ 505:.\Include/arm_math.h **** 
+ 506:.\Include/arm_math.h **** 
+ 507:.\Include/arm_math.h ****   /**
+ 508:.\Include/arm_math.h ****    * @brief Clips Q63 to Q31 values.
+ 509:.\Include/arm_math.h ****    */
+ 510:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE q31_t clip_q63_to_q31(
+ 511:.\Include/arm_math.h ****   q63_t x)
+ 512:.\Include/arm_math.h ****   {
+ 513:.\Include/arm_math.h ****     return ((q31_t) (x >> 32) != ((q31_t) x >> 31)) ?
+ 123              		.loc 2 513 0 is_stmt 1 discriminator 1
+ 124 009a FB6A     		ldr	r3, [r7, #44]
+ 125 009c 1B00     		asr	r3, r3, #0
+ 126 009e BB60     		str	r3, [r7, #8]
+ 127 00a0 FB6A     		ldr	r3, [r7, #44]
+ 128 00a2 DB17     		asr	r3, r3, #31
+ 129 00a4 FB60     		str	r3, [r7, #12]
+ 130 00a6 B968     		ldr	r1, [r7, #8]
+ 131 00a8 BB6A     		ldr	r3, [r7, #40]
+ 132 00aa DB17     		asr	r3, r3, #31
+ 514:.\Include/arm_math.h ****       ((0x7FFFFFFF ^ ((q31_t) (x >> 63)))) : (q31_t) x;
+ 133              		.loc 2 514 0 discriminator 1
+ 134 00ac 9942     		cmp	r1, r3
+ 135 00ae 09D0     		beq	.L6
+ 136              		.loc 2 514 0 is_stmt 0
+ 137 00b0 FB6A     		ldr	r3, [r7, #44]
+ 138 00b2 DB17     		asr	r3, r3, #31
+ 139 00b4 3B60     		str	r3, [r7]
+ 140 00b6 FB6A     		ldr	r3, [r7, #44]
+ 141 00b8 DB17     		asr	r3, r3, #31
+ 142 00ba 7B60     		str	r3, [r7, #4]
+ 143 00bc 3968     		ldr	r1, [r7]
+ 144 00be 0E4B     		ldr	r3, .L11
+ 145 00c0 4B40     		eor	r3, r1
+ 146              	.LBE5:
+ 147              	.LBE4:
+ 148 00c2 0FE0     		b	.L9
+ 149              	.L6:
+ 150              	.LBB7:
+ 151              	.LBB6:
+ 152 00c4 BB6A     		ldr	r3, [r7, #40]
+ 153 00c6 0DE0     		b	.L9
+ 154              	.L3:
+ 155              	.LBE6:
+ 156              	.LBE7:
+ 180:Source\BasicMathFunctions/arm_shift_q31.c ****       (*pSrc++ >> -shiftBits);
+ 157              		.loc 1 180 0 is_stmt 1 discriminator 2
+ 158 00c8 7B6A     		ldr	r3, [r7, #36]
+ 159 00ca 191D     		add	r1, r3, #4
+ 160 00cc 7962     		str	r1, [r7, #36]
+ 161 00ce 1968     		ldr	r1, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 16
+
+
+ 162 00d0 0B23     		mov	r3, #11
+ 163 00d2 1820     		mov	r0, #24
+ 164 00d4 8446     		mov	ip, r0
+ 165 00d6 BC44     		add	ip, ip, r7
+ 166 00d8 6344     		add	r3, r3, ip
+ 167 00da 1B78     		ldrb	r3, [r3]
+ 168 00dc 5BB2     		sxtb	r3, r3
+ 169 00de 5B42     		neg	r3, r3
+ 179:Source\BasicMathFunctions/arm_shift_q31.c ****       (*pSrc++ >> -shiftBits);
+ 170              		.loc 1 179 0 discriminator 2
+ 171 00e0 1941     		asr	r1, r1, r3
+ 172 00e2 0B1C     		mov	r3, r1
+ 173              	.L9:
+ 179:Source\BasicMathFunctions/arm_shift_q31.c ****       (*pSrc++ >> -shiftBits);
+ 174              		.loc 1 179 0 is_stmt 0 discriminator 4
+ 175 00e4 1360     		str	r3, [r2]
+ 181:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 182:Source\BasicMathFunctions/arm_shift_q31.c ****     /* Decrement the loop counter */
+ 183:Source\BasicMathFunctions/arm_shift_q31.c ****     blkCnt--;
+ 176              		.loc 1 183 0 is_stmt 1 discriminator 4
+ 177 00e6 7B6B     		ldr	r3, [r7, #52]
+ 178 00e8 013B     		sub	r3, r3, #1
+ 179 00ea 7B63     		str	r3, [r7, #52]
+ 180              	.L2:
+ 175:Source\BasicMathFunctions/arm_shift_q31.c ****   {
+ 181              		.loc 1 175 0
+ 182 00ec 7B6B     		ldr	r3, [r7, #52]
+ 183 00ee 002B     		cmp	r3, #0
+ 184 00f0 A4D1     		bne	.L10
+ 184:Source\BasicMathFunctions/arm_shift_q31.c ****   }
+ 185:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 186:Source\BasicMathFunctions/arm_shift_q31.c **** 
+ 187:Source\BasicMathFunctions/arm_shift_q31.c **** }
+ 185              		.loc 1 187 0
+ 186 00f2 BD46     		mov	sp, r7
+ 187 00f4 0EB0     		add	sp, sp, #56
+ 188              		@ sp needed
+ 189 00f6 B0BD     		pop	{r4, r5, r7, pc}
+ 190              	.L12:
+ 191              		.align	2
+ 192              	.L11:
+ 193 00f8 FFFFFF7F 		.word	2147483647
+ 194              		.cfi_endproc
+ 195              	.LFE82:
+ 196              		.size	arm_shift_q31, .-arm_shift_q31
+ 197              		.text
+ 198              	.Letext0:
+ 199              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 200              		.file 4 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 201              		.section	.debug_info,"",%progbits
+ 202              	.Ldebug_info0:
+ 203 0000 B1010000 		.4byte	0x1b1
+ 204 0004 0400     		.2byte	0x4
+ 205 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 206 000a 04       		.byte	0x4
+ 207 000b 01       		.uleb128 0x1
+ 208 000c 47010000 		.4byte	.LASF32
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 17
+
+
+ 209 0010 01       		.byte	0x1
+ 210 0011 F9000000 		.4byte	.LASF33
+ 211 0015 2F000000 		.4byte	.LASF34
+ 212 0019 18000000 		.4byte	.Ldebug_ranges0+0x18
+ 213 001d 00000000 		.4byte	0
+ 214 0021 00000000 		.4byte	.Ldebug_line0
+ 215 0025 02       		.uleb128 0x2
+ 216 0026 12000000 		.4byte	.LASF0
+ 217 002a 03       		.byte	0x3
+ 218 002b 1B       		.byte	0x1b
+ 219 002c 30000000 		.4byte	0x30
+ 220 0030 03       		.uleb128 0x3
+ 221 0031 01       		.byte	0x1
+ 222 0032 06       		.byte	0x6
+ 223 0033 4A020000 		.4byte	.LASF2
+ 224 0037 02       		.uleb128 0x2
+ 225 0038 1B000000 		.4byte	.LASF1
+ 226 003c 03       		.byte	0x3
+ 227 003d 1D       		.byte	0x1d
+ 228 003e 42000000 		.4byte	0x42
+ 229 0042 03       		.uleb128 0x3
+ 230 0043 01       		.byte	0x1
+ 231 0044 08       		.byte	0x8
+ 232 0045 90000000 		.4byte	.LASF3
+ 233 0049 03       		.uleb128 0x3
+ 234 004a 02       		.byte	0x2
+ 235 004b 05       		.byte	0x5
+ 236 004c 1D020000 		.4byte	.LASF4
+ 237 0050 03       		.uleb128 0x3
+ 238 0051 02       		.byte	0x2
+ 239 0052 07       		.byte	0x7
+ 240 0053 C5000000 		.4byte	.LASF5
+ 241 0057 02       		.uleb128 0x2
+ 242 0058 25000000 		.4byte	.LASF6
+ 243 005c 03       		.byte	0x3
+ 244 005d 3F       		.byte	0x3f
+ 245 005e 62000000 		.4byte	0x62
+ 246 0062 03       		.uleb128 0x3
+ 247 0063 04       		.byte	0x4
+ 248 0064 05       		.byte	0x5
+ 249 0065 30020000 		.4byte	.LASF7
+ 250 0069 02       		.uleb128 0x2
+ 251 006a EE000000 		.4byte	.LASF8
+ 252 006e 03       		.byte	0x3
+ 253 006f 41       		.byte	0x41
+ 254 0070 74000000 		.4byte	0x74
+ 255 0074 03       		.uleb128 0x3
+ 256 0075 04       		.byte	0x4
+ 257 0076 07       		.byte	0x7
+ 258 0077 B3000000 		.4byte	.LASF9
+ 259 007b 02       		.uleb128 0x2
+ 260 007c DD000000 		.4byte	.LASF10
+ 261 0080 03       		.byte	0x3
+ 262 0081 59       		.byte	0x59
+ 263 0082 86000000 		.4byte	0x86
+ 264 0086 03       		.uleb128 0x3
+ 265 0087 08       		.byte	0x8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 18
+
+
+ 266 0088 05       		.byte	0x5
+ 267 0089 F0010000 		.4byte	.LASF11
+ 268 008d 03       		.uleb128 0x3
+ 269 008e 08       		.byte	0x8
+ 270 008f 07       		.byte	0x7
+ 271 0090 30010000 		.4byte	.LASF12
+ 272 0094 04       		.uleb128 0x4
+ 273 0095 04       		.byte	0x4
+ 274 0096 05       		.byte	0x5
+ 275 0097 696E7400 		.ascii	"int\000"
+ 276 009b 03       		.uleb128 0x3
+ 277 009c 04       		.byte	0x4
+ 278 009d 07       		.byte	0x7
+ 279 009e 23010000 		.4byte	.LASF13
+ 280 00a2 02       		.uleb128 0x2
+ 281 00a3 7D000000 		.4byte	.LASF14
+ 282 00a7 04       		.byte	0x4
+ 283 00a8 14       		.byte	0x14
+ 284 00a9 25000000 		.4byte	0x25
+ 285 00ad 02       		.uleb128 0x2
+ 286 00ae 75000000 		.4byte	.LASF15
+ 287 00b2 04       		.byte	0x4
+ 288 00b3 15       		.byte	0x15
+ 289 00b4 37000000 		.4byte	0x37
+ 290 00b8 02       		.uleb128 0x2
+ 291 00b9 DF010000 		.4byte	.LASF16
+ 292 00bd 04       		.byte	0x4
+ 293 00be 2C       		.byte	0x2c
+ 294 00bf 57000000 		.4byte	0x57
+ 295 00c3 02       		.uleb128 0x2
+ 296 00c4 27020000 		.4byte	.LASF17
+ 297 00c8 04       		.byte	0x4
+ 298 00c9 2D       		.byte	0x2d
+ 299 00ca 69000000 		.4byte	0x69
+ 300 00ce 02       		.uleb128 0x2
+ 301 00cf 0A000000 		.4byte	.LASF18
+ 302 00d3 04       		.byte	0x4
+ 303 00d4 38       		.byte	0x38
+ 304 00d5 7B000000 		.4byte	0x7b
+ 305 00d9 03       		.uleb128 0x3
+ 306 00da 04       		.byte	0x4
+ 307 00db 07       		.byte	0x7
+ 308 00dc E7010000 		.4byte	.LASF19
+ 309 00e0 03       		.uleb128 0x3
+ 310 00e1 01       		.byte	0x1
+ 311 00e2 08       		.byte	0x8
+ 312 00e3 18020000 		.4byte	.LASF20
+ 313 00e7 03       		.uleb128 0x3
+ 314 00e8 08       		.byte	0x8
+ 315 00e9 04       		.byte	0x4
+ 316 00ea E7000000 		.4byte	.LASF21
+ 317 00ee 03       		.uleb128 0x3
+ 318 00ef 04       		.byte	0x4
+ 319 00f0 04       		.byte	0x4
+ 320 00f1 84000000 		.4byte	.LASF22
+ 321 00f5 03       		.uleb128 0x3
+ 322 00f6 08       		.byte	0x8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 19
+
+
+ 323 00f7 04       		.byte	0x4
+ 324 00f8 3E020000 		.4byte	.LASF23
+ 325 00fc 05       		.uleb128 0x5
+ 326 00fd 8A000000 		.4byte	.LASF24
+ 327 0101 02       		.byte	0x2
+ 328 0102 9B01     		.2byte	0x19b
+ 329 0104 B8000000 		.4byte	0xb8
+ 330 0108 05       		.uleb128 0x5
+ 331 0109 D9010000 		.4byte	.LASF25
+ 332 010d 02       		.byte	0x2
+ 333 010e A001     		.2byte	0x1a0
+ 334 0110 CE000000 		.4byte	0xce
+ 335 0114 06       		.uleb128 0x6
+ 336 0115 04       		.byte	0x4
+ 337 0116 FC000000 		.4byte	0xfc
+ 338 011a 07       		.uleb128 0x7
+ 339 011b 08020000 		.4byte	.LASF35
+ 340 011f 02       		.byte	0x2
+ 341 0120 FE01     		.2byte	0x1fe
+ 342 0122 FC000000 		.4byte	0xfc
+ 343 0126 03       		.byte	0x3
+ 344 0127 36010000 		.4byte	0x136
+ 345 012b 08       		.uleb128 0x8
+ 346 012c 7800     		.ascii	"x\000"
+ 347 012e 02       		.byte	0x2
+ 348 012f FF01     		.2byte	0x1ff
+ 349 0131 08010000 		.4byte	0x108
+ 350 0135 00       		.byte	0
+ 351 0136 09       		.uleb128 0x9
+ 352 0137 A5000000 		.4byte	.LASF36
+ 353 013b 01       		.byte	0x1
+ 354 013c 48       		.byte	0x48
+ 355 013d 00000000 		.4byte	.LFB82
+ 356 0141 FC000000 		.4byte	.LFE82-.LFB82
+ 357 0145 01       		.uleb128 0x1
+ 358 0146 9C       		.byte	0x9c
+ 359 0147 0A       		.uleb128 0xa
+ 360 0148 56020000 		.4byte	.LASF26
+ 361 014c 01       		.byte	0x1
+ 362 014d 49       		.byte	0x49
+ 363 014e 14010000 		.4byte	0x114
+ 364 0152 02       		.uleb128 0x2
+ 365 0153 91       		.byte	0x91
+ 366 0154 5C       		.sleb128 -36
+ 367 0155 0A       		.uleb128 0xa
+ 368 0156 00000000 		.4byte	.LASF27
+ 369 015a 01       		.byte	0x1
+ 370 015b 4A       		.byte	0x4a
+ 371 015c A2000000 		.4byte	0xa2
+ 372 0160 02       		.uleb128 0x2
+ 373 0161 91       		.byte	0x91
+ 374 0162 5B       		.sleb128 -37
+ 375 0163 0A       		.uleb128 0xa
+ 376 0164 D8000000 		.4byte	.LASF28
+ 377 0168 01       		.byte	0x1
+ 378 0169 4B       		.byte	0x4b
+ 379 016a 14010000 		.4byte	0x114
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 20
+
+
+ 380 016e 02       		.uleb128 0x2
+ 381 016f 91       		.byte	0x91
+ 382 0170 54       		.sleb128 -44
+ 383 0171 0A       		.uleb128 0xa
+ 384 0172 FE010000 		.4byte	.LASF29
+ 385 0176 01       		.byte	0x1
+ 386 0177 4C       		.byte	0x4c
+ 387 0178 C3000000 		.4byte	0xc3
+ 388 017c 02       		.uleb128 0x2
+ 389 017d 91       		.byte	0x91
+ 390 017e 50       		.sleb128 -48
+ 391 017f 0B       		.uleb128 0xb
+ 392 0180 9E000000 		.4byte	.LASF30
+ 393 0184 01       		.byte	0x1
+ 394 0185 4E       		.byte	0x4e
+ 395 0186 C3000000 		.4byte	0xc3
+ 396 018a 02       		.uleb128 0x2
+ 397 018b 91       		.byte	0x91
+ 398 018c 6C       		.sleb128 -20
+ 399 018d 0B       		.uleb128 0xb
+ 400 018e 39020000 		.4byte	.LASF31
+ 401 0192 01       		.byte	0x1
+ 402 0193 4F       		.byte	0x4f
+ 403 0194 AD000000 		.4byte	0xad
+ 404 0198 02       		.uleb128 0x2
+ 405 0199 91       		.byte	0x91
+ 406 019a 6B       		.sleb128 -21
+ 407 019b 0C       		.uleb128 0xc
+ 408 019c 1A010000 		.4byte	0x11a
+ 409 01a0 9A000000 		.4byte	.LBB4
+ 410 01a4 00000000 		.4byte	.Ldebug_ranges0+0
+ 411 01a8 01       		.byte	0x1
+ 412 01a9 B3       		.byte	0xb3
+ 413 01aa 0D       		.uleb128 0xd
+ 414 01ab 2B010000 		.4byte	0x12b
+ 415 01af 02       		.uleb128 0x2
+ 416 01b0 91       		.byte	0x91
+ 417 01b1 60       		.sleb128 -32
+ 418 01b2 00       		.byte	0
+ 419 01b3 00       		.byte	0
+ 420 01b4 00       		.byte	0
+ 421              		.section	.debug_abbrev,"",%progbits
+ 422              	.Ldebug_abbrev0:
+ 423 0000 01       		.uleb128 0x1
+ 424 0001 11       		.uleb128 0x11
+ 425 0002 01       		.byte	0x1
+ 426 0003 25       		.uleb128 0x25
+ 427 0004 0E       		.uleb128 0xe
+ 428 0005 13       		.uleb128 0x13
+ 429 0006 0B       		.uleb128 0xb
+ 430 0007 03       		.uleb128 0x3
+ 431 0008 0E       		.uleb128 0xe
+ 432 0009 1B       		.uleb128 0x1b
+ 433 000a 0E       		.uleb128 0xe
+ 434 000b 55       		.uleb128 0x55
+ 435 000c 17       		.uleb128 0x17
+ 436 000d 11       		.uleb128 0x11
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 21
+
+
+ 437 000e 01       		.uleb128 0x1
+ 438 000f 10       		.uleb128 0x10
+ 439 0010 17       		.uleb128 0x17
+ 440 0011 00       		.byte	0
+ 441 0012 00       		.byte	0
+ 442 0013 02       		.uleb128 0x2
+ 443 0014 16       		.uleb128 0x16
+ 444 0015 00       		.byte	0
+ 445 0016 03       		.uleb128 0x3
+ 446 0017 0E       		.uleb128 0xe
+ 447 0018 3A       		.uleb128 0x3a
+ 448 0019 0B       		.uleb128 0xb
+ 449 001a 3B       		.uleb128 0x3b
+ 450 001b 0B       		.uleb128 0xb
+ 451 001c 49       		.uleb128 0x49
+ 452 001d 13       		.uleb128 0x13
+ 453 001e 00       		.byte	0
+ 454 001f 00       		.byte	0
+ 455 0020 03       		.uleb128 0x3
+ 456 0021 24       		.uleb128 0x24
+ 457 0022 00       		.byte	0
+ 458 0023 0B       		.uleb128 0xb
+ 459 0024 0B       		.uleb128 0xb
+ 460 0025 3E       		.uleb128 0x3e
+ 461 0026 0B       		.uleb128 0xb
+ 462 0027 03       		.uleb128 0x3
+ 463 0028 0E       		.uleb128 0xe
+ 464 0029 00       		.byte	0
+ 465 002a 00       		.byte	0
+ 466 002b 04       		.uleb128 0x4
+ 467 002c 24       		.uleb128 0x24
+ 468 002d 00       		.byte	0
+ 469 002e 0B       		.uleb128 0xb
+ 470 002f 0B       		.uleb128 0xb
+ 471 0030 3E       		.uleb128 0x3e
+ 472 0031 0B       		.uleb128 0xb
+ 473 0032 03       		.uleb128 0x3
+ 474 0033 08       		.uleb128 0x8
+ 475 0034 00       		.byte	0
+ 476 0035 00       		.byte	0
+ 477 0036 05       		.uleb128 0x5
+ 478 0037 16       		.uleb128 0x16
+ 479 0038 00       		.byte	0
+ 480 0039 03       		.uleb128 0x3
+ 481 003a 0E       		.uleb128 0xe
+ 482 003b 3A       		.uleb128 0x3a
+ 483 003c 0B       		.uleb128 0xb
+ 484 003d 3B       		.uleb128 0x3b
+ 485 003e 05       		.uleb128 0x5
+ 486 003f 49       		.uleb128 0x49
+ 487 0040 13       		.uleb128 0x13
+ 488 0041 00       		.byte	0
+ 489 0042 00       		.byte	0
+ 490 0043 06       		.uleb128 0x6
+ 491 0044 0F       		.uleb128 0xf
+ 492 0045 00       		.byte	0
+ 493 0046 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 22
+
+
+ 494 0047 0B       		.uleb128 0xb
+ 495 0048 49       		.uleb128 0x49
+ 496 0049 13       		.uleb128 0x13
+ 497 004a 00       		.byte	0
+ 498 004b 00       		.byte	0
+ 499 004c 07       		.uleb128 0x7
+ 500 004d 2E       		.uleb128 0x2e
+ 501 004e 01       		.byte	0x1
+ 502 004f 03       		.uleb128 0x3
+ 503 0050 0E       		.uleb128 0xe
+ 504 0051 3A       		.uleb128 0x3a
+ 505 0052 0B       		.uleb128 0xb
+ 506 0053 3B       		.uleb128 0x3b
+ 507 0054 05       		.uleb128 0x5
+ 508 0055 27       		.uleb128 0x27
+ 509 0056 19       		.uleb128 0x19
+ 510 0057 49       		.uleb128 0x49
+ 511 0058 13       		.uleb128 0x13
+ 512 0059 20       		.uleb128 0x20
+ 513 005a 0B       		.uleb128 0xb
+ 514 005b 01       		.uleb128 0x1
+ 515 005c 13       		.uleb128 0x13
+ 516 005d 00       		.byte	0
+ 517 005e 00       		.byte	0
+ 518 005f 08       		.uleb128 0x8
+ 519 0060 05       		.uleb128 0x5
+ 520 0061 00       		.byte	0
+ 521 0062 03       		.uleb128 0x3
+ 522 0063 08       		.uleb128 0x8
+ 523 0064 3A       		.uleb128 0x3a
+ 524 0065 0B       		.uleb128 0xb
+ 525 0066 3B       		.uleb128 0x3b
+ 526 0067 05       		.uleb128 0x5
+ 527 0068 49       		.uleb128 0x49
+ 528 0069 13       		.uleb128 0x13
+ 529 006a 00       		.byte	0
+ 530 006b 00       		.byte	0
+ 531 006c 09       		.uleb128 0x9
+ 532 006d 2E       		.uleb128 0x2e
+ 533 006e 01       		.byte	0x1
+ 534 006f 3F       		.uleb128 0x3f
+ 535 0070 19       		.uleb128 0x19
+ 536 0071 03       		.uleb128 0x3
+ 537 0072 0E       		.uleb128 0xe
+ 538 0073 3A       		.uleb128 0x3a
+ 539 0074 0B       		.uleb128 0xb
+ 540 0075 3B       		.uleb128 0x3b
+ 541 0076 0B       		.uleb128 0xb
+ 542 0077 27       		.uleb128 0x27
+ 543 0078 19       		.uleb128 0x19
+ 544 0079 11       		.uleb128 0x11
+ 545 007a 01       		.uleb128 0x1
+ 546 007b 12       		.uleb128 0x12
+ 547 007c 06       		.uleb128 0x6
+ 548 007d 40       		.uleb128 0x40
+ 549 007e 18       		.uleb128 0x18
+ 550 007f 9742     		.uleb128 0x2117
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 23
+
+
+ 551 0081 19       		.uleb128 0x19
+ 552 0082 00       		.byte	0
+ 553 0083 00       		.byte	0
+ 554 0084 0A       		.uleb128 0xa
+ 555 0085 05       		.uleb128 0x5
+ 556 0086 00       		.byte	0
+ 557 0087 03       		.uleb128 0x3
+ 558 0088 0E       		.uleb128 0xe
+ 559 0089 3A       		.uleb128 0x3a
+ 560 008a 0B       		.uleb128 0xb
+ 561 008b 3B       		.uleb128 0x3b
+ 562 008c 0B       		.uleb128 0xb
+ 563 008d 49       		.uleb128 0x49
+ 564 008e 13       		.uleb128 0x13
+ 565 008f 02       		.uleb128 0x2
+ 566 0090 18       		.uleb128 0x18
+ 567 0091 00       		.byte	0
+ 568 0092 00       		.byte	0
+ 569 0093 0B       		.uleb128 0xb
+ 570 0094 34       		.uleb128 0x34
+ 571 0095 00       		.byte	0
+ 572 0096 03       		.uleb128 0x3
+ 573 0097 0E       		.uleb128 0xe
+ 574 0098 3A       		.uleb128 0x3a
+ 575 0099 0B       		.uleb128 0xb
+ 576 009a 3B       		.uleb128 0x3b
+ 577 009b 0B       		.uleb128 0xb
+ 578 009c 49       		.uleb128 0x49
+ 579 009d 13       		.uleb128 0x13
+ 580 009e 02       		.uleb128 0x2
+ 581 009f 18       		.uleb128 0x18
+ 582 00a0 00       		.byte	0
+ 583 00a1 00       		.byte	0
+ 584 00a2 0C       		.uleb128 0xc
+ 585 00a3 1D       		.uleb128 0x1d
+ 586 00a4 01       		.byte	0x1
+ 587 00a5 31       		.uleb128 0x31
+ 588 00a6 13       		.uleb128 0x13
+ 589 00a7 52       		.uleb128 0x52
+ 590 00a8 01       		.uleb128 0x1
+ 591 00a9 55       		.uleb128 0x55
+ 592 00aa 17       		.uleb128 0x17
+ 593 00ab 58       		.uleb128 0x58
+ 594 00ac 0B       		.uleb128 0xb
+ 595 00ad 59       		.uleb128 0x59
+ 596 00ae 0B       		.uleb128 0xb
+ 597 00af 00       		.byte	0
+ 598 00b0 00       		.byte	0
+ 599 00b1 0D       		.uleb128 0xd
+ 600 00b2 05       		.uleb128 0x5
+ 601 00b3 00       		.byte	0
+ 602 00b4 31       		.uleb128 0x31
+ 603 00b5 13       		.uleb128 0x13
+ 604 00b6 02       		.uleb128 0x2
+ 605 00b7 18       		.uleb128 0x18
+ 606 00b8 00       		.byte	0
+ 607 00b9 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 24
+
+
+ 608 00ba 00       		.byte	0
+ 609              		.section	.debug_aranges,"",%progbits
+ 610 0000 1C000000 		.4byte	0x1c
+ 611 0004 0200     		.2byte	0x2
+ 612 0006 00000000 		.4byte	.Ldebug_info0
+ 613 000a 04       		.byte	0x4
+ 614 000b 00       		.byte	0
+ 615 000c 0000     		.2byte	0
+ 616 000e 0000     		.2byte	0
+ 617 0010 00000000 		.4byte	.LFB82
+ 618 0014 FC000000 		.4byte	.LFE82-.LFB82
+ 619 0018 00000000 		.4byte	0
+ 620 001c 00000000 		.4byte	0
+ 621              		.section	.debug_ranges,"",%progbits
+ 622              	.Ldebug_ranges0:
+ 623 0000 9A000000 		.4byte	.LBB4
+ 624 0004 C2000000 		.4byte	.LBE4
+ 625 0008 C4000000 		.4byte	.LBB7
+ 626 000c C8000000 		.4byte	.LBE7
+ 627 0010 00000000 		.4byte	0
+ 628 0014 00000000 		.4byte	0
+ 629 0018 00000000 		.4byte	.LFB82
+ 630 001c FC000000 		.4byte	.LFE82
+ 631 0020 00000000 		.4byte	0
+ 632 0024 00000000 		.4byte	0
+ 633              		.section	.debug_line,"",%progbits
+ 634              	.Ldebug_line0:
+ 635 0000 A9010000 		.section	.debug_str,"MS",%progbits,1
+ 635      02005001 
+ 635      00000201 
+ 635      FB0E0D00 
+ 635      01010101 
+ 636              	.LASF27:
+ 637 0000 73686966 		.ascii	"shiftBits\000"
+ 637      74426974 
+ 637      7300
+ 638              	.LASF18:
+ 639 000a 696E7436 		.ascii	"int64_t\000"
+ 639      345F7400 
+ 640              	.LASF0:
+ 641 0012 5F5F696E 		.ascii	"__int8_t\000"
+ 641      74385F74 
+ 641      00
+ 642              	.LASF1:
+ 643 001b 5F5F7569 		.ascii	"__uint8_t\000"
+ 643      6E74385F 
+ 643      7400
+ 644              	.LASF6:
+ 645 0025 5F5F696E 		.ascii	"__int32_t\000"
+ 645      7433325F 
+ 645      7400
+ 646              	.LASF34:
+ 647 002f 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 647      73657273 
+ 647      5C666E65 
+ 647      7665735C 
+ 647      446F6375 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 25
+
+
+ 648 005c 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 648      655F7370 
+ 648      6565645F 
+ 648      73656E73 
+ 648      6F722E63 
+ 649              	.LASF15:
+ 650 0075 75696E74 		.ascii	"uint8_t\000"
+ 650      385F7400 
+ 651              	.LASF14:
+ 652 007d 696E7438 		.ascii	"int8_t\000"
+ 652      5F7400
+ 653              	.LASF22:
+ 654 0084 666C6F61 		.ascii	"float\000"
+ 654      7400
+ 655              	.LASF24:
+ 656 008a 7133315F 		.ascii	"q31_t\000"
+ 656      7400
+ 657              	.LASF3:
+ 658 0090 756E7369 		.ascii	"unsigned char\000"
+ 658      676E6564 
+ 658      20636861 
+ 658      7200
+ 659              	.LASF30:
+ 660 009e 626C6B43 		.ascii	"blkCnt\000"
+ 660      6E7400
+ 661              	.LASF36:
+ 662 00a5 61726D5F 		.ascii	"arm_shift_q31\000"
+ 662      73686966 
+ 662      745F7133 
+ 662      3100
+ 663              	.LASF9:
+ 664 00b3 6C6F6E67 		.ascii	"long unsigned int\000"
+ 664      20756E73 
+ 664      69676E65 
+ 664      6420696E 
+ 664      7400
+ 665              	.LASF5:
+ 666 00c5 73686F72 		.ascii	"short unsigned int\000"
+ 666      7420756E 
+ 666      7369676E 
+ 666      65642069 
+ 666      6E7400
+ 667              	.LASF28:
+ 668 00d8 70447374 		.ascii	"pDst\000"
+ 668      00
+ 669              	.LASF10:
+ 670 00dd 5F5F696E 		.ascii	"__int64_t\000"
+ 670      7436345F 
+ 670      7400
+ 671              	.LASF21:
+ 672 00e7 646F7562 		.ascii	"double\000"
+ 672      6C6500
+ 673              	.LASF8:
+ 674 00ee 5F5F7569 		.ascii	"__uint32_t\000"
+ 674      6E743332 
+ 674      5F7400
+ 675              	.LASF33:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 26
+
+
+ 676 00f9 536F7572 		.ascii	"Source\\BasicMathFunctions\\arm_shift_q31.c\000"
+ 676      63655C42 
+ 676      61736963 
+ 676      4D617468 
+ 676      46756E63 
+ 677              	.LASF13:
+ 678 0123 756E7369 		.ascii	"unsigned int\000"
+ 678      676E6564 
+ 678      20696E74 
+ 678      00
+ 679              	.LASF12:
+ 680 0130 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 680      206C6F6E 
+ 680      6720756E 
+ 680      7369676E 
+ 680      65642069 
+ 681              	.LASF32:
+ 682 0147 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 682      4320342E 
+ 682      392E3320 
+ 682      32303135 
+ 682      30333033 
+ 683 017a 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 683      20726576 
+ 683      6973696F 
+ 683      6E203232 
+ 683      31323230 
+ 684 01ad 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 684      30202D66 
+ 684      66756E63 
+ 684      74696F6E 
+ 684      2D736563 
+ 685              	.LASF25:
+ 686 01d9 7136335F 		.ascii	"q63_t\000"
+ 686      7400
+ 687              	.LASF16:
+ 688 01df 696E7433 		.ascii	"int32_t\000"
+ 688      325F7400 
+ 689              	.LASF19:
+ 690 01e7 73697A65 		.ascii	"sizetype\000"
+ 690      74797065 
+ 690      00
+ 691              	.LASF11:
+ 692 01f0 6C6F6E67 		.ascii	"long long int\000"
+ 692      206C6F6E 
+ 692      6720696E 
+ 692      7400
+ 693              	.LASF29:
+ 694 01fe 626C6F63 		.ascii	"blockSize\000"
+ 694      6B53697A 
+ 694      6500
+ 695              	.LASF35:
+ 696 0208 636C6970 		.ascii	"clip_q63_to_q31\000"
+ 696      5F713633 
+ 696      5F746F5F 
+ 696      71333100 
+ 697              	.LASF20:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccntp9We.s 			page 27
+
+
+ 698 0218 63686172 		.ascii	"char\000"
+ 698      00
+ 699              	.LASF4:
+ 700 021d 73686F72 		.ascii	"short int\000"
+ 700      7420696E 
+ 700      7400
+ 701              	.LASF17:
+ 702 0227 75696E74 		.ascii	"uint32_t\000"
+ 702      33325F74 
+ 702      00
+ 703              	.LASF7:
+ 704 0230 6C6F6E67 		.ascii	"long int\000"
+ 704      20696E74 
+ 704      00
+ 705              	.LASF31:
+ 706 0239 7369676E 		.ascii	"sign\000"
+ 706      00
+ 707              	.LASF23:
+ 708 023e 6C6F6E67 		.ascii	"long double\000"
+ 708      20646F75 
+ 708      626C6500 
+ 709              	.LASF2:
+ 710 024a 7369676E 		.ascii	"signed char\000"
+ 710      65642063 
+ 710      68617200 
+ 711              	.LASF26:
+ 712 0256 70537263 		.ascii	"pSrc\000"
+ 712      00
+ 713              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

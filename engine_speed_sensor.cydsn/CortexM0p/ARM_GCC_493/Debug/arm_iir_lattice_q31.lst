@@ -1,0 +1,2457 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_iir_lattice_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_lmul
+  18              		.section	.text.arm_iir_lattice_q31,"ax",%progbits
+  19              		.align	2
+  20              		.global	arm_iir_lattice_q31
+  21              		.code	16
+  22              		.thumb_func
+  23              		.type	arm_iir_lattice_q31, %function
+  24              	arm_iir_lattice_q31:
+  25              	.LFB82:
+  26              		.file 1 "Source\\FilteringFunctions\\arm_iir_lattice_q31.c"
+   1:Source\FilteringFunctions/arm_iir_lattice_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * Title:        arm_iir_lattice_q31.c
+   4:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * Description:  Q31 IIR lattice filter processing function
+   5:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  *
+   6:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  *
+   9:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_iir_lattice_q31.c **** /*
+  12:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  *
+  14:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  *
+  16:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  *
+  20:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  *
+  22:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  */
+  28:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  29:Source\FilteringFunctions/arm_iir_lattice_q31.c **** #include "arm_math.h"
+  30:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  31:Source\FilteringFunctions/arm_iir_lattice_q31.c **** /**
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 2
+
+
+  32:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @ingroup groupFilters
+  33:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  */
+  34:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  35:Source\FilteringFunctions/arm_iir_lattice_q31.c **** /**
+  36:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @addtogroup IIR_Lattice
+  37:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @{
+  38:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  */
+  39:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  40:Source\FilteringFunctions/arm_iir_lattice_q31.c **** /**
+  41:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @brief Processing function for the Q31 IIR lattice filter.
+  42:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @param[in] *S points to an instance of the Q31 IIR lattice structure.
+  43:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @param[in] *pSrc points to the block of input data.
+  44:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @param[out] *pDst points to the block of output data.
+  45:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @param[in] blockSize number of samples to process.
+  46:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @return none.
+  47:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  *
+  48:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * @details
+  49:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * <b>Scaling and Overflow Behavior:</b>
+  50:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * \par
+  51:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * The function is implemented using an internal 64-bit accumulator.
+  52:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * The accumulator has a 2.62 format and maintains full precision of the intermediate multiplicatio
+  53:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * Thus, if the accumulator result overflows it wraps around rather than clip.
+  54:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * In order to avoid overflows completely the input signal must be scaled down by 2*log2(numStages)
+  55:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  * After all multiply-accumulates are performed, the 2.62 accumulator is saturated to 1.32 format a
+  56:Source\FilteringFunctions/arm_iir_lattice_q31.c ****  */
+  57:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  58:Source\FilteringFunctions/arm_iir_lattice_q31.c **** void arm_iir_lattice_q31(
+  59:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   const arm_iir_lattice_instance_q31 * S,
+  60:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   q31_t * pSrc,
+  61:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   q31_t * pDst,
+  62:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   uint32_t blockSize)
+  63:Source\FilteringFunctions/arm_iir_lattice_q31.c **** {
+  27              		.loc 1 63 0
+  28              		.cfi_startproc
+  29 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  30              		.cfi_def_cfa_offset 20
+  31              		.cfi_offset 4, -20
+  32              		.cfi_offset 5, -16
+  33              		.cfi_offset 6, -12
+  34              		.cfi_offset 7, -8
+  35              		.cfi_offset 14, -4
+  36 0002 BDB0     		sub	sp, sp, #244
+  37              		.cfi_def_cfa_offset 264
+  38 0004 00AF     		add	r7, sp, #0
+  39              		.cfi_def_cfa_register 7
+  40 0006 9C24     		mov	r4, #156
+  41 0008 3C19     		add	r4, r7, r4
+  42 000a 2060     		str	r0, [r4]
+  43 000c 9820     		mov	r0, #152
+  44 000e 3818     		add	r0, r7, r0
+  45 0010 0160     		str	r1, [r0]
+  46 0012 9421     		mov	r1, #148
+  47 0014 7918     		add	r1, r7, r1
+  48 0016 0A60     		str	r2, [r1]
+  49 0018 9022     		mov	r2, #144
+  50 001a BA18     		add	r2, r7, r2
+  51 001c 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 3
+
+
+  64:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   q31_t fcurr, fnext = 0, gcurr = 0, gnext;      /* Temporary variables for lattice stages */
+  52              		.loc 1 64 0
+  53 001e 0023     		mov	r3, #0
+  54 0020 E822     		mov	r2, #232
+  55 0022 BA18     		add	r2, r7, r2
+  56 0024 1360     		str	r3, [r2]
+  57 0026 0023     		mov	r3, #0
+  58 0028 BC22     		mov	r2, #188
+  59 002a BA18     		add	r2, r7, r2
+  60 002c 1360     		str	r3, [r2]
+  65:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   q63_t acc;                                     /* Accumlator */
+  66:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   uint32_t blkCnt, tapCnt;                       /* Temporary variables for counts */
+  67:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   q31_t *px1, *px2, *pk, *pv;                    /* Temporary pointers for state and coef */
+  68:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   uint32_t numStages = S->numStages;             /* number of stages */
+  61              		.loc 1 68 0
+  62 002e 9C23     		mov	r3, #156
+  63 0030 FB18     		add	r3, r7, r3
+  64 0032 1B68     		ldr	r3, [r3]
+  65 0034 1B88     		ldrh	r3, [r3]
+  66 0036 B822     		mov	r2, #184
+  67 0038 BA18     		add	r2, r7, r2
+  68 003a 1360     		str	r3, [r2]
+  69:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   q31_t *pState;                                 /* State pointer */
+  70:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   q31_t *pStateCurnt;                            /* State current pointer */
+  71:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  72:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   blkCnt = blockSize;
+  69              		.loc 1 72 0
+  70 003c 9023     		mov	r3, #144
+  71 003e FB18     		add	r3, r7, r3
+  72 0040 1B68     		ldr	r3, [r3]
+  73 0042 DC22     		mov	r2, #220
+  74 0044 BA18     		add	r2, r7, r2
+  75 0046 1360     		str	r3, [r2]
+  73:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  74:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   pState = &S->pState[0];
+  76              		.loc 1 74 0
+  77 0048 9C23     		mov	r3, #156
+  78 004a FB18     		add	r3, r7, r3
+  79 004c 1B68     		ldr	r3, [r3]
+  80 004e 5B68     		ldr	r3, [r3, #4]
+  81 0050 C422     		mov	r2, #196
+  82 0052 BA18     		add	r2, r7, r2
+  83 0054 1360     		str	r3, [r2]
+  75:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  76:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  77:Source\FilteringFunctions/arm_iir_lattice_q31.c **** #if defined (ARM_MATH_DSP)
+  78:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  79:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+  80:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  81:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Sample processing */
+  82:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   while (blkCnt > 0u)
+  83:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   {
+  84:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Read Sample from input buffer */
+  85:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* fN(n) = x(n) */
+  86:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     fcurr = *pSrc++;
+  87:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  88:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Initialize state read pointer */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 4
+
+
+  89:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     px1 = pState;
+  90:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Initialize state write pointer */
+  91:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     px2 = pState;
+  92:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Set accumulator to zero */
+  93:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     acc = 0;
+  94:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Initialize Ladder coeff pointer */
+  95:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     pv = &S->pvCoeffs[0];
+  96:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Initialize Reflection coeff pointer */
+  97:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     pk = &S->pkCoeffs[0];
+  98:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+  99:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 100:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Process sample for first tap */
+ 101:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     gcurr = *px1++;
+ 102:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* fN-1(n) = fN(n) - kN * gN-1(n-1) */
+ 103:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     fnext = __QSUB(fcurr, (q31_t) (((q63_t) gcurr * (*pk)) >> 31));
+ 104:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* gN(n) = kN * fN-1(n) + gN-1(n-1) */
+ 105:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     gnext = __QADD(gcurr, (q31_t) (((q63_t) fnext * (*pk++)) >> 31));
+ 106:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* write gN-1(n-1) into state for next sample processing */
+ 107:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *px2++ = gnext;
+ 108:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* y(n) += gN(n) * vN  */
+ 109:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     acc += ((q63_t) gnext * *pv++);
+ 110:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 111:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Update f values for next coefficient processing */
+ 112:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     fcurr = fnext;
+ 113:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 114:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Loop unrolling.  Process 4 taps at a time. */
+ 115:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     tapCnt = (numStages - 1u) >> 2;
+ 116:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 117:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     while (tapCnt > 0u)
+ 118:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     {
+ 119:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 120:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample for 2nd, 6th .. taps */
+ 121:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Read gN-2(n-1) from state buffer */
+ 122:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gcurr = *px1++;
+ 123:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* fN-2(n) = fN-1(n) - kN-1 * gN-2(n-1) */
+ 124:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       fnext = __QSUB(fcurr, (q31_t) (((q63_t) gcurr * (*pk)) >> 31));
+ 125:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* gN-1(n) = kN-1 * fN-2(n) + gN-2(n-1) */
+ 126:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gnext = __QADD(gcurr, (q31_t) (((q63_t) fnext * (*pk++)) >> 31));
+ 127:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* y(n) += gN-1(n) * vN-1  */
+ 128:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* process for gN-5(n) * vN-5, gN-9(n) * vN-9 ... */
+ 129:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       acc += ((q63_t) gnext * *pv++);
+ 130:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* write gN-1(n) into state for next sample processing */
+ 131:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       *px2++ = gnext;
+ 132:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 133:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample for 3nd, 7th ...taps */
+ 134:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Read gN-3(n-1) from state buffer */
+ 135:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gcurr = *px1++;
+ 136:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample for 3rd, 7th .. taps */
+ 137:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* fN-3(n) = fN-2(n) - kN-2 * gN-3(n-1) */
+ 138:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       fcurr = __QSUB(fnext, (q31_t) (((q63_t) gcurr * (*pk)) >> 31));
+ 139:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* gN-2(n) = kN-2 * fN-3(n) + gN-3(n-1) */
+ 140:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gnext = __QADD(gcurr, (q31_t) (((q63_t) fcurr * (*pk++)) >> 31));
+ 141:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* y(n) += gN-2(n) * vN-2  */
+ 142:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* process for gN-6(n) * vN-6, gN-10(n) * vN-10 ... */
+ 143:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       acc += ((q63_t) gnext * *pv++);
+ 144:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* write gN-2(n) into state for next sample processing */
+ 145:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       *px2++ = gnext;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 5
+
+
+ 146:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 147:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 148:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample for 4th, 8th ...taps */
+ 149:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Read gN-4(n-1) from state buffer */
+ 150:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gcurr = *px1++;
+ 151:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample for 4th, 8th .. taps */
+ 152:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* fN-4(n) = fN-3(n) - kN-3 * gN-4(n-1) */
+ 153:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       fnext = __QSUB(fcurr, (q31_t) (((q63_t) gcurr * (*pk)) >> 31));
+ 154:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* gN-3(n) = kN-3 * fN-4(n) + gN-4(n-1) */
+ 155:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gnext = __QADD(gcurr, (q31_t) (((q63_t) fnext * (*pk++)) >> 31));
+ 156:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* y(n) += gN-3(n) * vN-3  */
+ 157:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* process for gN-7(n) * vN-7, gN-11(n) * vN-11 ... */
+ 158:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       acc += ((q63_t) gnext * *pv++);
+ 159:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* write gN-3(n) into state for next sample processing */
+ 160:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       *px2++ = gnext;
+ 161:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 162:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 163:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample for 5th, 9th ...taps */
+ 164:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Read gN-5(n-1) from state buffer */
+ 165:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gcurr = *px1++;
+ 166:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample for 5th, 9th .. taps */
+ 167:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* fN-5(n) = fN-4(n) - kN-4 * gN-1(n-1) */
+ 168:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       fcurr = __QSUB(fnext, (q31_t) (((q63_t) gcurr * (*pk)) >> 31));
+ 169:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* gN-4(n) = kN-4 * fN-5(n) + gN-5(n-1) */
+ 170:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gnext = __QADD(gcurr, (q31_t) (((q63_t) fcurr * (*pk++)) >> 31));
+ 171:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* y(n) += gN-4(n) * vN-4  */
+ 172:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* process for gN-8(n) * vN-8, gN-12(n) * vN-12 ... */
+ 173:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       acc += ((q63_t) gnext * *pv++);
+ 174:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* write gN-4(n) into state for next sample processing */
+ 175:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       *px2++ = gnext;
+ 176:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 177:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       tapCnt--;
+ 178:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 179:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     }
+ 180:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 181:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     fnext = fcurr;
+ 182:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 183:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* If the filter length is not a multiple of 4, compute the remaining filter taps */
+ 184:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     tapCnt = (numStages - 1u) % 0x4u;
+ 185:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 186:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     while (tapCnt > 0u)
+ 187:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     {
+ 188:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gcurr = *px1++;
+ 189:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample for last taps */
+ 190:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       fnext = __QSUB(fcurr, (q31_t) (((q63_t) gcurr * (*pk)) >> 31));
+ 191:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gnext = __QADD(gcurr, (q31_t) (((q63_t) fnext * (*pk++)) >> 31));
+ 192:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Output samples for last taps */
+ 193:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       acc += ((q63_t) gnext * *pv++);
+ 194:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       *px2++ = gnext;
+ 195:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       fcurr = fnext;
+ 196:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 197:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       tapCnt--;
+ 198:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 199:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     }
+ 200:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 201:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* y(n) += g0(n) * v0 */
+ 202:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     acc += (q63_t) fnext *(
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 6
+
+
+ 203:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   *pv++);
+ 204:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 205:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *px2++ = fnext;
+ 206:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 207:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* write out into pDst */
+ 208:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *pDst++ = (q31_t) (acc >> 31u);
+ 209:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 210:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Advance the state pointer by 4 to process the next group of 4 samples */
+ 211:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     pState = pState + 1u;
+ 212:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     blkCnt--;
+ 213:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 214:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   }
+ 215:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 216:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Processing is complete. Now copy last S->numStages samples to start of the buffer
+ 217:Source\FilteringFunctions/arm_iir_lattice_q31.c ****      for the preperation of next frame process */
+ 218:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 219:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Points to the start of the state buffer */
+ 220:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   pStateCurnt = &S->pState[0];
+ 221:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   pState = &S->pState[blockSize];
+ 222:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 223:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   tapCnt = numStages >> 2u;
+ 224:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 225:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* copy data */
+ 226:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   while (tapCnt > 0u)
+ 227:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   {
+ 228:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *pStateCurnt++ = *pState++;
+ 229:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *pStateCurnt++ = *pState++;
+ 230:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *pStateCurnt++ = *pState++;
+ 231:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *pStateCurnt++ = *pState++;
+ 232:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 233:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Decrement the loop counter */
+ 234:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     tapCnt--;
+ 235:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 236:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   }
+ 237:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 238:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Calculate remaining number of copies */
+ 239:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   tapCnt = (numStages) % 0x4u;
+ 240:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 241:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Copy the remaining q31_t data */
+ 242:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   while (tapCnt > 0u)
+ 243:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   {
+ 244:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *pStateCurnt++ = *pState++;
+ 245:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 246:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Decrement the loop counter */
+ 247:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     tapCnt--;
+ 248:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   };
+ 249:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 250:Source\FilteringFunctions/arm_iir_lattice_q31.c **** #else
+ 251:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 252:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Run the below code for Cortex-M0 */
+ 253:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Sample processing */
+ 254:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   while (blkCnt > 0u)
+  84              		.loc 1 254 0
+  85 0056 97E1     		b	.L2
+  86              	.L11:
+ 255:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   {
+ 256:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Read Sample from input buffer */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 7
+
+
+ 257:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* fN(n) = x(n) */
+ 258:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     fcurr = *pSrc++;
+  87              		.loc 1 258 0
+  88 0058 9823     		mov	r3, #152
+  89 005a FB18     		add	r3, r7, r3
+  90 005c 1A68     		ldr	r2, [r3]
+  91 005e 131D     		add	r3, r2, #4
+  92 0060 9821     		mov	r1, #152
+  93 0062 7918     		add	r1, r7, r1
+  94 0064 0B60     		str	r3, [r1]
+  95 0066 1368     		ldr	r3, [r2]
+  96 0068 EC22     		mov	r2, #236
+  97 006a BA18     		add	r2, r7, r2
+  98 006c 1360     		str	r3, [r2]
+ 259:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 260:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Initialize state read pointer */
+ 261:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     px1 = pState;
+  99              		.loc 1 261 0
+ 100 006e C423     		mov	r3, #196
+ 101 0070 FB18     		add	r3, r7, r3
+ 102 0072 1B68     		ldr	r3, [r3]
+ 103 0074 D422     		mov	r2, #212
+ 104 0076 BA18     		add	r2, r7, r2
+ 105 0078 1360     		str	r3, [r2]
+ 262:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Initialize state write pointer */
+ 263:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     px2 = pState;
+ 106              		.loc 1 263 0
+ 107 007a C423     		mov	r3, #196
+ 108 007c FB18     		add	r3, r7, r3
+ 109 007e 1B68     		ldr	r3, [r3]
+ 110 0080 D022     		mov	r2, #208
+ 111 0082 BA18     		add	r2, r7, r2
+ 112 0084 1360     		str	r3, [r2]
+ 264:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Set accumulator to zero */
+ 265:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     acc = 0;
+ 113              		.loc 1 265 0
+ 114 0086 0023     		mov	r3, #0
+ 115 0088 0024     		mov	r4, #0
+ 116 008a E022     		mov	r2, #224
+ 117 008c BA18     		add	r2, r7, r2
+ 118 008e 1360     		str	r3, [r2]
+ 119 0090 5460     		str	r4, [r2, #4]
+ 266:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Initialize Ladder coeff pointer */
+ 267:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     pv = &S->pvCoeffs[0];
+ 120              		.loc 1 267 0
+ 121 0092 9C23     		mov	r3, #156
+ 122 0094 FB18     		add	r3, r7, r3
+ 123 0096 1B68     		ldr	r3, [r3]
+ 124 0098 DB68     		ldr	r3, [r3, #12]
+ 125 009a C822     		mov	r2, #200
+ 126 009c BA18     		add	r2, r7, r2
+ 127 009e 1360     		str	r3, [r2]
+ 268:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Initialize Reflection coeff pointer */
+ 269:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     pk = &S->pkCoeffs[0];
+ 128              		.loc 1 269 0
+ 129 00a0 9C23     		mov	r3, #156
+ 130 00a2 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 8
+
+
+ 131 00a4 1B68     		ldr	r3, [r3]
+ 132 00a6 9B68     		ldr	r3, [r3, #8]
+ 133 00a8 CC22     		mov	r2, #204
+ 134 00aa BA18     		add	r2, r7, r2
+ 135 00ac 1360     		str	r3, [r2]
+ 270:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 271:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     tapCnt = numStages;
+ 136              		.loc 1 271 0
+ 137 00ae B823     		mov	r3, #184
+ 138 00b0 FB18     		add	r3, r7, r3
+ 139 00b2 1B68     		ldr	r3, [r3]
+ 140 00b4 D822     		mov	r2, #216
+ 141 00b6 BA18     		add	r2, r7, r2
+ 142 00b8 1360     		str	r3, [r2]
+ 272:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 273:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     while (tapCnt > 0u)
+ 143              		.loc 1 273 0
+ 144 00ba 0BE1     		b	.L3
+ 145              	.L10:
+ 274:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     {
+ 275:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gcurr = *px1++;
+ 146              		.loc 1 275 0
+ 147 00bc D423     		mov	r3, #212
+ 148 00be FB18     		add	r3, r7, r3
+ 149 00c0 1A68     		ldr	r2, [r3]
+ 150 00c2 131D     		add	r3, r2, #4
+ 151 00c4 D421     		mov	r1, #212
+ 152 00c6 7918     		add	r1, r7, r1
+ 153 00c8 0B60     		str	r3, [r1]
+ 154 00ca 1368     		ldr	r3, [r2]
+ 155 00cc BC22     		mov	r2, #188
+ 156 00ce BA18     		add	r2, r7, r2
+ 157 00d0 1360     		str	r3, [r2]
+ 276:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Process sample */
+ 277:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* fN-1(n) = fN(n) - kN * gN-1(n-1) */
+ 278:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       fnext =
+ 279:Source\FilteringFunctions/arm_iir_lattice_q31.c ****         clip_q63_to_q31(((q63_t) fcurr -
+ 158              		.loc 1 279 0
+ 159 00d2 EC23     		mov	r3, #236
+ 160 00d4 FB18     		add	r3, r7, r3
+ 161 00d6 1B68     		ldr	r3, [r3]
+ 162 00d8 BB67     		str	r3, [r7, #120]
+ 163 00da DB17     		asr	r3, r3, #31
+ 164 00dc FB67     		str	r3, [r7, #124]
+ 280:Source\FilteringFunctions/arm_iir_lattice_q31.c ****                          ((q31_t) (((q63_t) gcurr * (*pk)) >> 31))));
+ 165              		.loc 1 280 0
+ 166 00de BC23     		mov	r3, #188
+ 167 00e0 FB18     		add	r3, r7, r3
+ 168 00e2 1B68     		ldr	r3, [r3]
+ 169 00e4 3B67     		str	r3, [r7, #112]
+ 170 00e6 DB17     		asr	r3, r3, #31
+ 171 00e8 7B67     		str	r3, [r7, #116]
+ 172 00ea CC23     		mov	r3, #204
+ 173 00ec FB18     		add	r3, r7, r3
+ 174 00ee 1B68     		ldr	r3, [r3]
+ 175 00f0 1B68     		ldr	r3, [r3]
+ 176 00f2 BB66     		str	r3, [r7, #104]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 9
+
+
+ 177 00f4 DB17     		asr	r3, r3, #31
+ 178 00f6 FB66     		str	r3, [r7, #108]
+ 179 00f8 386F     		ldr	r0, [r7, #112]
+ 180 00fa 796F     		ldr	r1, [r7, #116]
+ 181 00fc BA6E     		ldr	r2, [r7, #104]
+ 182 00fe FB6E     		ldr	r3, [r7, #108]
+ 183 0100 FFF7FEFF 		bl	__aeabi_lmul
+ 184 0104 031C     		mov	r3, r0
+ 185 0106 0C1C     		mov	r4, r1
+ 186 0108 6200     		lsl	r2, r4, #1
+ 187 010a D90F     		lsr	r1, r3, #31
+ 188 010c 8820     		mov	r0, #136
+ 189 010e 3818     		add	r0, r7, r0
+ 190 0110 0160     		str	r1, [r0]
+ 191 0112 8821     		mov	r1, #136
+ 192 0114 7918     		add	r1, r7, r1
+ 193 0116 0968     		ldr	r1, [r1]
+ 194 0118 1143     		orr	r1, r2
+ 195 011a 8822     		mov	r2, #136
+ 196 011c BA18     		add	r2, r7, r2
+ 197 011e 1160     		str	r1, [r2]
+ 198 0120 E317     		asr	r3, r4, #31
+ 199 0122 8C22     		mov	r2, #140
+ 200 0124 BA18     		add	r2, r7, r2
+ 201 0126 1360     		str	r3, [r2]
+ 202 0128 8823     		mov	r3, #136
+ 203 012a FB18     		add	r3, r7, r3
+ 204 012c 1B68     		ldr	r3, [r3]
+ 279:Source\FilteringFunctions/arm_iir_lattice_q31.c ****                          ((q31_t) (((q63_t) gcurr * (*pk)) >> 31))));
+ 205              		.loc 1 279 0
+ 206 012e 3B66     		str	r3, [r7, #96]
+ 207 0130 DB17     		asr	r3, r3, #31
+ 208 0132 7B66     		str	r3, [r7, #100]
+ 209 0134 BB6F     		ldr	r3, [r7, #120]
+ 210 0136 FC6F     		ldr	r4, [r7, #124]
+ 211 0138 396E     		ldr	r1, [r7, #96]
+ 212 013a 7A6E     		ldr	r2, [r7, #100]
+ 213 013c 5B1A     		sub	r3, r3, r1
+ 214 013e 9441     		sbc	r4, r4, r2
+ 215 0140 A822     		mov	r2, #168
+ 216 0142 BA18     		add	r2, r7, r2
+ 217 0144 1360     		str	r3, [r2]
+ 218 0146 5460     		str	r4, [r2, #4]
+ 219              	.LBB6:
+ 220              	.LBB7:
+ 221              		.file 2 ".\\Include/arm_math.h"
+   1:.\Include/arm_math.h **** /* ----------------------------------------------------------------------
+   2:.\Include/arm_math.h ****  * Project:      CMSIS DSP Library
+   3:.\Include/arm_math.h ****  * Title:        arm_math.h
+   4:.\Include/arm_math.h ****  * Description:  Public header file for CMSIS DSP Library
+   5:.\Include/arm_math.h ****  *
+   6:.\Include/arm_math.h ****  * $Date:        27. January 2017
+   7:.\Include/arm_math.h ****  * $Revision:    V.1.5.1
+   8:.\Include/arm_math.h ****  *
+   9:.\Include/arm_math.h ****  * Target Processor: Cortex-M cores
+  10:.\Include/arm_math.h ****  * -------------------------------------------------------------------- */
+  11:.\Include/arm_math.h **** /*
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 10
+
+
+  12:.\Include/arm_math.h ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:.\Include/arm_math.h ****  *
+  14:.\Include/arm_math.h ****  * SPDX-License-Identifier: Apache-2.0
+  15:.\Include/arm_math.h ****  *
+  16:.\Include/arm_math.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:.\Include/arm_math.h ****  * not use this file except in compliance with the License.
+  18:.\Include/arm_math.h ****  * You may obtain a copy of the License at
+  19:.\Include/arm_math.h ****  *
+  20:.\Include/arm_math.h ****  * www.apache.org/licenses/LICENSE-2.0
+  21:.\Include/arm_math.h ****  *
+  22:.\Include/arm_math.h ****  * Unless required by applicable law or agreed to in writing, software
+  23:.\Include/arm_math.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:.\Include/arm_math.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:.\Include/arm_math.h ****  * See the License for the specific language governing permissions and
+  26:.\Include/arm_math.h ****  * limitations under the License.
+  27:.\Include/arm_math.h ****  */
+  28:.\Include/arm_math.h **** 
+  29:.\Include/arm_math.h **** /**
+  30:.\Include/arm_math.h ****    \mainpage CMSIS DSP Software Library
+  31:.\Include/arm_math.h ****    *
+  32:.\Include/arm_math.h ****    * Introduction
+  33:.\Include/arm_math.h ****    * ------------
+  34:.\Include/arm_math.h ****    *
+  35:.\Include/arm_math.h ****    * This user manual describes the CMSIS DSP software library,
+  36:.\Include/arm_math.h ****    * a suite of common signal processing functions for use on Cortex-M processor based devices.
+  37:.\Include/arm_math.h ****    *
+  38:.\Include/arm_math.h ****    * The library is divided into a number of functions each covering a specific category:
+  39:.\Include/arm_math.h ****    * - Basic math functions
+  40:.\Include/arm_math.h ****    * - Fast math functions
+  41:.\Include/arm_math.h ****    * - Complex math functions
+  42:.\Include/arm_math.h ****    * - Filters
+  43:.\Include/arm_math.h ****    * - Matrix functions
+  44:.\Include/arm_math.h ****    * - Transforms
+  45:.\Include/arm_math.h ****    * - Motor control functions
+  46:.\Include/arm_math.h ****    * - Statistical functions
+  47:.\Include/arm_math.h ****    * - Support functions
+  48:.\Include/arm_math.h ****    * - Interpolation functions
+  49:.\Include/arm_math.h ****    *
+  50:.\Include/arm_math.h ****    * The library has separate functions for operating on 8-bit integers, 16-bit integers,
+  51:.\Include/arm_math.h ****    * 32-bit integer and 32-bit floating-point values.
+  52:.\Include/arm_math.h ****    *
+  53:.\Include/arm_math.h ****    * Using the Library
+  54:.\Include/arm_math.h ****    * ------------
+  55:.\Include/arm_math.h ****    *
+  56:.\Include/arm_math.h ****    * The library installer contains prebuilt versions of the libraries in the <code>Lib</code> fold
+  57:.\Include/arm_math.h ****    * - arm_cortexM7lfdp_math.lib (Cortex-M7, Little endian, Double Precision Floating Point Unit)
+  58:.\Include/arm_math.h ****    * - arm_cortexM7bfdp_math.lib (Cortex-M7, Big endian, Double Precision Floating Point Unit)
+  59:.\Include/arm_math.h ****    * - arm_cortexM7lfsp_math.lib (Cortex-M7, Little endian, Single Precision Floating Point Unit)
+  60:.\Include/arm_math.h ****    * - arm_cortexM7bfsp_math.lib (Cortex-M7, Big endian and Single Precision Floating Point Unit on
+  61:.\Include/arm_math.h ****    * - arm_cortexM7l_math.lib (Cortex-M7, Little endian)
+  62:.\Include/arm_math.h ****    * - arm_cortexM7b_math.lib (Cortex-M7, Big endian)
+  63:.\Include/arm_math.h ****    * - arm_cortexM4lf_math.lib (Cortex-M4, Little endian, Floating Point Unit)
+  64:.\Include/arm_math.h ****    * - arm_cortexM4bf_math.lib (Cortex-M4, Big endian, Floating Point Unit)
+  65:.\Include/arm_math.h ****    * - arm_cortexM4l_math.lib (Cortex-M4, Little endian)
+  66:.\Include/arm_math.h ****    * - arm_cortexM4b_math.lib (Cortex-M4, Big endian)
+  67:.\Include/arm_math.h ****    * - arm_cortexM3l_math.lib (Cortex-M3, Little endian)
+  68:.\Include/arm_math.h ****    * - arm_cortexM3b_math.lib (Cortex-M3, Big endian)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 11
+
+
+  69:.\Include/arm_math.h ****    * - arm_cortexM0l_math.lib (Cortex-M0 / Cortex-M0+, Little endian)
+  70:.\Include/arm_math.h ****    * - arm_cortexM0b_math.lib (Cortex-M0 / Cortex-M0+, Big endian)
+  71:.\Include/arm_math.h ****    * - arm_ARMv8MBLl_math.lib (ARMv8M Baseline, Little endian)
+  72:.\Include/arm_math.h ****    * - arm_ARMv8MMLl_math.lib (ARMv8M Mainline, Little endian)
+  73:.\Include/arm_math.h ****    * - arm_ARMv8MMLlfsp_math.lib (ARMv8M Mainline, Little endian, Single Precision Floating Point U
+  74:.\Include/arm_math.h ****    * - arm_ARMv8MMLld_math.lib (ARMv8M Mainline, Little endian, DSP instructions)
+  75:.\Include/arm_math.h ****    * - arm_ARMv8MMLldfsp_math.lib (ARMv8M Mainline, Little endian, DSP instructions, Single Precisi
+  76:.\Include/arm_math.h ****    *
+  77:.\Include/arm_math.h ****    * The library functions are declared in the public file <code>arm_math.h</code> which is placed 
+  78:.\Include/arm_math.h ****    * Simply include this file and link the appropriate library in the application and begin calling
+  79:.\Include/arm_math.h ****    * public header file <code> arm_math.h</code> for Cortex-M cores with little endian and big endi
+  80:.\Include/arm_math.h ****    * Define the appropriate pre processor MACRO ARM_MATH_CM7 or ARM_MATH_CM4 or  ARM_MATH_CM3 or
+  81:.\Include/arm_math.h ****    * ARM_MATH_CM0 or ARM_MATH_CM0PLUS depending on the target processor in the application.
+  82:.\Include/arm_math.h ****    * For ARMv8M cores define pre processor MACRO ARM_MATH_ARMV8MBL or ARM_MATH_ARMV8MML.
+  83:.\Include/arm_math.h ****    * Set Pre processor MACRO __DSP_PRESENT if ARMv8M Mainline core supports DSP instructions.
+  84:.\Include/arm_math.h ****    * 
+  85:.\Include/arm_math.h ****    *
+  86:.\Include/arm_math.h ****    * Examples
+  87:.\Include/arm_math.h ****    * --------
+  88:.\Include/arm_math.h ****    *
+  89:.\Include/arm_math.h ****    * The library ships with a number of examples which demonstrate how to use the library functions
+  90:.\Include/arm_math.h ****    *
+  91:.\Include/arm_math.h ****    * Toolchain Support
+  92:.\Include/arm_math.h ****    * ------------
+  93:.\Include/arm_math.h ****    *
+  94:.\Include/arm_math.h ****    * The library has been developed and tested with MDK-ARM version 5.14.0.0
+  95:.\Include/arm_math.h ****    * The library is being tested in GCC and IAR toolchains and updates on this activity will be mad
+  96:.\Include/arm_math.h ****    *
+  97:.\Include/arm_math.h ****    * Building the Library
+  98:.\Include/arm_math.h ****    * ------------
+  99:.\Include/arm_math.h ****    *
+ 100:.\Include/arm_math.h ****    * The library installer contains a project file to re build libraries on MDK-ARM Tool chain in t
+ 101:.\Include/arm_math.h ****    * - arm_cortexM_math.uvprojx
+ 102:.\Include/arm_math.h ****    *
+ 103:.\Include/arm_math.h ****    *
+ 104:.\Include/arm_math.h ****    * The libraries can be built by opening the arm_cortexM_math.uvprojx project in MDK-ARM, selecti
+ 105:.\Include/arm_math.h ****    *
+ 106:.\Include/arm_math.h ****    * Pre-processor Macros
+ 107:.\Include/arm_math.h ****    * ------------
+ 108:.\Include/arm_math.h ****    *
+ 109:.\Include/arm_math.h ****    * Each library project have differant pre-processor macros.
+ 110:.\Include/arm_math.h ****    *
+ 111:.\Include/arm_math.h ****    * - UNALIGNED_SUPPORT_DISABLE:
+ 112:.\Include/arm_math.h ****    *
+ 113:.\Include/arm_math.h ****    * Define macro UNALIGNED_SUPPORT_DISABLE, If the silicon does not support unaligned memory acces
+ 114:.\Include/arm_math.h ****    *
+ 115:.\Include/arm_math.h ****    * - ARM_MATH_BIG_ENDIAN:
+ 116:.\Include/arm_math.h ****    *
+ 117:.\Include/arm_math.h ****    * Define macro ARM_MATH_BIG_ENDIAN to build the library for big endian targets. By default libra
+ 118:.\Include/arm_math.h ****    *
+ 119:.\Include/arm_math.h ****    * - ARM_MATH_MATRIX_CHECK:
+ 120:.\Include/arm_math.h ****    *
+ 121:.\Include/arm_math.h ****    * Define macro ARM_MATH_MATRIX_CHECK for checking on the input and output sizes of matrices
+ 122:.\Include/arm_math.h ****    *
+ 123:.\Include/arm_math.h ****    * - ARM_MATH_ROUNDING:
+ 124:.\Include/arm_math.h ****    *
+ 125:.\Include/arm_math.h ****    * Define macro ARM_MATH_ROUNDING for rounding on support functions
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 12
+
+
+ 126:.\Include/arm_math.h ****    *
+ 127:.\Include/arm_math.h ****    * - ARM_MATH_CMx:
+ 128:.\Include/arm_math.h ****    *
+ 129:.\Include/arm_math.h ****    * Define macro ARM_MATH_CM4 for building the library on Cortex-M4 target, ARM_MATH_CM3 for build
+ 130:.\Include/arm_math.h ****    * and ARM_MATH_CM0 for building library on Cortex-M0 target, ARM_MATH_CM0PLUS for building libra
+ 131:.\Include/arm_math.h ****    * ARM_MATH_CM7 for building the library on cortex-M7.
+ 132:.\Include/arm_math.h ****    *
+ 133:.\Include/arm_math.h ****    * - ARM_MATH_ARMV8MxL:
+ 134:.\Include/arm_math.h ****    *
+ 135:.\Include/arm_math.h ****    * Define macro ARM_MATH_ARMV8MBL for building the library on ARMv8M Baseline target, ARM_MATH_AR
+ 136:.\Include/arm_math.h ****    * on ARMv8M Mainline target.
+ 137:.\Include/arm_math.h ****    *
+ 138:.\Include/arm_math.h ****    * - __FPU_PRESENT:
+ 139:.\Include/arm_math.h ****    *
+ 140:.\Include/arm_math.h ****    * Initialize macro __FPU_PRESENT = 1 when building on FPU supported Targets. Enable this macro f
+ 141:.\Include/arm_math.h ****    *
+ 142:.\Include/arm_math.h ****    * - __DSP_PRESENT:
+ 143:.\Include/arm_math.h ****    *
+ 144:.\Include/arm_math.h ****    * Initialize macro __DSP_PRESENT = 1 when ARMv8M Mainline core supports DSP instructions.
+ 145:.\Include/arm_math.h ****    *
+ 146:.\Include/arm_math.h ****    * <hr>
+ 147:.\Include/arm_math.h ****    * CMSIS-DSP in ARM::CMSIS Pack
+ 148:.\Include/arm_math.h ****    * -----------------------------
+ 149:.\Include/arm_math.h ****    *
+ 150:.\Include/arm_math.h ****    * The following files relevant to CMSIS-DSP are present in the <b>ARM::CMSIS</b> Pack directorie
+ 151:.\Include/arm_math.h ****    * |File/Folder                   |Content                                                       
+ 152:.\Include/arm_math.h ****    * |------------------------------|--------------------------------------------------------------
+ 153:.\Include/arm_math.h ****    * |\b CMSIS\\Documentation\\DSP  | This documentation                                           
+ 154:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib             | Software license agreement (license.txt)                     
+ 155:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib\\Examples   | Example projects demonstrating the usage of the library funct
+ 156:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib\\Source     | Source files for rebuilding the library                      
+ 157:.\Include/arm_math.h ****    *
+ 158:.\Include/arm_math.h ****    * <hr>
+ 159:.\Include/arm_math.h ****    * Revision History of CMSIS-DSP
+ 160:.\Include/arm_math.h ****    * ------------
+ 161:.\Include/arm_math.h ****    * Please refer to \ref ChangeLog_pg.
+ 162:.\Include/arm_math.h ****    *
+ 163:.\Include/arm_math.h ****    * Copyright Notice
+ 164:.\Include/arm_math.h ****    * ------------
+ 165:.\Include/arm_math.h ****    *
+ 166:.\Include/arm_math.h ****    * Copyright (C) 2010-2015 ARM Limited. All rights reserved.
+ 167:.\Include/arm_math.h ****    */
+ 168:.\Include/arm_math.h **** 
+ 169:.\Include/arm_math.h **** 
+ 170:.\Include/arm_math.h **** /**
+ 171:.\Include/arm_math.h ****  * @defgroup groupMath Basic Math Functions
+ 172:.\Include/arm_math.h ****  */
+ 173:.\Include/arm_math.h **** 
+ 174:.\Include/arm_math.h **** /**
+ 175:.\Include/arm_math.h ****  * @defgroup groupFastMath Fast Math Functions
+ 176:.\Include/arm_math.h ****  * This set of functions provides a fast approximation to sine, cosine, and square root.
+ 177:.\Include/arm_math.h ****  * As compared to most of the other functions in the CMSIS math library, the fast math functions
+ 178:.\Include/arm_math.h ****  * operate on individual values and not arrays.
+ 179:.\Include/arm_math.h ****  * There are separate functions for Q15, Q31, and floating-point data.
+ 180:.\Include/arm_math.h ****  *
+ 181:.\Include/arm_math.h ****  */
+ 182:.\Include/arm_math.h **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 13
+
+
+ 183:.\Include/arm_math.h **** /**
+ 184:.\Include/arm_math.h ****  * @defgroup groupCmplxMath Complex Math Functions
+ 185:.\Include/arm_math.h ****  * This set of functions operates on complex data vectors.
+ 186:.\Include/arm_math.h ****  * The data in the complex arrays is stored in an interleaved fashion
+ 187:.\Include/arm_math.h ****  * (real, imag, real, imag, ...).
+ 188:.\Include/arm_math.h ****  * In the API functions, the number of samples in a complex array refers
+ 189:.\Include/arm_math.h ****  * to the number of complex values; the array contains twice this number of
+ 190:.\Include/arm_math.h ****  * real values.
+ 191:.\Include/arm_math.h ****  */
+ 192:.\Include/arm_math.h **** 
+ 193:.\Include/arm_math.h **** /**
+ 194:.\Include/arm_math.h ****  * @defgroup groupFilters Filtering Functions
+ 195:.\Include/arm_math.h ****  */
+ 196:.\Include/arm_math.h **** 
+ 197:.\Include/arm_math.h **** /**
+ 198:.\Include/arm_math.h ****  * @defgroup groupMatrix Matrix Functions
+ 199:.\Include/arm_math.h ****  *
+ 200:.\Include/arm_math.h ****  * This set of functions provides basic matrix math operations.
+ 201:.\Include/arm_math.h ****  * The functions operate on matrix data structures.  For example,
+ 202:.\Include/arm_math.h ****  * the type
+ 203:.\Include/arm_math.h ****  * definition for the floating-point matrix structure is shown
+ 204:.\Include/arm_math.h ****  * below:
+ 205:.\Include/arm_math.h ****  * <pre>
+ 206:.\Include/arm_math.h ****  *     typedef struct
+ 207:.\Include/arm_math.h ****  *     {
+ 208:.\Include/arm_math.h ****  *       uint16_t numRows;     // number of rows of the matrix.
+ 209:.\Include/arm_math.h ****  *       uint16_t numCols;     // number of columns of the matrix.
+ 210:.\Include/arm_math.h ****  *       float32_t *pData;     // points to the data of the matrix.
+ 211:.\Include/arm_math.h ****  *     } arm_matrix_instance_f32;
+ 212:.\Include/arm_math.h ****  * </pre>
+ 213:.\Include/arm_math.h ****  * There are similar definitions for Q15 and Q31 data types.
+ 214:.\Include/arm_math.h ****  *
+ 215:.\Include/arm_math.h ****  * The structure specifies the size of the matrix and then points to
+ 216:.\Include/arm_math.h ****  * an array of data.  The array is of size <code>numRows X numCols</code>
+ 217:.\Include/arm_math.h ****  * and the values are arranged in row order.  That is, the
+ 218:.\Include/arm_math.h ****  * matrix element (i, j) is stored at:
+ 219:.\Include/arm_math.h ****  * <pre>
+ 220:.\Include/arm_math.h ****  *     pData[i*numCols + j]
+ 221:.\Include/arm_math.h ****  * </pre>
+ 222:.\Include/arm_math.h ****  *
+ 223:.\Include/arm_math.h ****  * \par Init Functions
+ 224:.\Include/arm_math.h ****  * There is an associated initialization function for each type of matrix
+ 225:.\Include/arm_math.h ****  * data structure.
+ 226:.\Include/arm_math.h ****  * The initialization function sets the values of the internal structure fields.
+ 227:.\Include/arm_math.h ****  * Refer to the function <code>arm_mat_init_f32()</code>, <code>arm_mat_init_q31()</code>
+ 228:.\Include/arm_math.h ****  * and <code>arm_mat_init_q15()</code> for floating-point, Q31 and Q15 types,  respectively.
+ 229:.\Include/arm_math.h ****  *
+ 230:.\Include/arm_math.h ****  * \par
+ 231:.\Include/arm_math.h ****  * Use of the initialization function is optional. However, if initialization function is used
+ 232:.\Include/arm_math.h ****  * then the instance structure cannot be placed into a const data section.
+ 233:.\Include/arm_math.h ****  * To place the instance structure in a const data
+ 234:.\Include/arm_math.h ****  * section, manually initialize the data structure.  For example:
+ 235:.\Include/arm_math.h ****  * <pre>
+ 236:.\Include/arm_math.h ****  * <code>arm_matrix_instance_f32 S = {nRows, nColumns, pData};</code>
+ 237:.\Include/arm_math.h ****  * <code>arm_matrix_instance_q31 S = {nRows, nColumns, pData};</code>
+ 238:.\Include/arm_math.h ****  * <code>arm_matrix_instance_q15 S = {nRows, nColumns, pData};</code>
+ 239:.\Include/arm_math.h ****  * </pre>
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 14
+
+
+ 240:.\Include/arm_math.h ****  * where <code>nRows</code> specifies the number of rows, <code>nColumns</code>
+ 241:.\Include/arm_math.h ****  * specifies the number of columns, and <code>pData</code> points to the
+ 242:.\Include/arm_math.h ****  * data array.
+ 243:.\Include/arm_math.h ****  *
+ 244:.\Include/arm_math.h ****  * \par Size Checking
+ 245:.\Include/arm_math.h ****  * By default all of the matrix functions perform size checking on the input and
+ 246:.\Include/arm_math.h ****  * output matrices.  For example, the matrix addition function verifies that the
+ 247:.\Include/arm_math.h ****  * two input matrices and the output matrix all have the same number of rows and
+ 248:.\Include/arm_math.h ****  * columns.  If the size check fails the functions return:
+ 249:.\Include/arm_math.h ****  * <pre>
+ 250:.\Include/arm_math.h ****  *     ARM_MATH_SIZE_MISMATCH
+ 251:.\Include/arm_math.h ****  * </pre>
+ 252:.\Include/arm_math.h ****  * Otherwise the functions return
+ 253:.\Include/arm_math.h ****  * <pre>
+ 254:.\Include/arm_math.h ****  *     ARM_MATH_SUCCESS
+ 255:.\Include/arm_math.h ****  * </pre>
+ 256:.\Include/arm_math.h ****  * There is some overhead associated with this matrix size checking.
+ 257:.\Include/arm_math.h ****  * The matrix size checking is enabled via the \#define
+ 258:.\Include/arm_math.h ****  * <pre>
+ 259:.\Include/arm_math.h ****  *     ARM_MATH_MATRIX_CHECK
+ 260:.\Include/arm_math.h ****  * </pre>
+ 261:.\Include/arm_math.h ****  * within the library project settings.  By default this macro is defined
+ 262:.\Include/arm_math.h ****  * and size checking is enabled.  By changing the project settings and
+ 263:.\Include/arm_math.h ****  * undefining this macro size checking is eliminated and the functions
+ 264:.\Include/arm_math.h ****  * run a bit faster.  With size checking disabled the functions always
+ 265:.\Include/arm_math.h ****  * return <code>ARM_MATH_SUCCESS</code>.
+ 266:.\Include/arm_math.h ****  */
+ 267:.\Include/arm_math.h **** 
+ 268:.\Include/arm_math.h **** /**
+ 269:.\Include/arm_math.h ****  * @defgroup groupTransforms Transform Functions
+ 270:.\Include/arm_math.h ****  */
+ 271:.\Include/arm_math.h **** 
+ 272:.\Include/arm_math.h **** /**
+ 273:.\Include/arm_math.h ****  * @defgroup groupController Controller Functions
+ 274:.\Include/arm_math.h ****  */
+ 275:.\Include/arm_math.h **** 
+ 276:.\Include/arm_math.h **** /**
+ 277:.\Include/arm_math.h ****  * @defgroup groupStats Statistics Functions
+ 278:.\Include/arm_math.h ****  */
+ 279:.\Include/arm_math.h **** /**
+ 280:.\Include/arm_math.h ****  * @defgroup groupSupport Support Functions
+ 281:.\Include/arm_math.h ****  */
+ 282:.\Include/arm_math.h **** 
+ 283:.\Include/arm_math.h **** /**
+ 284:.\Include/arm_math.h ****  * @defgroup groupInterpolation Interpolation Functions
+ 285:.\Include/arm_math.h ****  * These functions perform 1- and 2-dimensional interpolation of data.
+ 286:.\Include/arm_math.h ****  * Linear interpolation is used for 1-dimensional data and
+ 287:.\Include/arm_math.h ****  * bilinear interpolation is used for 2-dimensional data.
+ 288:.\Include/arm_math.h ****  */
+ 289:.\Include/arm_math.h **** 
+ 290:.\Include/arm_math.h **** /**
+ 291:.\Include/arm_math.h ****  * @defgroup groupExamples Examples
+ 292:.\Include/arm_math.h ****  */
+ 293:.\Include/arm_math.h **** #ifndef _ARM_MATH_H
+ 294:.\Include/arm_math.h **** #define _ARM_MATH_H
+ 295:.\Include/arm_math.h **** 
+ 296:.\Include/arm_math.h **** /* ignore some GCC warnings */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 15
+
+
+ 297:.\Include/arm_math.h **** #if defined ( __GNUC__ )
+ 298:.\Include/arm_math.h **** #pragma GCC diagnostic push
+ 299:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+ 300:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wconversion"
+ 301:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+ 302:.\Include/arm_math.h **** #endif
+ 303:.\Include/arm_math.h **** 
+ 304:.\Include/arm_math.h **** #define __CMSIS_GENERIC         /* disable NVIC and Systick functions */
+ 305:.\Include/arm_math.h **** 
+ 306:.\Include/arm_math.h **** #if defined(ARM_MATH_CM7)
+ 307:.\Include/arm_math.h ****   #include "core_cm7.h"
+ 308:.\Include/arm_math.h ****   #define ARM_MATH_DSP
+ 309:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM4)
+ 310:.\Include/arm_math.h ****   #include "core_cm4.h"
+ 311:.\Include/arm_math.h ****   #define ARM_MATH_DSP
+ 312:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM3)
+ 313:.\Include/arm_math.h ****   #include "core_cm3.h"
+ 314:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM0)
+ 315:.\Include/arm_math.h ****   #include "core_cm0.h"
+ 316:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 317:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM0PLUS)
+ 318:.\Include/arm_math.h ****   #include "core_cm0plus.h"
+ 319:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 320:.\Include/arm_math.h **** #elif defined (ARM_MATH_ARMV8MBL)
+ 321:.\Include/arm_math.h ****   #include "core_armv8mbl.h"
+ 322:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 323:.\Include/arm_math.h **** #elif defined (ARM_MATH_ARMV8MML)
+ 324:.\Include/arm_math.h ****   #include "core_armv8mml.h"
+ 325:.\Include/arm_math.h ****   #if (defined (__DSP_PRESENT) && (__DSP_PRESENT == 1))
+ 326:.\Include/arm_math.h ****     #define ARM_MATH_DSP
+ 327:.\Include/arm_math.h ****   #endif
+ 328:.\Include/arm_math.h **** #else
+ 329:.\Include/arm_math.h ****   #error "Define according the used Cortex core ARM_MATH_CM7, ARM_MATH_CM4, ARM_MATH_CM3, ARM_MATH_
+ 330:.\Include/arm_math.h **** #endif
+ 331:.\Include/arm_math.h **** 
+ 332:.\Include/arm_math.h **** #undef  __CMSIS_GENERIC         /* enable NVIC and Systick functions */
+ 333:.\Include/arm_math.h **** #include "string.h"
+ 334:.\Include/arm_math.h **** #include "math.h"
+ 335:.\Include/arm_math.h **** #ifdef   __cplusplus
+ 336:.\Include/arm_math.h **** extern "C"
+ 337:.\Include/arm_math.h **** {
+ 338:.\Include/arm_math.h **** #endif
+ 339:.\Include/arm_math.h **** 
+ 340:.\Include/arm_math.h **** 
+ 341:.\Include/arm_math.h ****   /**
+ 342:.\Include/arm_math.h ****    * @brief Macros required for reciprocal calculation in Normalized LMS
+ 343:.\Include/arm_math.h ****    */
+ 344:.\Include/arm_math.h **** 
+ 345:.\Include/arm_math.h **** #define DELTA_Q31          (0x100)
+ 346:.\Include/arm_math.h **** #define DELTA_Q15          0x5
+ 347:.\Include/arm_math.h **** #define INDEX_MASK         0x0000003F
+ 348:.\Include/arm_math.h **** #ifndef PI
+ 349:.\Include/arm_math.h ****   #define PI               3.14159265358979f
+ 350:.\Include/arm_math.h **** #endif
+ 351:.\Include/arm_math.h **** 
+ 352:.\Include/arm_math.h ****   /**
+ 353:.\Include/arm_math.h ****    * @brief Macros required for SINE and COSINE Fast math approximations
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 16
+
+
+ 354:.\Include/arm_math.h ****    */
+ 355:.\Include/arm_math.h **** 
+ 356:.\Include/arm_math.h **** #define FAST_MATH_TABLE_SIZE  512
+ 357:.\Include/arm_math.h **** #define FAST_MATH_Q31_SHIFT   (32 - 10)
+ 358:.\Include/arm_math.h **** #define FAST_MATH_Q15_SHIFT   (16 - 10)
+ 359:.\Include/arm_math.h **** #define CONTROLLER_Q31_SHIFT  (32 - 9)
+ 360:.\Include/arm_math.h **** #define TABLE_SPACING_Q31     0x400000
+ 361:.\Include/arm_math.h **** #define TABLE_SPACING_Q15     0x80
+ 362:.\Include/arm_math.h **** 
+ 363:.\Include/arm_math.h ****   /**
+ 364:.\Include/arm_math.h ****    * @brief Macros required for SINE and COSINE Controller functions
+ 365:.\Include/arm_math.h ****    */
+ 366:.\Include/arm_math.h ****   /* 1.31(q31) Fixed value of 2/360 */
+ 367:.\Include/arm_math.h ****   /* -1 to +1 is divided into 360 values so total spacing is (2/360) */
+ 368:.\Include/arm_math.h **** #define INPUT_SPACING         0xB60B61
+ 369:.\Include/arm_math.h **** 
+ 370:.\Include/arm_math.h ****   /**
+ 371:.\Include/arm_math.h ****    * @brief Macro for Unaligned Support
+ 372:.\Include/arm_math.h ****    */
+ 373:.\Include/arm_math.h **** #ifndef UNALIGNED_SUPPORT_DISABLE
+ 374:.\Include/arm_math.h ****     #define ALIGN4
+ 375:.\Include/arm_math.h **** #else
+ 376:.\Include/arm_math.h ****   #if defined  (__GNUC__)
+ 377:.\Include/arm_math.h ****     #define ALIGN4 __attribute__((aligned(4)))
+ 378:.\Include/arm_math.h ****   #else
+ 379:.\Include/arm_math.h ****     #define ALIGN4 __align(4)
+ 380:.\Include/arm_math.h ****   #endif
+ 381:.\Include/arm_math.h **** #endif   /* #ifndef UNALIGNED_SUPPORT_DISABLE */
+ 382:.\Include/arm_math.h **** 
+ 383:.\Include/arm_math.h ****   /**
+ 384:.\Include/arm_math.h ****    * @brief Error status returned by some functions in the library.
+ 385:.\Include/arm_math.h ****    */
+ 386:.\Include/arm_math.h **** 
+ 387:.\Include/arm_math.h ****   typedef enum
+ 388:.\Include/arm_math.h ****   {
+ 389:.\Include/arm_math.h ****     ARM_MATH_SUCCESS = 0,                /**< No error */
+ 390:.\Include/arm_math.h ****     ARM_MATH_ARGUMENT_ERROR = -1,        /**< One or more arguments are incorrect */
+ 391:.\Include/arm_math.h ****     ARM_MATH_LENGTH_ERROR = -2,          /**< Length of data buffer is incorrect */
+ 392:.\Include/arm_math.h ****     ARM_MATH_SIZE_MISMATCH = -3,         /**< Size of matrices is not compatible with the operation
+ 393:.\Include/arm_math.h ****     ARM_MATH_NANINF = -4,                /**< Not-a-number (NaN) or infinity is generated */
+ 394:.\Include/arm_math.h ****     ARM_MATH_SINGULAR = -5,              /**< Generated by matrix inversion if the input matrix is 
+ 395:.\Include/arm_math.h ****     ARM_MATH_TEST_FAILURE = -6           /**< Test Failed  */
+ 396:.\Include/arm_math.h ****   } arm_status;
+ 397:.\Include/arm_math.h **** 
+ 398:.\Include/arm_math.h ****   /**
+ 399:.\Include/arm_math.h ****    * @brief 8-bit fractional data type in 1.7 format.
+ 400:.\Include/arm_math.h ****    */
+ 401:.\Include/arm_math.h ****   typedef int8_t q7_t;
+ 402:.\Include/arm_math.h **** 
+ 403:.\Include/arm_math.h ****   /**
+ 404:.\Include/arm_math.h ****    * @brief 16-bit fractional data type in 1.15 format.
+ 405:.\Include/arm_math.h ****    */
+ 406:.\Include/arm_math.h ****   typedef int16_t q15_t;
+ 407:.\Include/arm_math.h **** 
+ 408:.\Include/arm_math.h ****   /**
+ 409:.\Include/arm_math.h ****    * @brief 32-bit fractional data type in 1.31 format.
+ 410:.\Include/arm_math.h ****    */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 17
+
+
+ 411:.\Include/arm_math.h ****   typedef int32_t q31_t;
+ 412:.\Include/arm_math.h **** 
+ 413:.\Include/arm_math.h ****   /**
+ 414:.\Include/arm_math.h ****    * @brief 64-bit fractional data type in 1.63 format.
+ 415:.\Include/arm_math.h ****    */
+ 416:.\Include/arm_math.h ****   typedef int64_t q63_t;
+ 417:.\Include/arm_math.h **** 
+ 418:.\Include/arm_math.h ****   /**
+ 419:.\Include/arm_math.h ****    * @brief 32-bit floating-point type definition.
+ 420:.\Include/arm_math.h ****    */
+ 421:.\Include/arm_math.h ****   typedef float float32_t;
+ 422:.\Include/arm_math.h **** 
+ 423:.\Include/arm_math.h ****   /**
+ 424:.\Include/arm_math.h ****    * @brief 64-bit floating-point type definition.
+ 425:.\Include/arm_math.h ****    */
+ 426:.\Include/arm_math.h ****   typedef double float64_t;
+ 427:.\Include/arm_math.h **** 
+ 428:.\Include/arm_math.h ****   /**
+ 429:.\Include/arm_math.h ****    * @brief definition to read/write two 16 bit values.
+ 430:.\Include/arm_math.h ****    */
+ 431:.\Include/arm_math.h **** #if   defined ( __CC_ARM )
+ 432:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t __packed
+ 433:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 434:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 435:.\Include/arm_math.h **** 
+ 436:.\Include/arm_math.h **** #elif defined ( __ARMCC_VERSION ) && ( __ARMCC_VERSION >= 6010050 )
+ 437:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 438:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 439:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 440:.\Include/arm_math.h **** 
+ 441:.\Include/arm_math.h **** #elif defined ( __GNUC__ )
+ 442:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 443:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 444:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 445:.\Include/arm_math.h **** 
+ 446:.\Include/arm_math.h **** #elif defined ( __ICCARM__ )
+ 447:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t __packed
+ 448:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 449:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 450:.\Include/arm_math.h **** 
+ 451:.\Include/arm_math.h **** #elif defined ( __TI_ARM__ )
+ 452:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 453:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 454:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 455:.\Include/arm_math.h **** 
+ 456:.\Include/arm_math.h **** #elif defined ( __CSMC__ )
+ 457:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 458:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 459:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 460:.\Include/arm_math.h **** 
+ 461:.\Include/arm_math.h **** #elif defined ( __TASKING__ )
+ 462:.\Include/arm_math.h ****   #define __SIMD32_TYPE __unaligned int32_t
+ 463:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 464:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 465:.\Include/arm_math.h **** 
+ 466:.\Include/arm_math.h **** #else
+ 467:.\Include/arm_math.h ****   #error Unknown compiler
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 18
+
+
+ 468:.\Include/arm_math.h **** #endif
+ 469:.\Include/arm_math.h **** 
+ 470:.\Include/arm_math.h **** #define __SIMD32(addr)        (*(__SIMD32_TYPE **) & (addr))
+ 471:.\Include/arm_math.h **** #define __SIMD32_CONST(addr)  ((__SIMD32_TYPE *)(addr))
+ 472:.\Include/arm_math.h **** #define _SIMD32_OFFSET(addr)  (*(__SIMD32_TYPE *)  (addr))
+ 473:.\Include/arm_math.h **** #define __SIMD64(addr)        (*(int64_t **) & (addr))
+ 474:.\Include/arm_math.h **** 
+ 475:.\Include/arm_math.h **** /* #if defined (ARM_MATH_CM3) || defined (ARM_MATH_CM0_FAMILY) */
+ 476:.\Include/arm_math.h **** #if !defined (ARM_MATH_DSP)
+ 477:.\Include/arm_math.h ****   /**
+ 478:.\Include/arm_math.h ****    * @brief definition to pack two 16 bit values.
+ 479:.\Include/arm_math.h ****    */
+ 480:.\Include/arm_math.h **** #define __PKHBT(ARG1, ARG2, ARG3) ( (((int32_t)(ARG1) <<    0) & (int32_t)0x0000FFFF) | \
+ 481:.\Include/arm_math.h ****                                     (((int32_t)(ARG2) << ARG3) & (int32_t)0xFFFF0000)  )
+ 482:.\Include/arm_math.h **** #define __PKHTB(ARG1, ARG2, ARG3) ( (((int32_t)(ARG1) <<    0) & (int32_t)0xFFFF0000) | \
+ 483:.\Include/arm_math.h ****                                     (((int32_t)(ARG2) >> ARG3) & (int32_t)0x0000FFFF)  )
+ 484:.\Include/arm_math.h **** 
+ 485:.\Include/arm_math.h **** /* #endif // defined (ARM_MATH_CM3) || defined (ARM_MATH_CM0_FAMILY) */
+ 486:.\Include/arm_math.h **** #endif /* !defined (ARM_MATH_DSP) */
+ 487:.\Include/arm_math.h **** 
+ 488:.\Include/arm_math.h ****    /**
+ 489:.\Include/arm_math.h ****    * @brief definition to pack four 8 bit values.
+ 490:.\Include/arm_math.h ****    */
+ 491:.\Include/arm_math.h **** #ifndef ARM_MATH_BIG_ENDIAN
+ 492:.\Include/arm_math.h **** 
+ 493:.\Include/arm_math.h **** #define __PACKq7(v0,v1,v2,v3) ( (((int32_t)(v0) <<  0) & (int32_t)0x000000FF) | \
+ 494:.\Include/arm_math.h ****                                 (((int32_t)(v1) <<  8) & (int32_t)0x0000FF00) | \
+ 495:.\Include/arm_math.h ****                                 (((int32_t)(v2) << 16) & (int32_t)0x00FF0000) | \
+ 496:.\Include/arm_math.h ****                                 (((int32_t)(v3) << 24) & (int32_t)0xFF000000)  )
+ 497:.\Include/arm_math.h **** #else
+ 498:.\Include/arm_math.h **** 
+ 499:.\Include/arm_math.h **** #define __PACKq7(v0,v1,v2,v3) ( (((int32_t)(v3) <<  0) & (int32_t)0x000000FF) | \
+ 500:.\Include/arm_math.h ****                                 (((int32_t)(v2) <<  8) & (int32_t)0x0000FF00) | \
+ 501:.\Include/arm_math.h ****                                 (((int32_t)(v1) << 16) & (int32_t)0x00FF0000) | \
+ 502:.\Include/arm_math.h ****                                 (((int32_t)(v0) << 24) & (int32_t)0xFF000000)  )
+ 503:.\Include/arm_math.h **** 
+ 504:.\Include/arm_math.h **** #endif
+ 505:.\Include/arm_math.h **** 
+ 506:.\Include/arm_math.h **** 
+ 507:.\Include/arm_math.h ****   /**
+ 508:.\Include/arm_math.h ****    * @brief Clips Q63 to Q31 values.
+ 509:.\Include/arm_math.h ****    */
+ 510:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE q31_t clip_q63_to_q31(
+ 511:.\Include/arm_math.h ****   q63_t x)
+ 512:.\Include/arm_math.h ****   {
+ 513:.\Include/arm_math.h ****     return ((q31_t) (x >> 32) != ((q31_t) x >> 31)) ?
+ 222              		.loc 2 513 0
+ 223 0148 AC23     		mov	r3, #172
+ 224 014a FB18     		add	r3, r7, r3
+ 225 014c 1B68     		ldr	r3, [r3]
+ 226 014e 1B00     		asr	r3, r3, #0
+ 227 0150 BB61     		str	r3, [r7, #24]
+ 228 0152 AC23     		mov	r3, #172
+ 229 0154 FB18     		add	r3, r7, r3
+ 230 0156 1B68     		ldr	r3, [r3]
+ 231 0158 DB17     		asr	r3, r3, #31
+ 232 015a FB61     		str	r3, [r7, #28]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 19
+
+
+ 233 015c BA69     		ldr	r2, [r7, #24]
+ 234 015e A823     		mov	r3, #168
+ 235 0160 FB18     		add	r3, r7, r3
+ 236 0162 1B68     		ldr	r3, [r3]
+ 237 0164 DB17     		asr	r3, r3, #31
+ 514:.\Include/arm_math.h ****       ((0x7FFFFFFF ^ ((q31_t) (x >> 63)))) : (q31_t) x;
+ 238              		.loc 2 514 0
+ 239 0166 9A42     		cmp	r2, r3
+ 240 0168 0DD0     		beq	.L4
+ 241 016a AC23     		mov	r3, #172
+ 242 016c FB18     		add	r3, r7, r3
+ 243 016e 1B68     		ldr	r3, [r3]
+ 244 0170 DB17     		asr	r3, r3, #31
+ 245 0172 3B61     		str	r3, [r7, #16]
+ 246 0174 AC23     		mov	r3, #172
+ 247 0176 FB18     		add	r3, r7, r3
+ 248 0178 1B68     		ldr	r3, [r3]
+ 249 017a DB17     		asr	r3, r3, #31
+ 250 017c 7B61     		str	r3, [r7, #20]
+ 251 017e 3A69     		ldr	r2, [r7, #16]
+ 252 0180 A14B     		ldr	r3, .L15
+ 253 0182 5340     		eor	r3, r2
+ 254 0184 02E0     		b	.L6
+ 255              	.L4:
+ 256 0186 A823     		mov	r3, #168
+ 257 0188 FB18     		add	r3, r7, r3
+ 258 018a 1B68     		ldr	r3, [r3]
+ 259              	.L6:
+ 260              	.LBE7:
+ 261              	.LBE6:
+ 278:Source\FilteringFunctions/arm_iir_lattice_q31.c ****         clip_q63_to_q31(((q63_t) fcurr -
+ 262              		.loc 1 278 0
+ 263 018c E822     		mov	r2, #232
+ 264 018e BA18     		add	r2, r7, r2
+ 265 0190 1360     		str	r3, [r2]
+ 281:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* gN(n) = kN * fN-1(n) + gN-1(n-1) */
+ 282:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       gnext =
+ 283:Source\FilteringFunctions/arm_iir_lattice_q31.c ****         clip_q63_to_q31(((q63_t) gcurr +
+ 266              		.loc 1 283 0
+ 267 0192 BC23     		mov	r3, #188
+ 268 0194 FB18     		add	r3, r7, r3
+ 269 0196 1B68     		ldr	r3, [r3]
+ 270 0198 BB65     		str	r3, [r7, #88]
+ 271 019a DB17     		asr	r3, r3, #31
+ 272 019c FB65     		str	r3, [r7, #92]
+ 284:Source\FilteringFunctions/arm_iir_lattice_q31.c ****                          ((q31_t) (((q63_t) fnext * (*pk++)) >> 31))));
+ 273              		.loc 1 284 0
+ 274 019e E823     		mov	r3, #232
+ 275 01a0 FB18     		add	r3, r7, r3
+ 276 01a2 1B68     		ldr	r3, [r3]
+ 277 01a4 3B65     		str	r3, [r7, #80]
+ 278 01a6 DB17     		asr	r3, r3, #31
+ 279 01a8 7B65     		str	r3, [r7, #84]
+ 280 01aa CC23     		mov	r3, #204
+ 281 01ac FB18     		add	r3, r7, r3
+ 282 01ae 1A68     		ldr	r2, [r3]
+ 283 01b0 131D     		add	r3, r2, #4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 20
+
+
+ 284 01b2 CC21     		mov	r1, #204
+ 285 01b4 7918     		add	r1, r7, r1
+ 286 01b6 0B60     		str	r3, [r1]
+ 287 01b8 1368     		ldr	r3, [r2]
+ 288 01ba BB64     		str	r3, [r7, #72]
+ 289 01bc DB17     		asr	r3, r3, #31
+ 290 01be FB64     		str	r3, [r7, #76]
+ 291 01c0 386D     		ldr	r0, [r7, #80]
+ 292 01c2 796D     		ldr	r1, [r7, #84]
+ 293 01c4 BA6C     		ldr	r2, [r7, #72]
+ 294 01c6 FB6C     		ldr	r3, [r7, #76]
+ 295 01c8 FFF7FEFF 		bl	__aeabi_lmul
+ 296 01cc 031C     		mov	r3, r0
+ 297 01ce 0C1C     		mov	r4, r1
+ 298 01d0 6200     		lsl	r2, r4, #1
+ 299 01d2 D90F     		lsr	r1, r3, #31
+ 300 01d4 8020     		mov	r0, #128
+ 301 01d6 3818     		add	r0, r7, r0
+ 302 01d8 0160     		str	r1, [r0]
+ 303 01da 8021     		mov	r1, #128
+ 304 01dc 7918     		add	r1, r7, r1
+ 305 01de 0968     		ldr	r1, [r1]
+ 306 01e0 1143     		orr	r1, r2
+ 307 01e2 8022     		mov	r2, #128
+ 308 01e4 BA18     		add	r2, r7, r2
+ 309 01e6 1160     		str	r1, [r2]
+ 310 01e8 E317     		asr	r3, r4, #31
+ 311 01ea 8422     		mov	r2, #132
+ 312 01ec BA18     		add	r2, r7, r2
+ 313 01ee 1360     		str	r3, [r2]
+ 314 01f0 8023     		mov	r3, #128
+ 315 01f2 FB18     		add	r3, r7, r3
+ 316 01f4 1B68     		ldr	r3, [r3]
+ 283:Source\FilteringFunctions/arm_iir_lattice_q31.c ****                          ((q31_t) (((q63_t) fnext * (*pk++)) >> 31))));
+ 317              		.loc 1 283 0
+ 318 01f6 3B64     		str	r3, [r7, #64]
+ 319 01f8 DB17     		asr	r3, r3, #31
+ 320 01fa 7B64     		str	r3, [r7, #68]
+ 321 01fc BB6D     		ldr	r3, [r7, #88]
+ 322 01fe FC6D     		ldr	r4, [r7, #92]
+ 323 0200 396C     		ldr	r1, [r7, #64]
+ 324 0202 7A6C     		ldr	r2, [r7, #68]
+ 325 0204 5B18     		add	r3, r3, r1
+ 326 0206 5441     		adc	r4, r4, r2
+ 327 0208 A022     		mov	r2, #160
+ 328 020a BA18     		add	r2, r7, r2
+ 329 020c 1360     		str	r3, [r2]
+ 330 020e 5460     		str	r4, [r2, #4]
+ 331              	.LBB8:
+ 332              	.LBB9:
+ 513:.\Include/arm_math.h ****       ((0x7FFFFFFF ^ ((q31_t) (x >> 63)))) : (q31_t) x;
+ 333              		.loc 2 513 0
+ 334 0210 A423     		mov	r3, #164
+ 335 0212 FB18     		add	r3, r7, r3
+ 336 0214 1B68     		ldr	r3, [r3]
+ 337 0216 1B00     		asr	r3, r3, #0
+ 338 0218 BB60     		str	r3, [r7, #8]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 21
+
+
+ 339 021a A423     		mov	r3, #164
+ 340 021c FB18     		add	r3, r7, r3
+ 341 021e 1B68     		ldr	r3, [r3]
+ 342 0220 DB17     		asr	r3, r3, #31
+ 343 0222 FB60     		str	r3, [r7, #12]
+ 344 0224 BA68     		ldr	r2, [r7, #8]
+ 345 0226 A023     		mov	r3, #160
+ 346 0228 FB18     		add	r3, r7, r3
+ 347 022a 1B68     		ldr	r3, [r3]
+ 348 022c DB17     		asr	r3, r3, #31
+ 349              		.loc 2 514 0
+ 350 022e 9A42     		cmp	r2, r3
+ 351 0230 0DD0     		beq	.L7
+ 352 0232 A423     		mov	r3, #164
+ 353 0234 FB18     		add	r3, r7, r3
+ 354 0236 1B68     		ldr	r3, [r3]
+ 355 0238 DB17     		asr	r3, r3, #31
+ 356 023a 3B60     		str	r3, [r7]
+ 357 023c A423     		mov	r3, #164
+ 358 023e FB18     		add	r3, r7, r3
+ 359 0240 1B68     		ldr	r3, [r3]
+ 360 0242 DB17     		asr	r3, r3, #31
+ 361 0244 7B60     		str	r3, [r7, #4]
+ 362 0246 3A68     		ldr	r2, [r7]
+ 363 0248 6F4B     		ldr	r3, .L15
+ 364 024a 5340     		eor	r3, r2
+ 365 024c 02E0     		b	.L14
+ 366              	.L7:
+ 367 024e A023     		mov	r3, #160
+ 368 0250 FB18     		add	r3, r7, r3
+ 369 0252 1B68     		ldr	r3, [r3]
+ 370              	.L14:
+ 371              	.LBE9:
+ 372              	.LBE8:
+ 282:Source\FilteringFunctions/arm_iir_lattice_q31.c ****         clip_q63_to_q31(((q63_t) gcurr +
+ 373              		.loc 1 282 0
+ 374 0254 B422     		mov	r2, #180
+ 375 0256 BA18     		add	r2, r7, r2
+ 376 0258 1360     		str	r3, [r2]
+ 285:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Output samples */
+ 286:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* y(n) += gN(n) * vN  */
+ 287:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       acc += ((q63_t) gnext * *pv++);
+ 377              		.loc 1 287 0
+ 378 025a B423     		mov	r3, #180
+ 379 025c FB18     		add	r3, r7, r3
+ 380 025e 1B68     		ldr	r3, [r3]
+ 381 0260 BB63     		str	r3, [r7, #56]
+ 382 0262 DB17     		asr	r3, r3, #31
+ 383 0264 FB63     		str	r3, [r7, #60]
+ 384 0266 C823     		mov	r3, #200
+ 385 0268 FB18     		add	r3, r7, r3
+ 386 026a 1A68     		ldr	r2, [r3]
+ 387 026c 131D     		add	r3, r2, #4
+ 388 026e C821     		mov	r1, #200
+ 389 0270 7918     		add	r1, r7, r1
+ 390 0272 0B60     		str	r3, [r1]
+ 391 0274 1368     		ldr	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 22
+
+
+ 392 0276 3B63     		str	r3, [r7, #48]
+ 393 0278 DB17     		asr	r3, r3, #31
+ 394 027a 7B63     		str	r3, [r7, #52]
+ 395 027c B86B     		ldr	r0, [r7, #56]
+ 396 027e F96B     		ldr	r1, [r7, #60]
+ 397 0280 3A6B     		ldr	r2, [r7, #48]
+ 398 0282 7B6B     		ldr	r3, [r7, #52]
+ 399 0284 FFF7FEFF 		bl	__aeabi_lmul
+ 400 0288 031C     		mov	r3, r0
+ 401 028a 0C1C     		mov	r4, r1
+ 402 028c 191C     		mov	r1, r3
+ 403 028e 221C     		mov	r2, r4
+ 404 0290 E023     		mov	r3, #224
+ 405 0292 FB18     		add	r3, r7, r3
+ 406 0294 5C68     		ldr	r4, [r3, #4]
+ 407 0296 1B68     		ldr	r3, [r3]
+ 408 0298 5B18     		add	r3, r3, r1
+ 409 029a 5441     		adc	r4, r4, r2
+ 410 029c E022     		mov	r2, #224
+ 411 029e BA18     		add	r2, r7, r2
+ 412 02a0 1360     		str	r3, [r2]
+ 413 02a2 5460     		str	r4, [r2, #4]
+ 288:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* write gN-1(n-1) into state for next sample processing */
+ 289:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       *px2++ = gnext;
+ 414              		.loc 1 289 0
+ 415 02a4 D023     		mov	r3, #208
+ 416 02a6 FB18     		add	r3, r7, r3
+ 417 02a8 1A68     		ldr	r2, [r3]
+ 418 02aa 131D     		add	r3, r2, #4
+ 419 02ac D021     		mov	r1, #208
+ 420 02ae 7918     		add	r1, r7, r1
+ 421 02b0 0B60     		str	r3, [r1]
+ 422 02b2 B423     		mov	r3, #180
+ 423 02b4 FB18     		add	r3, r7, r3
+ 424 02b6 1B68     		ldr	r3, [r3]
+ 425 02b8 1360     		str	r3, [r2]
+ 290:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       /* Update f values for next coefficient processing */
+ 291:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       fcurr = fnext;
+ 426              		.loc 1 291 0
+ 427 02ba E823     		mov	r3, #232
+ 428 02bc FB18     		add	r3, r7, r3
+ 429 02be 1B68     		ldr	r3, [r3]
+ 430 02c0 EC22     		mov	r2, #236
+ 431 02c2 BA18     		add	r2, r7, r2
+ 432 02c4 1360     		str	r3, [r2]
+ 292:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 293:Source\FilteringFunctions/arm_iir_lattice_q31.c ****       tapCnt--;
+ 433              		.loc 1 293 0
+ 434 02c6 D823     		mov	r3, #216
+ 435 02c8 FB18     		add	r3, r7, r3
+ 436 02ca 1B68     		ldr	r3, [r3]
+ 437 02cc 013B     		sub	r3, r3, #1
+ 438 02ce D822     		mov	r2, #216
+ 439 02d0 BA18     		add	r2, r7, r2
+ 440 02d2 1360     		str	r3, [r2]
+ 441              	.L3:
+ 273:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     {
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 23
+
+
+ 442              		.loc 1 273 0
+ 443 02d4 D823     		mov	r3, #216
+ 444 02d6 FB18     		add	r3, r7, r3
+ 445 02d8 1B68     		ldr	r3, [r3]
+ 446 02da 002B     		cmp	r3, #0
+ 447 02dc 00D0     		beq	.LCB383
+ 448 02de EDE6     		b	.L10	@long jump
+ 449              	.LCB383:
+ 294:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     }
+ 295:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 296:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* y(n) += g0(n) * v0 */
+ 297:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     acc += (q63_t) fnext *(
+ 450              		.loc 1 297 0
+ 451 02e0 E823     		mov	r3, #232
+ 452 02e2 FB18     		add	r3, r7, r3
+ 453 02e4 1B68     		ldr	r3, [r3]
+ 454 02e6 BB62     		str	r3, [r7, #40]
+ 455 02e8 DB17     		asr	r3, r3, #31
+ 456 02ea FB62     		str	r3, [r7, #44]
+ 298:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   *pv++);
+ 457              		.loc 1 298 0
+ 458 02ec C823     		mov	r3, #200
+ 459 02ee FB18     		add	r3, r7, r3
+ 460 02f0 1A68     		ldr	r2, [r3]
+ 461 02f2 131D     		add	r3, r2, #4
+ 462 02f4 C821     		mov	r1, #200
+ 463 02f6 7918     		add	r1, r7, r1
+ 464 02f8 0B60     		str	r3, [r1]
+ 465 02fa 1368     		ldr	r3, [r2]
+ 297:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   *pv++);
+ 466              		.loc 1 297 0
+ 467 02fc 3B62     		str	r3, [r7, #32]
+ 468 02fe DB17     		asr	r3, r3, #31
+ 469 0300 7B62     		str	r3, [r7, #36]
+ 470 0302 B86A     		ldr	r0, [r7, #40]
+ 471 0304 F96A     		ldr	r1, [r7, #44]
+ 472 0306 3A6A     		ldr	r2, [r7, #32]
+ 473 0308 7B6A     		ldr	r3, [r7, #36]
+ 474 030a FFF7FEFF 		bl	__aeabi_lmul
+ 475 030e 031C     		mov	r3, r0
+ 476 0310 0C1C     		mov	r4, r1
+ 477 0312 191C     		mov	r1, r3
+ 478 0314 221C     		mov	r2, r4
+ 479 0316 E023     		mov	r3, #224
+ 480 0318 FB18     		add	r3, r7, r3
+ 481 031a 5C68     		ldr	r4, [r3, #4]
+ 482 031c 1B68     		ldr	r3, [r3]
+ 483 031e 5B18     		add	r3, r3, r1
+ 484 0320 5441     		adc	r4, r4, r2
+ 485 0322 E022     		mov	r2, #224
+ 486 0324 BA18     		add	r2, r7, r2
+ 487 0326 1360     		str	r3, [r2]
+ 488 0328 5460     		str	r4, [r2, #4]
+ 299:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 300:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *px2++ = fnext;
+ 489              		.loc 1 300 0
+ 490 032a D023     		mov	r3, #208
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 24
+
+
+ 491 032c FB18     		add	r3, r7, r3
+ 492 032e 1A68     		ldr	r2, [r3]
+ 493 0330 131D     		add	r3, r2, #4
+ 494 0332 D021     		mov	r1, #208
+ 495 0334 7918     		add	r1, r7, r1
+ 496 0336 0B60     		str	r3, [r1]
+ 497 0338 E823     		mov	r3, #232
+ 498 033a FB18     		add	r3, r7, r3
+ 499 033c 1B68     		ldr	r3, [r3]
+ 500 033e 1360     		str	r3, [r2]
+ 301:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 302:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* write out into pDst */
+ 303:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *pDst++ = (q31_t) (acc >> 31u);
+ 501              		.loc 1 303 0
+ 502 0340 9423     		mov	r3, #148
+ 503 0342 FB18     		add	r3, r7, r3
+ 504 0344 1968     		ldr	r1, [r3]
+ 505 0346 0B1D     		add	r3, r1, #4
+ 506 0348 9422     		mov	r2, #148
+ 507 034a BA18     		add	r2, r7, r2
+ 508 034c 1360     		str	r3, [r2]
+ 509 034e E423     		mov	r3, #228
+ 510 0350 FB18     		add	r3, r7, r3
+ 511 0352 1B68     		ldr	r3, [r3]
+ 512 0354 5A00     		lsl	r2, r3, #1
+ 513 0356 E023     		mov	r3, #224
+ 514 0358 FB18     		add	r3, r7, r3
+ 515 035a 1B68     		ldr	r3, [r3]
+ 516 035c DD0F     		lsr	r5, r3, #31
+ 517 035e 1543     		orr	r5, r2
+ 518 0360 E423     		mov	r3, #228
+ 519 0362 FB18     		add	r3, r7, r3
+ 520 0364 1B68     		ldr	r3, [r3]
+ 521 0366 DE17     		asr	r6, r3, #31
+ 522 0368 2B1C     		mov	r3, r5
+ 523 036a 0B60     		str	r3, [r1]
+ 304:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 305:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Advance the state pointer by 1 to process the next group of samples */
+ 306:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     pState = pState + 1u;
+ 524              		.loc 1 306 0
+ 525 036c C423     		mov	r3, #196
+ 526 036e FB18     		add	r3, r7, r3
+ 527 0370 1B68     		ldr	r3, [r3]
+ 528 0372 0433     		add	r3, r3, #4
+ 529 0374 C422     		mov	r2, #196
+ 530 0376 BA18     		add	r2, r7, r2
+ 531 0378 1360     		str	r3, [r2]
+ 307:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     blkCnt--;
+ 532              		.loc 1 307 0
+ 533 037a DC23     		mov	r3, #220
+ 534 037c FB18     		add	r3, r7, r3
+ 535 037e 1B68     		ldr	r3, [r3]
+ 536 0380 013B     		sub	r3, r3, #1
+ 537 0382 DC22     		mov	r2, #220
+ 538 0384 BA18     		add	r2, r7, r2
+ 539 0386 1360     		str	r3, [r2]
+ 540              	.L2:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 25
+
+
+ 254:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   {
+ 541              		.loc 1 254 0
+ 542 0388 DC23     		mov	r3, #220
+ 543 038a FB18     		add	r3, r7, r3
+ 544 038c 1B68     		ldr	r3, [r3]
+ 545 038e 002B     		cmp	r3, #0
+ 546 0390 00D0     		beq	.LCB468
+ 547 0392 61E6     		b	.L11	@long jump
+ 548              	.LCB468:
+ 308:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 309:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   }
+ 310:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 311:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Processing is complete. Now copy last S->numStages samples to start of the buffer
+ 312:Source\FilteringFunctions/arm_iir_lattice_q31.c ****      for the preperation of next frame process */
+ 313:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 314:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Points to the start of the state buffer */
+ 315:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   pStateCurnt = &S->pState[0];
+ 549              		.loc 1 315 0
+ 550 0394 9C23     		mov	r3, #156
+ 551 0396 FB18     		add	r3, r7, r3
+ 552 0398 1B68     		ldr	r3, [r3]
+ 553 039a 5B68     		ldr	r3, [r3, #4]
+ 554 039c C022     		mov	r2, #192
+ 555 039e BA18     		add	r2, r7, r2
+ 556 03a0 1360     		str	r3, [r2]
+ 316:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   pState = &S->pState[blockSize];
+ 557              		.loc 1 316 0
+ 558 03a2 9C23     		mov	r3, #156
+ 559 03a4 FB18     		add	r3, r7, r3
+ 560 03a6 1B68     		ldr	r3, [r3]
+ 561 03a8 5A68     		ldr	r2, [r3, #4]
+ 562 03aa 9023     		mov	r3, #144
+ 563 03ac FB18     		add	r3, r7, r3
+ 564 03ae 1B68     		ldr	r3, [r3]
+ 565 03b0 9B00     		lsl	r3, r3, #2
+ 566 03b2 D318     		add	r3, r2, r3
+ 567 03b4 C422     		mov	r2, #196
+ 568 03b6 BA18     		add	r2, r7, r2
+ 569 03b8 1360     		str	r3, [r2]
+ 317:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 318:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   tapCnt = numStages;
+ 570              		.loc 1 318 0
+ 571 03ba B823     		mov	r3, #184
+ 572 03bc FB18     		add	r3, r7, r3
+ 573 03be 1B68     		ldr	r3, [r3]
+ 574 03c0 D822     		mov	r2, #216
+ 575 03c2 BA18     		add	r2, r7, r2
+ 576 03c4 1360     		str	r3, [r2]
+ 319:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 320:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   /* Copy the remaining q31_t data */
+ 321:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   while (tapCnt > 0u)
+ 577              		.loc 1 321 0
+ 578 03c6 16E0     		b	.L12
+ 579              	.L13:
+ 322:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   {
+ 323:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     *pStateCurnt++ = *pState++;
+ 580              		.loc 1 323 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 26
+
+
+ 581 03c8 C023     		mov	r3, #192
+ 582 03ca FB18     		add	r3, r7, r3
+ 583 03cc 1B68     		ldr	r3, [r3]
+ 584 03ce 1A1D     		add	r2, r3, #4
+ 585 03d0 C021     		mov	r1, #192
+ 586 03d2 7918     		add	r1, r7, r1
+ 587 03d4 0A60     		str	r2, [r1]
+ 588 03d6 C422     		mov	r2, #196
+ 589 03d8 BA18     		add	r2, r7, r2
+ 590 03da 1268     		ldr	r2, [r2]
+ 591 03dc 111D     		add	r1, r2, #4
+ 592 03de C420     		mov	r0, #196
+ 593 03e0 3818     		add	r0, r7, r0
+ 594 03e2 0160     		str	r1, [r0]
+ 595 03e4 1268     		ldr	r2, [r2]
+ 596 03e6 1A60     		str	r2, [r3]
+ 324:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 325:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     /* Decrement the loop counter */
+ 326:Source\FilteringFunctions/arm_iir_lattice_q31.c ****     tapCnt--;
+ 597              		.loc 1 326 0
+ 598 03e8 D823     		mov	r3, #216
+ 599 03ea FB18     		add	r3, r7, r3
+ 600 03ec 1B68     		ldr	r3, [r3]
+ 601 03ee 013B     		sub	r3, r3, #1
+ 602 03f0 D822     		mov	r2, #216
+ 603 03f2 BA18     		add	r2, r7, r2
+ 604 03f4 1360     		str	r3, [r2]
+ 605              	.L12:
+ 321:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   {
+ 606              		.loc 1 321 0
+ 607 03f6 D823     		mov	r3, #216
+ 608 03f8 FB18     		add	r3, r7, r3
+ 609 03fa 1B68     		ldr	r3, [r3]
+ 610 03fc 002B     		cmp	r3, #0
+ 611 03fe E3D1     		bne	.L13
+ 327:Source\FilteringFunctions/arm_iir_lattice_q31.c ****   }
+ 328:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 329:Source\FilteringFunctions/arm_iir_lattice_q31.c **** #endif /*   #if defined (ARM_MATH_DSP) */
+ 330:Source\FilteringFunctions/arm_iir_lattice_q31.c **** 
+ 331:Source\FilteringFunctions/arm_iir_lattice_q31.c **** }
+ 612              		.loc 1 331 0
+ 613 0400 BD46     		mov	sp, r7
+ 614 0402 3DB0     		add	sp, sp, #244
+ 615              		@ sp needed
+ 616 0404 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 617              	.L16:
+ 618 0406 C046     		.align	2
+ 619              	.L15:
+ 620 0408 FFFFFF7F 		.word	2147483647
+ 621              		.cfi_endproc
+ 622              	.LFE82:
+ 623              		.size	arm_iir_lattice_q31, .-arm_iir_lattice_q31
+ 624              		.text
+ 625              	.Letext0:
+ 626              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 627              		.file 4 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 628              		.section	.debug_info,"",%progbits
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 27
+
+
+ 629              	.Ldebug_info0:
+ 630 0000 C1020000 		.4byte	0x2c1
+ 631 0004 0400     		.2byte	0x4
+ 632 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 633 000a 04       		.byte	0x4
+ 634 000b 01       		.uleb128 0x1
+ 635 000c 57010000 		.4byte	.LASF39
+ 636 0010 01       		.byte	0x1
+ 637 0011 0F000000 		.4byte	.LASF40
+ 638 0015 49000000 		.4byte	.LASF41
+ 639 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 640 001d 00000000 		.4byte	0
+ 641 0021 00000000 		.4byte	.Ldebug_line0
+ 642 0025 02       		.uleb128 0x2
+ 643 0026 01       		.byte	0x1
+ 644 0027 06       		.byte	0x6
+ 645 0028 7D020000 		.4byte	.LASF0
+ 646 002c 02       		.uleb128 0x2
+ 647 002d 01       		.byte	0x1
+ 648 002e 08       		.byte	0x8
+ 649 002f A1000000 		.4byte	.LASF1
+ 650 0033 02       		.uleb128 0x2
+ 651 0034 02       		.byte	0x2
+ 652 0035 05       		.byte	0x5
+ 653 0036 2D020000 		.4byte	.LASF2
+ 654 003a 03       		.uleb128 0x3
+ 655 003b 37020000 		.4byte	.LASF4
+ 656 003f 03       		.byte	0x3
+ 657 0040 2B       		.byte	0x2b
+ 658 0041 45000000 		.4byte	0x45
+ 659 0045 02       		.uleb128 0x2
+ 660 0046 02       		.byte	0x2
+ 661 0047 07       		.byte	0x7
+ 662 0048 CE000000 		.4byte	.LASF3
+ 663 004c 03       		.uleb128 0x3
+ 664 004d 3F000000 		.4byte	.LASF5
+ 665 0051 03       		.byte	0x3
+ 666 0052 3F       		.byte	0x3f
+ 667 0053 57000000 		.4byte	0x57
+ 668 0057 02       		.uleb128 0x2
+ 669 0058 04       		.byte	0x4
+ 670 0059 05       		.byte	0x5
+ 671 005a 68020000 		.4byte	.LASF6
+ 672 005e 03       		.uleb128 0x3
+ 673 005f 13010000 		.4byte	.LASF7
+ 674 0063 03       		.byte	0x3
+ 675 0064 41       		.byte	0x41
+ 676 0065 69000000 		.4byte	0x69
+ 677 0069 02       		.uleb128 0x2
+ 678 006a 04       		.byte	0x4
+ 679 006b 07       		.byte	0x7
+ 680 006c B6000000 		.4byte	.LASF8
+ 681 0070 03       		.uleb128 0x3
+ 682 0071 F5000000 		.4byte	.LASF9
+ 683 0075 03       		.byte	0x3
+ 684 0076 59       		.byte	0x59
+ 685 0077 7B000000 		.4byte	0x7b
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 28
+
+
+ 686 007b 02       		.uleb128 0x2
+ 687 007c 08       		.byte	0x8
+ 688 007d 05       		.byte	0x5
+ 689 007e 00020000 		.4byte	.LASF10
+ 690 0082 02       		.uleb128 0x2
+ 691 0083 08       		.byte	0x8
+ 692 0084 07       		.byte	0x7
+ 693 0085 40010000 		.4byte	.LASF11
+ 694 0089 04       		.uleb128 0x4
+ 695 008a 04       		.byte	0x4
+ 696 008b 05       		.byte	0x5
+ 697 008c 696E7400 		.ascii	"int\000"
+ 698 0090 02       		.uleb128 0x2
+ 699 0091 04       		.byte	0x4
+ 700 0092 07       		.byte	0x7
+ 701 0093 33010000 		.4byte	.LASF12
+ 702 0097 03       		.uleb128 0x3
+ 703 0098 42020000 		.4byte	.LASF13
+ 704 009c 04       		.byte	0x4
+ 705 009d 21       		.byte	0x21
+ 706 009e 3A000000 		.4byte	0x3a
+ 707 00a2 03       		.uleb128 0x3
+ 708 00a3 EF010000 		.4byte	.LASF14
+ 709 00a7 04       		.byte	0x4
+ 710 00a8 2C       		.byte	0x2c
+ 711 00a9 4C000000 		.4byte	0x4c
+ 712 00ad 03       		.uleb128 0x3
+ 713 00ae 5F020000 		.4byte	.LASF15
+ 714 00b2 04       		.byte	0x4
+ 715 00b3 2D       		.byte	0x2d
+ 716 00b4 5E000000 		.4byte	0x5e
+ 717 00b8 03       		.uleb128 0x3
+ 718 00b9 00000000 		.4byte	.LASF16
+ 719 00bd 04       		.byte	0x4
+ 720 00be 38       		.byte	0x38
+ 721 00bf 70000000 		.4byte	0x70
+ 722 00c3 02       		.uleb128 0x2
+ 723 00c4 04       		.byte	0x4
+ 724 00c5 07       		.byte	0x7
+ 725 00c6 F7010000 		.4byte	.LASF17
+ 726 00ca 02       		.uleb128 0x2
+ 727 00cb 01       		.byte	0x1
+ 728 00cc 08       		.byte	0x8
+ 729 00cd 28020000 		.4byte	.LASF18
+ 730 00d1 02       		.uleb128 0x2
+ 731 00d2 08       		.byte	0x8
+ 732 00d3 04       		.byte	0x4
+ 733 00d4 06010000 		.4byte	.LASF19
+ 734 00d8 02       		.uleb128 0x2
+ 735 00d9 04       		.byte	0x4
+ 736 00da 04       		.byte	0x4
+ 737 00db 95000000 		.4byte	.LASF20
+ 738 00df 02       		.uleb128 0x2
+ 739 00e0 08       		.byte	0x8
+ 740 00e1 04       		.byte	0x4
+ 741 00e2 71020000 		.4byte	.LASF21
+ 742 00e6 05       		.uleb128 0x5
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 29
+
+
+ 743 00e7 9B000000 		.4byte	.LASF22
+ 744 00eb 02       		.byte	0x2
+ 745 00ec 9B01     		.2byte	0x19b
+ 746 00ee A2000000 		.4byte	0xa2
+ 747 00f2 05       		.uleb128 0x5
+ 748 00f3 E9010000 		.4byte	.LASF23
+ 749 00f7 02       		.byte	0x2
+ 750 00f8 A001     		.2byte	0x1a0
+ 751 00fa B8000000 		.4byte	0xb8
+ 752 00fe 06       		.uleb128 0x6
+ 753 00ff 04       		.byte	0x4
+ 754 0100 E6000000 		.4byte	0xe6
+ 755 0104 07       		.uleb128 0x7
+ 756 0105 10       		.byte	0x10
+ 757 0106 02       		.byte	0x2
+ 758 0107 4A0F     		.2byte	0xf4a
+ 759 0109 42010000 		.4byte	0x142
+ 760 010d 08       		.uleb128 0x8
+ 761 010e 8E020000 		.4byte	.LASF24
+ 762 0112 02       		.byte	0x2
+ 763 0113 4C0F     		.2byte	0xf4c
+ 764 0115 97000000 		.4byte	0x97
+ 765 0119 00       		.byte	0
+ 766 011a 08       		.uleb128 0x8
+ 767 011b 08000000 		.4byte	.LASF25
+ 768 011f 02       		.byte	0x2
+ 769 0120 4D0F     		.2byte	0xf4d
+ 770 0122 FE000000 		.4byte	0xfe
+ 771 0126 04       		.byte	0x4
+ 772 0127 08       		.uleb128 0x8
+ 773 0128 2A010000 		.4byte	.LASF26
+ 774 012c 02       		.byte	0x2
+ 775 012d 4E0F     		.2byte	0xf4e
+ 776 012f FE000000 		.4byte	0xfe
+ 777 0133 08       		.byte	0x8
+ 778 0134 08       		.uleb128 0x8
+ 779 0135 EC000000 		.4byte	.LASF27
+ 780 0139 02       		.byte	0x2
+ 781 013a 4F0F     		.2byte	0xf4f
+ 782 013c FE000000 		.4byte	0xfe
+ 783 0140 0C       		.byte	0xc
+ 784 0141 00       		.byte	0
+ 785 0142 05       		.uleb128 0x5
+ 786 0143 98020000 		.4byte	.LASF28
+ 787 0147 02       		.byte	0x2
+ 788 0148 500F     		.2byte	0xf50
+ 789 014a 04010000 		.4byte	0x104
+ 790 014e 09       		.uleb128 0x9
+ 791 014f 18020000 		.4byte	.LASF42
+ 792 0153 02       		.byte	0x2
+ 793 0154 FE01     		.2byte	0x1fe
+ 794 0156 E6000000 		.4byte	0xe6
+ 795 015a 03       		.byte	0x3
+ 796 015b 6A010000 		.4byte	0x16a
+ 797 015f 0A       		.uleb128 0xa
+ 798 0160 7800     		.ascii	"x\000"
+ 799 0162 02       		.byte	0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 30
+
+
+ 800 0163 FF01     		.2byte	0x1ff
+ 801 0165 F2000000 		.4byte	0xf2
+ 802 0169 00       		.byte	0
+ 803 016a 0B       		.uleb128 0xb
+ 804 016b 4B020000 		.4byte	.LASF43
+ 805 016f 01       		.byte	0x1
+ 806 0170 3A       		.byte	0x3a
+ 807 0171 00000000 		.4byte	.LFB82
+ 808 0175 0C040000 		.4byte	.LFE82-.LFB82
+ 809 0179 01       		.uleb128 0x1
+ 810 017a 9C       		.byte	0x9c
+ 811 017b B9020000 		.4byte	0x2b9
+ 812 017f 0C       		.uleb128 0xc
+ 813 0180 5300     		.ascii	"S\000"
+ 814 0182 01       		.byte	0x1
+ 815 0183 3B       		.byte	0x3b
+ 816 0184 B9020000 		.4byte	0x2b9
+ 817 0188 03       		.uleb128 0x3
+ 818 0189 91       		.byte	0x91
+ 819 018a 947F     		.sleb128 -108
+ 820 018c 0D       		.uleb128 0xd
+ 821 018d 89020000 		.4byte	.LASF29
+ 822 0191 01       		.byte	0x1
+ 823 0192 3C       		.byte	0x3c
+ 824 0193 FE000000 		.4byte	0xfe
+ 825 0197 03       		.uleb128 0x3
+ 826 0198 91       		.byte	0x91
+ 827 0199 907F     		.sleb128 -112
+ 828 019b 0D       		.uleb128 0xd
+ 829 019c E7000000 		.4byte	.LASF30
+ 830 01a0 01       		.byte	0x1
+ 831 01a1 3D       		.byte	0x3d
+ 832 01a2 FE000000 		.4byte	0xfe
+ 833 01a6 03       		.uleb128 0x3
+ 834 01a7 91       		.byte	0x91
+ 835 01a8 8C7F     		.sleb128 -116
+ 836 01aa 0D       		.uleb128 0xd
+ 837 01ab 0E020000 		.4byte	.LASF31
+ 838 01af 01       		.byte	0x1
+ 839 01b0 3E       		.byte	0x3e
+ 840 01b1 AD000000 		.4byte	0xad
+ 841 01b5 03       		.uleb128 0x3
+ 842 01b6 91       		.byte	0x91
+ 843 01b7 887F     		.sleb128 -120
+ 844 01b9 0E       		.uleb128 0xe
+ 845 01ba E1000000 		.4byte	.LASF32
+ 846 01be 01       		.byte	0x1
+ 847 01bf 40       		.byte	0x40
+ 848 01c0 E6000000 		.4byte	0xe6
+ 849 01c4 02       		.uleb128 0x2
+ 850 01c5 91       		.byte	0x91
+ 851 01c6 64       		.sleb128 -28
+ 852 01c7 0E       		.uleb128 0xe
+ 853 01c8 C8000000 		.4byte	.LASF33
+ 854 01cc 01       		.byte	0x1
+ 855 01cd 40       		.byte	0x40
+ 856 01ce E6000000 		.4byte	0xe6
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 31
+
+
+ 857 01d2 02       		.uleb128 0x2
+ 858 01d3 91       		.byte	0x91
+ 859 01d4 60       		.sleb128 -32
+ 860 01d5 0E       		.uleb128 0xe
+ 861 01d6 0D010000 		.4byte	.LASF34
+ 862 01da 01       		.byte	0x1
+ 863 01db 40       		.byte	0x40
+ 864 01dc E6000000 		.4byte	0xe6
+ 865 01e0 03       		.uleb128 0x3
+ 866 01e1 91       		.byte	0x91
+ 867 01e2 B47F     		.sleb128 -76
+ 868 01e4 0E       		.uleb128 0xe
+ 869 01e5 8F000000 		.4byte	.LASF35
+ 870 01e9 01       		.byte	0x1
+ 871 01ea 40       		.byte	0x40
+ 872 01eb E6000000 		.4byte	0xe6
+ 873 01ef 03       		.uleb128 0x3
+ 874 01f0 91       		.byte	0x91
+ 875 01f1 AC7F     		.sleb128 -84
+ 876 01f3 0F       		.uleb128 0xf
+ 877 01f4 61636300 		.ascii	"acc\000"
+ 878 01f8 01       		.byte	0x1
+ 879 01f9 41       		.byte	0x41
+ 880 01fa F2000000 		.4byte	0xf2
+ 881 01fe 02       		.uleb128 0x2
+ 882 01ff 91       		.byte	0x91
+ 883 0200 58       		.sleb128 -40
+ 884 0201 0E       		.uleb128 0xe
+ 885 0202 AF000000 		.4byte	.LASF36
+ 886 0206 01       		.byte	0x1
+ 887 0207 42       		.byte	0x42
+ 888 0208 AD000000 		.4byte	0xad
+ 889 020c 02       		.uleb128 0x2
+ 890 020d 91       		.byte	0x91
+ 891 020e 54       		.sleb128 -44
+ 892 020f 0E       		.uleb128 0xe
+ 893 0210 FF000000 		.4byte	.LASF37
+ 894 0214 01       		.byte	0x1
+ 895 0215 42       		.byte	0x42
+ 896 0216 AD000000 		.4byte	0xad
+ 897 021a 02       		.uleb128 0x2
+ 898 021b 91       		.byte	0x91
+ 899 021c 50       		.sleb128 -48
+ 900 021d 0F       		.uleb128 0xf
+ 901 021e 70783100 		.ascii	"px1\000"
+ 902 0222 01       		.byte	0x1
+ 903 0223 43       		.byte	0x43
+ 904 0224 FE000000 		.4byte	0xfe
+ 905 0228 02       		.uleb128 0x2
+ 906 0229 91       		.byte	0x91
+ 907 022a 4C       		.sleb128 -52
+ 908 022b 0F       		.uleb128 0xf
+ 909 022c 70783200 		.ascii	"px2\000"
+ 910 0230 01       		.byte	0x1
+ 911 0231 43       		.byte	0x43
+ 912 0232 FE000000 		.4byte	0xfe
+ 913 0236 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 32
+
+
+ 914 0237 91       		.byte	0x91
+ 915 0238 48       		.sleb128 -56
+ 916 0239 0F       		.uleb128 0xf
+ 917 023a 706B00   		.ascii	"pk\000"
+ 918 023d 01       		.byte	0x1
+ 919 023e 43       		.byte	0x43
+ 920 023f FE000000 		.4byte	0xfe
+ 921 0243 02       		.uleb128 0x2
+ 922 0244 91       		.byte	0x91
+ 923 0245 44       		.sleb128 -60
+ 924 0246 0F       		.uleb128 0xf
+ 925 0247 707600   		.ascii	"pv\000"
+ 926 024a 01       		.byte	0x1
+ 927 024b 43       		.byte	0x43
+ 928 024c FE000000 		.4byte	0xfe
+ 929 0250 02       		.uleb128 0x2
+ 930 0251 91       		.byte	0x91
+ 931 0252 40       		.sleb128 -64
+ 932 0253 0E       		.uleb128 0xe
+ 933 0254 8E020000 		.4byte	.LASF24
+ 934 0258 01       		.byte	0x1
+ 935 0259 44       		.byte	0x44
+ 936 025a AD000000 		.4byte	0xad
+ 937 025e 03       		.uleb128 0x3
+ 938 025f 91       		.byte	0x91
+ 939 0260 B07F     		.sleb128 -80
+ 940 0262 0E       		.uleb128 0xe
+ 941 0263 08000000 		.4byte	.LASF25
+ 942 0267 01       		.byte	0x1
+ 943 0268 45       		.byte	0x45
+ 944 0269 FE000000 		.4byte	0xfe
+ 945 026d 03       		.uleb128 0x3
+ 946 026e 91       		.byte	0x91
+ 947 026f BC7F     		.sleb128 -68
+ 948 0271 0E       		.uleb128 0xe
+ 949 0272 1E010000 		.4byte	.LASF38
+ 950 0276 01       		.byte	0x1
+ 951 0277 46       		.byte	0x46
+ 952 0278 FE000000 		.4byte	0xfe
+ 953 027c 03       		.uleb128 0x3
+ 954 027d 91       		.byte	0x91
+ 955 027e B87F     		.sleb128 -72
+ 956 0280 10       		.uleb128 0x10
+ 957 0281 4E010000 		.4byte	0x14e
+ 958 0285 48010000 		.4byte	.LBB6
+ 959 0289 44000000 		.4byte	.LBE6-.LBB6
+ 960 028d 01       		.byte	0x1
+ 961 028e 1601     		.2byte	0x116
+ 962 0290 9E020000 		.4byte	0x29e
+ 963 0294 11       		.uleb128 0x11
+ 964 0295 5F010000 		.4byte	0x15f
+ 965 0299 03       		.uleb128 0x3
+ 966 029a 91       		.byte	0x91
+ 967 029b A07F     		.sleb128 -96
+ 968 029d 00       		.byte	0
+ 969 029e 12       		.uleb128 0x12
+ 970 029f 4E010000 		.4byte	0x14e
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 33
+
+
+ 971 02a3 10020000 		.4byte	.LBB8
+ 972 02a7 44000000 		.4byte	.LBE8-.LBB8
+ 973 02ab 01       		.byte	0x1
+ 974 02ac 1A01     		.2byte	0x11a
+ 975 02ae 11       		.uleb128 0x11
+ 976 02af 5F010000 		.4byte	0x15f
+ 977 02b3 03       		.uleb128 0x3
+ 978 02b4 91       		.byte	0x91
+ 979 02b5 987F     		.sleb128 -104
+ 980 02b7 00       		.byte	0
+ 981 02b8 00       		.byte	0
+ 982 02b9 06       		.uleb128 0x6
+ 983 02ba 04       		.byte	0x4
+ 984 02bb BF020000 		.4byte	0x2bf
+ 985 02bf 13       		.uleb128 0x13
+ 986 02c0 42010000 		.4byte	0x142
+ 987 02c4 00       		.byte	0
+ 988              		.section	.debug_abbrev,"",%progbits
+ 989              	.Ldebug_abbrev0:
+ 990 0000 01       		.uleb128 0x1
+ 991 0001 11       		.uleb128 0x11
+ 992 0002 01       		.byte	0x1
+ 993 0003 25       		.uleb128 0x25
+ 994 0004 0E       		.uleb128 0xe
+ 995 0005 13       		.uleb128 0x13
+ 996 0006 0B       		.uleb128 0xb
+ 997 0007 03       		.uleb128 0x3
+ 998 0008 0E       		.uleb128 0xe
+ 999 0009 1B       		.uleb128 0x1b
+ 1000 000a 0E       		.uleb128 0xe
+ 1001 000b 55       		.uleb128 0x55
+ 1002 000c 17       		.uleb128 0x17
+ 1003 000d 11       		.uleb128 0x11
+ 1004 000e 01       		.uleb128 0x1
+ 1005 000f 10       		.uleb128 0x10
+ 1006 0010 17       		.uleb128 0x17
+ 1007 0011 00       		.byte	0
+ 1008 0012 00       		.byte	0
+ 1009 0013 02       		.uleb128 0x2
+ 1010 0014 24       		.uleb128 0x24
+ 1011 0015 00       		.byte	0
+ 1012 0016 0B       		.uleb128 0xb
+ 1013 0017 0B       		.uleb128 0xb
+ 1014 0018 3E       		.uleb128 0x3e
+ 1015 0019 0B       		.uleb128 0xb
+ 1016 001a 03       		.uleb128 0x3
+ 1017 001b 0E       		.uleb128 0xe
+ 1018 001c 00       		.byte	0
+ 1019 001d 00       		.byte	0
+ 1020 001e 03       		.uleb128 0x3
+ 1021 001f 16       		.uleb128 0x16
+ 1022 0020 00       		.byte	0
+ 1023 0021 03       		.uleb128 0x3
+ 1024 0022 0E       		.uleb128 0xe
+ 1025 0023 3A       		.uleb128 0x3a
+ 1026 0024 0B       		.uleb128 0xb
+ 1027 0025 3B       		.uleb128 0x3b
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 34
+
+
+ 1028 0026 0B       		.uleb128 0xb
+ 1029 0027 49       		.uleb128 0x49
+ 1030 0028 13       		.uleb128 0x13
+ 1031 0029 00       		.byte	0
+ 1032 002a 00       		.byte	0
+ 1033 002b 04       		.uleb128 0x4
+ 1034 002c 24       		.uleb128 0x24
+ 1035 002d 00       		.byte	0
+ 1036 002e 0B       		.uleb128 0xb
+ 1037 002f 0B       		.uleb128 0xb
+ 1038 0030 3E       		.uleb128 0x3e
+ 1039 0031 0B       		.uleb128 0xb
+ 1040 0032 03       		.uleb128 0x3
+ 1041 0033 08       		.uleb128 0x8
+ 1042 0034 00       		.byte	0
+ 1043 0035 00       		.byte	0
+ 1044 0036 05       		.uleb128 0x5
+ 1045 0037 16       		.uleb128 0x16
+ 1046 0038 00       		.byte	0
+ 1047 0039 03       		.uleb128 0x3
+ 1048 003a 0E       		.uleb128 0xe
+ 1049 003b 3A       		.uleb128 0x3a
+ 1050 003c 0B       		.uleb128 0xb
+ 1051 003d 3B       		.uleb128 0x3b
+ 1052 003e 05       		.uleb128 0x5
+ 1053 003f 49       		.uleb128 0x49
+ 1054 0040 13       		.uleb128 0x13
+ 1055 0041 00       		.byte	0
+ 1056 0042 00       		.byte	0
+ 1057 0043 06       		.uleb128 0x6
+ 1058 0044 0F       		.uleb128 0xf
+ 1059 0045 00       		.byte	0
+ 1060 0046 0B       		.uleb128 0xb
+ 1061 0047 0B       		.uleb128 0xb
+ 1062 0048 49       		.uleb128 0x49
+ 1063 0049 13       		.uleb128 0x13
+ 1064 004a 00       		.byte	0
+ 1065 004b 00       		.byte	0
+ 1066 004c 07       		.uleb128 0x7
+ 1067 004d 13       		.uleb128 0x13
+ 1068 004e 01       		.byte	0x1
+ 1069 004f 0B       		.uleb128 0xb
+ 1070 0050 0B       		.uleb128 0xb
+ 1071 0051 3A       		.uleb128 0x3a
+ 1072 0052 0B       		.uleb128 0xb
+ 1073 0053 3B       		.uleb128 0x3b
+ 1074 0054 05       		.uleb128 0x5
+ 1075 0055 01       		.uleb128 0x1
+ 1076 0056 13       		.uleb128 0x13
+ 1077 0057 00       		.byte	0
+ 1078 0058 00       		.byte	0
+ 1079 0059 08       		.uleb128 0x8
+ 1080 005a 0D       		.uleb128 0xd
+ 1081 005b 00       		.byte	0
+ 1082 005c 03       		.uleb128 0x3
+ 1083 005d 0E       		.uleb128 0xe
+ 1084 005e 3A       		.uleb128 0x3a
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 35
+
+
+ 1085 005f 0B       		.uleb128 0xb
+ 1086 0060 3B       		.uleb128 0x3b
+ 1087 0061 05       		.uleb128 0x5
+ 1088 0062 49       		.uleb128 0x49
+ 1089 0063 13       		.uleb128 0x13
+ 1090 0064 38       		.uleb128 0x38
+ 1091 0065 0B       		.uleb128 0xb
+ 1092 0066 00       		.byte	0
+ 1093 0067 00       		.byte	0
+ 1094 0068 09       		.uleb128 0x9
+ 1095 0069 2E       		.uleb128 0x2e
+ 1096 006a 01       		.byte	0x1
+ 1097 006b 03       		.uleb128 0x3
+ 1098 006c 0E       		.uleb128 0xe
+ 1099 006d 3A       		.uleb128 0x3a
+ 1100 006e 0B       		.uleb128 0xb
+ 1101 006f 3B       		.uleb128 0x3b
+ 1102 0070 05       		.uleb128 0x5
+ 1103 0071 27       		.uleb128 0x27
+ 1104 0072 19       		.uleb128 0x19
+ 1105 0073 49       		.uleb128 0x49
+ 1106 0074 13       		.uleb128 0x13
+ 1107 0075 20       		.uleb128 0x20
+ 1108 0076 0B       		.uleb128 0xb
+ 1109 0077 01       		.uleb128 0x1
+ 1110 0078 13       		.uleb128 0x13
+ 1111 0079 00       		.byte	0
+ 1112 007a 00       		.byte	0
+ 1113 007b 0A       		.uleb128 0xa
+ 1114 007c 05       		.uleb128 0x5
+ 1115 007d 00       		.byte	0
+ 1116 007e 03       		.uleb128 0x3
+ 1117 007f 08       		.uleb128 0x8
+ 1118 0080 3A       		.uleb128 0x3a
+ 1119 0081 0B       		.uleb128 0xb
+ 1120 0082 3B       		.uleb128 0x3b
+ 1121 0083 05       		.uleb128 0x5
+ 1122 0084 49       		.uleb128 0x49
+ 1123 0085 13       		.uleb128 0x13
+ 1124 0086 00       		.byte	0
+ 1125 0087 00       		.byte	0
+ 1126 0088 0B       		.uleb128 0xb
+ 1127 0089 2E       		.uleb128 0x2e
+ 1128 008a 01       		.byte	0x1
+ 1129 008b 3F       		.uleb128 0x3f
+ 1130 008c 19       		.uleb128 0x19
+ 1131 008d 03       		.uleb128 0x3
+ 1132 008e 0E       		.uleb128 0xe
+ 1133 008f 3A       		.uleb128 0x3a
+ 1134 0090 0B       		.uleb128 0xb
+ 1135 0091 3B       		.uleb128 0x3b
+ 1136 0092 0B       		.uleb128 0xb
+ 1137 0093 27       		.uleb128 0x27
+ 1138 0094 19       		.uleb128 0x19
+ 1139 0095 11       		.uleb128 0x11
+ 1140 0096 01       		.uleb128 0x1
+ 1141 0097 12       		.uleb128 0x12
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 36
+
+
+ 1142 0098 06       		.uleb128 0x6
+ 1143 0099 40       		.uleb128 0x40
+ 1144 009a 18       		.uleb128 0x18
+ 1145 009b 9642     		.uleb128 0x2116
+ 1146 009d 19       		.uleb128 0x19
+ 1147 009e 01       		.uleb128 0x1
+ 1148 009f 13       		.uleb128 0x13
+ 1149 00a0 00       		.byte	0
+ 1150 00a1 00       		.byte	0
+ 1151 00a2 0C       		.uleb128 0xc
+ 1152 00a3 05       		.uleb128 0x5
+ 1153 00a4 00       		.byte	0
+ 1154 00a5 03       		.uleb128 0x3
+ 1155 00a6 08       		.uleb128 0x8
+ 1156 00a7 3A       		.uleb128 0x3a
+ 1157 00a8 0B       		.uleb128 0xb
+ 1158 00a9 3B       		.uleb128 0x3b
+ 1159 00aa 0B       		.uleb128 0xb
+ 1160 00ab 49       		.uleb128 0x49
+ 1161 00ac 13       		.uleb128 0x13
+ 1162 00ad 02       		.uleb128 0x2
+ 1163 00ae 18       		.uleb128 0x18
+ 1164 00af 00       		.byte	0
+ 1165 00b0 00       		.byte	0
+ 1166 00b1 0D       		.uleb128 0xd
+ 1167 00b2 05       		.uleb128 0x5
+ 1168 00b3 00       		.byte	0
+ 1169 00b4 03       		.uleb128 0x3
+ 1170 00b5 0E       		.uleb128 0xe
+ 1171 00b6 3A       		.uleb128 0x3a
+ 1172 00b7 0B       		.uleb128 0xb
+ 1173 00b8 3B       		.uleb128 0x3b
+ 1174 00b9 0B       		.uleb128 0xb
+ 1175 00ba 49       		.uleb128 0x49
+ 1176 00bb 13       		.uleb128 0x13
+ 1177 00bc 02       		.uleb128 0x2
+ 1178 00bd 18       		.uleb128 0x18
+ 1179 00be 00       		.byte	0
+ 1180 00bf 00       		.byte	0
+ 1181 00c0 0E       		.uleb128 0xe
+ 1182 00c1 34       		.uleb128 0x34
+ 1183 00c2 00       		.byte	0
+ 1184 00c3 03       		.uleb128 0x3
+ 1185 00c4 0E       		.uleb128 0xe
+ 1186 00c5 3A       		.uleb128 0x3a
+ 1187 00c6 0B       		.uleb128 0xb
+ 1188 00c7 3B       		.uleb128 0x3b
+ 1189 00c8 0B       		.uleb128 0xb
+ 1190 00c9 49       		.uleb128 0x49
+ 1191 00ca 13       		.uleb128 0x13
+ 1192 00cb 02       		.uleb128 0x2
+ 1193 00cc 18       		.uleb128 0x18
+ 1194 00cd 00       		.byte	0
+ 1195 00ce 00       		.byte	0
+ 1196 00cf 0F       		.uleb128 0xf
+ 1197 00d0 34       		.uleb128 0x34
+ 1198 00d1 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 37
+
+
+ 1199 00d2 03       		.uleb128 0x3
+ 1200 00d3 08       		.uleb128 0x8
+ 1201 00d4 3A       		.uleb128 0x3a
+ 1202 00d5 0B       		.uleb128 0xb
+ 1203 00d6 3B       		.uleb128 0x3b
+ 1204 00d7 0B       		.uleb128 0xb
+ 1205 00d8 49       		.uleb128 0x49
+ 1206 00d9 13       		.uleb128 0x13
+ 1207 00da 02       		.uleb128 0x2
+ 1208 00db 18       		.uleb128 0x18
+ 1209 00dc 00       		.byte	0
+ 1210 00dd 00       		.byte	0
+ 1211 00de 10       		.uleb128 0x10
+ 1212 00df 1D       		.uleb128 0x1d
+ 1213 00e0 01       		.byte	0x1
+ 1214 00e1 31       		.uleb128 0x31
+ 1215 00e2 13       		.uleb128 0x13
+ 1216 00e3 11       		.uleb128 0x11
+ 1217 00e4 01       		.uleb128 0x1
+ 1218 00e5 12       		.uleb128 0x12
+ 1219 00e6 06       		.uleb128 0x6
+ 1220 00e7 58       		.uleb128 0x58
+ 1221 00e8 0B       		.uleb128 0xb
+ 1222 00e9 59       		.uleb128 0x59
+ 1223 00ea 05       		.uleb128 0x5
+ 1224 00eb 01       		.uleb128 0x1
+ 1225 00ec 13       		.uleb128 0x13
+ 1226 00ed 00       		.byte	0
+ 1227 00ee 00       		.byte	0
+ 1228 00ef 11       		.uleb128 0x11
+ 1229 00f0 05       		.uleb128 0x5
+ 1230 00f1 00       		.byte	0
+ 1231 00f2 31       		.uleb128 0x31
+ 1232 00f3 13       		.uleb128 0x13
+ 1233 00f4 02       		.uleb128 0x2
+ 1234 00f5 18       		.uleb128 0x18
+ 1235 00f6 00       		.byte	0
+ 1236 00f7 00       		.byte	0
+ 1237 00f8 12       		.uleb128 0x12
+ 1238 00f9 1D       		.uleb128 0x1d
+ 1239 00fa 01       		.byte	0x1
+ 1240 00fb 31       		.uleb128 0x31
+ 1241 00fc 13       		.uleb128 0x13
+ 1242 00fd 11       		.uleb128 0x11
+ 1243 00fe 01       		.uleb128 0x1
+ 1244 00ff 12       		.uleb128 0x12
+ 1245 0100 06       		.uleb128 0x6
+ 1246 0101 58       		.uleb128 0x58
+ 1247 0102 0B       		.uleb128 0xb
+ 1248 0103 59       		.uleb128 0x59
+ 1249 0104 05       		.uleb128 0x5
+ 1250 0105 00       		.byte	0
+ 1251 0106 00       		.byte	0
+ 1252 0107 13       		.uleb128 0x13
+ 1253 0108 26       		.uleb128 0x26
+ 1254 0109 00       		.byte	0
+ 1255 010a 49       		.uleb128 0x49
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 38
+
+
+ 1256 010b 13       		.uleb128 0x13
+ 1257 010c 00       		.byte	0
+ 1258 010d 00       		.byte	0
+ 1259 010e 00       		.byte	0
+ 1260              		.section	.debug_aranges,"",%progbits
+ 1261 0000 1C000000 		.4byte	0x1c
+ 1262 0004 0200     		.2byte	0x2
+ 1263 0006 00000000 		.4byte	.Ldebug_info0
+ 1264 000a 04       		.byte	0x4
+ 1265 000b 00       		.byte	0
+ 1266 000c 0000     		.2byte	0
+ 1267 000e 0000     		.2byte	0
+ 1268 0010 00000000 		.4byte	.LFB82
+ 1269 0014 0C040000 		.4byte	.LFE82-.LFB82
+ 1270 0018 00000000 		.4byte	0
+ 1271 001c 00000000 		.4byte	0
+ 1272              		.section	.debug_ranges,"",%progbits
+ 1273              	.Ldebug_ranges0:
+ 1274 0000 00000000 		.4byte	.LFB82
+ 1275 0004 0C040000 		.4byte	.LFE82
+ 1276 0008 00000000 		.4byte	0
+ 1277 000c 00000000 		.4byte	0
+ 1278              		.section	.debug_line,"",%progbits
+ 1279              	.Ldebug_line0:
+ 1280 0000 C5010000 		.section	.debug_str,"MS",%progbits,1
+ 1280      02005601 
+ 1280      00000201 
+ 1280      FB0E0D00 
+ 1280      01010101 
+ 1281              	.LASF16:
+ 1282 0000 696E7436 		.ascii	"int64_t\000"
+ 1282      345F7400 
+ 1283              	.LASF25:
+ 1284 0008 70537461 		.ascii	"pState\000"
+ 1284      746500
+ 1285              	.LASF40:
+ 1286 000f 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_iir_lattice_q31.c\000"
+ 1286      63655C46 
+ 1286      696C7465 
+ 1286      72696E67 
+ 1286      46756E63 
+ 1287              	.LASF5:
+ 1288 003f 5F5F696E 		.ascii	"__int32_t\000"
+ 1288      7433325F 
+ 1288      7400
+ 1289              	.LASF41:
+ 1290 0049 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 1290      73657273 
+ 1290      5C666E65 
+ 1290      7665735C 
+ 1290      446F6375 
+ 1291 0076 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 1291      655F7370 
+ 1291      6565645F 
+ 1291      73656E73 
+ 1291      6F722E63 
+ 1292              	.LASF35:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 39
+
+
+ 1293 008f 676E6578 		.ascii	"gnext\000"
+ 1293      7400
+ 1294              	.LASF20:
+ 1295 0095 666C6F61 		.ascii	"float\000"
+ 1295      7400
+ 1296              	.LASF22:
+ 1297 009b 7133315F 		.ascii	"q31_t\000"
+ 1297      7400
+ 1298              	.LASF1:
+ 1299 00a1 756E7369 		.ascii	"unsigned char\000"
+ 1299      676E6564 
+ 1299      20636861 
+ 1299      7200
+ 1300              	.LASF36:
+ 1301 00af 626C6B43 		.ascii	"blkCnt\000"
+ 1301      6E7400
+ 1302              	.LASF8:
+ 1303 00b6 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1303      20756E73 
+ 1303      69676E65 
+ 1303      6420696E 
+ 1303      7400
+ 1304              	.LASF33:
+ 1305 00c8 666E6578 		.ascii	"fnext\000"
+ 1305      7400
+ 1306              	.LASF3:
+ 1307 00ce 73686F72 		.ascii	"short unsigned int\000"
+ 1307      7420756E 
+ 1307      7369676E 
+ 1307      65642069 
+ 1307      6E7400
+ 1308              	.LASF32:
+ 1309 00e1 66637572 		.ascii	"fcurr\000"
+ 1309      7200
+ 1310              	.LASF30:
+ 1311 00e7 70447374 		.ascii	"pDst\000"
+ 1311      00
+ 1312              	.LASF27:
+ 1313 00ec 7076436F 		.ascii	"pvCoeffs\000"
+ 1313      65666673 
+ 1313      00
+ 1314              	.LASF9:
+ 1315 00f5 5F5F696E 		.ascii	"__int64_t\000"
+ 1315      7436345F 
+ 1315      7400
+ 1316              	.LASF37:
+ 1317 00ff 74617043 		.ascii	"tapCnt\000"
+ 1317      6E7400
+ 1318              	.LASF19:
+ 1319 0106 646F7562 		.ascii	"double\000"
+ 1319      6C6500
+ 1320              	.LASF34:
+ 1321 010d 67637572 		.ascii	"gcurr\000"
+ 1321      7200
+ 1322              	.LASF7:
+ 1323 0113 5F5F7569 		.ascii	"__uint32_t\000"
+ 1323      6E743332 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 40
+
+
+ 1323      5F7400
+ 1324              	.LASF38:
+ 1325 011e 70537461 		.ascii	"pStateCurnt\000"
+ 1325      74654375 
+ 1325      726E7400 
+ 1326              	.LASF26:
+ 1327 012a 706B436F 		.ascii	"pkCoeffs\000"
+ 1327      65666673 
+ 1327      00
+ 1328              	.LASF12:
+ 1329 0133 756E7369 		.ascii	"unsigned int\000"
+ 1329      676E6564 
+ 1329      20696E74 
+ 1329      00
+ 1330              	.LASF11:
+ 1331 0140 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1331      206C6F6E 
+ 1331      6720756E 
+ 1331      7369676E 
+ 1331      65642069 
+ 1332              	.LASF39:
+ 1333 0157 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 1333      4320342E 
+ 1333      392E3320 
+ 1333      32303135 
+ 1333      30333033 
+ 1334 018a 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 1334      20726576 
+ 1334      6973696F 
+ 1334      6E203232 
+ 1334      31323230 
+ 1335 01bd 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 1335      30202D66 
+ 1335      66756E63 
+ 1335      74696F6E 
+ 1335      2D736563 
+ 1336              	.LASF23:
+ 1337 01e9 7136335F 		.ascii	"q63_t\000"
+ 1337      7400
+ 1338              	.LASF14:
+ 1339 01ef 696E7433 		.ascii	"int32_t\000"
+ 1339      325F7400 
+ 1340              	.LASF17:
+ 1341 01f7 73697A65 		.ascii	"sizetype\000"
+ 1341      74797065 
+ 1341      00
+ 1342              	.LASF10:
+ 1343 0200 6C6F6E67 		.ascii	"long long int\000"
+ 1343      206C6F6E 
+ 1343      6720696E 
+ 1343      7400
+ 1344              	.LASF31:
+ 1345 020e 626C6F63 		.ascii	"blockSize\000"
+ 1345      6B53697A 
+ 1345      6500
+ 1346              	.LASF42:
+ 1347 0218 636C6970 		.ascii	"clip_q63_to_q31\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZ8HlxK.s 			page 41
+
+
+ 1347      5F713633 
+ 1347      5F746F5F 
+ 1347      71333100 
+ 1348              	.LASF18:
+ 1349 0228 63686172 		.ascii	"char\000"
+ 1349      00
+ 1350              	.LASF2:
+ 1351 022d 73686F72 		.ascii	"short int\000"
+ 1351      7420696E 
+ 1351      7400
+ 1352              	.LASF4:
+ 1353 0237 5F5F7569 		.ascii	"__uint16_t\000"
+ 1353      6E743136 
+ 1353      5F7400
+ 1354              	.LASF13:
+ 1355 0242 75696E74 		.ascii	"uint16_t\000"
+ 1355      31365F74 
+ 1355      00
+ 1356              	.LASF43:
+ 1357 024b 61726D5F 		.ascii	"arm_iir_lattice_q31\000"
+ 1357      6969725F 
+ 1357      6C617474 
+ 1357      6963655F 
+ 1357      71333100 
+ 1358              	.LASF15:
+ 1359 025f 75696E74 		.ascii	"uint32_t\000"
+ 1359      33325F74 
+ 1359      00
+ 1360              	.LASF6:
+ 1361 0268 6C6F6E67 		.ascii	"long int\000"
+ 1361      20696E74 
+ 1361      00
+ 1362              	.LASF21:
+ 1363 0271 6C6F6E67 		.ascii	"long double\000"
+ 1363      20646F75 
+ 1363      626C6500 
+ 1364              	.LASF0:
+ 1365 027d 7369676E 		.ascii	"signed char\000"
+ 1365      65642063 
+ 1365      68617200 
+ 1366              	.LASF29:
+ 1367 0289 70537263 		.ascii	"pSrc\000"
+ 1367      00
+ 1368              	.LASF24:
+ 1369 028e 6E756D53 		.ascii	"numStages\000"
+ 1369      74616765 
+ 1369      7300
+ 1370              	.LASF28:
+ 1371 0298 61726D5F 		.ascii	"arm_iir_lattice_instance_q31\000"
+ 1371      6969725F 
+ 1371      6C617474 
+ 1371      6963655F 
+ 1371      696E7374 
+ 1372              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

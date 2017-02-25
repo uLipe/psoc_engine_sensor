@@ -1,0 +1,3994 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_biquad_cascade_df1_fast_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_lmul
+  18              		.section	.text.arm_biquad_cascade_df1_fast_q31,"ax",%progbits
+  19              		.align	2
+  20              		.global	arm_biquad_cascade_df1_fast_q31
+  21              		.code	16
+  22              		.thumb_func
+  23              		.type	arm_biquad_cascade_df1_fast_q31, %function
+  24              	arm_biquad_cascade_df1_fast_q31:
+  25              	.LFB82:
+  26              		.file 1 "Source\\FilteringFunctions\\arm_biquad_cascade_df1_fast_q31.c"
+   1:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Title:        arm_biquad_cascade_df1_fast_q31.c
+   4:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Description:  Processing function for the Q31 Fast Biquad cascade DirectFormI(DF1) filter
+   5:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+   6:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+   9:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** /*
+  12:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+  14:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+  16:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+  20:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+  22:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  */
+  28:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  29:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** #include "arm_math.h"
+  30:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  31:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** /**
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 2
+
+
+  32:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @ingroup groupFilters
+  33:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  */
+  34:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  35:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** /**
+  36:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @addtogroup BiquadCascadeDF1
+  37:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @{
+  38:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  */
+  39:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  40:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** /**
+  41:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @details
+  42:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+  43:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @param[in]  *S        points to an instance of the Q31 Biquad cascade structure.
+  44:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @param[in]  *pSrc     points to the block of input data.
+  45:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @param[out] *pDst     points to the block of output data.
+  46:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @param[in]  blockSize number of samples to process per call.
+  47:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * @return     none.
+  48:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+  49:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * <b>Scaling and Overflow Behavior:</b>
+  50:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * \par
+  51:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * This function is optimized for speed at the expense of fixed-point precision and overflow protec
+  52:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * The result of each 1.31 x 1.31 multiplication is truncated to 2.30 format.
+  53:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * These intermediate results are added to a 2.30 accumulator.
+  54:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Finally, the accumulator is saturated and converted to a 1.31 result.
+  55:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * The fast version has the same overflow behavior as the standard version and provides less precis
+  56:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * In order to avoid overflows completely the input signal must be scaled down by two bits and lie 
+  57:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * arm_biquad_cascade_df1_init_q31() to initialize filter structure.
+  58:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  *
+  59:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * \par
+  60:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Refer to the function <code>arm_biquad_cascade_df1_q31()</code> for a slower implementation of t
+  61:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  * Use the function <code>arm_biquad_cascade_df1_init_q31()</code> to initialize the filter structu
+  62:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****  */
+  63:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  64:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** void arm_biquad_cascade_df1_fast_q31(
+  65:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   const arm_biquad_casd_df1_inst_q31 * S,
+  66:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t * pSrc,
+  67:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t * pDst,
+  68:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   uint32_t blockSize)
+  69:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** {
+  27              		.loc 1 69 0
+  28              		.cfi_startproc
+  29 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  30              		.cfi_def_cfa_offset 20
+  31              		.cfi_offset 4, -20
+  32              		.cfi_offset 5, -16
+  33              		.cfi_offset 6, -12
+  34              		.cfi_offset 7, -8
+  35              		.cfi_offset 14, -4
+  36 0002 614C     		ldr	r4, .L7
+  37 0004 A544     		add	sp, sp, r4
+  38              		.cfi_def_cfa_offset 1024
+  39 0006 00AF     		add	r7, sp, #0
+  40              		.cfi_def_cfa_register 7
+  41 0008 E724     		mov	r4, #231
+  42 000a A400     		lsl	r4, r4, #2
+  43 000c 3C19     		add	r4, r7, r4
+  44 000e 2060     		str	r0, [r4]
+  45 0010 E620     		mov	r0, #230
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 3
+
+
+  46 0012 8000     		lsl	r0, r0, #2
+  47 0014 3818     		add	r0, r7, r0
+  48 0016 0160     		str	r1, [r0]
+  49 0018 E521     		mov	r1, #229
+  50 001a 8900     		lsl	r1, r1, #2
+  51 001c 7918     		add	r1, r7, r1
+  52 001e 0A60     		str	r2, [r1]
+  53 0020 E422     		mov	r2, #228
+  54 0022 9200     		lsl	r2, r2, #2
+  55 0024 BA18     		add	r2, r7, r2
+  56 0026 1360     		str	r3, [r2]
+  70:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t acc = 0;                                 /*  accumulator                   */
+  57              		.loc 1 70 0
+  58 0028 0023     		mov	r3, #0
+  59 002a EF22     		mov	r2, #239
+  60 002c 9200     		lsl	r2, r2, #2
+  61 002e BA18     		add	r2, r7, r2
+  62 0030 1360     		str	r3, [r2]
+  71:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t Xn1, Xn2, Yn1, Yn2;                      /*  Filter state variables        */
+  72:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t b0, b1, b2, a1, a2;                      /*  Filter coefficients           */
+  73:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t *pIn = pSrc;                             /*  input pointer initialization  */
+  63              		.loc 1 73 0
+  64 0032 E623     		mov	r3, #230
+  65 0034 9B00     		lsl	r3, r3, #2
+  66 0036 FB18     		add	r3, r7, r3
+  67 0038 1B68     		ldr	r3, [r3]
+  68 003a F522     		mov	r2, #245
+  69 003c 9200     		lsl	r2, r2, #2
+  70 003e BA18     		add	r2, r7, r2
+  71 0040 1360     		str	r3, [r2]
+  74:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t *pOut = pDst;                            /*  output pointer initialization */
+  72              		.loc 1 74 0
+  73 0042 E523     		mov	r3, #229
+  74 0044 9B00     		lsl	r3, r3, #2
+  75 0046 FB18     		add	r3, r7, r3
+  76 0048 1B68     		ldr	r3, [r3]
+  77 004a F422     		mov	r2, #244
+  78 004c 9200     		lsl	r2, r2, #2
+  79 004e BA18     		add	r2, r7, r2
+  80 0050 1360     		str	r3, [r2]
+  75:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t *pState = S->pState;                     /*  pState pointer initialization */
+  81              		.loc 1 75 0
+  82 0052 E723     		mov	r3, #231
+  83 0054 9B00     		lsl	r3, r3, #2
+  84 0056 FB18     		add	r3, r7, r3
+  85 0058 1B68     		ldr	r3, [r3]
+  86 005a 5B68     		ldr	r3, [r3, #4]
+  87 005c F322     		mov	r2, #243
+  88 005e 9200     		lsl	r2, r2, #2
+  89 0060 BA18     		add	r2, r7, r2
+  90 0062 1360     		str	r3, [r2]
+  76:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t *pCoeffs = S->pCoeffs;                   /*  coeff pointer initialization  */
+  91              		.loc 1 76 0
+  92 0064 E723     		mov	r3, #231
+  93 0066 9B00     		lsl	r3, r3, #2
+  94 0068 FB18     		add	r3, r7, r3
+  95 006a 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 4
+
+
+  96 006c 9B68     		ldr	r3, [r3, #8]
+  97 006e F222     		mov	r2, #242
+  98 0070 9200     		lsl	r2, r2, #2
+  99 0072 BA18     		add	r2, r7, r2
+ 100 0074 1360     		str	r3, [r2]
+  77:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   q31_t Xn;                                      /*  temporary input               */
+  78:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   int32_t shift = (int32_t) S->postShift + 1;    /*  Shift to be applied to the output */
+ 101              		.loc 1 78 0
+ 102 0076 E723     		mov	r3, #231
+ 103 0078 9B00     		lsl	r3, r3, #2
+ 104 007a FB18     		add	r3, r7, r3
+ 105 007c 1B68     		ldr	r3, [r3]
+ 106 007e 1B7B     		ldrb	r3, [r3, #12]
+ 107 0080 0133     		add	r3, r3, #1
+ 108 0082 EE22     		mov	r2, #238
+ 109 0084 9200     		lsl	r2, r2, #2
+ 110 0086 BA18     		add	r2, r7, r2
+ 111 0088 1360     		str	r3, [r2]
+  79:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   uint32_t sample, stage = S->numStages;         /*  loop counters                     */
+ 112              		.loc 1 79 0
+ 113 008a E723     		mov	r3, #231
+ 114 008c 9B00     		lsl	r3, r3, #2
+ 115 008e FB18     		add	r3, r7, r3
+ 116 0090 1B68     		ldr	r3, [r3]
+ 117 0092 1B68     		ldr	r3, [r3]
+ 118 0094 F022     		mov	r2, #240
+ 119 0096 9200     		lsl	r2, r2, #2
+ 120 0098 BA18     		add	r2, r7, r2
+ 121 009a 1360     		str	r3, [r2]
+ 122              	.L6:
+  80:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  81:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  82:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   do
+  83:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   {
+  84:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /* Reading the coefficients */
+  85:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     b0 = *pCoeffs++;
+ 123              		.loc 1 85 0
+ 124 009c F223     		mov	r3, #242
+ 125 009e 9B00     		lsl	r3, r3, #2
+ 126 00a0 FB18     		add	r3, r7, r3
+ 127 00a2 1A68     		ldr	r2, [r3]
+ 128 00a4 131D     		add	r3, r2, #4
+ 129 00a6 F221     		mov	r1, #242
+ 130 00a8 8900     		lsl	r1, r1, #2
+ 131 00aa 7918     		add	r1, r7, r1
+ 132 00ac 0B60     		str	r3, [r1]
+ 133 00ae 1368     		ldr	r3, [r2]
+ 134 00b0 ED22     		mov	r2, #237
+ 135 00b2 9200     		lsl	r2, r2, #2
+ 136 00b4 BA18     		add	r2, r7, r2
+ 137 00b6 1360     		str	r3, [r2]
+  86:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     b1 = *pCoeffs++;
+ 138              		.loc 1 86 0
+ 139 00b8 F223     		mov	r3, #242
+ 140 00ba 9B00     		lsl	r3, r3, #2
+ 141 00bc FB18     		add	r3, r7, r3
+ 142 00be 1A68     		ldr	r2, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 5
+
+
+ 143 00c0 131D     		add	r3, r2, #4
+ 144 00c2 F221     		mov	r1, #242
+ 145 00c4 8900     		lsl	r1, r1, #2
+ 146 00c6 7918     		add	r1, r7, r1
+ 147 00c8 0B60     		str	r3, [r1]
+ 148 00ca 1368     		ldr	r3, [r2]
+ 149 00cc EC22     		mov	r2, #236
+ 150 00ce 9200     		lsl	r2, r2, #2
+ 151 00d0 BA18     		add	r2, r7, r2
+ 152 00d2 1360     		str	r3, [r2]
+  87:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     b2 = *pCoeffs++;
+ 153              		.loc 1 87 0
+ 154 00d4 F223     		mov	r3, #242
+ 155 00d6 9B00     		lsl	r3, r3, #2
+ 156 00d8 FB18     		add	r3, r7, r3
+ 157 00da 1A68     		ldr	r2, [r3]
+ 158 00dc 131D     		add	r3, r2, #4
+ 159 00de F221     		mov	r1, #242
+ 160 00e0 8900     		lsl	r1, r1, #2
+ 161 00e2 7918     		add	r1, r7, r1
+ 162 00e4 0B60     		str	r3, [r1]
+ 163 00e6 1368     		ldr	r3, [r2]
+ 164 00e8 EB22     		mov	r2, #235
+ 165 00ea 9200     		lsl	r2, r2, #2
+ 166 00ec BA18     		add	r2, r7, r2
+ 167 00ee 1360     		str	r3, [r2]
+  88:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     a1 = *pCoeffs++;
+ 168              		.loc 1 88 0
+ 169 00f0 F223     		mov	r3, #242
+ 170 00f2 9B00     		lsl	r3, r3, #2
+ 171 00f4 FB18     		add	r3, r7, r3
+ 172 00f6 1A68     		ldr	r2, [r3]
+ 173 00f8 131D     		add	r3, r2, #4
+ 174 00fa F221     		mov	r1, #242
+ 175 00fc 8900     		lsl	r1, r1, #2
+ 176 00fe 7918     		add	r1, r7, r1
+ 177 0100 0B60     		str	r3, [r1]
+ 178 0102 1368     		ldr	r3, [r2]
+ 179 0104 EA22     		mov	r2, #234
+ 180 0106 9200     		lsl	r2, r2, #2
+ 181 0108 BA18     		add	r2, r7, r2
+ 182 010a 1360     		str	r3, [r2]
+  89:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     a2 = *pCoeffs++;
+ 183              		.loc 1 89 0
+ 184 010c F223     		mov	r3, #242
+ 185 010e 9B00     		lsl	r3, r3, #2
+ 186 0110 FB18     		add	r3, r7, r3
+ 187 0112 1A68     		ldr	r2, [r3]
+ 188 0114 131D     		add	r3, r2, #4
+ 189 0116 F221     		mov	r1, #242
+ 190 0118 8900     		lsl	r1, r1, #2
+ 191 011a 7918     		add	r1, r7, r1
+ 192 011c 0B60     		str	r3, [r1]
+ 193 011e 1368     		ldr	r3, [r2]
+ 194 0120 E922     		mov	r2, #233
+ 195 0122 9200     		lsl	r2, r2, #2
+ 196 0124 BA18     		add	r2, r7, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 6
+
+
+ 197 0126 1360     		str	r3, [r2]
+  90:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  91:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /* Reading the state values */
+  92:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     Xn1 = pState[0];
+ 198              		.loc 1 92 0
+ 199 0128 F323     		mov	r3, #243
+ 200 012a 9B00     		lsl	r3, r3, #2
+ 201 012c FB18     		add	r3, r7, r3
+ 202 012e 1B68     		ldr	r3, [r3]
+ 203 0130 1B68     		ldr	r3, [r3]
+ 204 0132 F922     		mov	r2, #249
+ 205 0134 9200     		lsl	r2, r2, #2
+ 206 0136 BA18     		add	r2, r7, r2
+ 207 0138 1360     		str	r3, [r2]
+  93:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     Xn2 = pState[1];
+ 208              		.loc 1 93 0
+ 209 013a F323     		mov	r3, #243
+ 210 013c 9B00     		lsl	r3, r3, #2
+ 211 013e FB18     		add	r3, r7, r3
+ 212 0140 1B68     		ldr	r3, [r3]
+ 213 0142 5B68     		ldr	r3, [r3, #4]
+ 214 0144 F822     		mov	r2, #248
+ 215 0146 9200     		lsl	r2, r2, #2
+ 216 0148 BA18     		add	r2, r7, r2
+ 217 014a 1360     		str	r3, [r2]
+  94:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     Yn1 = pState[2];
+ 218              		.loc 1 94 0
+ 219 014c F323     		mov	r3, #243
+ 220 014e 9B00     		lsl	r3, r3, #2
+ 221 0150 FB18     		add	r3, r7, r3
+ 222 0152 1B68     		ldr	r3, [r3]
+ 223 0154 9B68     		ldr	r3, [r3, #8]
+ 224 0156 F722     		mov	r2, #247
+ 225 0158 9200     		lsl	r2, r2, #2
+ 226 015a BA18     		add	r2, r7, r2
+ 227 015c 1360     		str	r3, [r2]
+  95:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     Yn2 = pState[3];
+ 228              		.loc 1 95 0
+ 229 015e F323     		mov	r3, #243
+ 230 0160 9B00     		lsl	r3, r3, #2
+ 231 0162 FB18     		add	r3, r7, r3
+ 232 0164 1B68     		ldr	r3, [r3]
+ 233 0166 DB68     		ldr	r3, [r3, #12]
+ 234 0168 F622     		mov	r2, #246
+ 235 016a 9200     		lsl	r2, r2, #2
+ 236 016c BA18     		add	r2, r7, r2
+ 237 016e 1360     		str	r3, [r2]
+  96:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+  97:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /* Apply loop unrolling and compute 4 output values simultaneously. */
+  98:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /*      The variables acc ... acc3 hold output values that are being computed:
+  99:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****      *
+ 100:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****      *    acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
+ 101:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****      */
+ 102:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 103:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     sample = blockSize >> 2u;
+ 238              		.loc 1 103 0
+ 239 0170 E423     		mov	r3, #228
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 7
+
+
+ 240 0172 9B00     		lsl	r3, r3, #2
+ 241 0174 FB18     		add	r3, r7, r3
+ 242 0176 1B68     		ldr	r3, [r3]
+ 243 0178 9B08     		lsr	r3, r3, #2
+ 244 017a F122     		mov	r2, #241
+ 245 017c 9200     		lsl	r2, r2, #2
+ 246 017e BA18     		add	r2, r7, r2
+ 247 0180 1360     		str	r3, [r2]
+ 104:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 105:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+ 106:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****      ** a second loop below computes the remaining 1 to 3 samples. */
+ 107:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     while (sample > 0u)
+ 248              		.loc 1 107 0
+ 249 0182 00F09FFF 		bl	.L2	@ far jump
+ 250              	.L8:
+ 251 0186 C046     		.align	2
+ 252              	.L7:
+ 253 0188 14FCFFFF 		.word	-1004
+ 254              	.L3:
+ 108:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     {
+ 109:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Read the input */
+ 110:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn = *pIn;
+ 255              		.loc 1 110 0
+ 256 018c F523     		mov	r3, #245
+ 257 018e 9B00     		lsl	r3, r3, #2
+ 258 0190 FB18     		add	r3, r7, r3
+ 259 0192 1B68     		ldr	r3, [r3]
+ 260 0194 1B68     		ldr	r3, [r3]
+ 261 0196 E822     		mov	r2, #232
+ 262 0198 9200     		lsl	r2, r2, #2
+ 263 019a BA18     		add	r2, r7, r2
+ 264 019c 1360     		str	r3, [r2]
+ 111:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 112:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 113:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] */
+ 114:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) (((q63_t) b1 * Xn1) >> 32);*/
+ 115:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       mult_32x32_keep32_R(acc, b1, Xn1);
+ 265              		.loc 1 115 0
+ 266 019e EC23     		mov	r3, #236
+ 267 01a0 9B00     		lsl	r3, r3, #2
+ 268 01a2 FB18     		add	r3, r7, r3
+ 269 01a4 1B68     		ldr	r3, [r3]
+ 270 01a6 E222     		mov	r2, #226
+ 271 01a8 9200     		lsl	r2, r2, #2
+ 272 01aa BA18     		add	r2, r7, r2
+ 273 01ac 1360     		str	r3, [r2]
+ 274 01ae DB17     		asr	r3, r3, #31
+ 275 01b0 E322     		mov	r2, #227
+ 276 01b2 9200     		lsl	r2, r2, #2
+ 277 01b4 BA18     		add	r2, r7, r2
+ 278 01b6 1360     		str	r3, [r2]
+ 279 01b8 F923     		mov	r3, #249
+ 280 01ba 9B00     		lsl	r3, r3, #2
+ 281 01bc FB18     		add	r3, r7, r3
+ 282 01be 1B68     		ldr	r3, [r3]
+ 283 01c0 E022     		mov	r2, #224
+ 284 01c2 9200     		lsl	r2, r2, #2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 8
+
+
+ 285 01c4 BA18     		add	r2, r7, r2
+ 286 01c6 1360     		str	r3, [r2]
+ 287 01c8 DB17     		asr	r3, r3, #31
+ 288 01ca E122     		mov	r2, #225
+ 289 01cc 9200     		lsl	r2, r2, #2
+ 290 01ce BA18     		add	r2, r7, r2
+ 291 01d0 1360     		str	r3, [r2]
+ 292 01d2 E223     		mov	r3, #226
+ 293 01d4 9B00     		lsl	r3, r3, #2
+ 294 01d6 FB18     		add	r3, r7, r3
+ 295 01d8 1868     		ldr	r0, [r3]
+ 296 01da 5968     		ldr	r1, [r3, #4]
+ 297 01dc E023     		mov	r3, #224
+ 298 01de 9B00     		lsl	r3, r3, #2
+ 299 01e0 FB18     		add	r3, r7, r3
+ 300 01e2 1A68     		ldr	r2, [r3]
+ 301 01e4 5B68     		ldr	r3, [r3, #4]
+ 302 01e6 FFF7FEFF 		bl	__aeabi_lmul
+ 303 01ea 031C     		mov	r3, r0
+ 304 01ec 0C1C     		mov	r4, r1
+ 305 01ee 191C     		mov	r1, r3
+ 306 01f0 221C     		mov	r2, r4
+ 307 01f2 8023     		mov	r3, #128
+ 308 01f4 1B06     		lsl	r3, r3, #24
+ 309 01f6 0024     		mov	r4, #0
+ 310 01f8 5B18     		add	r3, r3, r1
+ 311 01fa 5441     		adc	r4, r4, r2
+ 312 01fc 2200     		asr	r2, r4, #0
+ 313 01fe DE21     		mov	r1, #222
+ 314 0200 8900     		lsl	r1, r1, #2
+ 315 0202 7918     		add	r1, r7, r1
+ 316 0204 0A60     		str	r2, [r1]
+ 317 0206 E317     		asr	r3, r4, #31
+ 318 0208 DF22     		mov	r2, #223
+ 319 020a 9200     		lsl	r2, r2, #2
+ 320 020c BA18     		add	r2, r7, r2
+ 321 020e 1360     		str	r3, [r2]
+ 322 0210 DE23     		mov	r3, #222
+ 323 0212 9B00     		lsl	r3, r3, #2
+ 324 0214 FB18     		add	r3, r7, r3
+ 325 0216 1B68     		ldr	r3, [r3]
+ 326 0218 EF22     		mov	r2, #239
+ 327 021a 9200     		lsl	r2, r2, #2
+ 328 021c BA18     		add	r2, r7, r2
+ 329 021e 1360     		str	r3, [r2]
+ 116:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 117:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b0 * (Xn))) >> 32);*/
+ 118:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b0, Xn);
+ 330              		.loc 1 118 0
+ 331 0220 EF23     		mov	r3, #239
+ 332 0222 9B00     		lsl	r3, r3, #2
+ 333 0224 FB18     		add	r3, r7, r3
+ 334 0226 1B68     		ldr	r3, [r3]
+ 335 0228 DC22     		mov	r2, #220
+ 336 022a 9200     		lsl	r2, r2, #2
+ 337 022c BA18     		add	r2, r7, r2
+ 338 022e 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 9
+
+
+ 339 0230 DB17     		asr	r3, r3, #31
+ 340 0232 DD22     		mov	r2, #221
+ 341 0234 9200     		lsl	r2, r2, #2
+ 342 0236 BA18     		add	r2, r7, r2
+ 343 0238 1360     		str	r3, [r2]
+ 344 023a DC23     		mov	r3, #220
+ 345 023c 9B00     		lsl	r3, r3, #2
+ 346 023e FB18     		add	r3, r7, r3
+ 347 0240 1B68     		ldr	r3, [r3]
+ 348 0242 1B00     		lsl	r3, r3, #0
+ 349 0244 DB22     		mov	r2, #219
+ 350 0246 9200     		lsl	r2, r2, #2
+ 351 0248 BA18     		add	r2, r7, r2
+ 352 024a 1360     		str	r3, [r2]
+ 353 024c 0023     		mov	r3, #0
+ 354 024e DA22     		mov	r2, #218
+ 355 0250 9200     		lsl	r2, r2, #2
+ 356 0252 BA18     		add	r2, r7, r2
+ 357 0254 1360     		str	r3, [r2]
+ 358 0256 ED23     		mov	r3, #237
+ 359 0258 9B00     		lsl	r3, r3, #2
+ 360 025a FB18     		add	r3, r7, r3
+ 361 025c 1B68     		ldr	r3, [r3]
+ 362 025e D822     		mov	r2, #216
+ 363 0260 9200     		lsl	r2, r2, #2
+ 364 0262 BA18     		add	r2, r7, r2
+ 365 0264 1360     		str	r3, [r2]
+ 366 0266 DB17     		asr	r3, r3, #31
+ 367 0268 D922     		mov	r2, #217
+ 368 026a 9200     		lsl	r2, r2, #2
+ 369 026c BA18     		add	r2, r7, r2
+ 370 026e 1360     		str	r3, [r2]
+ 371 0270 E823     		mov	r3, #232
+ 372 0272 9B00     		lsl	r3, r3, #2
+ 373 0274 FB18     		add	r3, r7, r3
+ 374 0276 1B68     		ldr	r3, [r3]
+ 375 0278 D622     		mov	r2, #214
+ 376 027a 9200     		lsl	r2, r2, #2
+ 377 027c BA18     		add	r2, r7, r2
+ 378 027e 1360     		str	r3, [r2]
+ 379 0280 DB17     		asr	r3, r3, #31
+ 380 0282 D722     		mov	r2, #215
+ 381 0284 9200     		lsl	r2, r2, #2
+ 382 0286 BA18     		add	r2, r7, r2
+ 383 0288 1360     		str	r3, [r2]
+ 384 028a D823     		mov	r3, #216
+ 385 028c 9B00     		lsl	r3, r3, #2
+ 386 028e FB18     		add	r3, r7, r3
+ 387 0290 1868     		ldr	r0, [r3]
+ 388 0292 5968     		ldr	r1, [r3, #4]
+ 389 0294 D623     		mov	r3, #214
+ 390 0296 9B00     		lsl	r3, r3, #2
+ 391 0298 FB18     		add	r3, r7, r3
+ 392 029a 1A68     		ldr	r2, [r3]
+ 393 029c 5B68     		ldr	r3, [r3, #4]
+ 394 029e FFF7FEFF 		bl	__aeabi_lmul
+ 395 02a2 031C     		mov	r3, r0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 10
+
+
+ 396 02a4 0C1C     		mov	r4, r1
+ 397 02a6 DA22     		mov	r2, #218
+ 398 02a8 9200     		lsl	r2, r2, #2
+ 399 02aa BA18     		add	r2, r7, r2
+ 400 02ac 1168     		ldr	r1, [r2]
+ 401 02ae 5268     		ldr	r2, [r2, #4]
+ 402 02b0 C918     		add	r1, r1, r3
+ 403 02b2 6241     		adc	r2, r2, r4
+ 404 02b4 8023     		mov	r3, #128
+ 405 02b6 1B06     		lsl	r3, r3, #24
+ 406 02b8 0024     		mov	r4, #0
+ 407 02ba 5B18     		add	r3, r3, r1
+ 408 02bc 5441     		adc	r4, r4, r2
+ 409 02be 2200     		asr	r2, r4, #0
+ 410 02c0 D421     		mov	r1, #212
+ 411 02c2 8900     		lsl	r1, r1, #2
+ 412 02c4 7918     		add	r1, r7, r1
+ 413 02c6 0A60     		str	r2, [r1]
+ 414 02c8 E317     		asr	r3, r4, #31
+ 415 02ca D522     		mov	r2, #213
+ 416 02cc 9200     		lsl	r2, r2, #2
+ 417 02ce BA18     		add	r2, r7, r2
+ 418 02d0 1360     		str	r3, [r2]
+ 419 02d2 D423     		mov	r3, #212
+ 420 02d4 9B00     		lsl	r3, r3, #2
+ 421 02d6 FB18     		add	r3, r7, r3
+ 422 02d8 1B68     		ldr	r3, [r3]
+ 423 02da EF22     		mov	r2, #239
+ 424 02dc 9200     		lsl	r2, r2, #2
+ 425 02de BA18     		add	r2, r7, r2
+ 426 02e0 1360     		str	r3, [r2]
+ 119:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 120:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b2 * (Xn2))) >> 32);*/
+ 121:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b2, Xn2);
+ 427              		.loc 1 121 0
+ 428 02e2 EF23     		mov	r3, #239
+ 429 02e4 9B00     		lsl	r3, r3, #2
+ 430 02e6 FB18     		add	r3, r7, r3
+ 431 02e8 1B68     		ldr	r3, [r3]
+ 432 02ea D222     		mov	r2, #210
+ 433 02ec 9200     		lsl	r2, r2, #2
+ 434 02ee BA18     		add	r2, r7, r2
+ 435 02f0 1360     		str	r3, [r2]
+ 436 02f2 DB17     		asr	r3, r3, #31
+ 437 02f4 D322     		mov	r2, #211
+ 438 02f6 9200     		lsl	r2, r2, #2
+ 439 02f8 BA18     		add	r2, r7, r2
+ 440 02fa 1360     		str	r3, [r2]
+ 441 02fc D223     		mov	r3, #210
+ 442 02fe 9B00     		lsl	r3, r3, #2
+ 443 0300 FB18     		add	r3, r7, r3
+ 444 0302 1B68     		ldr	r3, [r3]
+ 445 0304 1B00     		lsl	r3, r3, #0
+ 446 0306 D122     		mov	r2, #209
+ 447 0308 9200     		lsl	r2, r2, #2
+ 448 030a BA18     		add	r2, r7, r2
+ 449 030c 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 11
+
+
+ 450 030e 0023     		mov	r3, #0
+ 451 0310 D022     		mov	r2, #208
+ 452 0312 9200     		lsl	r2, r2, #2
+ 453 0314 BA18     		add	r2, r7, r2
+ 454 0316 1360     		str	r3, [r2]
+ 455 0318 EB23     		mov	r3, #235
+ 456 031a 9B00     		lsl	r3, r3, #2
+ 457 031c FB18     		add	r3, r7, r3
+ 458 031e 1B68     		ldr	r3, [r3]
+ 459 0320 CE22     		mov	r2, #206
+ 460 0322 9200     		lsl	r2, r2, #2
+ 461 0324 BA18     		add	r2, r7, r2
+ 462 0326 1360     		str	r3, [r2]
+ 463 0328 DB17     		asr	r3, r3, #31
+ 464 032a CF22     		mov	r2, #207
+ 465 032c 9200     		lsl	r2, r2, #2
+ 466 032e BA18     		add	r2, r7, r2
+ 467 0330 1360     		str	r3, [r2]
+ 468 0332 F823     		mov	r3, #248
+ 469 0334 9B00     		lsl	r3, r3, #2
+ 470 0336 FB18     		add	r3, r7, r3
+ 471 0338 1B68     		ldr	r3, [r3]
+ 472 033a CC22     		mov	r2, #204
+ 473 033c 9200     		lsl	r2, r2, #2
+ 474 033e BA18     		add	r2, r7, r2
+ 475 0340 1360     		str	r3, [r2]
+ 476 0342 DB17     		asr	r3, r3, #31
+ 477 0344 CD22     		mov	r2, #205
+ 478 0346 9200     		lsl	r2, r2, #2
+ 479 0348 BA18     		add	r2, r7, r2
+ 480 034a 1360     		str	r3, [r2]
+ 481 034c CE23     		mov	r3, #206
+ 482 034e 9B00     		lsl	r3, r3, #2
+ 483 0350 FB18     		add	r3, r7, r3
+ 484 0352 1868     		ldr	r0, [r3]
+ 485 0354 5968     		ldr	r1, [r3, #4]
+ 486 0356 CC23     		mov	r3, #204
+ 487 0358 9B00     		lsl	r3, r3, #2
+ 488 035a FB18     		add	r3, r7, r3
+ 489 035c 1A68     		ldr	r2, [r3]
+ 490 035e 5B68     		ldr	r3, [r3, #4]
+ 491 0360 FFF7FEFF 		bl	__aeabi_lmul
+ 492 0364 031C     		mov	r3, r0
+ 493 0366 0C1C     		mov	r4, r1
+ 494 0368 D022     		mov	r2, #208
+ 495 036a 9200     		lsl	r2, r2, #2
+ 496 036c BA18     		add	r2, r7, r2
+ 497 036e 1168     		ldr	r1, [r2]
+ 498 0370 5268     		ldr	r2, [r2, #4]
+ 499 0372 C918     		add	r1, r1, r3
+ 500 0374 6241     		adc	r2, r2, r4
+ 501 0376 8023     		mov	r3, #128
+ 502 0378 1B06     		lsl	r3, r3, #24
+ 503 037a 0024     		mov	r4, #0
+ 504 037c 5B18     		add	r3, r3, r1
+ 505 037e 5441     		adc	r4, r4, r2
+ 506 0380 2200     		asr	r2, r4, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 12
+
+
+ 507 0382 CA21     		mov	r1, #202
+ 508 0384 8900     		lsl	r1, r1, #2
+ 509 0386 7918     		add	r1, r7, r1
+ 510 0388 0A60     		str	r2, [r1]
+ 511 038a E317     		asr	r3, r4, #31
+ 512 038c CB22     		mov	r2, #203
+ 513 038e 9200     		lsl	r2, r2, #2
+ 514 0390 BA18     		add	r2, r7, r2
+ 515 0392 1360     		str	r3, [r2]
+ 516 0394 CA23     		mov	r3, #202
+ 517 0396 9B00     		lsl	r3, r3, #2
+ 518 0398 FB18     		add	r3, r7, r3
+ 519 039a 1B68     		ldr	r3, [r3]
+ 520 039c EF22     		mov	r2, #239
+ 521 039e 9200     		lsl	r2, r2, #2
+ 522 03a0 BA18     		add	r2, r7, r2
+ 523 03a2 1360     		str	r3, [r2]
+ 122:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 123:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a1 * (Yn1))) >> 32);*/
+ 124:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a1, Yn1);
+ 524              		.loc 1 124 0
+ 525 03a4 EF23     		mov	r3, #239
+ 526 03a6 9B00     		lsl	r3, r3, #2
+ 527 03a8 FB18     		add	r3, r7, r3
+ 528 03aa 1B68     		ldr	r3, [r3]
+ 529 03ac C822     		mov	r2, #200
+ 530 03ae 9200     		lsl	r2, r2, #2
+ 531 03b0 BA18     		add	r2, r7, r2
+ 532 03b2 1360     		str	r3, [r2]
+ 533 03b4 DB17     		asr	r3, r3, #31
+ 534 03b6 C922     		mov	r2, #201
+ 535 03b8 9200     		lsl	r2, r2, #2
+ 536 03ba BA18     		add	r2, r7, r2
+ 537 03bc 1360     		str	r3, [r2]
+ 538 03be C823     		mov	r3, #200
+ 539 03c0 9B00     		lsl	r3, r3, #2
+ 540 03c2 FB18     		add	r3, r7, r3
+ 541 03c4 1B68     		ldr	r3, [r3]
+ 542 03c6 1B00     		lsl	r3, r3, #0
+ 543 03c8 C722     		mov	r2, #199
+ 544 03ca 9200     		lsl	r2, r2, #2
+ 545 03cc BA18     		add	r2, r7, r2
+ 546 03ce 1360     		str	r3, [r2]
+ 547 03d0 0023     		mov	r3, #0
+ 548 03d2 C622     		mov	r2, #198
+ 549 03d4 9200     		lsl	r2, r2, #2
+ 550 03d6 BA18     		add	r2, r7, r2
+ 551 03d8 1360     		str	r3, [r2]
+ 552 03da EA23     		mov	r3, #234
+ 553 03dc 9B00     		lsl	r3, r3, #2
+ 554 03de FB18     		add	r3, r7, r3
+ 555 03e0 1B68     		ldr	r3, [r3]
+ 556 03e2 C422     		mov	r2, #196
+ 557 03e4 9200     		lsl	r2, r2, #2
+ 558 03e6 BA18     		add	r2, r7, r2
+ 559 03e8 1360     		str	r3, [r2]
+ 560 03ea DB17     		asr	r3, r3, #31
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 13
+
+
+ 561 03ec C522     		mov	r2, #197
+ 562 03ee 9200     		lsl	r2, r2, #2
+ 563 03f0 BA18     		add	r2, r7, r2
+ 564 03f2 1360     		str	r3, [r2]
+ 565 03f4 F723     		mov	r3, #247
+ 566 03f6 9B00     		lsl	r3, r3, #2
+ 567 03f8 FB18     		add	r3, r7, r3
+ 568 03fa 1B68     		ldr	r3, [r3]
+ 569 03fc C222     		mov	r2, #194
+ 570 03fe 9200     		lsl	r2, r2, #2
+ 571 0400 BA18     		add	r2, r7, r2
+ 572 0402 1360     		str	r3, [r2]
+ 573 0404 DB17     		asr	r3, r3, #31
+ 574 0406 C322     		mov	r2, #195
+ 575 0408 9200     		lsl	r2, r2, #2
+ 576 040a BA18     		add	r2, r7, r2
+ 577 040c 1360     		str	r3, [r2]
+ 578 040e C423     		mov	r3, #196
+ 579 0410 9B00     		lsl	r3, r3, #2
+ 580 0412 FB18     		add	r3, r7, r3
+ 581 0414 1868     		ldr	r0, [r3]
+ 582 0416 5968     		ldr	r1, [r3, #4]
+ 583 0418 C223     		mov	r3, #194
+ 584 041a 9B00     		lsl	r3, r3, #2
+ 585 041c FB18     		add	r3, r7, r3
+ 586 041e 1A68     		ldr	r2, [r3]
+ 587 0420 5B68     		ldr	r3, [r3, #4]
+ 588 0422 FFF7FEFF 		bl	__aeabi_lmul
+ 589 0426 031C     		mov	r3, r0
+ 590 0428 0C1C     		mov	r4, r1
+ 591 042a C622     		mov	r2, #198
+ 592 042c 9200     		lsl	r2, r2, #2
+ 593 042e BA18     		add	r2, r7, r2
+ 594 0430 1168     		ldr	r1, [r2]
+ 595 0432 5268     		ldr	r2, [r2, #4]
+ 596 0434 C918     		add	r1, r1, r3
+ 597 0436 6241     		adc	r2, r2, r4
+ 598 0438 8023     		mov	r3, #128
+ 599 043a 1B06     		lsl	r3, r3, #24
+ 600 043c 0024     		mov	r4, #0
+ 601 043e 5B18     		add	r3, r3, r1
+ 602 0440 5441     		adc	r4, r4, r2
+ 603 0442 2200     		asr	r2, r4, #0
+ 604 0444 C021     		mov	r1, #192
+ 605 0446 8900     		lsl	r1, r1, #2
+ 606 0448 7918     		add	r1, r7, r1
+ 607 044a 0A60     		str	r2, [r1]
+ 608 044c E317     		asr	r3, r4, #31
+ 609 044e C122     		mov	r2, #193
+ 610 0450 9200     		lsl	r2, r2, #2
+ 611 0452 BA18     		add	r2, r7, r2
+ 612 0454 1360     		str	r3, [r2]
+ 613 0456 C023     		mov	r3, #192
+ 614 0458 9B00     		lsl	r3, r3, #2
+ 615 045a FB18     		add	r3, r7, r3
+ 616 045c 1B68     		ldr	r3, [r3]
+ 617 045e EF22     		mov	r2, #239
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 14
+
+
+ 618 0460 9200     		lsl	r2, r2, #2
+ 619 0462 BA18     		add	r2, r7, r2
+ 620 0464 1360     		str	r3, [r2]
+ 125:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 126:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a2 * (Yn2))) >> 32);*/
+ 127:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a2, Yn2);
+ 621              		.loc 1 127 0
+ 622 0466 EF23     		mov	r3, #239
+ 623 0468 9B00     		lsl	r3, r3, #2
+ 624 046a FB18     		add	r3, r7, r3
+ 625 046c 1B68     		ldr	r3, [r3]
+ 626 046e BE22     		mov	r2, #190
+ 627 0470 9200     		lsl	r2, r2, #2
+ 628 0472 BA18     		add	r2, r7, r2
+ 629 0474 1360     		str	r3, [r2]
+ 630 0476 DB17     		asr	r3, r3, #31
+ 631 0478 BF22     		mov	r2, #191
+ 632 047a 9200     		lsl	r2, r2, #2
+ 633 047c BA18     		add	r2, r7, r2
+ 634 047e 1360     		str	r3, [r2]
+ 635 0480 BE23     		mov	r3, #190
+ 636 0482 9B00     		lsl	r3, r3, #2
+ 637 0484 FB18     		add	r3, r7, r3
+ 638 0486 1B68     		ldr	r3, [r3]
+ 639 0488 1B00     		lsl	r3, r3, #0
+ 640 048a BD22     		mov	r2, #189
+ 641 048c 9200     		lsl	r2, r2, #2
+ 642 048e BA18     		add	r2, r7, r2
+ 643 0490 1360     		str	r3, [r2]
+ 644 0492 0023     		mov	r3, #0
+ 645 0494 BC22     		mov	r2, #188
+ 646 0496 9200     		lsl	r2, r2, #2
+ 647 0498 BA18     		add	r2, r7, r2
+ 648 049a 1360     		str	r3, [r2]
+ 649 049c E923     		mov	r3, #233
+ 650 049e 9B00     		lsl	r3, r3, #2
+ 651 04a0 FB18     		add	r3, r7, r3
+ 652 04a2 1B68     		ldr	r3, [r3]
+ 653 04a4 BA22     		mov	r2, #186
+ 654 04a6 9200     		lsl	r2, r2, #2
+ 655 04a8 BA18     		add	r2, r7, r2
+ 656 04aa 1360     		str	r3, [r2]
+ 657 04ac DB17     		asr	r3, r3, #31
+ 658 04ae BB22     		mov	r2, #187
+ 659 04b0 9200     		lsl	r2, r2, #2
+ 660 04b2 BA18     		add	r2, r7, r2
+ 661 04b4 1360     		str	r3, [r2]
+ 662 04b6 F623     		mov	r3, #246
+ 663 04b8 9B00     		lsl	r3, r3, #2
+ 664 04ba FB18     		add	r3, r7, r3
+ 665 04bc 1B68     		ldr	r3, [r3]
+ 666 04be B822     		mov	r2, #184
+ 667 04c0 9200     		lsl	r2, r2, #2
+ 668 04c2 BA18     		add	r2, r7, r2
+ 669 04c4 1360     		str	r3, [r2]
+ 670 04c6 DB17     		asr	r3, r3, #31
+ 671 04c8 B922     		mov	r2, #185
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 15
+
+
+ 672 04ca 9200     		lsl	r2, r2, #2
+ 673 04cc BA18     		add	r2, r7, r2
+ 674 04ce 1360     		str	r3, [r2]
+ 675 04d0 BA23     		mov	r3, #186
+ 676 04d2 9B00     		lsl	r3, r3, #2
+ 677 04d4 FB18     		add	r3, r7, r3
+ 678 04d6 1868     		ldr	r0, [r3]
+ 679 04d8 5968     		ldr	r1, [r3, #4]
+ 680 04da B823     		mov	r3, #184
+ 681 04dc 9B00     		lsl	r3, r3, #2
+ 682 04de FB18     		add	r3, r7, r3
+ 683 04e0 1A68     		ldr	r2, [r3]
+ 684 04e2 5B68     		ldr	r3, [r3, #4]
+ 685 04e4 FFF7FEFF 		bl	__aeabi_lmul
+ 686 04e8 031C     		mov	r3, r0
+ 687 04ea 0C1C     		mov	r4, r1
+ 688 04ec BC22     		mov	r2, #188
+ 689 04ee 9200     		lsl	r2, r2, #2
+ 690 04f0 BA18     		add	r2, r7, r2
+ 691 04f2 1168     		ldr	r1, [r2]
+ 692 04f4 5268     		ldr	r2, [r2, #4]
+ 693 04f6 C918     		add	r1, r1, r3
+ 694 04f8 6241     		adc	r2, r2, r4
+ 695 04fa 8023     		mov	r3, #128
+ 696 04fc 1B06     		lsl	r3, r3, #24
+ 697 04fe 0024     		mov	r4, #0
+ 698 0500 5B18     		add	r3, r3, r1
+ 699 0502 5441     		adc	r4, r4, r2
+ 700 0504 2200     		asr	r2, r4, #0
+ 701 0506 B621     		mov	r1, #182
+ 702 0508 8900     		lsl	r1, r1, #2
+ 703 050a 7918     		add	r1, r7, r1
+ 704 050c 0A60     		str	r2, [r1]
+ 705 050e E317     		asr	r3, r4, #31
+ 706 0510 B722     		mov	r2, #183
+ 707 0512 9200     		lsl	r2, r2, #2
+ 708 0514 BA18     		add	r2, r7, r2
+ 709 0516 1360     		str	r3, [r2]
+ 710 0518 B623     		mov	r3, #182
+ 711 051a 9B00     		lsl	r3, r3, #2
+ 712 051c FB18     		add	r3, r7, r3
+ 713 051e 1B68     		ldr	r3, [r3]
+ 714 0520 EF22     		mov	r2, #239
+ 715 0522 9200     		lsl	r2, r2, #2
+ 716 0524 BA18     		add	r2, r7, r2
+ 717 0526 1360     		str	r3, [r2]
+ 128:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 129:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* The result is converted to 1.31 , Yn2 variable is reused */
+ 130:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Yn2 = acc << shift;
+ 718              		.loc 1 130 0
+ 719 0528 EF23     		mov	r3, #239
+ 720 052a 9B00     		lsl	r3, r3, #2
+ 721 052c FB18     		add	r3, r7, r3
+ 722 052e 1A68     		ldr	r2, [r3]
+ 723 0530 EE23     		mov	r3, #238
+ 724 0532 9B00     		lsl	r3, r3, #2
+ 725 0534 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 16
+
+
+ 726 0536 1B68     		ldr	r3, [r3]
+ 727 0538 9A40     		lsl	r2, r2, r3
+ 728 053a 131C     		mov	r3, r2
+ 729 053c F622     		mov	r2, #246
+ 730 053e 9200     		lsl	r2, r2, #2
+ 731 0540 BA18     		add	r2, r7, r2
+ 732 0542 1360     		str	r3, [r2]
+ 131:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 132:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Read the second input */
+ 133:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn2 = *(pIn + 1u);
+ 733              		.loc 1 133 0
+ 734 0544 F523     		mov	r3, #245
+ 735 0546 9B00     		lsl	r3, r3, #2
+ 736 0548 FB18     		add	r3, r7, r3
+ 737 054a 1B68     		ldr	r3, [r3]
+ 738 054c 5B68     		ldr	r3, [r3, #4]
+ 739 054e F822     		mov	r2, #248
+ 740 0550 9200     		lsl	r2, r2, #2
+ 741 0552 BA18     		add	r2, r7, r2
+ 742 0554 1360     		str	r3, [r2]
+ 134:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 135:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Store the output in the destination buffer. */
+ 136:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       *pOut = Yn2;
+ 743              		.loc 1 136 0
+ 744 0556 F423     		mov	r3, #244
+ 745 0558 9B00     		lsl	r3, r3, #2
+ 746 055a FB18     		add	r3, r7, r3
+ 747 055c 1A68     		ldr	r2, [r3]
+ 748 055e F623     		mov	r3, #246
+ 749 0560 9B00     		lsl	r3, r3, #2
+ 750 0562 FB18     		add	r3, r7, r3
+ 751 0564 1B68     		ldr	r3, [r3]
+ 752 0566 1360     		str	r3, [r2]
+ 137:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 138:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 139:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] */
+ 140:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) (((q63_t) b0 * (Xn2)) >> 32);*/
+ 141:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       mult_32x32_keep32_R(acc, b0, Xn2);
+ 753              		.loc 1 141 0
+ 754 0568 ED23     		mov	r3, #237
+ 755 056a 9B00     		lsl	r3, r3, #2
+ 756 056c FB18     		add	r3, r7, r3
+ 757 056e 1B68     		ldr	r3, [r3]
+ 758 0570 B422     		mov	r2, #180
+ 759 0572 9200     		lsl	r2, r2, #2
+ 760 0574 BA18     		add	r2, r7, r2
+ 761 0576 1360     		str	r3, [r2]
+ 762 0578 DB17     		asr	r3, r3, #31
+ 763 057a B522     		mov	r2, #181
+ 764 057c 9200     		lsl	r2, r2, #2
+ 765 057e BA18     		add	r2, r7, r2
+ 766 0580 1360     		str	r3, [r2]
+ 767 0582 F823     		mov	r3, #248
+ 768 0584 9B00     		lsl	r3, r3, #2
+ 769 0586 FB18     		add	r3, r7, r3
+ 770 0588 1B68     		ldr	r3, [r3]
+ 771 058a B222     		mov	r2, #178
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 17
+
+
+ 772 058c 9200     		lsl	r2, r2, #2
+ 773 058e BA18     		add	r2, r7, r2
+ 774 0590 1360     		str	r3, [r2]
+ 775 0592 DB17     		asr	r3, r3, #31
+ 776 0594 B322     		mov	r2, #179
+ 777 0596 9200     		lsl	r2, r2, #2
+ 778 0598 BA18     		add	r2, r7, r2
+ 779 059a 1360     		str	r3, [r2]
+ 780 059c B423     		mov	r3, #180
+ 781 059e 9B00     		lsl	r3, r3, #2
+ 782 05a0 FB18     		add	r3, r7, r3
+ 783 05a2 1868     		ldr	r0, [r3]
+ 784 05a4 5968     		ldr	r1, [r3, #4]
+ 785 05a6 B223     		mov	r3, #178
+ 786 05a8 9B00     		lsl	r3, r3, #2
+ 787 05aa FB18     		add	r3, r7, r3
+ 788 05ac 1A68     		ldr	r2, [r3]
+ 789 05ae 5B68     		ldr	r3, [r3, #4]
+ 790 05b0 FFF7FEFF 		bl	__aeabi_lmul
+ 791 05b4 031C     		mov	r3, r0
+ 792 05b6 0C1C     		mov	r4, r1
+ 793 05b8 191C     		mov	r1, r3
+ 794 05ba 221C     		mov	r2, r4
+ 795 05bc 8023     		mov	r3, #128
+ 796 05be 1B06     		lsl	r3, r3, #24
+ 797 05c0 0024     		mov	r4, #0
+ 798 05c2 5B18     		add	r3, r3, r1
+ 799 05c4 5441     		adc	r4, r4, r2
+ 800 05c6 2200     		asr	r2, r4, #0
+ 801 05c8 B021     		mov	r1, #176
+ 802 05ca 8900     		lsl	r1, r1, #2
+ 803 05cc 7918     		add	r1, r7, r1
+ 804 05ce 0A60     		str	r2, [r1]
+ 805 05d0 E317     		asr	r3, r4, #31
+ 806 05d2 B122     		mov	r2, #177
+ 807 05d4 9200     		lsl	r2, r2, #2
+ 808 05d6 BA18     		add	r2, r7, r2
+ 809 05d8 1360     		str	r3, [r2]
+ 810 05da B023     		mov	r3, #176
+ 811 05dc 9B00     		lsl	r3, r3, #2
+ 812 05de FB18     		add	r3, r7, r3
+ 813 05e0 1B68     		ldr	r3, [r3]
+ 814 05e2 EF22     		mov	r2, #239
+ 815 05e4 9200     		lsl	r2, r2, #2
+ 816 05e6 BA18     		add	r2, r7, r2
+ 817 05e8 1360     		str	r3, [r2]
+ 142:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 143:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b1 * (Xn))) >> 32);*/
+ 144:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b1, Xn);
+ 818              		.loc 1 144 0
+ 819 05ea EF23     		mov	r3, #239
+ 820 05ec 9B00     		lsl	r3, r3, #2
+ 821 05ee FB18     		add	r3, r7, r3
+ 822 05f0 1B68     		ldr	r3, [r3]
+ 823 05f2 AE22     		mov	r2, #174
+ 824 05f4 9200     		lsl	r2, r2, #2
+ 825 05f6 BA18     		add	r2, r7, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 18
+
+
+ 826 05f8 1360     		str	r3, [r2]
+ 827 05fa DB17     		asr	r3, r3, #31
+ 828 05fc AF22     		mov	r2, #175
+ 829 05fe 9200     		lsl	r2, r2, #2
+ 830 0600 BA18     		add	r2, r7, r2
+ 831 0602 1360     		str	r3, [r2]
+ 832 0604 AE23     		mov	r3, #174
+ 833 0606 9B00     		lsl	r3, r3, #2
+ 834 0608 FB18     		add	r3, r7, r3
+ 835 060a 1B68     		ldr	r3, [r3]
+ 836 060c 1B00     		lsl	r3, r3, #0
+ 837 060e AD22     		mov	r2, #173
+ 838 0610 9200     		lsl	r2, r2, #2
+ 839 0612 BA18     		add	r2, r7, r2
+ 840 0614 1360     		str	r3, [r2]
+ 841 0616 0023     		mov	r3, #0
+ 842 0618 AC22     		mov	r2, #172
+ 843 061a 9200     		lsl	r2, r2, #2
+ 844 061c BA18     		add	r2, r7, r2
+ 845 061e 1360     		str	r3, [r2]
+ 846 0620 EC23     		mov	r3, #236
+ 847 0622 9B00     		lsl	r3, r3, #2
+ 848 0624 FB18     		add	r3, r7, r3
+ 849 0626 1B68     		ldr	r3, [r3]
+ 850 0628 AA22     		mov	r2, #170
+ 851 062a 9200     		lsl	r2, r2, #2
+ 852 062c BA18     		add	r2, r7, r2
+ 853 062e 1360     		str	r3, [r2]
+ 854 0630 DB17     		asr	r3, r3, #31
+ 855 0632 AB22     		mov	r2, #171
+ 856 0634 9200     		lsl	r2, r2, #2
+ 857 0636 BA18     		add	r2, r7, r2
+ 858 0638 1360     		str	r3, [r2]
+ 859 063a E823     		mov	r3, #232
+ 860 063c 9B00     		lsl	r3, r3, #2
+ 861 063e FB18     		add	r3, r7, r3
+ 862 0640 1B68     		ldr	r3, [r3]
+ 863 0642 A822     		mov	r2, #168
+ 864 0644 9200     		lsl	r2, r2, #2
+ 865 0646 BA18     		add	r2, r7, r2
+ 866 0648 1360     		str	r3, [r2]
+ 867 064a DB17     		asr	r3, r3, #31
+ 868 064c A922     		mov	r2, #169
+ 869 064e 9200     		lsl	r2, r2, #2
+ 870 0650 BA18     		add	r2, r7, r2
+ 871 0652 1360     		str	r3, [r2]
+ 872 0654 AA23     		mov	r3, #170
+ 873 0656 9B00     		lsl	r3, r3, #2
+ 874 0658 FB18     		add	r3, r7, r3
+ 875 065a 1868     		ldr	r0, [r3]
+ 876 065c 5968     		ldr	r1, [r3, #4]
+ 877 065e A823     		mov	r3, #168
+ 878 0660 9B00     		lsl	r3, r3, #2
+ 879 0662 FB18     		add	r3, r7, r3
+ 880 0664 1A68     		ldr	r2, [r3]
+ 881 0666 5B68     		ldr	r3, [r3, #4]
+ 882 0668 FFF7FEFF 		bl	__aeabi_lmul
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 19
+
+
+ 883 066c 031C     		mov	r3, r0
+ 884 066e 0C1C     		mov	r4, r1
+ 885 0670 AC22     		mov	r2, #172
+ 886 0672 9200     		lsl	r2, r2, #2
+ 887 0674 BA18     		add	r2, r7, r2
+ 888 0676 1168     		ldr	r1, [r2]
+ 889 0678 5268     		ldr	r2, [r2, #4]
+ 890 067a C918     		add	r1, r1, r3
+ 891 067c 6241     		adc	r2, r2, r4
+ 892 067e 8023     		mov	r3, #128
+ 893 0680 1B06     		lsl	r3, r3, #24
+ 894 0682 0024     		mov	r4, #0
+ 895 0684 5B18     		add	r3, r3, r1
+ 896 0686 5441     		adc	r4, r4, r2
+ 897 0688 2200     		asr	r2, r4, #0
+ 898 068a A621     		mov	r1, #166
+ 899 068c 8900     		lsl	r1, r1, #2
+ 900 068e 7918     		add	r1, r7, r1
+ 901 0690 0A60     		str	r2, [r1]
+ 902 0692 E317     		asr	r3, r4, #31
+ 903 0694 A722     		mov	r2, #167
+ 904 0696 9200     		lsl	r2, r2, #2
+ 905 0698 BA18     		add	r2, r7, r2
+ 906 069a 1360     		str	r3, [r2]
+ 907 069c A623     		mov	r3, #166
+ 908 069e 9B00     		lsl	r3, r3, #2
+ 909 06a0 FB18     		add	r3, r7, r3
+ 910 06a2 1B68     		ldr	r3, [r3]
+ 911 06a4 EF22     		mov	r2, #239
+ 912 06a6 9200     		lsl	r2, r2, #2
+ 913 06a8 BA18     		add	r2, r7, r2
+ 914 06aa 1360     		str	r3, [r2]
+ 145:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 146:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b2 * (Xn1))) >> 32);*/
+ 147:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b2, Xn1);
+ 915              		.loc 1 147 0
+ 916 06ac EF23     		mov	r3, #239
+ 917 06ae 9B00     		lsl	r3, r3, #2
+ 918 06b0 FB18     		add	r3, r7, r3
+ 919 06b2 1B68     		ldr	r3, [r3]
+ 920 06b4 A422     		mov	r2, #164
+ 921 06b6 9200     		lsl	r2, r2, #2
+ 922 06b8 BA18     		add	r2, r7, r2
+ 923 06ba 1360     		str	r3, [r2]
+ 924 06bc DB17     		asr	r3, r3, #31
+ 925 06be A522     		mov	r2, #165
+ 926 06c0 9200     		lsl	r2, r2, #2
+ 927 06c2 BA18     		add	r2, r7, r2
+ 928 06c4 1360     		str	r3, [r2]
+ 929 06c6 A423     		mov	r3, #164
+ 930 06c8 9B00     		lsl	r3, r3, #2
+ 931 06ca FB18     		add	r3, r7, r3
+ 932 06cc 1B68     		ldr	r3, [r3]
+ 933 06ce 1B00     		lsl	r3, r3, #0
+ 934 06d0 A322     		mov	r2, #163
+ 935 06d2 9200     		lsl	r2, r2, #2
+ 936 06d4 BA18     		add	r2, r7, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 20
+
+
+ 937 06d6 1360     		str	r3, [r2]
+ 938 06d8 0023     		mov	r3, #0
+ 939 06da A222     		mov	r2, #162
+ 940 06dc 9200     		lsl	r2, r2, #2
+ 941 06de BA18     		add	r2, r7, r2
+ 942 06e0 1360     		str	r3, [r2]
+ 943 06e2 EB23     		mov	r3, #235
+ 944 06e4 9B00     		lsl	r3, r3, #2
+ 945 06e6 FB18     		add	r3, r7, r3
+ 946 06e8 1B68     		ldr	r3, [r3]
+ 947 06ea A022     		mov	r2, #160
+ 948 06ec 9200     		lsl	r2, r2, #2
+ 949 06ee BA18     		add	r2, r7, r2
+ 950 06f0 1360     		str	r3, [r2]
+ 951 06f2 DB17     		asr	r3, r3, #31
+ 952 06f4 A122     		mov	r2, #161
+ 953 06f6 9200     		lsl	r2, r2, #2
+ 954 06f8 BA18     		add	r2, r7, r2
+ 955 06fa 1360     		str	r3, [r2]
+ 956 06fc F923     		mov	r3, #249
+ 957 06fe 9B00     		lsl	r3, r3, #2
+ 958 0700 FB18     		add	r3, r7, r3
+ 959 0702 1B68     		ldr	r3, [r3]
+ 960 0704 9E22     		mov	r2, #158
+ 961 0706 9200     		lsl	r2, r2, #2
+ 962 0708 BA18     		add	r2, r7, r2
+ 963 070a 1360     		str	r3, [r2]
+ 964 070c DB17     		asr	r3, r3, #31
+ 965 070e 9F22     		mov	r2, #159
+ 966 0710 9200     		lsl	r2, r2, #2
+ 967 0712 BA18     		add	r2, r7, r2
+ 968 0714 1360     		str	r3, [r2]
+ 969 0716 A023     		mov	r3, #160
+ 970 0718 9B00     		lsl	r3, r3, #2
+ 971 071a FB18     		add	r3, r7, r3
+ 972 071c 1868     		ldr	r0, [r3]
+ 973 071e 5968     		ldr	r1, [r3, #4]
+ 974 0720 9E23     		mov	r3, #158
+ 975 0722 9B00     		lsl	r3, r3, #2
+ 976 0724 FB18     		add	r3, r7, r3
+ 977 0726 1A68     		ldr	r2, [r3]
+ 978 0728 5B68     		ldr	r3, [r3, #4]
+ 979 072a FFF7FEFF 		bl	__aeabi_lmul
+ 980 072e 031C     		mov	r3, r0
+ 981 0730 0C1C     		mov	r4, r1
+ 982 0732 A222     		mov	r2, #162
+ 983 0734 9200     		lsl	r2, r2, #2
+ 984 0736 BA18     		add	r2, r7, r2
+ 985 0738 1168     		ldr	r1, [r2]
+ 986 073a 5268     		ldr	r2, [r2, #4]
+ 987 073c C918     		add	r1, r1, r3
+ 988 073e 6241     		adc	r2, r2, r4
+ 989 0740 8023     		mov	r3, #128
+ 990 0742 1B06     		lsl	r3, r3, #24
+ 991 0744 0024     		mov	r4, #0
+ 992 0746 5B18     		add	r3, r3, r1
+ 993 0748 5441     		adc	r4, r4, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 21
+
+
+ 994 074a 2200     		asr	r2, r4, #0
+ 995 074c 9C21     		mov	r1, #156
+ 996 074e 8900     		lsl	r1, r1, #2
+ 997 0750 7918     		add	r1, r7, r1
+ 998 0752 0A60     		str	r2, [r1]
+ 999 0754 E317     		asr	r3, r4, #31
+ 1000 0756 9D22     		mov	r2, #157
+ 1001 0758 9200     		lsl	r2, r2, #2
+ 1002 075a BA18     		add	r2, r7, r2
+ 1003 075c 1360     		str	r3, [r2]
+ 1004 075e 9C23     		mov	r3, #156
+ 1005 0760 9B00     		lsl	r3, r3, #2
+ 1006 0762 FB18     		add	r3, r7, r3
+ 1007 0764 1B68     		ldr	r3, [r3]
+ 1008 0766 EF22     		mov	r2, #239
+ 1009 0768 9200     		lsl	r2, r2, #2
+ 1010 076a BA18     		add	r2, r7, r2
+ 1011 076c 1360     		str	r3, [r2]
+ 148:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 149:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a1 * (Yn2))) >> 32);*/
+ 150:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a1, Yn2);
+ 1012              		.loc 1 150 0
+ 1013 076e EF23     		mov	r3, #239
+ 1014 0770 9B00     		lsl	r3, r3, #2
+ 1015 0772 FB18     		add	r3, r7, r3
+ 1016 0774 1B68     		ldr	r3, [r3]
+ 1017 0776 9A22     		mov	r2, #154
+ 1018 0778 9200     		lsl	r2, r2, #2
+ 1019 077a BA18     		add	r2, r7, r2
+ 1020 077c 1360     		str	r3, [r2]
+ 1021 077e DB17     		asr	r3, r3, #31
+ 1022 0780 9B22     		mov	r2, #155
+ 1023 0782 9200     		lsl	r2, r2, #2
+ 1024 0784 BA18     		add	r2, r7, r2
+ 1025 0786 1360     		str	r3, [r2]
+ 1026 0788 9A23     		mov	r3, #154
+ 1027 078a 9B00     		lsl	r3, r3, #2
+ 1028 078c FB18     		add	r3, r7, r3
+ 1029 078e 1B68     		ldr	r3, [r3]
+ 1030 0790 1B00     		lsl	r3, r3, #0
+ 1031 0792 9922     		mov	r2, #153
+ 1032 0794 9200     		lsl	r2, r2, #2
+ 1033 0796 BA18     		add	r2, r7, r2
+ 1034 0798 1360     		str	r3, [r2]
+ 1035 079a 0023     		mov	r3, #0
+ 1036 079c 9822     		mov	r2, #152
+ 1037 079e 9200     		lsl	r2, r2, #2
+ 1038 07a0 BA18     		add	r2, r7, r2
+ 1039 07a2 1360     		str	r3, [r2]
+ 1040 07a4 EA23     		mov	r3, #234
+ 1041 07a6 9B00     		lsl	r3, r3, #2
+ 1042 07a8 FB18     		add	r3, r7, r3
+ 1043 07aa 1B68     		ldr	r3, [r3]
+ 1044 07ac 9622     		mov	r2, #150
+ 1045 07ae 9200     		lsl	r2, r2, #2
+ 1046 07b0 BA18     		add	r2, r7, r2
+ 1047 07b2 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 22
+
+
+ 1048 07b4 DB17     		asr	r3, r3, #31
+ 1049 07b6 9722     		mov	r2, #151
+ 1050 07b8 9200     		lsl	r2, r2, #2
+ 1051 07ba BA18     		add	r2, r7, r2
+ 1052 07bc 1360     		str	r3, [r2]
+ 1053 07be F623     		mov	r3, #246
+ 1054 07c0 9B00     		lsl	r3, r3, #2
+ 1055 07c2 FB18     		add	r3, r7, r3
+ 1056 07c4 1B68     		ldr	r3, [r3]
+ 1057 07c6 9422     		mov	r2, #148
+ 1058 07c8 9200     		lsl	r2, r2, #2
+ 1059 07ca BA18     		add	r2, r7, r2
+ 1060 07cc 1360     		str	r3, [r2]
+ 1061 07ce DB17     		asr	r3, r3, #31
+ 1062 07d0 9522     		mov	r2, #149
+ 1063 07d2 9200     		lsl	r2, r2, #2
+ 1064 07d4 BA18     		add	r2, r7, r2
+ 1065 07d6 1360     		str	r3, [r2]
+ 1066 07d8 9623     		mov	r3, #150
+ 1067 07da 9B00     		lsl	r3, r3, #2
+ 1068 07dc FB18     		add	r3, r7, r3
+ 1069 07de 1868     		ldr	r0, [r3]
+ 1070 07e0 5968     		ldr	r1, [r3, #4]
+ 1071 07e2 9423     		mov	r3, #148
+ 1072 07e4 9B00     		lsl	r3, r3, #2
+ 1073 07e6 FB18     		add	r3, r7, r3
+ 1074 07e8 1A68     		ldr	r2, [r3]
+ 1075 07ea 5B68     		ldr	r3, [r3, #4]
+ 1076 07ec FFF7FEFF 		bl	__aeabi_lmul
+ 1077 07f0 031C     		mov	r3, r0
+ 1078 07f2 0C1C     		mov	r4, r1
+ 1079 07f4 9822     		mov	r2, #152
+ 1080 07f6 9200     		lsl	r2, r2, #2
+ 1081 07f8 BA18     		add	r2, r7, r2
+ 1082 07fa 1168     		ldr	r1, [r2]
+ 1083 07fc 5268     		ldr	r2, [r2, #4]
+ 1084 07fe C918     		add	r1, r1, r3
+ 1085 0800 6241     		adc	r2, r2, r4
+ 1086 0802 8023     		mov	r3, #128
+ 1087 0804 1B06     		lsl	r3, r3, #24
+ 1088 0806 0024     		mov	r4, #0
+ 1089 0808 5B18     		add	r3, r3, r1
+ 1090 080a 5441     		adc	r4, r4, r2
+ 1091 080c 2200     		asr	r2, r4, #0
+ 1092 080e 9221     		mov	r1, #146
+ 1093 0810 8900     		lsl	r1, r1, #2
+ 1094 0812 7918     		add	r1, r7, r1
+ 1095 0814 0A60     		str	r2, [r1]
+ 1096 0816 E317     		asr	r3, r4, #31
+ 1097 0818 9322     		mov	r2, #147
+ 1098 081a 9200     		lsl	r2, r2, #2
+ 1099 081c BA18     		add	r2, r7, r2
+ 1100 081e 1360     		str	r3, [r2]
+ 1101 0820 9223     		mov	r3, #146
+ 1102 0822 9B00     		lsl	r3, r3, #2
+ 1103 0824 FB18     		add	r3, r7, r3
+ 1104 0826 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 23
+
+
+ 1105 0828 EF22     		mov	r2, #239
+ 1106 082a 9200     		lsl	r2, r2, #2
+ 1107 082c BA18     		add	r2, r7, r2
+ 1108 082e 1360     		str	r3, [r2]
+ 151:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 152:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a2 * (Yn1))) >> 32);*/
+ 153:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a2, Yn1);
+ 1109              		.loc 1 153 0
+ 1110 0830 EF23     		mov	r3, #239
+ 1111 0832 9B00     		lsl	r3, r3, #2
+ 1112 0834 FB18     		add	r3, r7, r3
+ 1113 0836 1B68     		ldr	r3, [r3]
+ 1114 0838 9022     		mov	r2, #144
+ 1115 083a 9200     		lsl	r2, r2, #2
+ 1116 083c BA18     		add	r2, r7, r2
+ 1117 083e 1360     		str	r3, [r2]
+ 1118 0840 DB17     		asr	r3, r3, #31
+ 1119 0842 9122     		mov	r2, #145
+ 1120 0844 9200     		lsl	r2, r2, #2
+ 1121 0846 BA18     		add	r2, r7, r2
+ 1122 0848 1360     		str	r3, [r2]
+ 1123 084a 9023     		mov	r3, #144
+ 1124 084c 9B00     		lsl	r3, r3, #2
+ 1125 084e FB18     		add	r3, r7, r3
+ 1126 0850 1B68     		ldr	r3, [r3]
+ 1127 0852 1B00     		lsl	r3, r3, #0
+ 1128 0854 8F22     		mov	r2, #143
+ 1129 0856 9200     		lsl	r2, r2, #2
+ 1130 0858 BA18     		add	r2, r7, r2
+ 1131 085a 1360     		str	r3, [r2]
+ 1132 085c 0023     		mov	r3, #0
+ 1133 085e 8E22     		mov	r2, #142
+ 1134 0860 9200     		lsl	r2, r2, #2
+ 1135 0862 BA18     		add	r2, r7, r2
+ 1136 0864 1360     		str	r3, [r2]
+ 1137 0866 E923     		mov	r3, #233
+ 1138 0868 9B00     		lsl	r3, r3, #2
+ 1139 086a FB18     		add	r3, r7, r3
+ 1140 086c 1B68     		ldr	r3, [r3]
+ 1141 086e 8C22     		mov	r2, #140
+ 1142 0870 9200     		lsl	r2, r2, #2
+ 1143 0872 BA18     		add	r2, r7, r2
+ 1144 0874 1360     		str	r3, [r2]
+ 1145 0876 DB17     		asr	r3, r3, #31
+ 1146 0878 8D22     		mov	r2, #141
+ 1147 087a 9200     		lsl	r2, r2, #2
+ 1148 087c BA18     		add	r2, r7, r2
+ 1149 087e 1360     		str	r3, [r2]
+ 1150 0880 F723     		mov	r3, #247
+ 1151 0882 9B00     		lsl	r3, r3, #2
+ 1152 0884 FB18     		add	r3, r7, r3
+ 1153 0886 1B68     		ldr	r3, [r3]
+ 1154 0888 8A22     		mov	r2, #138
+ 1155 088a 9200     		lsl	r2, r2, #2
+ 1156 088c BA18     		add	r2, r7, r2
+ 1157 088e 1360     		str	r3, [r2]
+ 1158 0890 DB17     		asr	r3, r3, #31
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 24
+
+
+ 1159 0892 8B22     		mov	r2, #139
+ 1160 0894 9200     		lsl	r2, r2, #2
+ 1161 0896 BA18     		add	r2, r7, r2
+ 1162 0898 1360     		str	r3, [r2]
+ 1163 089a 8C23     		mov	r3, #140
+ 1164 089c 9B00     		lsl	r3, r3, #2
+ 1165 089e FB18     		add	r3, r7, r3
+ 1166 08a0 1868     		ldr	r0, [r3]
+ 1167 08a2 5968     		ldr	r1, [r3, #4]
+ 1168 08a4 8A23     		mov	r3, #138
+ 1169 08a6 9B00     		lsl	r3, r3, #2
+ 1170 08a8 FB18     		add	r3, r7, r3
+ 1171 08aa 1A68     		ldr	r2, [r3]
+ 1172 08ac 5B68     		ldr	r3, [r3, #4]
+ 1173 08ae FFF7FEFF 		bl	__aeabi_lmul
+ 1174 08b2 031C     		mov	r3, r0
+ 1175 08b4 0C1C     		mov	r4, r1
+ 1176 08b6 8E22     		mov	r2, #142
+ 1177 08b8 9200     		lsl	r2, r2, #2
+ 1178 08ba BA18     		add	r2, r7, r2
+ 1179 08bc 1168     		ldr	r1, [r2]
+ 1180 08be 5268     		ldr	r2, [r2, #4]
+ 1181 08c0 C918     		add	r1, r1, r3
+ 1182 08c2 6241     		adc	r2, r2, r4
+ 1183 08c4 8023     		mov	r3, #128
+ 1184 08c6 1B06     		lsl	r3, r3, #24
+ 1185 08c8 0024     		mov	r4, #0
+ 1186 08ca 5B18     		add	r3, r3, r1
+ 1187 08cc 5441     		adc	r4, r4, r2
+ 1188 08ce 2200     		asr	r2, r4, #0
+ 1189 08d0 8821     		mov	r1, #136
+ 1190 08d2 8900     		lsl	r1, r1, #2
+ 1191 08d4 7918     		add	r1, r7, r1
+ 1192 08d6 0A60     		str	r2, [r1]
+ 1193 08d8 E317     		asr	r3, r4, #31
+ 1194 08da 8922     		mov	r2, #137
+ 1195 08dc 9200     		lsl	r2, r2, #2
+ 1196 08de BA18     		add	r2, r7, r2
+ 1197 08e0 1360     		str	r3, [r2]
+ 1198 08e2 8823     		mov	r3, #136
+ 1199 08e4 9B00     		lsl	r3, r3, #2
+ 1200 08e6 FB18     		add	r3, r7, r3
+ 1201 08e8 1B68     		ldr	r3, [r3]
+ 1202 08ea EF22     		mov	r2, #239
+ 1203 08ec 9200     		lsl	r2, r2, #2
+ 1204 08ee BA18     		add	r2, r7, r2
+ 1205 08f0 1360     		str	r3, [r2]
+ 154:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 155:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* The result is converted to 1.31, Yn1 variable is reused  */
+ 156:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Yn1 = acc << shift;
+ 1206              		.loc 1 156 0
+ 1207 08f2 EF23     		mov	r3, #239
+ 1208 08f4 9B00     		lsl	r3, r3, #2
+ 1209 08f6 FB18     		add	r3, r7, r3
+ 1210 08f8 1A68     		ldr	r2, [r3]
+ 1211 08fa EE23     		mov	r3, #238
+ 1212 08fc 9B00     		lsl	r3, r3, #2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 25
+
+
+ 1213 08fe FB18     		add	r3, r7, r3
+ 1214 0900 1B68     		ldr	r3, [r3]
+ 1215 0902 9A40     		lsl	r2, r2, r3
+ 1216 0904 131C     		mov	r3, r2
+ 1217 0906 F722     		mov	r2, #247
+ 1218 0908 9200     		lsl	r2, r2, #2
+ 1219 090a BA18     		add	r2, r7, r2
+ 1220 090c 1360     		str	r3, [r2]
+ 157:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 158:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Read the third input  */
+ 159:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn1 = *(pIn + 2u);
+ 1221              		.loc 1 159 0
+ 1222 090e F523     		mov	r3, #245
+ 1223 0910 9B00     		lsl	r3, r3, #2
+ 1224 0912 FB18     		add	r3, r7, r3
+ 1225 0914 1B68     		ldr	r3, [r3]
+ 1226 0916 9B68     		ldr	r3, [r3, #8]
+ 1227 0918 F922     		mov	r2, #249
+ 1228 091a 9200     		lsl	r2, r2, #2
+ 1229 091c BA18     		add	r2, r7, r2
+ 1230 091e 1360     		str	r3, [r2]
+ 160:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 161:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Store the output in the destination buffer. */
+ 162:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       *(pOut + 1u) = Yn1;
+ 1231              		.loc 1 162 0
+ 1232 0920 F423     		mov	r3, #244
+ 1233 0922 9B00     		lsl	r3, r3, #2
+ 1234 0924 FB18     		add	r3, r7, r3
+ 1235 0926 1B68     		ldr	r3, [r3]
+ 1236 0928 1A1D     		add	r2, r3, #4
+ 1237 092a F723     		mov	r3, #247
+ 1238 092c 9B00     		lsl	r3, r3, #2
+ 1239 092e FB18     		add	r3, r7, r3
+ 1240 0930 1B68     		ldr	r3, [r3]
+ 1241 0932 1360     		str	r3, [r2]
+ 163:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 164:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 165:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] */
+ 166:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) (((q63_t) b0 * (Xn1)) >> 32);*/
+ 167:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       mult_32x32_keep32_R(acc, b0, Xn1);
+ 1242              		.loc 1 167 0
+ 1243 0934 ED23     		mov	r3, #237
+ 1244 0936 9B00     		lsl	r3, r3, #2
+ 1245 0938 FB18     		add	r3, r7, r3
+ 1246 093a 1B68     		ldr	r3, [r3]
+ 1247 093c 8622     		mov	r2, #134
+ 1248 093e 9200     		lsl	r2, r2, #2
+ 1249 0940 BA18     		add	r2, r7, r2
+ 1250 0942 1360     		str	r3, [r2]
+ 1251 0944 DB17     		asr	r3, r3, #31
+ 1252 0946 8722     		mov	r2, #135
+ 1253 0948 9200     		lsl	r2, r2, #2
+ 1254 094a BA18     		add	r2, r7, r2
+ 1255 094c 1360     		str	r3, [r2]
+ 1256 094e F923     		mov	r3, #249
+ 1257 0950 9B00     		lsl	r3, r3, #2
+ 1258 0952 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 26
+
+
+ 1259 0954 1B68     		ldr	r3, [r3]
+ 1260 0956 8422     		mov	r2, #132
+ 1261 0958 9200     		lsl	r2, r2, #2
+ 1262 095a BA18     		add	r2, r7, r2
+ 1263 095c 1360     		str	r3, [r2]
+ 1264 095e DB17     		asr	r3, r3, #31
+ 1265 0960 8522     		mov	r2, #133
+ 1266 0962 9200     		lsl	r2, r2, #2
+ 1267 0964 BA18     		add	r2, r7, r2
+ 1268 0966 1360     		str	r3, [r2]
+ 1269 0968 8623     		mov	r3, #134
+ 1270 096a 9B00     		lsl	r3, r3, #2
+ 1271 096c FB18     		add	r3, r7, r3
+ 1272 096e 1868     		ldr	r0, [r3]
+ 1273 0970 5968     		ldr	r1, [r3, #4]
+ 1274 0972 8423     		mov	r3, #132
+ 1275 0974 9B00     		lsl	r3, r3, #2
+ 1276 0976 FB18     		add	r3, r7, r3
+ 1277 0978 1A68     		ldr	r2, [r3]
+ 1278 097a 5B68     		ldr	r3, [r3, #4]
+ 1279 097c FFF7FEFF 		bl	__aeabi_lmul
+ 1280 0980 031C     		mov	r3, r0
+ 1281 0982 0C1C     		mov	r4, r1
+ 1282 0984 191C     		mov	r1, r3
+ 1283 0986 221C     		mov	r2, r4
+ 1284 0988 8023     		mov	r3, #128
+ 1285 098a 1B06     		lsl	r3, r3, #24
+ 1286 098c 0024     		mov	r4, #0
+ 1287 098e 5B18     		add	r3, r3, r1
+ 1288 0990 5441     		adc	r4, r4, r2
+ 1289 0992 2200     		asr	r2, r4, #0
+ 1290 0994 8221     		mov	r1, #130
+ 1291 0996 8900     		lsl	r1, r1, #2
+ 1292 0998 7918     		add	r1, r7, r1
+ 1293 099a 0A60     		str	r2, [r1]
+ 1294 099c E317     		asr	r3, r4, #31
+ 1295 099e 8322     		mov	r2, #131
+ 1296 09a0 9200     		lsl	r2, r2, #2
+ 1297 09a2 BA18     		add	r2, r7, r2
+ 1298 09a4 1360     		str	r3, [r2]
+ 1299 09a6 8223     		mov	r3, #130
+ 1300 09a8 9B00     		lsl	r3, r3, #2
+ 1301 09aa FB18     		add	r3, r7, r3
+ 1302 09ac 1B68     		ldr	r3, [r3]
+ 1303 09ae EF22     		mov	r2, #239
+ 1304 09b0 9200     		lsl	r2, r2, #2
+ 1305 09b2 BA18     		add	r2, r7, r2
+ 1306 09b4 1360     		str	r3, [r2]
+ 168:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 169:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b1 * (Xn2))) >> 32);*/
+ 170:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b1, Xn2);
+ 1307              		.loc 1 170 0
+ 1308 09b6 EF23     		mov	r3, #239
+ 1309 09b8 9B00     		lsl	r3, r3, #2
+ 1310 09ba FB18     		add	r3, r7, r3
+ 1311 09bc 1B68     		ldr	r3, [r3]
+ 1312 09be 8022     		mov	r2, #128
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 27
+
+
+ 1313 09c0 9200     		lsl	r2, r2, #2
+ 1314 09c2 BA18     		add	r2, r7, r2
+ 1315 09c4 1360     		str	r3, [r2]
+ 1316 09c6 DB17     		asr	r3, r3, #31
+ 1317 09c8 8122     		mov	r2, #129
+ 1318 09ca 9200     		lsl	r2, r2, #2
+ 1319 09cc BA18     		add	r2, r7, r2
+ 1320 09ce 1360     		str	r3, [r2]
+ 1321 09d0 8023     		mov	r3, #128
+ 1322 09d2 9B00     		lsl	r3, r3, #2
+ 1323 09d4 FB18     		add	r3, r7, r3
+ 1324 09d6 1B68     		ldr	r3, [r3]
+ 1325 09d8 1B00     		lsl	r3, r3, #0
+ 1326 09da FE22     		mov	r2, #254
+ 1327 09dc 5200     		lsl	r2, r2, #1
+ 1328 09de BA18     		add	r2, r7, r2
+ 1329 09e0 1360     		str	r3, [r2]
+ 1330 09e2 0023     		mov	r3, #0
+ 1331 09e4 FC22     		mov	r2, #252
+ 1332 09e6 5200     		lsl	r2, r2, #1
+ 1333 09e8 BA18     		add	r2, r7, r2
+ 1334 09ea 1360     		str	r3, [r2]
+ 1335 09ec EC23     		mov	r3, #236
+ 1336 09ee 9B00     		lsl	r3, r3, #2
+ 1337 09f0 FB18     		add	r3, r7, r3
+ 1338 09f2 1B68     		ldr	r3, [r3]
+ 1339 09f4 F822     		mov	r2, #248
+ 1340 09f6 5200     		lsl	r2, r2, #1
+ 1341 09f8 BA18     		add	r2, r7, r2
+ 1342 09fa 1360     		str	r3, [r2]
+ 1343 09fc DB17     		asr	r3, r3, #31
+ 1344 09fe FA22     		mov	r2, #250
+ 1345 0a00 5200     		lsl	r2, r2, #1
+ 1346 0a02 BA18     		add	r2, r7, r2
+ 1347 0a04 1360     		str	r3, [r2]
+ 1348 0a06 F823     		mov	r3, #248
+ 1349 0a08 9B00     		lsl	r3, r3, #2
+ 1350 0a0a FB18     		add	r3, r7, r3
+ 1351 0a0c 1B68     		ldr	r3, [r3]
+ 1352 0a0e F422     		mov	r2, #244
+ 1353 0a10 5200     		lsl	r2, r2, #1
+ 1354 0a12 BA18     		add	r2, r7, r2
+ 1355 0a14 1360     		str	r3, [r2]
+ 1356 0a16 DB17     		asr	r3, r3, #31
+ 1357 0a18 F622     		mov	r2, #246
+ 1358 0a1a 5200     		lsl	r2, r2, #1
+ 1359 0a1c BA18     		add	r2, r7, r2
+ 1360 0a1e 1360     		str	r3, [r2]
+ 1361 0a20 F823     		mov	r3, #248
+ 1362 0a22 5B00     		lsl	r3, r3, #1
+ 1363 0a24 FB18     		add	r3, r7, r3
+ 1364 0a26 1868     		ldr	r0, [r3]
+ 1365 0a28 5968     		ldr	r1, [r3, #4]
+ 1366 0a2a F423     		mov	r3, #244
+ 1367 0a2c 5B00     		lsl	r3, r3, #1
+ 1368 0a2e FB18     		add	r3, r7, r3
+ 1369 0a30 1A68     		ldr	r2, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 28
+
+
+ 1370 0a32 5B68     		ldr	r3, [r3, #4]
+ 1371 0a34 FFF7FEFF 		bl	__aeabi_lmul
+ 1372 0a38 031C     		mov	r3, r0
+ 1373 0a3a 0C1C     		mov	r4, r1
+ 1374 0a3c FC22     		mov	r2, #252
+ 1375 0a3e 5200     		lsl	r2, r2, #1
+ 1376 0a40 BA18     		add	r2, r7, r2
+ 1377 0a42 1168     		ldr	r1, [r2]
+ 1378 0a44 5268     		ldr	r2, [r2, #4]
+ 1379 0a46 C918     		add	r1, r1, r3
+ 1380 0a48 6241     		adc	r2, r2, r4
+ 1381 0a4a 8023     		mov	r3, #128
+ 1382 0a4c 1B06     		lsl	r3, r3, #24
+ 1383 0a4e 0024     		mov	r4, #0
+ 1384 0a50 5B18     		add	r3, r3, r1
+ 1385 0a52 5441     		adc	r4, r4, r2
+ 1386 0a54 2200     		asr	r2, r4, #0
+ 1387 0a56 F021     		mov	r1, #240
+ 1388 0a58 4900     		lsl	r1, r1, #1
+ 1389 0a5a 7918     		add	r1, r7, r1
+ 1390 0a5c 0A60     		str	r2, [r1]
+ 1391 0a5e E317     		asr	r3, r4, #31
+ 1392 0a60 F222     		mov	r2, #242
+ 1393 0a62 5200     		lsl	r2, r2, #1
+ 1394 0a64 BA18     		add	r2, r7, r2
+ 1395 0a66 1360     		str	r3, [r2]
+ 1396 0a68 F023     		mov	r3, #240
+ 1397 0a6a 5B00     		lsl	r3, r3, #1
+ 1398 0a6c FB18     		add	r3, r7, r3
+ 1399 0a6e 1B68     		ldr	r3, [r3]
+ 1400 0a70 EF22     		mov	r2, #239
+ 1401 0a72 9200     		lsl	r2, r2, #2
+ 1402 0a74 BA18     		add	r2, r7, r2
+ 1403 0a76 1360     		str	r3, [r2]
+ 171:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 172:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b2 * (Xn))) >> 32);*/
+ 173:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b2, Xn);
+ 1404              		.loc 1 173 0
+ 1405 0a78 EF23     		mov	r3, #239
+ 1406 0a7a 9B00     		lsl	r3, r3, #2
+ 1407 0a7c FB18     		add	r3, r7, r3
+ 1408 0a7e 1B68     		ldr	r3, [r3]
+ 1409 0a80 EC22     		mov	r2, #236
+ 1410 0a82 5200     		lsl	r2, r2, #1
+ 1411 0a84 BA18     		add	r2, r7, r2
+ 1412 0a86 1360     		str	r3, [r2]
+ 1413 0a88 DB17     		asr	r3, r3, #31
+ 1414 0a8a EE22     		mov	r2, #238
+ 1415 0a8c 5200     		lsl	r2, r2, #1
+ 1416 0a8e BA18     		add	r2, r7, r2
+ 1417 0a90 1360     		str	r3, [r2]
+ 1418 0a92 EC23     		mov	r3, #236
+ 1419 0a94 5B00     		lsl	r3, r3, #1
+ 1420 0a96 FB18     		add	r3, r7, r3
+ 1421 0a98 1B68     		ldr	r3, [r3]
+ 1422 0a9a 1B00     		lsl	r3, r3, #0
+ 1423 0a9c EA22     		mov	r2, #234
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 29
+
+
+ 1424 0a9e 5200     		lsl	r2, r2, #1
+ 1425 0aa0 BA18     		add	r2, r7, r2
+ 1426 0aa2 1360     		str	r3, [r2]
+ 1427 0aa4 0023     		mov	r3, #0
+ 1428 0aa6 E822     		mov	r2, #232
+ 1429 0aa8 5200     		lsl	r2, r2, #1
+ 1430 0aaa BA18     		add	r2, r7, r2
+ 1431 0aac 1360     		str	r3, [r2]
+ 1432 0aae EB23     		mov	r3, #235
+ 1433 0ab0 9B00     		lsl	r3, r3, #2
+ 1434 0ab2 FB18     		add	r3, r7, r3
+ 1435 0ab4 1B68     		ldr	r3, [r3]
+ 1436 0ab6 E422     		mov	r2, #228
+ 1437 0ab8 5200     		lsl	r2, r2, #1
+ 1438 0aba BA18     		add	r2, r7, r2
+ 1439 0abc 1360     		str	r3, [r2]
+ 1440 0abe DB17     		asr	r3, r3, #31
+ 1441 0ac0 E622     		mov	r2, #230
+ 1442 0ac2 5200     		lsl	r2, r2, #1
+ 1443 0ac4 BA18     		add	r2, r7, r2
+ 1444 0ac6 1360     		str	r3, [r2]
+ 1445 0ac8 E823     		mov	r3, #232
+ 1446 0aca 9B00     		lsl	r3, r3, #2
+ 1447 0acc FB18     		add	r3, r7, r3
+ 1448 0ace 1B68     		ldr	r3, [r3]
+ 1449 0ad0 E022     		mov	r2, #224
+ 1450 0ad2 5200     		lsl	r2, r2, #1
+ 1451 0ad4 BA18     		add	r2, r7, r2
+ 1452 0ad6 1360     		str	r3, [r2]
+ 1453 0ad8 DB17     		asr	r3, r3, #31
+ 1454 0ada E222     		mov	r2, #226
+ 1455 0adc 5200     		lsl	r2, r2, #1
+ 1456 0ade BA18     		add	r2, r7, r2
+ 1457 0ae0 1360     		str	r3, [r2]
+ 1458 0ae2 E423     		mov	r3, #228
+ 1459 0ae4 5B00     		lsl	r3, r3, #1
+ 1460 0ae6 FB18     		add	r3, r7, r3
+ 1461 0ae8 1868     		ldr	r0, [r3]
+ 1462 0aea 5968     		ldr	r1, [r3, #4]
+ 1463 0aec E023     		mov	r3, #224
+ 1464 0aee 5B00     		lsl	r3, r3, #1
+ 1465 0af0 FB18     		add	r3, r7, r3
+ 1466 0af2 1A68     		ldr	r2, [r3]
+ 1467 0af4 5B68     		ldr	r3, [r3, #4]
+ 1468 0af6 FFF7FEFF 		bl	__aeabi_lmul
+ 1469 0afa 031C     		mov	r3, r0
+ 1470 0afc 0C1C     		mov	r4, r1
+ 1471 0afe E822     		mov	r2, #232
+ 1472 0b00 5200     		lsl	r2, r2, #1
+ 1473 0b02 BA18     		add	r2, r7, r2
+ 1474 0b04 1168     		ldr	r1, [r2]
+ 1475 0b06 5268     		ldr	r2, [r2, #4]
+ 1476 0b08 C918     		add	r1, r1, r3
+ 1477 0b0a 6241     		adc	r2, r2, r4
+ 1478 0b0c 8023     		mov	r3, #128
+ 1479 0b0e 1B06     		lsl	r3, r3, #24
+ 1480 0b10 0024     		mov	r4, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 30
+
+
+ 1481 0b12 5B18     		add	r3, r3, r1
+ 1482 0b14 5441     		adc	r4, r4, r2
+ 1483 0b16 2200     		asr	r2, r4, #0
+ 1484 0b18 DC21     		mov	r1, #220
+ 1485 0b1a 4900     		lsl	r1, r1, #1
+ 1486 0b1c 7918     		add	r1, r7, r1
+ 1487 0b1e 0A60     		str	r2, [r1]
+ 1488 0b20 E317     		asr	r3, r4, #31
+ 1489 0b22 DE22     		mov	r2, #222
+ 1490 0b24 5200     		lsl	r2, r2, #1
+ 1491 0b26 BA18     		add	r2, r7, r2
+ 1492 0b28 1360     		str	r3, [r2]
+ 1493 0b2a DC23     		mov	r3, #220
+ 1494 0b2c 5B00     		lsl	r3, r3, #1
+ 1495 0b2e FB18     		add	r3, r7, r3
+ 1496 0b30 1B68     		ldr	r3, [r3]
+ 1497 0b32 EF22     		mov	r2, #239
+ 1498 0b34 9200     		lsl	r2, r2, #2
+ 1499 0b36 BA18     		add	r2, r7, r2
+ 1500 0b38 1360     		str	r3, [r2]
+ 174:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 175:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a1 * (Yn1))) >> 32);*/
+ 176:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a1, Yn1);
+ 1501              		.loc 1 176 0
+ 1502 0b3a EF23     		mov	r3, #239
+ 1503 0b3c 9B00     		lsl	r3, r3, #2
+ 1504 0b3e FB18     		add	r3, r7, r3
+ 1505 0b40 1B68     		ldr	r3, [r3]
+ 1506 0b42 D822     		mov	r2, #216
+ 1507 0b44 5200     		lsl	r2, r2, #1
+ 1508 0b46 BA18     		add	r2, r7, r2
+ 1509 0b48 1360     		str	r3, [r2]
+ 1510 0b4a DB17     		asr	r3, r3, #31
+ 1511 0b4c DA22     		mov	r2, #218
+ 1512 0b4e 5200     		lsl	r2, r2, #1
+ 1513 0b50 BA18     		add	r2, r7, r2
+ 1514 0b52 1360     		str	r3, [r2]
+ 1515 0b54 D823     		mov	r3, #216
+ 1516 0b56 5B00     		lsl	r3, r3, #1
+ 1517 0b58 FB18     		add	r3, r7, r3
+ 1518 0b5a 1B68     		ldr	r3, [r3]
+ 1519 0b5c 1B00     		lsl	r3, r3, #0
+ 1520 0b5e D622     		mov	r2, #214
+ 1521 0b60 5200     		lsl	r2, r2, #1
+ 1522 0b62 BA18     		add	r2, r7, r2
+ 1523 0b64 1360     		str	r3, [r2]
+ 1524 0b66 0023     		mov	r3, #0
+ 1525 0b68 D422     		mov	r2, #212
+ 1526 0b6a 5200     		lsl	r2, r2, #1
+ 1527 0b6c BA18     		add	r2, r7, r2
+ 1528 0b6e 1360     		str	r3, [r2]
+ 1529 0b70 EA23     		mov	r3, #234
+ 1530 0b72 9B00     		lsl	r3, r3, #2
+ 1531 0b74 FB18     		add	r3, r7, r3
+ 1532 0b76 1B68     		ldr	r3, [r3]
+ 1533 0b78 D022     		mov	r2, #208
+ 1534 0b7a 5200     		lsl	r2, r2, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 31
+
+
+ 1535 0b7c BA18     		add	r2, r7, r2
+ 1536 0b7e 1360     		str	r3, [r2]
+ 1537 0b80 DB17     		asr	r3, r3, #31
+ 1538 0b82 D222     		mov	r2, #210
+ 1539 0b84 5200     		lsl	r2, r2, #1
+ 1540 0b86 BA18     		add	r2, r7, r2
+ 1541 0b88 1360     		str	r3, [r2]
+ 1542 0b8a F723     		mov	r3, #247
+ 1543 0b8c 9B00     		lsl	r3, r3, #2
+ 1544 0b8e FB18     		add	r3, r7, r3
+ 1545 0b90 1B68     		ldr	r3, [r3]
+ 1546 0b92 CC22     		mov	r2, #204
+ 1547 0b94 5200     		lsl	r2, r2, #1
+ 1548 0b96 BA18     		add	r2, r7, r2
+ 1549 0b98 1360     		str	r3, [r2]
+ 1550 0b9a DB17     		asr	r3, r3, #31
+ 1551 0b9c CE22     		mov	r2, #206
+ 1552 0b9e 5200     		lsl	r2, r2, #1
+ 1553 0ba0 BA18     		add	r2, r7, r2
+ 1554 0ba2 1360     		str	r3, [r2]
+ 1555 0ba4 D023     		mov	r3, #208
+ 1556 0ba6 5B00     		lsl	r3, r3, #1
+ 1557 0ba8 FB18     		add	r3, r7, r3
+ 1558 0baa 1868     		ldr	r0, [r3]
+ 1559 0bac 5968     		ldr	r1, [r3, #4]
+ 1560 0bae CC23     		mov	r3, #204
+ 1561 0bb0 5B00     		lsl	r3, r3, #1
+ 1562 0bb2 FB18     		add	r3, r7, r3
+ 1563 0bb4 1A68     		ldr	r2, [r3]
+ 1564 0bb6 5B68     		ldr	r3, [r3, #4]
+ 1565 0bb8 FFF7FEFF 		bl	__aeabi_lmul
+ 1566 0bbc 031C     		mov	r3, r0
+ 1567 0bbe 0C1C     		mov	r4, r1
+ 1568 0bc0 D422     		mov	r2, #212
+ 1569 0bc2 5200     		lsl	r2, r2, #1
+ 1570 0bc4 BA18     		add	r2, r7, r2
+ 1571 0bc6 1168     		ldr	r1, [r2]
+ 1572 0bc8 5268     		ldr	r2, [r2, #4]
+ 1573 0bca C918     		add	r1, r1, r3
+ 1574 0bcc 6241     		adc	r2, r2, r4
+ 1575 0bce 8023     		mov	r3, #128
+ 1576 0bd0 1B06     		lsl	r3, r3, #24
+ 1577 0bd2 0024     		mov	r4, #0
+ 1578 0bd4 5B18     		add	r3, r3, r1
+ 1579 0bd6 5441     		adc	r4, r4, r2
+ 1580 0bd8 2200     		asr	r2, r4, #0
+ 1581 0bda C821     		mov	r1, #200
+ 1582 0bdc 4900     		lsl	r1, r1, #1
+ 1583 0bde 7918     		add	r1, r7, r1
+ 1584 0be0 0A60     		str	r2, [r1]
+ 1585 0be2 E317     		asr	r3, r4, #31
+ 1586 0be4 CA22     		mov	r2, #202
+ 1587 0be6 5200     		lsl	r2, r2, #1
+ 1588 0be8 BA18     		add	r2, r7, r2
+ 1589 0bea 1360     		str	r3, [r2]
+ 1590 0bec C823     		mov	r3, #200
+ 1591 0bee 5B00     		lsl	r3, r3, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 32
+
+
+ 1592 0bf0 FB18     		add	r3, r7, r3
+ 1593 0bf2 1B68     		ldr	r3, [r3]
+ 1594 0bf4 EF22     		mov	r2, #239
+ 1595 0bf6 9200     		lsl	r2, r2, #2
+ 1596 0bf8 BA18     		add	r2, r7, r2
+ 1597 0bfa 1360     		str	r3, [r2]
+ 177:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 178:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a2 * (Yn2))) >> 32);*/
+ 179:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a2, Yn2);
+ 1598              		.loc 1 179 0
+ 1599 0bfc EF23     		mov	r3, #239
+ 1600 0bfe 9B00     		lsl	r3, r3, #2
+ 1601 0c00 FB18     		add	r3, r7, r3
+ 1602 0c02 1B68     		ldr	r3, [r3]
+ 1603 0c04 C422     		mov	r2, #196
+ 1604 0c06 5200     		lsl	r2, r2, #1
+ 1605 0c08 BA18     		add	r2, r7, r2
+ 1606 0c0a 1360     		str	r3, [r2]
+ 1607 0c0c DB17     		asr	r3, r3, #31
+ 1608 0c0e C622     		mov	r2, #198
+ 1609 0c10 5200     		lsl	r2, r2, #1
+ 1610 0c12 BA18     		add	r2, r7, r2
+ 1611 0c14 1360     		str	r3, [r2]
+ 1612 0c16 C423     		mov	r3, #196
+ 1613 0c18 5B00     		lsl	r3, r3, #1
+ 1614 0c1a FB18     		add	r3, r7, r3
+ 1615 0c1c 1B68     		ldr	r3, [r3]
+ 1616 0c1e 1B00     		lsl	r3, r3, #0
+ 1617 0c20 C222     		mov	r2, #194
+ 1618 0c22 5200     		lsl	r2, r2, #1
+ 1619 0c24 BA18     		add	r2, r7, r2
+ 1620 0c26 1360     		str	r3, [r2]
+ 1621 0c28 0023     		mov	r3, #0
+ 1622 0c2a C022     		mov	r2, #192
+ 1623 0c2c 5200     		lsl	r2, r2, #1
+ 1624 0c2e BA18     		add	r2, r7, r2
+ 1625 0c30 1360     		str	r3, [r2]
+ 1626 0c32 E923     		mov	r3, #233
+ 1627 0c34 9B00     		lsl	r3, r3, #2
+ 1628 0c36 FB18     		add	r3, r7, r3
+ 1629 0c38 1B68     		ldr	r3, [r3]
+ 1630 0c3a BC22     		mov	r2, #188
+ 1631 0c3c 5200     		lsl	r2, r2, #1
+ 1632 0c3e BA18     		add	r2, r7, r2
+ 1633 0c40 1360     		str	r3, [r2]
+ 1634 0c42 DB17     		asr	r3, r3, #31
+ 1635 0c44 BE22     		mov	r2, #190
+ 1636 0c46 5200     		lsl	r2, r2, #1
+ 1637 0c48 BA18     		add	r2, r7, r2
+ 1638 0c4a 1360     		str	r3, [r2]
+ 1639 0c4c F623     		mov	r3, #246
+ 1640 0c4e 9B00     		lsl	r3, r3, #2
+ 1641 0c50 FB18     		add	r3, r7, r3
+ 1642 0c52 1B68     		ldr	r3, [r3]
+ 1643 0c54 B822     		mov	r2, #184
+ 1644 0c56 5200     		lsl	r2, r2, #1
+ 1645 0c58 BA18     		add	r2, r7, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 33
+
+
+ 1646 0c5a 1360     		str	r3, [r2]
+ 1647 0c5c DB17     		asr	r3, r3, #31
+ 1648 0c5e BA22     		mov	r2, #186
+ 1649 0c60 5200     		lsl	r2, r2, #1
+ 1650 0c62 BA18     		add	r2, r7, r2
+ 1651 0c64 1360     		str	r3, [r2]
+ 1652 0c66 BC23     		mov	r3, #188
+ 1653 0c68 5B00     		lsl	r3, r3, #1
+ 1654 0c6a FB18     		add	r3, r7, r3
+ 1655 0c6c 1868     		ldr	r0, [r3]
+ 1656 0c6e 5968     		ldr	r1, [r3, #4]
+ 1657 0c70 B823     		mov	r3, #184
+ 1658 0c72 5B00     		lsl	r3, r3, #1
+ 1659 0c74 FB18     		add	r3, r7, r3
+ 1660 0c76 1A68     		ldr	r2, [r3]
+ 1661 0c78 5B68     		ldr	r3, [r3, #4]
+ 1662 0c7a FFF7FEFF 		bl	__aeabi_lmul
+ 1663 0c7e 031C     		mov	r3, r0
+ 1664 0c80 0C1C     		mov	r4, r1
+ 1665 0c82 C022     		mov	r2, #192
+ 1666 0c84 5200     		lsl	r2, r2, #1
+ 1667 0c86 BA18     		add	r2, r7, r2
+ 1668 0c88 1168     		ldr	r1, [r2]
+ 1669 0c8a 5268     		ldr	r2, [r2, #4]
+ 1670 0c8c C918     		add	r1, r1, r3
+ 1671 0c8e 6241     		adc	r2, r2, r4
+ 1672 0c90 8023     		mov	r3, #128
+ 1673 0c92 1B06     		lsl	r3, r3, #24
+ 1674 0c94 0024     		mov	r4, #0
+ 1675 0c96 5B18     		add	r3, r3, r1
+ 1676 0c98 5441     		adc	r4, r4, r2
+ 1677 0c9a 2200     		asr	r2, r4, #0
+ 1678 0c9c B421     		mov	r1, #180
+ 1679 0c9e 4900     		lsl	r1, r1, #1
+ 1680 0ca0 7918     		add	r1, r7, r1
+ 1681 0ca2 0A60     		str	r2, [r1]
+ 1682 0ca4 E317     		asr	r3, r4, #31
+ 1683 0ca6 B622     		mov	r2, #182
+ 1684 0ca8 5200     		lsl	r2, r2, #1
+ 1685 0caa BA18     		add	r2, r7, r2
+ 1686 0cac 1360     		str	r3, [r2]
+ 1687 0cae B423     		mov	r3, #180
+ 1688 0cb0 5B00     		lsl	r3, r3, #1
+ 1689 0cb2 FB18     		add	r3, r7, r3
+ 1690 0cb4 1B68     		ldr	r3, [r3]
+ 1691 0cb6 EF22     		mov	r2, #239
+ 1692 0cb8 9200     		lsl	r2, r2, #2
+ 1693 0cba BA18     		add	r2, r7, r2
+ 1694 0cbc 1360     		str	r3, [r2]
+ 180:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 181:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* The result is converted to 1.31, Yn2 variable is reused  */
+ 182:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Yn2 = acc << shift;
+ 1695              		.loc 1 182 0
+ 1696 0cbe EF23     		mov	r3, #239
+ 1697 0cc0 9B00     		lsl	r3, r3, #2
+ 1698 0cc2 FB18     		add	r3, r7, r3
+ 1699 0cc4 1A68     		ldr	r2, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 34
+
+
+ 1700 0cc6 EE23     		mov	r3, #238
+ 1701 0cc8 9B00     		lsl	r3, r3, #2
+ 1702 0cca FB18     		add	r3, r7, r3
+ 1703 0ccc 1B68     		ldr	r3, [r3]
+ 1704 0cce 9A40     		lsl	r2, r2, r3
+ 1705 0cd0 131C     		mov	r3, r2
+ 1706 0cd2 F622     		mov	r2, #246
+ 1707 0cd4 9200     		lsl	r2, r2, #2
+ 1708 0cd6 BA18     		add	r2, r7, r2
+ 1709 0cd8 1360     		str	r3, [r2]
+ 183:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 184:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Read the forth input */
+ 185:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn = *(pIn + 3u);
+ 1710              		.loc 1 185 0
+ 1711 0cda F523     		mov	r3, #245
+ 1712 0cdc 9B00     		lsl	r3, r3, #2
+ 1713 0cde FB18     		add	r3, r7, r3
+ 1714 0ce0 1B68     		ldr	r3, [r3]
+ 1715 0ce2 DB68     		ldr	r3, [r3, #12]
+ 1716 0ce4 E822     		mov	r2, #232
+ 1717 0ce6 9200     		lsl	r2, r2, #2
+ 1718 0ce8 BA18     		add	r2, r7, r2
+ 1719 0cea 1360     		str	r3, [r2]
+ 186:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 187:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Store the output in the destination buffer. */
+ 188:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       *(pOut + 2u) = Yn2;
+ 1720              		.loc 1 188 0
+ 1721 0cec F423     		mov	r3, #244
+ 1722 0cee 9B00     		lsl	r3, r3, #2
+ 1723 0cf0 FB18     		add	r3, r7, r3
+ 1724 0cf2 1B68     		ldr	r3, [r3]
+ 1725 0cf4 0833     		add	r3, r3, #8
+ 1726 0cf6 1A1C     		mov	r2, r3
+ 1727 0cf8 F623     		mov	r3, #246
+ 1728 0cfa 9B00     		lsl	r3, r3, #2
+ 1729 0cfc FB18     		add	r3, r7, r3
+ 1730 0cfe 1B68     		ldr	r3, [r3]
+ 1731 0d00 1360     		str	r3, [r2]
+ 189:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       pIn += 4u;
+ 1732              		.loc 1 189 0
+ 1733 0d02 F523     		mov	r3, #245
+ 1734 0d04 9B00     		lsl	r3, r3, #2
+ 1735 0d06 FB18     		add	r3, r7, r3
+ 1736 0d08 1B68     		ldr	r3, [r3]
+ 1737 0d0a 1033     		add	r3, r3, #16
+ 1738 0d0c F522     		mov	r2, #245
+ 1739 0d0e 9200     		lsl	r2, r2, #2
+ 1740 0d10 BA18     		add	r2, r7, r2
+ 1741 0d12 1360     		str	r3, [r2]
+ 190:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 191:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 192:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] */
+ 193:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) (((q63_t) b0 * (Xn)) >> 32);*/
+ 194:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       mult_32x32_keep32_R(acc, b0, Xn);
+ 1742              		.loc 1 194 0
+ 1743 0d14 ED23     		mov	r3, #237
+ 1744 0d16 9B00     		lsl	r3, r3, #2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 35
+
+
+ 1745 0d18 FB18     		add	r3, r7, r3
+ 1746 0d1a 1B68     		ldr	r3, [r3]
+ 1747 0d1c B022     		mov	r2, #176
+ 1748 0d1e 5200     		lsl	r2, r2, #1
+ 1749 0d20 BA18     		add	r2, r7, r2
+ 1750 0d22 1360     		str	r3, [r2]
+ 1751 0d24 DB17     		asr	r3, r3, #31
+ 1752 0d26 B222     		mov	r2, #178
+ 1753 0d28 5200     		lsl	r2, r2, #1
+ 1754 0d2a BA18     		add	r2, r7, r2
+ 1755 0d2c 1360     		str	r3, [r2]
+ 1756 0d2e E823     		mov	r3, #232
+ 1757 0d30 9B00     		lsl	r3, r3, #2
+ 1758 0d32 FB18     		add	r3, r7, r3
+ 1759 0d34 1B68     		ldr	r3, [r3]
+ 1760 0d36 AC22     		mov	r2, #172
+ 1761 0d38 5200     		lsl	r2, r2, #1
+ 1762 0d3a BA18     		add	r2, r7, r2
+ 1763 0d3c 1360     		str	r3, [r2]
+ 1764 0d3e DB17     		asr	r3, r3, #31
+ 1765 0d40 AE22     		mov	r2, #174
+ 1766 0d42 5200     		lsl	r2, r2, #1
+ 1767 0d44 BA18     		add	r2, r7, r2
+ 1768 0d46 1360     		str	r3, [r2]
+ 1769 0d48 B023     		mov	r3, #176
+ 1770 0d4a 5B00     		lsl	r3, r3, #1
+ 1771 0d4c FB18     		add	r3, r7, r3
+ 1772 0d4e 1868     		ldr	r0, [r3]
+ 1773 0d50 5968     		ldr	r1, [r3, #4]
+ 1774 0d52 AC23     		mov	r3, #172
+ 1775 0d54 5B00     		lsl	r3, r3, #1
+ 1776 0d56 FB18     		add	r3, r7, r3
+ 1777 0d58 1A68     		ldr	r2, [r3]
+ 1778 0d5a 5B68     		ldr	r3, [r3, #4]
+ 1779 0d5c FFF7FEFF 		bl	__aeabi_lmul
+ 1780 0d60 031C     		mov	r3, r0
+ 1781 0d62 0C1C     		mov	r4, r1
+ 1782 0d64 191C     		mov	r1, r3
+ 1783 0d66 221C     		mov	r2, r4
+ 1784 0d68 8023     		mov	r3, #128
+ 1785 0d6a 1B06     		lsl	r3, r3, #24
+ 1786 0d6c 0024     		mov	r4, #0
+ 1787 0d6e 5B18     		add	r3, r3, r1
+ 1788 0d70 5441     		adc	r4, r4, r2
+ 1789 0d72 2200     		asr	r2, r4, #0
+ 1790 0d74 A821     		mov	r1, #168
+ 1791 0d76 4900     		lsl	r1, r1, #1
+ 1792 0d78 7918     		add	r1, r7, r1
+ 1793 0d7a 0A60     		str	r2, [r1]
+ 1794 0d7c E317     		asr	r3, r4, #31
+ 1795 0d7e AA22     		mov	r2, #170
+ 1796 0d80 5200     		lsl	r2, r2, #1
+ 1797 0d82 BA18     		add	r2, r7, r2
+ 1798 0d84 1360     		str	r3, [r2]
+ 1799 0d86 A823     		mov	r3, #168
+ 1800 0d88 5B00     		lsl	r3, r3, #1
+ 1801 0d8a FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 36
+
+
+ 1802 0d8c 1B68     		ldr	r3, [r3]
+ 1803 0d8e EF22     		mov	r2, #239
+ 1804 0d90 9200     		lsl	r2, r2, #2
+ 1805 0d92 BA18     		add	r2, r7, r2
+ 1806 0d94 1360     		str	r3, [r2]
+ 195:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 196:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b1 * (Xn1))) >> 32);*/
+ 197:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b1, Xn1);
+ 1807              		.loc 1 197 0
+ 1808 0d96 EF23     		mov	r3, #239
+ 1809 0d98 9B00     		lsl	r3, r3, #2
+ 1810 0d9a FB18     		add	r3, r7, r3
+ 1811 0d9c 1B68     		ldr	r3, [r3]
+ 1812 0d9e A422     		mov	r2, #164
+ 1813 0da0 5200     		lsl	r2, r2, #1
+ 1814 0da2 BA18     		add	r2, r7, r2
+ 1815 0da4 1360     		str	r3, [r2]
+ 1816 0da6 DB17     		asr	r3, r3, #31
+ 1817 0da8 A622     		mov	r2, #166
+ 1818 0daa 5200     		lsl	r2, r2, #1
+ 1819 0dac BA18     		add	r2, r7, r2
+ 1820 0dae 1360     		str	r3, [r2]
+ 1821 0db0 A423     		mov	r3, #164
+ 1822 0db2 5B00     		lsl	r3, r3, #1
+ 1823 0db4 FB18     		add	r3, r7, r3
+ 1824 0db6 1B68     		ldr	r3, [r3]
+ 1825 0db8 1B00     		lsl	r3, r3, #0
+ 1826 0dba A222     		mov	r2, #162
+ 1827 0dbc 5200     		lsl	r2, r2, #1
+ 1828 0dbe BA18     		add	r2, r7, r2
+ 1829 0dc0 1360     		str	r3, [r2]
+ 1830 0dc2 0023     		mov	r3, #0
+ 1831 0dc4 A022     		mov	r2, #160
+ 1832 0dc6 5200     		lsl	r2, r2, #1
+ 1833 0dc8 BA18     		add	r2, r7, r2
+ 1834 0dca 1360     		str	r3, [r2]
+ 1835 0dcc EC23     		mov	r3, #236
+ 1836 0dce 9B00     		lsl	r3, r3, #2
+ 1837 0dd0 FB18     		add	r3, r7, r3
+ 1838 0dd2 1B68     		ldr	r3, [r3]
+ 1839 0dd4 9C22     		mov	r2, #156
+ 1840 0dd6 5200     		lsl	r2, r2, #1
+ 1841 0dd8 BA18     		add	r2, r7, r2
+ 1842 0dda 1360     		str	r3, [r2]
+ 1843 0ddc DB17     		asr	r3, r3, #31
+ 1844 0dde 9E22     		mov	r2, #158
+ 1845 0de0 5200     		lsl	r2, r2, #1
+ 1846 0de2 BA18     		add	r2, r7, r2
+ 1847 0de4 1360     		str	r3, [r2]
+ 1848 0de6 F923     		mov	r3, #249
+ 1849 0de8 9B00     		lsl	r3, r3, #2
+ 1850 0dea FB18     		add	r3, r7, r3
+ 1851 0dec 1B68     		ldr	r3, [r3]
+ 1852 0dee 9822     		mov	r2, #152
+ 1853 0df0 5200     		lsl	r2, r2, #1
+ 1854 0df2 BA18     		add	r2, r7, r2
+ 1855 0df4 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 37
+
+
+ 1856 0df6 DB17     		asr	r3, r3, #31
+ 1857 0df8 9A22     		mov	r2, #154
+ 1858 0dfa 5200     		lsl	r2, r2, #1
+ 1859 0dfc BA18     		add	r2, r7, r2
+ 1860 0dfe 1360     		str	r3, [r2]
+ 1861 0e00 9C23     		mov	r3, #156
+ 1862 0e02 5B00     		lsl	r3, r3, #1
+ 1863 0e04 FB18     		add	r3, r7, r3
+ 1864 0e06 1868     		ldr	r0, [r3]
+ 1865 0e08 5968     		ldr	r1, [r3, #4]
+ 1866 0e0a 9823     		mov	r3, #152
+ 1867 0e0c 5B00     		lsl	r3, r3, #1
+ 1868 0e0e FB18     		add	r3, r7, r3
+ 1869 0e10 1A68     		ldr	r2, [r3]
+ 1870 0e12 5B68     		ldr	r3, [r3, #4]
+ 1871 0e14 FFF7FEFF 		bl	__aeabi_lmul
+ 1872 0e18 031C     		mov	r3, r0
+ 1873 0e1a 0C1C     		mov	r4, r1
+ 1874 0e1c A022     		mov	r2, #160
+ 1875 0e1e 5200     		lsl	r2, r2, #1
+ 1876 0e20 BA18     		add	r2, r7, r2
+ 1877 0e22 1168     		ldr	r1, [r2]
+ 1878 0e24 5268     		ldr	r2, [r2, #4]
+ 1879 0e26 C918     		add	r1, r1, r3
+ 1880 0e28 6241     		adc	r2, r2, r4
+ 1881 0e2a 8023     		mov	r3, #128
+ 1882 0e2c 1B06     		lsl	r3, r3, #24
+ 1883 0e2e 0024     		mov	r4, #0
+ 1884 0e30 5B18     		add	r3, r3, r1
+ 1885 0e32 5441     		adc	r4, r4, r2
+ 1886 0e34 2200     		asr	r2, r4, #0
+ 1887 0e36 9421     		mov	r1, #148
+ 1888 0e38 4900     		lsl	r1, r1, #1
+ 1889 0e3a 7918     		add	r1, r7, r1
+ 1890 0e3c 0A60     		str	r2, [r1]
+ 1891 0e3e E317     		asr	r3, r4, #31
+ 1892 0e40 9622     		mov	r2, #150
+ 1893 0e42 5200     		lsl	r2, r2, #1
+ 1894 0e44 BA18     		add	r2, r7, r2
+ 1895 0e46 1360     		str	r3, [r2]
+ 1896 0e48 9423     		mov	r3, #148
+ 1897 0e4a 5B00     		lsl	r3, r3, #1
+ 1898 0e4c FB18     		add	r3, r7, r3
+ 1899 0e4e 1B68     		ldr	r3, [r3]
+ 1900 0e50 EF22     		mov	r2, #239
+ 1901 0e52 9200     		lsl	r2, r2, #2
+ 1902 0e54 BA18     		add	r2, r7, r2
+ 1903 0e56 1360     		str	r3, [r2]
+ 198:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 199:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b2 * (Xn2))) >> 32);*/
+ 200:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b2, Xn2);
+ 1904              		.loc 1 200 0
+ 1905 0e58 EF23     		mov	r3, #239
+ 1906 0e5a 9B00     		lsl	r3, r3, #2
+ 1907 0e5c FB18     		add	r3, r7, r3
+ 1908 0e5e 1B68     		ldr	r3, [r3]
+ 1909 0e60 9022     		mov	r2, #144
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 38
+
+
+ 1910 0e62 5200     		lsl	r2, r2, #1
+ 1911 0e64 BA18     		add	r2, r7, r2
+ 1912 0e66 1360     		str	r3, [r2]
+ 1913 0e68 DB17     		asr	r3, r3, #31
+ 1914 0e6a 9222     		mov	r2, #146
+ 1915 0e6c 5200     		lsl	r2, r2, #1
+ 1916 0e6e BA18     		add	r2, r7, r2
+ 1917 0e70 1360     		str	r3, [r2]
+ 1918 0e72 9023     		mov	r3, #144
+ 1919 0e74 5B00     		lsl	r3, r3, #1
+ 1920 0e76 FB18     		add	r3, r7, r3
+ 1921 0e78 1B68     		ldr	r3, [r3]
+ 1922 0e7a 1B00     		lsl	r3, r3, #0
+ 1923 0e7c 8E22     		mov	r2, #142
+ 1924 0e7e 5200     		lsl	r2, r2, #1
+ 1925 0e80 BA18     		add	r2, r7, r2
+ 1926 0e82 1360     		str	r3, [r2]
+ 1927 0e84 0023     		mov	r3, #0
+ 1928 0e86 8C22     		mov	r2, #140
+ 1929 0e88 5200     		lsl	r2, r2, #1
+ 1930 0e8a BA18     		add	r2, r7, r2
+ 1931 0e8c 1360     		str	r3, [r2]
+ 1932 0e8e EB23     		mov	r3, #235
+ 1933 0e90 9B00     		lsl	r3, r3, #2
+ 1934 0e92 FB18     		add	r3, r7, r3
+ 1935 0e94 1B68     		ldr	r3, [r3]
+ 1936 0e96 8822     		mov	r2, #136
+ 1937 0e98 5200     		lsl	r2, r2, #1
+ 1938 0e9a BA18     		add	r2, r7, r2
+ 1939 0e9c 1360     		str	r3, [r2]
+ 1940 0e9e DB17     		asr	r3, r3, #31
+ 1941 0ea0 8A22     		mov	r2, #138
+ 1942 0ea2 5200     		lsl	r2, r2, #1
+ 1943 0ea4 BA18     		add	r2, r7, r2
+ 1944 0ea6 1360     		str	r3, [r2]
+ 1945 0ea8 F823     		mov	r3, #248
+ 1946 0eaa 9B00     		lsl	r3, r3, #2
+ 1947 0eac FB18     		add	r3, r7, r3
+ 1948 0eae 1B68     		ldr	r3, [r3]
+ 1949 0eb0 8422     		mov	r2, #132
+ 1950 0eb2 5200     		lsl	r2, r2, #1
+ 1951 0eb4 BA18     		add	r2, r7, r2
+ 1952 0eb6 1360     		str	r3, [r2]
+ 1953 0eb8 DB17     		asr	r3, r3, #31
+ 1954 0eba 8622     		mov	r2, #134
+ 1955 0ebc 5200     		lsl	r2, r2, #1
+ 1956 0ebe BA18     		add	r2, r7, r2
+ 1957 0ec0 1360     		str	r3, [r2]
+ 1958 0ec2 8823     		mov	r3, #136
+ 1959 0ec4 5B00     		lsl	r3, r3, #1
+ 1960 0ec6 FB18     		add	r3, r7, r3
+ 1961 0ec8 1868     		ldr	r0, [r3]
+ 1962 0eca 5968     		ldr	r1, [r3, #4]
+ 1963 0ecc 8423     		mov	r3, #132
+ 1964 0ece 5B00     		lsl	r3, r3, #1
+ 1965 0ed0 FB18     		add	r3, r7, r3
+ 1966 0ed2 1A68     		ldr	r2, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 39
+
+
+ 1967 0ed4 5B68     		ldr	r3, [r3, #4]
+ 1968 0ed6 FFF7FEFF 		bl	__aeabi_lmul
+ 1969 0eda 031C     		mov	r3, r0
+ 1970 0edc 0C1C     		mov	r4, r1
+ 1971 0ede 8C22     		mov	r2, #140
+ 1972 0ee0 5200     		lsl	r2, r2, #1
+ 1973 0ee2 BA18     		add	r2, r7, r2
+ 1974 0ee4 1168     		ldr	r1, [r2]
+ 1975 0ee6 5268     		ldr	r2, [r2, #4]
+ 1976 0ee8 C918     		add	r1, r1, r3
+ 1977 0eea 6241     		adc	r2, r2, r4
+ 1978 0eec 8023     		mov	r3, #128
+ 1979 0eee 1B06     		lsl	r3, r3, #24
+ 1980 0ef0 0024     		mov	r4, #0
+ 1981 0ef2 5B18     		add	r3, r3, r1
+ 1982 0ef4 5441     		adc	r4, r4, r2
+ 1983 0ef6 2200     		asr	r2, r4, #0
+ 1984 0ef8 791C     		add	r1, r7, #1
+ 1985 0efa FF31     		add	r1, r1, #255
+ 1986 0efc 0A60     		str	r2, [r1]
+ 1987 0efe E317     		asr	r3, r4, #31
+ 1988 0f00 7A1D     		add	r2, r7, #5
+ 1989 0f02 FF32     		add	r2, r2, #255
+ 1990 0f04 1360     		str	r3, [r2]
+ 1991 0f06 7B1C     		add	r3, r7, #1
+ 1992 0f08 FF33     		add	r3, r3, #255
+ 1993 0f0a 1B68     		ldr	r3, [r3]
+ 1994 0f0c EF22     		mov	r2, #239
+ 1995 0f0e 9200     		lsl	r2, r2, #2
+ 1996 0f10 BA18     		add	r2, r7, r2
+ 1997 0f12 1360     		str	r3, [r2]
+ 201:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 202:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a1 * (Yn2))) >> 32);*/
+ 203:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a1, Yn2);
+ 1998              		.loc 1 203 0
+ 1999 0f14 EF23     		mov	r3, #239
+ 2000 0f16 9B00     		lsl	r3, r3, #2
+ 2001 0f18 FB18     		add	r3, r7, r3
+ 2002 0f1a 1B68     		ldr	r3, [r3]
+ 2003 0f1c F822     		mov	r2, #248
+ 2004 0f1e BA18     		add	r2, r7, r2
+ 2005 0f20 1360     		str	r3, [r2]
+ 2006 0f22 DB17     		asr	r3, r3, #31
+ 2007 0f24 FC22     		mov	r2, #252
+ 2008 0f26 BA18     		add	r2, r7, r2
+ 2009 0f28 1360     		str	r3, [r2]
+ 2010 0f2a F823     		mov	r3, #248
+ 2011 0f2c FB18     		add	r3, r7, r3
+ 2012 0f2e 1B68     		ldr	r3, [r3]
+ 2013 0f30 1B00     		lsl	r3, r3, #0
+ 2014 0f32 F422     		mov	r2, #244
+ 2015 0f34 BA18     		add	r2, r7, r2
+ 2016 0f36 1360     		str	r3, [r2]
+ 2017 0f38 0023     		mov	r3, #0
+ 2018 0f3a F022     		mov	r2, #240
+ 2019 0f3c BA18     		add	r2, r7, r2
+ 2020 0f3e 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 40
+
+
+ 2021 0f40 EA23     		mov	r3, #234
+ 2022 0f42 9B00     		lsl	r3, r3, #2
+ 2023 0f44 FB18     		add	r3, r7, r3
+ 2024 0f46 1B68     		ldr	r3, [r3]
+ 2025 0f48 E822     		mov	r2, #232
+ 2026 0f4a BA18     		add	r2, r7, r2
+ 2027 0f4c 1360     		str	r3, [r2]
+ 2028 0f4e DB17     		asr	r3, r3, #31
+ 2029 0f50 EC22     		mov	r2, #236
+ 2030 0f52 BA18     		add	r2, r7, r2
+ 2031 0f54 1360     		str	r3, [r2]
+ 2032 0f56 F623     		mov	r3, #246
+ 2033 0f58 9B00     		lsl	r3, r3, #2
+ 2034 0f5a FB18     		add	r3, r7, r3
+ 2035 0f5c 1B68     		ldr	r3, [r3]
+ 2036 0f5e E022     		mov	r2, #224
+ 2037 0f60 BA18     		add	r2, r7, r2
+ 2038 0f62 1360     		str	r3, [r2]
+ 2039 0f64 DB17     		asr	r3, r3, #31
+ 2040 0f66 E422     		mov	r2, #228
+ 2041 0f68 BA18     		add	r2, r7, r2
+ 2042 0f6a 1360     		str	r3, [r2]
+ 2043 0f6c E823     		mov	r3, #232
+ 2044 0f6e FB18     		add	r3, r7, r3
+ 2045 0f70 1868     		ldr	r0, [r3]
+ 2046 0f72 5968     		ldr	r1, [r3, #4]
+ 2047 0f74 E023     		mov	r3, #224
+ 2048 0f76 FB18     		add	r3, r7, r3
+ 2049 0f78 1A68     		ldr	r2, [r3]
+ 2050 0f7a 5B68     		ldr	r3, [r3, #4]
+ 2051 0f7c FFF7FEFF 		bl	__aeabi_lmul
+ 2052 0f80 031C     		mov	r3, r0
+ 2053 0f82 0C1C     		mov	r4, r1
+ 2054 0f84 F022     		mov	r2, #240
+ 2055 0f86 BA18     		add	r2, r7, r2
+ 2056 0f88 1168     		ldr	r1, [r2]
+ 2057 0f8a 5268     		ldr	r2, [r2, #4]
+ 2058 0f8c C918     		add	r1, r1, r3
+ 2059 0f8e 6241     		adc	r2, r2, r4
+ 2060 0f90 8023     		mov	r3, #128
+ 2061 0f92 1B06     		lsl	r3, r3, #24
+ 2062 0f94 0024     		mov	r4, #0
+ 2063 0f96 5B18     		add	r3, r3, r1
+ 2064 0f98 5441     		adc	r4, r4, r2
+ 2065 0f9a 2200     		asr	r2, r4, #0
+ 2066 0f9c D821     		mov	r1, #216
+ 2067 0f9e 7918     		add	r1, r7, r1
+ 2068 0fa0 0A60     		str	r2, [r1]
+ 2069 0fa2 E317     		asr	r3, r4, #31
+ 2070 0fa4 DC22     		mov	r2, #220
+ 2071 0fa6 BA18     		add	r2, r7, r2
+ 2072 0fa8 1360     		str	r3, [r2]
+ 2073 0faa D823     		mov	r3, #216
+ 2074 0fac FB18     		add	r3, r7, r3
+ 2075 0fae 1B68     		ldr	r3, [r3]
+ 2076 0fb0 EF22     		mov	r2, #239
+ 2077 0fb2 9200     		lsl	r2, r2, #2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 41
+
+
+ 2078 0fb4 BA18     		add	r2, r7, r2
+ 2079 0fb6 1360     		str	r3, [r2]
+ 204:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 205:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a2 * (Yn1))) >> 32);*/
+ 206:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a2, Yn1);
+ 2080              		.loc 1 206 0
+ 2081 0fb8 EF23     		mov	r3, #239
+ 2082 0fba 9B00     		lsl	r3, r3, #2
+ 2083 0fbc FB18     		add	r3, r7, r3
+ 2084 0fbe 1B68     		ldr	r3, [r3]
+ 2085 0fc0 D022     		mov	r2, #208
+ 2086 0fc2 BA18     		add	r2, r7, r2
+ 2087 0fc4 1360     		str	r3, [r2]
+ 2088 0fc6 DB17     		asr	r3, r3, #31
+ 2089 0fc8 D422     		mov	r2, #212
+ 2090 0fca BA18     		add	r2, r7, r2
+ 2091 0fcc 1360     		str	r3, [r2]
+ 2092 0fce D023     		mov	r3, #208
+ 2093 0fd0 FB18     		add	r3, r7, r3
+ 2094 0fd2 1B68     		ldr	r3, [r3]
+ 2095 0fd4 1E00     		lsl	r6, r3, #0
+ 2096 0fd6 0023     		mov	r3, #0
+ 2097 0fd8 1D1C     		mov	r5, r3
+ 2098 0fda E923     		mov	r3, #233
+ 2099 0fdc 9B00     		lsl	r3, r3, #2
+ 2100 0fde FB18     		add	r3, r7, r3
+ 2101 0fe0 1B68     		ldr	r3, [r3]
+ 2102 0fe2 C822     		mov	r2, #200
+ 2103 0fe4 BA18     		add	r2, r7, r2
+ 2104 0fe6 1360     		str	r3, [r2]
+ 2105 0fe8 DB17     		asr	r3, r3, #31
+ 2106 0fea CC22     		mov	r2, #204
+ 2107 0fec BA18     		add	r2, r7, r2
+ 2108 0fee 1360     		str	r3, [r2]
+ 2109 0ff0 F723     		mov	r3, #247
+ 2110 0ff2 9B00     		lsl	r3, r3, #2
+ 2111 0ff4 FB18     		add	r3, r7, r3
+ 2112 0ff6 1B68     		ldr	r3, [r3]
+ 2113 0ff8 C022     		mov	r2, #192
+ 2114 0ffa BA18     		add	r2, r7, r2
+ 2115 0ffc 1360     		str	r3, [r2]
+ 2116 0ffe DB17     		asr	r3, r3, #31
+ 2117 1000 C422     		mov	r2, #196
+ 2118 1002 BA18     		add	r2, r7, r2
+ 2119 1004 1360     		str	r3, [r2]
+ 2120 1006 C823     		mov	r3, #200
+ 2121 1008 FB18     		add	r3, r7, r3
+ 2122 100a 1868     		ldr	r0, [r3]
+ 2123 100c 5968     		ldr	r1, [r3, #4]
+ 2124 100e C023     		mov	r3, #192
+ 2125 1010 FB18     		add	r3, r7, r3
+ 2126 1012 1A68     		ldr	r2, [r3]
+ 2127 1014 5B68     		ldr	r3, [r3, #4]
+ 2128 1016 FFF7FEFF 		bl	__aeabi_lmul
+ 2129 101a 031C     		mov	r3, r0
+ 2130 101c 0C1C     		mov	r4, r1
+ 2131 101e 5B19     		add	r3, r3, r5
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 42
+
+
+ 2132 1020 7441     		adc	r4, r4, r6
+ 2133 1022 191C     		mov	r1, r3
+ 2134 1024 221C     		mov	r2, r4
+ 2135 1026 8023     		mov	r3, #128
+ 2136 1028 1B06     		lsl	r3, r3, #24
+ 2137 102a 0024     		mov	r4, #0
+ 2138 102c 5B18     		add	r3, r3, r1
+ 2139 102e 5441     		adc	r4, r4, r2
+ 2140 1030 2200     		asr	r2, r4, #0
+ 2141 1032 B821     		mov	r1, #184
+ 2142 1034 7918     		add	r1, r7, r1
+ 2143 1036 0A60     		str	r2, [r1]
+ 2144 1038 E317     		asr	r3, r4, #31
+ 2145 103a BC22     		mov	r2, #188
+ 2146 103c BA18     		add	r2, r7, r2
+ 2147 103e 1360     		str	r3, [r2]
+ 2148 1040 B823     		mov	r3, #184
+ 2149 1042 FB18     		add	r3, r7, r3
+ 2150 1044 1B68     		ldr	r3, [r3]
+ 2151 1046 EF22     		mov	r2, #239
+ 2152 1048 9200     		lsl	r2, r2, #2
+ 2153 104a BA18     		add	r2, r7, r2
+ 2154 104c 1360     		str	r3, [r2]
+ 207:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 208:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Every time after the output is computed state should be updated. */
+ 209:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* The states should be updated as:  */
+ 210:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Xn2 = Xn1    */
+ 211:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn2 = Xn1;
+ 2155              		.loc 1 211 0
+ 2156 104e F923     		mov	r3, #249
+ 2157 1050 9B00     		lsl	r3, r3, #2
+ 2158 1052 FB18     		add	r3, r7, r3
+ 2159 1054 1B68     		ldr	r3, [r3]
+ 2160 1056 F822     		mov	r2, #248
+ 2161 1058 9200     		lsl	r2, r2, #2
+ 2162 105a BA18     		add	r2, r7, r2
+ 2163 105c 1360     		str	r3, [r2]
+ 212:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 213:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* The result is converted to 1.31, Yn1 variable is reused  */
+ 214:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Yn1 = acc << shift;
+ 2164              		.loc 1 214 0
+ 2165 105e EF23     		mov	r3, #239
+ 2166 1060 9B00     		lsl	r3, r3, #2
+ 2167 1062 FB18     		add	r3, r7, r3
+ 2168 1064 1A68     		ldr	r2, [r3]
+ 2169 1066 EE23     		mov	r3, #238
+ 2170 1068 9B00     		lsl	r3, r3, #2
+ 2171 106a FB18     		add	r3, r7, r3
+ 2172 106c 1B68     		ldr	r3, [r3]
+ 2173 106e 9A40     		lsl	r2, r2, r3
+ 2174 1070 131C     		mov	r3, r2
+ 2175 1072 F722     		mov	r2, #247
+ 2176 1074 9200     		lsl	r2, r2, #2
+ 2177 1076 BA18     		add	r2, r7, r2
+ 2178 1078 1360     		str	r3, [r2]
+ 215:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 216:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Xn1 = Xn     */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 43
+
+
+ 217:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn1 = Xn;
+ 2179              		.loc 1 217 0
+ 2180 107a E823     		mov	r3, #232
+ 2181 107c 9B00     		lsl	r3, r3, #2
+ 2182 107e FB18     		add	r3, r7, r3
+ 2183 1080 1B68     		ldr	r3, [r3]
+ 2184 1082 F922     		mov	r2, #249
+ 2185 1084 9200     		lsl	r2, r2, #2
+ 2186 1086 BA18     		add	r2, r7, r2
+ 2187 1088 1360     		str	r3, [r2]
+ 218:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 219:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Store the output in the destination buffer. */
+ 220:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       *(pOut + 3u) = Yn1;
+ 2188              		.loc 1 220 0
+ 2189 108a F423     		mov	r3, #244
+ 2190 108c 9B00     		lsl	r3, r3, #2
+ 2191 108e FB18     		add	r3, r7, r3
+ 2192 1090 1B68     		ldr	r3, [r3]
+ 2193 1092 0C33     		add	r3, r3, #12
+ 2194 1094 1A1C     		mov	r2, r3
+ 2195 1096 F723     		mov	r3, #247
+ 2196 1098 9B00     		lsl	r3, r3, #2
+ 2197 109a FB18     		add	r3, r7, r3
+ 2198 109c 1B68     		ldr	r3, [r3]
+ 2199 109e 1360     		str	r3, [r2]
+ 221:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       pOut += 4u;
+ 2200              		.loc 1 221 0
+ 2201 10a0 F423     		mov	r3, #244
+ 2202 10a2 9B00     		lsl	r3, r3, #2
+ 2203 10a4 FB18     		add	r3, r7, r3
+ 2204 10a6 1B68     		ldr	r3, [r3]
+ 2205 10a8 1033     		add	r3, r3, #16
+ 2206 10aa F422     		mov	r2, #244
+ 2207 10ac 9200     		lsl	r2, r2, #2
+ 2208 10ae BA18     		add	r2, r7, r2
+ 2209 10b0 1360     		str	r3, [r2]
+ 222:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 223:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* decrement the loop counter */
+ 224:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       sample--;
+ 2210              		.loc 1 224 0
+ 2211 10b2 F123     		mov	r3, #241
+ 2212 10b4 9B00     		lsl	r3, r3, #2
+ 2213 10b6 FB18     		add	r3, r7, r3
+ 2214 10b8 1B68     		ldr	r3, [r3]
+ 2215 10ba 013B     		sub	r3, r3, #1
+ 2216 10bc F122     		mov	r2, #241
+ 2217 10be 9200     		lsl	r2, r2, #2
+ 2218 10c0 BA18     		add	r2, r7, r2
+ 2219 10c2 1360     		str	r3, [r2]
+ 2220              	.L2:
+ 107:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     {
+ 2221              		.loc 1 107 0
+ 2222 10c4 F123     		mov	r3, #241
+ 2223 10c6 9B00     		lsl	r3, r3, #2
+ 2224 10c8 FB18     		add	r3, r7, r3
+ 2225 10ca 1B68     		ldr	r3, [r3]
+ 2226 10cc 002B     		cmp	r3, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 44
+
+
+ 2227 10ce 01D0     		beq	.LCB2061
+ 2228 10d0 FFF75CF8 		bl	.L3	@far jump
+ 2229              	.LCB2061:
+ 225:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     }
+ 226:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 227:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+ 228:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****      ** No loop unrolling is used. */
+ 229:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     sample = (blockSize & 0x3u);
+ 2230              		.loc 1 229 0
+ 2231 10d4 E423     		mov	r3, #228
+ 2232 10d6 9B00     		lsl	r3, r3, #2
+ 2233 10d8 FB18     		add	r3, r7, r3
+ 2234 10da 1A68     		ldr	r2, [r3]
+ 2235 10dc 0323     		mov	r3, #3
+ 2236 10de 1340     		and	r3, r2
+ 2237 10e0 F122     		mov	r2, #241
+ 2238 10e2 9200     		lsl	r2, r2, #2
+ 2239 10e4 BA18     		add	r2, r7, r2
+ 2240 10e6 1360     		str	r3, [r2]
+ 230:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 231:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****    while (sample > 0u)
+ 2241              		.loc 1 231 0
+ 2242 10e8 72E1     		b	.L4
+ 2243              	.L5:
+ 232:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****    {
+ 233:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Read the input */
+ 234:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn = *pIn++;
+ 2244              		.loc 1 234 0
+ 2245 10ea F523     		mov	r3, #245
+ 2246 10ec 9B00     		lsl	r3, r3, #2
+ 2247 10ee FB18     		add	r3, r7, r3
+ 2248 10f0 1A68     		ldr	r2, [r3]
+ 2249 10f2 131D     		add	r3, r2, #4
+ 2250 10f4 F521     		mov	r1, #245
+ 2251 10f6 8900     		lsl	r1, r1, #2
+ 2252 10f8 7918     		add	r1, r7, r1
+ 2253 10fa 0B60     		str	r3, [r1]
+ 2254 10fc 1368     		ldr	r3, [r2]
+ 2255 10fe E822     		mov	r2, #232
+ 2256 1100 9200     		lsl	r2, r2, #2
+ 2257 1102 BA18     		add	r2, r7, r2
+ 2258 1104 1360     		str	r3, [r2]
+ 235:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 236:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 237:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc =  b0 * x[n] */
+ 238:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) (((q63_t) b0 * (Xn)) >> 32);*/
+ 239:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       mult_32x32_keep32_R(acc, b0, Xn);
+ 2259              		.loc 1 239 0
+ 2260 1106 ED23     		mov	r3, #237
+ 2261 1108 9B00     		lsl	r3, r3, #2
+ 2262 110a FB18     		add	r3, r7, r3
+ 2263 110c 1B68     		ldr	r3, [r3]
+ 2264 110e B022     		mov	r2, #176
+ 2265 1110 BA18     		add	r2, r7, r2
+ 2266 1112 1360     		str	r3, [r2]
+ 2267 1114 DB17     		asr	r3, r3, #31
+ 2268 1116 B422     		mov	r2, #180
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 45
+
+
+ 2269 1118 BA18     		add	r2, r7, r2
+ 2270 111a 1360     		str	r3, [r2]
+ 2271 111c E823     		mov	r3, #232
+ 2272 111e 9B00     		lsl	r3, r3, #2
+ 2273 1120 FB18     		add	r3, r7, r3
+ 2274 1122 1B68     		ldr	r3, [r3]
+ 2275 1124 A822     		mov	r2, #168
+ 2276 1126 BA18     		add	r2, r7, r2
+ 2277 1128 1360     		str	r3, [r2]
+ 2278 112a DB17     		asr	r3, r3, #31
+ 2279 112c AC22     		mov	r2, #172
+ 2280 112e BA18     		add	r2, r7, r2
+ 2281 1130 1360     		str	r3, [r2]
+ 2282 1132 B023     		mov	r3, #176
+ 2283 1134 FB18     		add	r3, r7, r3
+ 2284 1136 1868     		ldr	r0, [r3]
+ 2285 1138 5968     		ldr	r1, [r3, #4]
+ 2286 113a A823     		mov	r3, #168
+ 2287 113c FB18     		add	r3, r7, r3
+ 2288 113e 1A68     		ldr	r2, [r3]
+ 2289 1140 5B68     		ldr	r3, [r3, #4]
+ 2290 1142 FFF7FEFF 		bl	__aeabi_lmul
+ 2291 1146 031C     		mov	r3, r0
+ 2292 1148 0C1C     		mov	r4, r1
+ 2293 114a 191C     		mov	r1, r3
+ 2294 114c 221C     		mov	r2, r4
+ 2295 114e 8023     		mov	r3, #128
+ 2296 1150 1B06     		lsl	r3, r3, #24
+ 2297 1152 0024     		mov	r4, #0
+ 2298 1154 5B18     		add	r3, r3, r1
+ 2299 1156 5441     		adc	r4, r4, r2
+ 2300 1158 2200     		asr	r2, r4, #0
+ 2301 115a A021     		mov	r1, #160
+ 2302 115c 7918     		add	r1, r7, r1
+ 2303 115e 0A60     		str	r2, [r1]
+ 2304 1160 E317     		asr	r3, r4, #31
+ 2305 1162 A422     		mov	r2, #164
+ 2306 1164 BA18     		add	r2, r7, r2
+ 2307 1166 1360     		str	r3, [r2]
+ 2308 1168 A023     		mov	r3, #160
+ 2309 116a FB18     		add	r3, r7, r3
+ 2310 116c 1B68     		ldr	r3, [r3]
+ 2311 116e EF22     		mov	r2, #239
+ 2312 1170 9200     		lsl	r2, r2, #2
+ 2313 1172 BA18     		add	r2, r7, r2
+ 2314 1174 1360     		str	r3, [r2]
+ 240:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 241:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b1 * (Xn1))) >> 32);*/
+ 242:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b1, Xn1);
+ 2315              		.loc 1 242 0
+ 2316 1176 EF23     		mov	r3, #239
+ 2317 1178 9B00     		lsl	r3, r3, #2
+ 2318 117a FB18     		add	r3, r7, r3
+ 2319 117c 1B68     		ldr	r3, [r3]
+ 2320 117e 9822     		mov	r2, #152
+ 2321 1180 BA18     		add	r2, r7, r2
+ 2322 1182 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 46
+
+
+ 2323 1184 DB17     		asr	r3, r3, #31
+ 2324 1186 9C22     		mov	r2, #156
+ 2325 1188 BA18     		add	r2, r7, r2
+ 2326 118a 1360     		str	r3, [r2]
+ 2327 118c 9823     		mov	r3, #152
+ 2328 118e FB18     		add	r3, r7, r3
+ 2329 1190 1B68     		ldr	r3, [r3]
+ 2330 1192 1B00     		lsl	r3, r3, #0
+ 2331 1194 9422     		mov	r2, #148
+ 2332 1196 BA18     		add	r2, r7, r2
+ 2333 1198 1360     		str	r3, [r2]
+ 2334 119a 0023     		mov	r3, #0
+ 2335 119c 9022     		mov	r2, #144
+ 2336 119e BA18     		add	r2, r7, r2
+ 2337 11a0 1360     		str	r3, [r2]
+ 2338 11a2 EC23     		mov	r3, #236
+ 2339 11a4 9B00     		lsl	r3, r3, #2
+ 2340 11a6 FB18     		add	r3, r7, r3
+ 2341 11a8 1B68     		ldr	r3, [r3]
+ 2342 11aa 8822     		mov	r2, #136
+ 2343 11ac BA18     		add	r2, r7, r2
+ 2344 11ae 1360     		str	r3, [r2]
+ 2345 11b0 DB17     		asr	r3, r3, #31
+ 2346 11b2 8C22     		mov	r2, #140
+ 2347 11b4 BA18     		add	r2, r7, r2
+ 2348 11b6 1360     		str	r3, [r2]
+ 2349 11b8 F923     		mov	r3, #249
+ 2350 11ba 9B00     		lsl	r3, r3, #2
+ 2351 11bc FB18     		add	r3, r7, r3
+ 2352 11be 1B68     		ldr	r3, [r3]
+ 2353 11c0 8022     		mov	r2, #128
+ 2354 11c2 BA18     		add	r2, r7, r2
+ 2355 11c4 1360     		str	r3, [r2]
+ 2356 11c6 DB17     		asr	r3, r3, #31
+ 2357 11c8 8422     		mov	r2, #132
+ 2358 11ca BA18     		add	r2, r7, r2
+ 2359 11cc 1360     		str	r3, [r2]
+ 2360 11ce 8823     		mov	r3, #136
+ 2361 11d0 FB18     		add	r3, r7, r3
+ 2362 11d2 1868     		ldr	r0, [r3]
+ 2363 11d4 5968     		ldr	r1, [r3, #4]
+ 2364 11d6 8023     		mov	r3, #128
+ 2365 11d8 FB18     		add	r3, r7, r3
+ 2366 11da 1A68     		ldr	r2, [r3]
+ 2367 11dc 5B68     		ldr	r3, [r3, #4]
+ 2368 11de FFF7FEFF 		bl	__aeabi_lmul
+ 2369 11e2 031C     		mov	r3, r0
+ 2370 11e4 0C1C     		mov	r4, r1
+ 2371 11e6 9022     		mov	r2, #144
+ 2372 11e8 BA18     		add	r2, r7, r2
+ 2373 11ea 1168     		ldr	r1, [r2]
+ 2374 11ec 5268     		ldr	r2, [r2, #4]
+ 2375 11ee C918     		add	r1, r1, r3
+ 2376 11f0 6241     		adc	r2, r2, r4
+ 2377 11f2 8023     		mov	r3, #128
+ 2378 11f4 1B06     		lsl	r3, r3, #24
+ 2379 11f6 0024     		mov	r4, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 47
+
+
+ 2380 11f8 5B18     		add	r3, r3, r1
+ 2381 11fa 5441     		adc	r4, r4, r2
+ 2382 11fc 2200     		asr	r2, r4, #0
+ 2383 11fe BA67     		str	r2, [r7, #120]
+ 2384 1200 E317     		asr	r3, r4, #31
+ 2385 1202 FB67     		str	r3, [r7, #124]
+ 2386 1204 BB6F     		ldr	r3, [r7, #120]
+ 2387 1206 EF22     		mov	r2, #239
+ 2388 1208 9200     		lsl	r2, r2, #2
+ 2389 120a BA18     		add	r2, r7, r2
+ 2390 120c 1360     		str	r3, [r2]
+ 243:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 244:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) b2 * (Xn2))) >> 32);*/
+ 245:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, b2, Xn2);
+ 2391              		.loc 1 245 0
+ 2392 120e EF23     		mov	r3, #239
+ 2393 1210 9B00     		lsl	r3, r3, #2
+ 2394 1212 FB18     		add	r3, r7, r3
+ 2395 1214 1B68     		ldr	r3, [r3]
+ 2396 1216 3B67     		str	r3, [r7, #112]
+ 2397 1218 DB17     		asr	r3, r3, #31
+ 2398 121a 7B67     		str	r3, [r7, #116]
+ 2399 121c 3B6F     		ldr	r3, [r7, #112]
+ 2400 121e 1B00     		lsl	r3, r3, #0
+ 2401 1220 FB66     		str	r3, [r7, #108]
+ 2402 1222 0023     		mov	r3, #0
+ 2403 1224 BB66     		str	r3, [r7, #104]
+ 2404 1226 EB23     		mov	r3, #235
+ 2405 1228 9B00     		lsl	r3, r3, #2
+ 2406 122a FB18     		add	r3, r7, r3
+ 2407 122c 1B68     		ldr	r3, [r3]
+ 2408 122e 3B66     		str	r3, [r7, #96]
+ 2409 1230 DB17     		asr	r3, r3, #31
+ 2410 1232 7B66     		str	r3, [r7, #100]
+ 2411 1234 F823     		mov	r3, #248
+ 2412 1236 9B00     		lsl	r3, r3, #2
+ 2413 1238 FB18     		add	r3, r7, r3
+ 2414 123a 1B68     		ldr	r3, [r3]
+ 2415 123c BB65     		str	r3, [r7, #88]
+ 2416 123e DB17     		asr	r3, r3, #31
+ 2417 1240 FB65     		str	r3, [r7, #92]
+ 2418 1242 386E     		ldr	r0, [r7, #96]
+ 2419 1244 796E     		ldr	r1, [r7, #100]
+ 2420 1246 BA6D     		ldr	r2, [r7, #88]
+ 2421 1248 FB6D     		ldr	r3, [r7, #92]
+ 2422 124a FFF7FEFF 		bl	__aeabi_lmul
+ 2423 124e 031C     		mov	r3, r0
+ 2424 1250 0C1C     		mov	r4, r1
+ 2425 1252 B96E     		ldr	r1, [r7, #104]
+ 2426 1254 FA6E     		ldr	r2, [r7, #108]
+ 2427 1256 C918     		add	r1, r1, r3
+ 2428 1258 6241     		adc	r2, r2, r4
+ 2429 125a 8023     		mov	r3, #128
+ 2430 125c 1B06     		lsl	r3, r3, #24
+ 2431 125e 0024     		mov	r4, #0
+ 2432 1260 5B18     		add	r3, r3, r1
+ 2433 1262 5441     		adc	r4, r4, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 48
+
+
+ 2434 1264 2200     		asr	r2, r4, #0
+ 2435 1266 3A65     		str	r2, [r7, #80]
+ 2436 1268 E317     		asr	r3, r4, #31
+ 2437 126a 7B65     		str	r3, [r7, #84]
+ 2438 126c 3B6D     		ldr	r3, [r7, #80]
+ 2439 126e EF22     		mov	r2, #239
+ 2440 1270 9200     		lsl	r2, r2, #2
+ 2441 1272 BA18     		add	r2, r7, r2
+ 2442 1274 1360     		str	r3, [r2]
+ 246:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 247:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a1 * (Yn1))) >> 32);*/
+ 248:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a1, Yn1);
+ 2443              		.loc 1 248 0
+ 2444 1276 EF23     		mov	r3, #239
+ 2445 1278 9B00     		lsl	r3, r3, #2
+ 2446 127a FB18     		add	r3, r7, r3
+ 2447 127c 1B68     		ldr	r3, [r3]
+ 2448 127e BB64     		str	r3, [r7, #72]
+ 2449 1280 DB17     		asr	r3, r3, #31
+ 2450 1282 FB64     		str	r3, [r7, #76]
+ 2451 1284 BB6C     		ldr	r3, [r7, #72]
+ 2452 1286 1B00     		lsl	r3, r3, #0
+ 2453 1288 7B64     		str	r3, [r7, #68]
+ 2454 128a 0023     		mov	r3, #0
+ 2455 128c 3B64     		str	r3, [r7, #64]
+ 2456 128e EA23     		mov	r3, #234
+ 2457 1290 9B00     		lsl	r3, r3, #2
+ 2458 1292 FB18     		add	r3, r7, r3
+ 2459 1294 1B68     		ldr	r3, [r3]
+ 2460 1296 BB63     		str	r3, [r7, #56]
+ 2461 1298 DB17     		asr	r3, r3, #31
+ 2462 129a FB63     		str	r3, [r7, #60]
+ 2463 129c F723     		mov	r3, #247
+ 2464 129e 9B00     		lsl	r3, r3, #2
+ 2465 12a0 FB18     		add	r3, r7, r3
+ 2466 12a2 1B68     		ldr	r3, [r3]
+ 2467 12a4 3B63     		str	r3, [r7, #48]
+ 2468 12a6 DB17     		asr	r3, r3, #31
+ 2469 12a8 7B63     		str	r3, [r7, #52]
+ 2470 12aa B86B     		ldr	r0, [r7, #56]
+ 2471 12ac F96B     		ldr	r1, [r7, #60]
+ 2472 12ae 3A6B     		ldr	r2, [r7, #48]
+ 2473 12b0 7B6B     		ldr	r3, [r7, #52]
+ 2474 12b2 FFF7FEFF 		bl	__aeabi_lmul
+ 2475 12b6 031C     		mov	r3, r0
+ 2476 12b8 0C1C     		mov	r4, r1
+ 2477 12ba 396C     		ldr	r1, [r7, #64]
+ 2478 12bc 7A6C     		ldr	r2, [r7, #68]
+ 2479 12be C918     		add	r1, r1, r3
+ 2480 12c0 6241     		adc	r2, r2, r4
+ 2481 12c2 8023     		mov	r3, #128
+ 2482 12c4 1B06     		lsl	r3, r3, #24
+ 2483 12c6 0024     		mov	r4, #0
+ 2484 12c8 5B18     		add	r3, r3, r1
+ 2485 12ca 5441     		adc	r4, r4, r2
+ 2486 12cc 2200     		asr	r2, r4, #0
+ 2487 12ce BA62     		str	r2, [r7, #40]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 49
+
+
+ 2488 12d0 E317     		asr	r3, r4, #31
+ 2489 12d2 FB62     		str	r3, [r7, #44]
+ 2490 12d4 BB6A     		ldr	r3, [r7, #40]
+ 2491 12d6 EF22     		mov	r2, #239
+ 2492 12d8 9200     		lsl	r2, r2, #2
+ 2493 12da BA18     		add	r2, r7, r2
+ 2494 12dc 1360     		str	r3, [r2]
+ 249:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 250:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /*acc = (q31_t) ((((q63_t) acc << 32) + ((q63_t) a2 * (Yn2))) >> 32);*/
+ 251:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       multAcc_32x32_keep32_R(acc, a2, Yn2);
+ 2495              		.loc 1 251 0
+ 2496 12de EF23     		mov	r3, #239
+ 2497 12e0 9B00     		lsl	r3, r3, #2
+ 2498 12e2 FB18     		add	r3, r7, r3
+ 2499 12e4 1B68     		ldr	r3, [r3]
+ 2500 12e6 3B62     		str	r3, [r7, #32]
+ 2501 12e8 DB17     		asr	r3, r3, #31
+ 2502 12ea 7B62     		str	r3, [r7, #36]
+ 2503 12ec 3B6A     		ldr	r3, [r7, #32]
+ 2504 12ee 1B00     		lsl	r3, r3, #0
+ 2505 12f0 FB61     		str	r3, [r7, #28]
+ 2506 12f2 0023     		mov	r3, #0
+ 2507 12f4 BB61     		str	r3, [r7, #24]
+ 2508 12f6 E923     		mov	r3, #233
+ 2509 12f8 9B00     		lsl	r3, r3, #2
+ 2510 12fa FB18     		add	r3, r7, r3
+ 2511 12fc 1B68     		ldr	r3, [r3]
+ 2512 12fe 3B61     		str	r3, [r7, #16]
+ 2513 1300 DB17     		asr	r3, r3, #31
+ 2514 1302 7B61     		str	r3, [r7, #20]
+ 2515 1304 F623     		mov	r3, #246
+ 2516 1306 9B00     		lsl	r3, r3, #2
+ 2517 1308 FB18     		add	r3, r7, r3
+ 2518 130a 1B68     		ldr	r3, [r3]
+ 2519 130c BB60     		str	r3, [r7, #8]
+ 2520 130e DB17     		asr	r3, r3, #31
+ 2521 1310 FB60     		str	r3, [r7, #12]
+ 2522 1312 3869     		ldr	r0, [r7, #16]
+ 2523 1314 7969     		ldr	r1, [r7, #20]
+ 2524 1316 BA68     		ldr	r2, [r7, #8]
+ 2525 1318 FB68     		ldr	r3, [r7, #12]
+ 2526 131a FFF7FEFF 		bl	__aeabi_lmul
+ 2527 131e 031C     		mov	r3, r0
+ 2528 1320 0C1C     		mov	r4, r1
+ 2529 1322 B969     		ldr	r1, [r7, #24]
+ 2530 1324 FA69     		ldr	r2, [r7, #28]
+ 2531 1326 C918     		add	r1, r1, r3
+ 2532 1328 6241     		adc	r2, r2, r4
+ 2533 132a 8023     		mov	r3, #128
+ 2534 132c 1B06     		lsl	r3, r3, #24
+ 2535 132e 0024     		mov	r4, #0
+ 2536 1330 5B18     		add	r3, r3, r1
+ 2537 1332 5441     		adc	r4, r4, r2
+ 2538 1334 2200     		asr	r2, r4, #0
+ 2539 1336 3A60     		str	r2, [r7]
+ 2540 1338 E317     		asr	r3, r4, #31
+ 2541 133a 7B60     		str	r3, [r7, #4]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 50
+
+
+ 2542 133c 3B68     		ldr	r3, [r7]
+ 2543 133e EF22     		mov	r2, #239
+ 2544 1340 9200     		lsl	r2, r2, #2
+ 2545 1342 BA18     		add	r2, r7, r2
+ 2546 1344 1360     		str	r3, [r2]
+ 252:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 253:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* The result is converted to 1.31  */
+ 254:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       acc = acc << shift;
+ 2547              		.loc 1 254 0
+ 2548 1346 EF23     		mov	r3, #239
+ 2549 1348 9B00     		lsl	r3, r3, #2
+ 2550 134a FB18     		add	r3, r7, r3
+ 2551 134c 1A68     		ldr	r2, [r3]
+ 2552 134e EE23     		mov	r3, #238
+ 2553 1350 9B00     		lsl	r3, r3, #2
+ 2554 1352 FB18     		add	r3, r7, r3
+ 2555 1354 1B68     		ldr	r3, [r3]
+ 2556 1356 9A40     		lsl	r2, r2, r3
+ 2557 1358 131C     		mov	r3, r2
+ 2558 135a EF22     		mov	r2, #239
+ 2559 135c 9200     		lsl	r2, r2, #2
+ 2560 135e BA18     		add	r2, r7, r2
+ 2561 1360 1360     		str	r3, [r2]
+ 255:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 256:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Every time after the output is computed state should be updated. */
+ 257:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* The states should be updated as:  */
+ 258:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Xn2 = Xn1    */
+ 259:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Xn1 = Xn     */
+ 260:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Yn2 = Yn1    */
+ 261:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Yn1 = acc    */
+ 262:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn2 = Xn1;
+ 2562              		.loc 1 262 0
+ 2563 1362 F923     		mov	r3, #249
+ 2564 1364 9B00     		lsl	r3, r3, #2
+ 2565 1366 FB18     		add	r3, r7, r3
+ 2566 1368 1B68     		ldr	r3, [r3]
+ 2567 136a F822     		mov	r2, #248
+ 2568 136c 9200     		lsl	r2, r2, #2
+ 2569 136e BA18     		add	r2, r7, r2
+ 2570 1370 1360     		str	r3, [r2]
+ 263:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Xn1 = Xn;
+ 2571              		.loc 1 263 0
+ 2572 1372 E823     		mov	r3, #232
+ 2573 1374 9B00     		lsl	r3, r3, #2
+ 2574 1376 FB18     		add	r3, r7, r3
+ 2575 1378 1B68     		ldr	r3, [r3]
+ 2576 137a F922     		mov	r2, #249
+ 2577 137c 9200     		lsl	r2, r2, #2
+ 2578 137e BA18     		add	r2, r7, r2
+ 2579 1380 1360     		str	r3, [r2]
+ 264:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Yn2 = Yn1;
+ 2580              		.loc 1 264 0
+ 2581 1382 F723     		mov	r3, #247
+ 2582 1384 9B00     		lsl	r3, r3, #2
+ 2583 1386 FB18     		add	r3, r7, r3
+ 2584 1388 1B68     		ldr	r3, [r3]
+ 2585 138a F622     		mov	r2, #246
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 51
+
+
+ 2586 138c 9200     		lsl	r2, r2, #2
+ 2587 138e BA18     		add	r2, r7, r2
+ 2588 1390 1360     		str	r3, [r2]
+ 265:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       Yn1 = acc;
+ 2589              		.loc 1 265 0
+ 2590 1392 EF23     		mov	r3, #239
+ 2591 1394 9B00     		lsl	r3, r3, #2
+ 2592 1396 FB18     		add	r3, r7, r3
+ 2593 1398 1B68     		ldr	r3, [r3]
+ 2594 139a F722     		mov	r2, #247
+ 2595 139c 9200     		lsl	r2, r2, #2
+ 2596 139e BA18     		add	r2, r7, r2
+ 2597 13a0 1360     		str	r3, [r2]
+ 266:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 267:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* Store the output in the destination buffer. */
+ 268:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       *pOut++ = acc;
+ 2598              		.loc 1 268 0
+ 2599 13a2 F423     		mov	r3, #244
+ 2600 13a4 9B00     		lsl	r3, r3, #2
+ 2601 13a6 FB18     		add	r3, r7, r3
+ 2602 13a8 1A68     		ldr	r2, [r3]
+ 2603 13aa 131D     		add	r3, r2, #4
+ 2604 13ac F421     		mov	r1, #244
+ 2605 13ae 8900     		lsl	r1, r1, #2
+ 2606 13b0 7918     		add	r1, r7, r1
+ 2607 13b2 0B60     		str	r3, [r1]
+ 2608 13b4 EF23     		mov	r3, #239
+ 2609 13b6 9B00     		lsl	r3, r3, #2
+ 2610 13b8 FB18     		add	r3, r7, r3
+ 2611 13ba 1B68     		ldr	r3, [r3]
+ 2612 13bc 1360     		str	r3, [r2]
+ 269:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 270:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       /* decrement the loop counter */
+ 271:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****       sample--;
+ 2613              		.loc 1 271 0
+ 2614 13be F123     		mov	r3, #241
+ 2615 13c0 9B00     		lsl	r3, r3, #2
+ 2616 13c2 FB18     		add	r3, r7, r3
+ 2617 13c4 1B68     		ldr	r3, [r3]
+ 2618 13c6 013B     		sub	r3, r3, #1
+ 2619 13c8 F122     		mov	r2, #241
+ 2620 13ca 9200     		lsl	r2, r2, #2
+ 2621 13cc BA18     		add	r2, r7, r2
+ 2622 13ce 1360     		str	r3, [r2]
+ 2623              	.L4:
+ 231:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****    {
+ 2624              		.loc 1 231 0
+ 2625 13d0 F123     		mov	r3, #241
+ 2626 13d2 9B00     		lsl	r3, r3, #2
+ 2627 13d4 FB18     		add	r3, r7, r3
+ 2628 13d6 1B68     		ldr	r3, [r3]
+ 2629 13d8 002B     		cmp	r3, #0
+ 2630 13da 00D0     		beq	.LCB2426
+ 2631 13dc 85E6     		b	.L5	@long jump
+ 2632              	.LCB2426:
+ 272:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****    }
+ 273:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 52
+
+
+ 274:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /*  The first stage goes from the input buffer to the output buffer. */
+ 275:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /*  Subsequent stages occur in-place in the output buffer */
+ 276:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     pIn = pDst;
+ 2633              		.loc 1 276 0
+ 2634 13de E523     		mov	r3, #229
+ 2635 13e0 9B00     		lsl	r3, r3, #2
+ 2636 13e2 FB18     		add	r3, r7, r3
+ 2637 13e4 1B68     		ldr	r3, [r3]
+ 2638 13e6 F522     		mov	r2, #245
+ 2639 13e8 9200     		lsl	r2, r2, #2
+ 2640 13ea BA18     		add	r2, r7, r2
+ 2641 13ec 1360     		str	r3, [r2]
+ 277:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 278:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /* Reset to destination pointer */
+ 279:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     pOut = pDst;
+ 2642              		.loc 1 279 0
+ 2643 13ee E523     		mov	r3, #229
+ 2644 13f0 9B00     		lsl	r3, r3, #2
+ 2645 13f2 FB18     		add	r3, r7, r3
+ 2646 13f4 1B68     		ldr	r3, [r3]
+ 2647 13f6 F422     		mov	r2, #244
+ 2648 13f8 9200     		lsl	r2, r2, #2
+ 2649 13fa BA18     		add	r2, r7, r2
+ 2650 13fc 1360     		str	r3, [r2]
+ 280:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 281:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     /*  Store the updated state variables back into the pState array */
+ 282:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     *pState++ = Xn1;
+ 2651              		.loc 1 282 0
+ 2652 13fe F323     		mov	r3, #243
+ 2653 1400 9B00     		lsl	r3, r3, #2
+ 2654 1402 FB18     		add	r3, r7, r3
+ 2655 1404 1A68     		ldr	r2, [r3]
+ 2656 1406 131D     		add	r3, r2, #4
+ 2657 1408 F321     		mov	r1, #243
+ 2658 140a 8900     		lsl	r1, r1, #2
+ 2659 140c 7918     		add	r1, r7, r1
+ 2660 140e 0B60     		str	r3, [r1]
+ 2661 1410 F923     		mov	r3, #249
+ 2662 1412 9B00     		lsl	r3, r3, #2
+ 2663 1414 FB18     		add	r3, r7, r3
+ 2664 1416 1B68     		ldr	r3, [r3]
+ 2665 1418 1360     		str	r3, [r2]
+ 283:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     *pState++ = Xn2;
+ 2666              		.loc 1 283 0
+ 2667 141a F323     		mov	r3, #243
+ 2668 141c 9B00     		lsl	r3, r3, #2
+ 2669 141e FB18     		add	r3, r7, r3
+ 2670 1420 1A68     		ldr	r2, [r3]
+ 2671 1422 131D     		add	r3, r2, #4
+ 2672 1424 F321     		mov	r1, #243
+ 2673 1426 8900     		lsl	r1, r1, #2
+ 2674 1428 7918     		add	r1, r7, r1
+ 2675 142a 0B60     		str	r3, [r1]
+ 2676 142c F823     		mov	r3, #248
+ 2677 142e 9B00     		lsl	r3, r3, #2
+ 2678 1430 FB18     		add	r3, r7, r3
+ 2679 1432 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 53
+
+
+ 2680 1434 1360     		str	r3, [r2]
+ 284:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     *pState++ = Yn1;
+ 2681              		.loc 1 284 0
+ 2682 1436 F323     		mov	r3, #243
+ 2683 1438 9B00     		lsl	r3, r3, #2
+ 2684 143a FB18     		add	r3, r7, r3
+ 2685 143c 1A68     		ldr	r2, [r3]
+ 2686 143e 131D     		add	r3, r2, #4
+ 2687 1440 F321     		mov	r1, #243
+ 2688 1442 8900     		lsl	r1, r1, #2
+ 2689 1444 7918     		add	r1, r7, r1
+ 2690 1446 0B60     		str	r3, [r1]
+ 2691 1448 F723     		mov	r3, #247
+ 2692 144a 9B00     		lsl	r3, r3, #2
+ 2693 144c FB18     		add	r3, r7, r3
+ 2694 144e 1B68     		ldr	r3, [r3]
+ 2695 1450 1360     		str	r3, [r2]
+ 285:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****     *pState++ = Yn2;
+ 2696              		.loc 1 285 0
+ 2697 1452 F323     		mov	r3, #243
+ 2698 1454 9B00     		lsl	r3, r3, #2
+ 2699 1456 FB18     		add	r3, r7, r3
+ 2700 1458 1A68     		ldr	r2, [r3]
+ 2701 145a 131D     		add	r3, r2, #4
+ 2702 145c F321     		mov	r1, #243
+ 2703 145e 8900     		lsl	r1, r1, #2
+ 2704 1460 7918     		add	r1, r7, r1
+ 2705 1462 0B60     		str	r3, [r1]
+ 2706 1464 F623     		mov	r3, #246
+ 2707 1466 9B00     		lsl	r3, r3, #2
+ 2708 1468 FB18     		add	r3, r7, r3
+ 2709 146a 1B68     		ldr	r3, [r3]
+ 2710 146c 1360     		str	r3, [r2]
+ 286:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** 
+ 287:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c ****   } while (--stage);
+ 2711              		.loc 1 287 0
+ 2712 146e F023     		mov	r3, #240
+ 2713 1470 9B00     		lsl	r3, r3, #2
+ 2714 1472 FB18     		add	r3, r7, r3
+ 2715 1474 1B68     		ldr	r3, [r3]
+ 2716 1476 013B     		sub	r3, r3, #1
+ 2717 1478 F022     		mov	r2, #240
+ 2718 147a 9200     		lsl	r2, r2, #2
+ 2719 147c BA18     		add	r2, r7, r2
+ 2720 147e 1360     		str	r3, [r2]
+ 2721 1480 F023     		mov	r3, #240
+ 2722 1482 9B00     		lsl	r3, r3, #2
+ 2723 1484 FB18     		add	r3, r7, r3
+ 2724 1486 1B68     		ldr	r3, [r3]
+ 2725 1488 002B     		cmp	r3, #0
+ 2726 148a 01D0     		beq	.LCB2513
+ 2727 148c FEF706FE 		bl	.L6	@far jump
+ 2728              	.LCB2513:
+ 288:Source\FilteringFunctions/arm_biquad_cascade_df1_fast_q31.c **** }
+ 2729              		.loc 1 288 0
+ 2730 1490 BD46     		mov	sp, r7
+ 2731 1492 FB23     		mov	r3, #251
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 54
+
+
+ 2732 1494 9B00     		lsl	r3, r3, #2
+ 2733 1496 9D44     		add	sp, sp, r3
+ 2734              		@ sp needed
+ 2735 1498 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 2736              		.cfi_endproc
+ 2737              	.LFE82:
+ 2738              		.size	arm_biquad_cascade_df1_fast_q31, .-arm_biquad_cascade_df1_fast_q31
+ 2739 149a C046     		.text
+ 2740              	.Letext0:
+ 2741              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 2742              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 2743              		.file 4 ".\\Include/arm_math.h"
+ 2744              		.section	.debug_info,"",%progbits
+ 2745              	.Ldebug_info0:
+ 2746 0000 A4020000 		.4byte	0x2a4
+ 2747 0004 0400     		.2byte	0x4
+ 2748 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 2749 000a 04       		.byte	0x4
+ 2750 000b 01       		.uleb128 0x1
+ 2751 000c 9C010000 		.4byte	.LASF36
+ 2752 0010 01       		.byte	0x1
+ 2753 0011 35000000 		.4byte	.LASF37
+ 2754 0015 8A000000 		.4byte	.LASF38
+ 2755 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 2756 001d 00000000 		.4byte	0
+ 2757 0021 00000000 		.4byte	.Ldebug_line0
+ 2758 0025 02       		.uleb128 0x2
+ 2759 0026 01       		.byte	0x1
+ 2760 0027 06       		.byte	0x6
+ 2761 0028 86020000 		.4byte	.LASF0
+ 2762 002c 03       		.uleb128 0x3
+ 2763 002d 2B000000 		.4byte	.LASF4
+ 2764 0031 02       		.byte	0x2
+ 2765 0032 1D       		.byte	0x1d
+ 2766 0033 37000000 		.4byte	0x37
+ 2767 0037 02       		.uleb128 0x2
+ 2768 0038 01       		.byte	0x1
+ 2769 0039 08       		.byte	0x8
+ 2770 003a FA000000 		.4byte	.LASF1
+ 2771 003e 02       		.uleb128 0x2
+ 2772 003f 02       		.byte	0x2
+ 2773 0040 05       		.byte	0x5
+ 2774 0041 58020000 		.4byte	.LASF2
+ 2775 0045 02       		.uleb128 0x2
+ 2776 0046 02       		.byte	0x2
+ 2777 0047 07       		.byte	0x7
+ 2778 0048 1A010000 		.4byte	.LASF3
+ 2779 004c 03       		.uleb128 0x3
+ 2780 004d 77000000 		.4byte	.LASF5
+ 2781 0051 02       		.byte	0x2
+ 2782 0052 3F       		.byte	0x3f
+ 2783 0053 57000000 		.4byte	0x57
+ 2784 0057 02       		.uleb128 0x2
+ 2785 0058 04       		.byte	0x4
+ 2786 0059 05       		.byte	0x5
+ 2787 005a 81000000 		.4byte	.LASF6
+ 2788 005e 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 55
+
+
+ 2789 005f 6D010000 		.4byte	.LASF7
+ 2790 0063 02       		.byte	0x2
+ 2791 0064 41       		.byte	0x41
+ 2792 0065 69000000 		.4byte	0x69
+ 2793 0069 02       		.uleb128 0x2
+ 2794 006a 04       		.byte	0x4
+ 2795 006b 07       		.byte	0x7
+ 2796 006c 08010000 		.4byte	.LASF8
+ 2797 0070 03       		.uleb128 0x3
+ 2798 0071 43010000 		.4byte	.LASF9
+ 2799 0075 02       		.byte	0x2
+ 2800 0076 59       		.byte	0x59
+ 2801 0077 7B000000 		.4byte	0x7b
+ 2802 007b 02       		.uleb128 0x2
+ 2803 007c 08       		.byte	0x8
+ 2804 007d 05       		.byte	0x5
+ 2805 007e 45020000 		.4byte	.LASF10
+ 2806 0082 02       		.uleb128 0x2
+ 2807 0083 08       		.byte	0x8
+ 2808 0084 07       		.byte	0x7
+ 2809 0085 85010000 		.4byte	.LASF11
+ 2810 0089 04       		.uleb128 0x4
+ 2811 008a 04       		.byte	0x4
+ 2812 008b 05       		.byte	0x5
+ 2813 008c 696E7400 		.ascii	"int\000"
+ 2814 0090 02       		.uleb128 0x2
+ 2815 0091 04       		.byte	0x4
+ 2816 0092 07       		.byte	0x7
+ 2817 0093 78010000 		.4byte	.LASF12
+ 2818 0097 03       		.uleb128 0x3
+ 2819 0098 D0000000 		.4byte	.LASF13
+ 2820 009c 03       		.byte	0x3
+ 2821 009d 15       		.byte	0x15
+ 2822 009e 2C000000 		.4byte	0x2c
+ 2823 00a2 03       		.uleb128 0x3
+ 2824 00a3 34020000 		.4byte	.LASF14
+ 2825 00a7 03       		.byte	0x3
+ 2826 00a8 2C       		.byte	0x2c
+ 2827 00a9 4C000000 		.4byte	0x4c
+ 2828 00ad 03       		.uleb128 0x3
+ 2829 00ae 6A020000 		.4byte	.LASF15
+ 2830 00b2 03       		.byte	0x3
+ 2831 00b3 2D       		.byte	0x2d
+ 2832 00b4 5E000000 		.4byte	0x5e
+ 2833 00b8 03       		.uleb128 0x3
+ 2834 00b9 1D000000 		.4byte	.LASF16
+ 2835 00bd 03       		.byte	0x3
+ 2836 00be 38       		.byte	0x38
+ 2837 00bf 70000000 		.4byte	0x70
+ 2838 00c3 02       		.uleb128 0x2
+ 2839 00c4 04       		.byte	0x4
+ 2840 00c5 07       		.byte	0x7
+ 2841 00c6 3C020000 		.4byte	.LASF17
+ 2842 00ca 02       		.uleb128 0x2
+ 2843 00cb 01       		.byte	0x1
+ 2844 00cc 08       		.byte	0x8
+ 2845 00cd 53020000 		.4byte	.LASF18
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 56
+
+
+ 2846 00d1 02       		.uleb128 0x2
+ 2847 00d2 08       		.byte	0x8
+ 2848 00d3 04       		.byte	0x4
+ 2849 00d4 D8000000 		.4byte	.LASF19
+ 2850 00d8 02       		.uleb128 0x2
+ 2851 00d9 04       		.byte	0x4
+ 2852 00da 04       		.byte	0x4
+ 2853 00db 71000000 		.4byte	.LASF20
+ 2854 00df 02       		.uleb128 0x2
+ 2855 00e0 08       		.byte	0x8
+ 2856 00e1 04       		.byte	0x4
+ 2857 00e2 7A020000 		.4byte	.LASF21
+ 2858 00e6 05       		.uleb128 0x5
+ 2859 00e7 F4000000 		.4byte	.LASF22
+ 2860 00eb 04       		.byte	0x4
+ 2861 00ec 9B01     		.2byte	0x19b
+ 2862 00ee A2000000 		.4byte	0xa2
+ 2863 00f2 05       		.uleb128 0x5
+ 2864 00f3 2E020000 		.4byte	.LASF23
+ 2865 00f7 04       		.byte	0x4
+ 2866 00f8 A001     		.2byte	0x1a0
+ 2867 00fa B8000000 		.4byte	0xb8
+ 2868 00fe 06       		.uleb128 0x6
+ 2869 00ff 04       		.byte	0x4
+ 2870 0100 E6000000 		.4byte	0xe6
+ 2871 0104 07       		.uleb128 0x7
+ 2872 0105 10       		.byte	0x10
+ 2873 0106 04       		.byte	0x4
+ 2874 0107 1005     		.2byte	0x510
+ 2875 0109 42010000 		.4byte	0x142
+ 2876 010d 08       		.uleb128 0x8
+ 2877 010e 97020000 		.4byte	.LASF24
+ 2878 0112 04       		.byte	0x4
+ 2879 0113 1205     		.2byte	0x512
+ 2880 0115 AD000000 		.4byte	0xad
+ 2881 0119 00       		.byte	0
+ 2882 011a 08       		.uleb128 0x8
+ 2883 011b 3C010000 		.4byte	.LASF25
+ 2884 011f 04       		.byte	0x4
+ 2885 0120 1305     		.2byte	0x513
+ 2886 0122 FE000000 		.4byte	0xfe
+ 2887 0126 04       		.byte	0x4
+ 2888 0127 08       		.uleb128 0x8
+ 2889 0128 62020000 		.4byte	.LASF26
+ 2890 012c 04       		.byte	0x4
+ 2891 012d 1405     		.2byte	0x514
+ 2892 012f FE000000 		.4byte	0xfe
+ 2893 0133 08       		.byte	0x8
+ 2894 0134 08       		.uleb128 0x8
+ 2895 0135 32010000 		.4byte	.LASF27
+ 2896 0139 04       		.byte	0x4
+ 2897 013a 1505     		.2byte	0x515
+ 2898 013c 97000000 		.4byte	0x97
+ 2899 0140 0C       		.byte	0xc
+ 2900 0141 00       		.byte	0
+ 2901 0142 05       		.uleb128 0x5
+ 2902 0143 00000000 		.4byte	.LASF28
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 57
+
+
+ 2903 0147 04       		.byte	0x4
+ 2904 0148 1605     		.2byte	0x516
+ 2905 014a 04010000 		.4byte	0x104
+ 2906 014e 09       		.uleb128 0x9
+ 2907 014f 4D010000 		.4byte	.LASF39
+ 2908 0153 01       		.byte	0x1
+ 2909 0154 40       		.byte	0x40
+ 2910 0155 00000000 		.4byte	.LFB82
+ 2911 0159 9A140000 		.4byte	.LFE82-.LFB82
+ 2912 015d 01       		.uleb128 0x1
+ 2913 015e 9C       		.byte	0x9c
+ 2914 015f 9C020000 		.4byte	0x29c
+ 2915 0163 0A       		.uleb128 0xa
+ 2916 0164 5300     		.ascii	"S\000"
+ 2917 0166 01       		.byte	0x1
+ 2918 0167 41       		.byte	0x41
+ 2919 0168 9C020000 		.4byte	0x29c
+ 2920 016c 03       		.uleb128 0x3
+ 2921 016d 91       		.byte	0x91
+ 2922 016e 9C7F     		.sleb128 -100
+ 2923 0170 0B       		.uleb128 0xb
+ 2924 0171 92020000 		.4byte	.LASF29
+ 2925 0175 01       		.byte	0x1
+ 2926 0176 42       		.byte	0x42
+ 2927 0177 FE000000 		.4byte	0xfe
+ 2928 017b 03       		.uleb128 0x3
+ 2929 017c 91       		.byte	0x91
+ 2930 017d 987F     		.sleb128 -104
+ 2931 017f 0B       		.uleb128 0xb
+ 2932 0180 2D010000 		.4byte	.LASF30
+ 2933 0184 01       		.byte	0x1
+ 2934 0185 43       		.byte	0x43
+ 2935 0186 FE000000 		.4byte	0xfe
+ 2936 018a 03       		.uleb128 0x3
+ 2937 018b 91       		.byte	0x91
+ 2938 018c 947F     		.sleb128 -108
+ 2939 018e 0B       		.uleb128 0xb
+ 2940 018f EA000000 		.4byte	.LASF31
+ 2941 0193 01       		.byte	0x1
+ 2942 0194 44       		.byte	0x44
+ 2943 0195 AD000000 		.4byte	0xad
+ 2944 0199 03       		.uleb128 0x3
+ 2945 019a 91       		.byte	0x91
+ 2946 019b 907F     		.sleb128 -112
+ 2947 019d 0C       		.uleb128 0xc
+ 2948 019e 61636300 		.ascii	"acc\000"
+ 2949 01a2 01       		.byte	0x1
+ 2950 01a3 46       		.byte	0x46
+ 2951 01a4 E6000000 		.4byte	0xe6
+ 2952 01a8 03       		.uleb128 0x3
+ 2953 01a9 91       		.byte	0x91
+ 2954 01aa BC7F     		.sleb128 -68
+ 2955 01ac 0C       		.uleb128 0xc
+ 2956 01ad 586E3100 		.ascii	"Xn1\000"
+ 2957 01b1 01       		.byte	0x1
+ 2958 01b2 47       		.byte	0x47
+ 2959 01b3 E6000000 		.4byte	0xe6
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 58
+
+
+ 2960 01b7 02       		.uleb128 0x2
+ 2961 01b8 91       		.byte	0x91
+ 2962 01b9 64       		.sleb128 -28
+ 2963 01ba 0C       		.uleb128 0xc
+ 2964 01bb 586E3200 		.ascii	"Xn2\000"
+ 2965 01bf 01       		.byte	0x1
+ 2966 01c0 47       		.byte	0x47
+ 2967 01c1 E6000000 		.4byte	0xe6
+ 2968 01c5 02       		.uleb128 0x2
+ 2969 01c6 91       		.byte	0x91
+ 2970 01c7 60       		.sleb128 -32
+ 2971 01c8 0C       		.uleb128 0xc
+ 2972 01c9 596E3100 		.ascii	"Yn1\000"
+ 2973 01cd 01       		.byte	0x1
+ 2974 01ce 47       		.byte	0x47
+ 2975 01cf E6000000 		.4byte	0xe6
+ 2976 01d3 02       		.uleb128 0x2
+ 2977 01d4 91       		.byte	0x91
+ 2978 01d5 5C       		.sleb128 -36
+ 2979 01d6 0C       		.uleb128 0xc
+ 2980 01d7 596E3200 		.ascii	"Yn2\000"
+ 2981 01db 01       		.byte	0x1
+ 2982 01dc 47       		.byte	0x47
+ 2983 01dd E6000000 		.4byte	0xe6
+ 2984 01e1 02       		.uleb128 0x2
+ 2985 01e2 91       		.byte	0x91
+ 2986 01e3 58       		.sleb128 -40
+ 2987 01e4 0C       		.uleb128 0xc
+ 2988 01e5 623000   		.ascii	"b0\000"
+ 2989 01e8 01       		.byte	0x1
+ 2990 01e9 48       		.byte	0x48
+ 2991 01ea E6000000 		.4byte	0xe6
+ 2992 01ee 03       		.uleb128 0x3
+ 2993 01ef 91       		.byte	0x91
+ 2994 01f0 B47F     		.sleb128 -76
+ 2995 01f2 0C       		.uleb128 0xc
+ 2996 01f3 623100   		.ascii	"b1\000"
+ 2997 01f6 01       		.byte	0x1
+ 2998 01f7 48       		.byte	0x48
+ 2999 01f8 E6000000 		.4byte	0xe6
+ 3000 01fc 03       		.uleb128 0x3
+ 3001 01fd 91       		.byte	0x91
+ 3002 01fe B07F     		.sleb128 -80
+ 3003 0200 0C       		.uleb128 0xc
+ 3004 0201 623200   		.ascii	"b2\000"
+ 3005 0204 01       		.byte	0x1
+ 3006 0205 48       		.byte	0x48
+ 3007 0206 E6000000 		.4byte	0xe6
+ 3008 020a 03       		.uleb128 0x3
+ 3009 020b 91       		.byte	0x91
+ 3010 020c AC7F     		.sleb128 -84
+ 3011 020e 0C       		.uleb128 0xc
+ 3012 020f 613100   		.ascii	"a1\000"
+ 3013 0212 01       		.byte	0x1
+ 3014 0213 48       		.byte	0x48
+ 3015 0214 E6000000 		.4byte	0xe6
+ 3016 0218 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 59
+
+
+ 3017 0219 91       		.byte	0x91
+ 3018 021a A87F     		.sleb128 -88
+ 3019 021c 0C       		.uleb128 0xc
+ 3020 021d 613200   		.ascii	"a2\000"
+ 3021 0220 01       		.byte	0x1
+ 3022 0221 48       		.byte	0x48
+ 3023 0222 E6000000 		.4byte	0xe6
+ 3024 0226 03       		.uleb128 0x3
+ 3025 0227 91       		.byte	0x91
+ 3026 0228 A47F     		.sleb128 -92
+ 3027 022a 0C       		.uleb128 0xc
+ 3028 022b 70496E00 		.ascii	"pIn\000"
+ 3029 022f 01       		.byte	0x1
+ 3030 0230 49       		.byte	0x49
+ 3031 0231 FE000000 		.4byte	0xfe
+ 3032 0235 02       		.uleb128 0x2
+ 3033 0236 91       		.byte	0x91
+ 3034 0237 54       		.sleb128 -44
+ 3035 0238 0D       		.uleb128 0xd
+ 3036 0239 E5000000 		.4byte	.LASF32
+ 3037 023d 01       		.byte	0x1
+ 3038 023e 4A       		.byte	0x4a
+ 3039 023f FE000000 		.4byte	0xfe
+ 3040 0243 02       		.uleb128 0x2
+ 3041 0244 91       		.byte	0x91
+ 3042 0245 50       		.sleb128 -48
+ 3043 0246 0D       		.uleb128 0xd
+ 3044 0247 3C010000 		.4byte	.LASF25
+ 3045 024b 01       		.byte	0x1
+ 3046 024c 4B       		.byte	0x4b
+ 3047 024d FE000000 		.4byte	0xfe
+ 3048 0251 02       		.uleb128 0x2
+ 3049 0252 91       		.byte	0x91
+ 3050 0253 4C       		.sleb128 -52
+ 3051 0254 0D       		.uleb128 0xd
+ 3052 0255 62020000 		.4byte	.LASF26
+ 3053 0259 01       		.byte	0x1
+ 3054 025a 4C       		.byte	0x4c
+ 3055 025b FE000000 		.4byte	0xfe
+ 3056 025f 02       		.uleb128 0x2
+ 3057 0260 91       		.byte	0x91
+ 3058 0261 48       		.sleb128 -56
+ 3059 0262 0C       		.uleb128 0xc
+ 3060 0263 586E00   		.ascii	"Xn\000"
+ 3061 0266 01       		.byte	0x1
+ 3062 0267 4D       		.byte	0x4d
+ 3063 0268 E6000000 		.4byte	0xe6
+ 3064 026c 03       		.uleb128 0x3
+ 3065 026d 91       		.byte	0x91
+ 3066 026e A07F     		.sleb128 -96
+ 3067 0270 0D       		.uleb128 0xd
+ 3068 0271 25000000 		.4byte	.LASF33
+ 3069 0275 01       		.byte	0x1
+ 3070 0276 4E       		.byte	0x4e
+ 3071 0277 A2000000 		.4byte	0xa2
+ 3072 027b 03       		.uleb128 0x3
+ 3073 027c 91       		.byte	0x91
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 60
+
+
+ 3074 027d B87F     		.sleb128 -72
+ 3075 027f 0D       		.uleb128 0xd
+ 3076 0280 73020000 		.4byte	.LASF34
+ 3077 0284 01       		.byte	0x1
+ 3078 0285 4F       		.byte	0x4f
+ 3079 0286 AD000000 		.4byte	0xad
+ 3080 028a 02       		.uleb128 0x2
+ 3081 028b 91       		.byte	0x91
+ 3082 028c 44       		.sleb128 -60
+ 3083 028d 0D       		.uleb128 0xd
+ 3084 028e DF000000 		.4byte	.LASF35
+ 3085 0292 01       		.byte	0x1
+ 3086 0293 4F       		.byte	0x4f
+ 3087 0294 AD000000 		.4byte	0xad
+ 3088 0298 02       		.uleb128 0x2
+ 3089 0299 91       		.byte	0x91
+ 3090 029a 40       		.sleb128 -64
+ 3091 029b 00       		.byte	0
+ 3092 029c 06       		.uleb128 0x6
+ 3093 029d 04       		.byte	0x4
+ 3094 029e A2020000 		.4byte	0x2a2
+ 3095 02a2 0E       		.uleb128 0xe
+ 3096 02a3 42010000 		.4byte	0x142
+ 3097 02a7 00       		.byte	0
+ 3098              		.section	.debug_abbrev,"",%progbits
+ 3099              	.Ldebug_abbrev0:
+ 3100 0000 01       		.uleb128 0x1
+ 3101 0001 11       		.uleb128 0x11
+ 3102 0002 01       		.byte	0x1
+ 3103 0003 25       		.uleb128 0x25
+ 3104 0004 0E       		.uleb128 0xe
+ 3105 0005 13       		.uleb128 0x13
+ 3106 0006 0B       		.uleb128 0xb
+ 3107 0007 03       		.uleb128 0x3
+ 3108 0008 0E       		.uleb128 0xe
+ 3109 0009 1B       		.uleb128 0x1b
+ 3110 000a 0E       		.uleb128 0xe
+ 3111 000b 55       		.uleb128 0x55
+ 3112 000c 17       		.uleb128 0x17
+ 3113 000d 11       		.uleb128 0x11
+ 3114 000e 01       		.uleb128 0x1
+ 3115 000f 10       		.uleb128 0x10
+ 3116 0010 17       		.uleb128 0x17
+ 3117 0011 00       		.byte	0
+ 3118 0012 00       		.byte	0
+ 3119 0013 02       		.uleb128 0x2
+ 3120 0014 24       		.uleb128 0x24
+ 3121 0015 00       		.byte	0
+ 3122 0016 0B       		.uleb128 0xb
+ 3123 0017 0B       		.uleb128 0xb
+ 3124 0018 3E       		.uleb128 0x3e
+ 3125 0019 0B       		.uleb128 0xb
+ 3126 001a 03       		.uleb128 0x3
+ 3127 001b 0E       		.uleb128 0xe
+ 3128 001c 00       		.byte	0
+ 3129 001d 00       		.byte	0
+ 3130 001e 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 61
+
+
+ 3131 001f 16       		.uleb128 0x16
+ 3132 0020 00       		.byte	0
+ 3133 0021 03       		.uleb128 0x3
+ 3134 0022 0E       		.uleb128 0xe
+ 3135 0023 3A       		.uleb128 0x3a
+ 3136 0024 0B       		.uleb128 0xb
+ 3137 0025 3B       		.uleb128 0x3b
+ 3138 0026 0B       		.uleb128 0xb
+ 3139 0027 49       		.uleb128 0x49
+ 3140 0028 13       		.uleb128 0x13
+ 3141 0029 00       		.byte	0
+ 3142 002a 00       		.byte	0
+ 3143 002b 04       		.uleb128 0x4
+ 3144 002c 24       		.uleb128 0x24
+ 3145 002d 00       		.byte	0
+ 3146 002e 0B       		.uleb128 0xb
+ 3147 002f 0B       		.uleb128 0xb
+ 3148 0030 3E       		.uleb128 0x3e
+ 3149 0031 0B       		.uleb128 0xb
+ 3150 0032 03       		.uleb128 0x3
+ 3151 0033 08       		.uleb128 0x8
+ 3152 0034 00       		.byte	0
+ 3153 0035 00       		.byte	0
+ 3154 0036 05       		.uleb128 0x5
+ 3155 0037 16       		.uleb128 0x16
+ 3156 0038 00       		.byte	0
+ 3157 0039 03       		.uleb128 0x3
+ 3158 003a 0E       		.uleb128 0xe
+ 3159 003b 3A       		.uleb128 0x3a
+ 3160 003c 0B       		.uleb128 0xb
+ 3161 003d 3B       		.uleb128 0x3b
+ 3162 003e 05       		.uleb128 0x5
+ 3163 003f 49       		.uleb128 0x49
+ 3164 0040 13       		.uleb128 0x13
+ 3165 0041 00       		.byte	0
+ 3166 0042 00       		.byte	0
+ 3167 0043 06       		.uleb128 0x6
+ 3168 0044 0F       		.uleb128 0xf
+ 3169 0045 00       		.byte	0
+ 3170 0046 0B       		.uleb128 0xb
+ 3171 0047 0B       		.uleb128 0xb
+ 3172 0048 49       		.uleb128 0x49
+ 3173 0049 13       		.uleb128 0x13
+ 3174 004a 00       		.byte	0
+ 3175 004b 00       		.byte	0
+ 3176 004c 07       		.uleb128 0x7
+ 3177 004d 13       		.uleb128 0x13
+ 3178 004e 01       		.byte	0x1
+ 3179 004f 0B       		.uleb128 0xb
+ 3180 0050 0B       		.uleb128 0xb
+ 3181 0051 3A       		.uleb128 0x3a
+ 3182 0052 0B       		.uleb128 0xb
+ 3183 0053 3B       		.uleb128 0x3b
+ 3184 0054 05       		.uleb128 0x5
+ 3185 0055 01       		.uleb128 0x1
+ 3186 0056 13       		.uleb128 0x13
+ 3187 0057 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 62
+
+
+ 3188 0058 00       		.byte	0
+ 3189 0059 08       		.uleb128 0x8
+ 3190 005a 0D       		.uleb128 0xd
+ 3191 005b 00       		.byte	0
+ 3192 005c 03       		.uleb128 0x3
+ 3193 005d 0E       		.uleb128 0xe
+ 3194 005e 3A       		.uleb128 0x3a
+ 3195 005f 0B       		.uleb128 0xb
+ 3196 0060 3B       		.uleb128 0x3b
+ 3197 0061 05       		.uleb128 0x5
+ 3198 0062 49       		.uleb128 0x49
+ 3199 0063 13       		.uleb128 0x13
+ 3200 0064 38       		.uleb128 0x38
+ 3201 0065 0B       		.uleb128 0xb
+ 3202 0066 00       		.byte	0
+ 3203 0067 00       		.byte	0
+ 3204 0068 09       		.uleb128 0x9
+ 3205 0069 2E       		.uleb128 0x2e
+ 3206 006a 01       		.byte	0x1
+ 3207 006b 3F       		.uleb128 0x3f
+ 3208 006c 19       		.uleb128 0x19
+ 3209 006d 03       		.uleb128 0x3
+ 3210 006e 0E       		.uleb128 0xe
+ 3211 006f 3A       		.uleb128 0x3a
+ 3212 0070 0B       		.uleb128 0xb
+ 3213 0071 3B       		.uleb128 0x3b
+ 3214 0072 0B       		.uleb128 0xb
+ 3215 0073 27       		.uleb128 0x27
+ 3216 0074 19       		.uleb128 0x19
+ 3217 0075 11       		.uleb128 0x11
+ 3218 0076 01       		.uleb128 0x1
+ 3219 0077 12       		.uleb128 0x12
+ 3220 0078 06       		.uleb128 0x6
+ 3221 0079 40       		.uleb128 0x40
+ 3222 007a 18       		.uleb128 0x18
+ 3223 007b 9642     		.uleb128 0x2116
+ 3224 007d 19       		.uleb128 0x19
+ 3225 007e 01       		.uleb128 0x1
+ 3226 007f 13       		.uleb128 0x13
+ 3227 0080 00       		.byte	0
+ 3228 0081 00       		.byte	0
+ 3229 0082 0A       		.uleb128 0xa
+ 3230 0083 05       		.uleb128 0x5
+ 3231 0084 00       		.byte	0
+ 3232 0085 03       		.uleb128 0x3
+ 3233 0086 08       		.uleb128 0x8
+ 3234 0087 3A       		.uleb128 0x3a
+ 3235 0088 0B       		.uleb128 0xb
+ 3236 0089 3B       		.uleb128 0x3b
+ 3237 008a 0B       		.uleb128 0xb
+ 3238 008b 49       		.uleb128 0x49
+ 3239 008c 13       		.uleb128 0x13
+ 3240 008d 02       		.uleb128 0x2
+ 3241 008e 18       		.uleb128 0x18
+ 3242 008f 00       		.byte	0
+ 3243 0090 00       		.byte	0
+ 3244 0091 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 63
+
+
+ 3245 0092 05       		.uleb128 0x5
+ 3246 0093 00       		.byte	0
+ 3247 0094 03       		.uleb128 0x3
+ 3248 0095 0E       		.uleb128 0xe
+ 3249 0096 3A       		.uleb128 0x3a
+ 3250 0097 0B       		.uleb128 0xb
+ 3251 0098 3B       		.uleb128 0x3b
+ 3252 0099 0B       		.uleb128 0xb
+ 3253 009a 49       		.uleb128 0x49
+ 3254 009b 13       		.uleb128 0x13
+ 3255 009c 02       		.uleb128 0x2
+ 3256 009d 18       		.uleb128 0x18
+ 3257 009e 00       		.byte	0
+ 3258 009f 00       		.byte	0
+ 3259 00a0 0C       		.uleb128 0xc
+ 3260 00a1 34       		.uleb128 0x34
+ 3261 00a2 00       		.byte	0
+ 3262 00a3 03       		.uleb128 0x3
+ 3263 00a4 08       		.uleb128 0x8
+ 3264 00a5 3A       		.uleb128 0x3a
+ 3265 00a6 0B       		.uleb128 0xb
+ 3266 00a7 3B       		.uleb128 0x3b
+ 3267 00a8 0B       		.uleb128 0xb
+ 3268 00a9 49       		.uleb128 0x49
+ 3269 00aa 13       		.uleb128 0x13
+ 3270 00ab 02       		.uleb128 0x2
+ 3271 00ac 18       		.uleb128 0x18
+ 3272 00ad 00       		.byte	0
+ 3273 00ae 00       		.byte	0
+ 3274 00af 0D       		.uleb128 0xd
+ 3275 00b0 34       		.uleb128 0x34
+ 3276 00b1 00       		.byte	0
+ 3277 00b2 03       		.uleb128 0x3
+ 3278 00b3 0E       		.uleb128 0xe
+ 3279 00b4 3A       		.uleb128 0x3a
+ 3280 00b5 0B       		.uleb128 0xb
+ 3281 00b6 3B       		.uleb128 0x3b
+ 3282 00b7 0B       		.uleb128 0xb
+ 3283 00b8 49       		.uleb128 0x49
+ 3284 00b9 13       		.uleb128 0x13
+ 3285 00ba 02       		.uleb128 0x2
+ 3286 00bb 18       		.uleb128 0x18
+ 3287 00bc 00       		.byte	0
+ 3288 00bd 00       		.byte	0
+ 3289 00be 0E       		.uleb128 0xe
+ 3290 00bf 26       		.uleb128 0x26
+ 3291 00c0 00       		.byte	0
+ 3292 00c1 49       		.uleb128 0x49
+ 3293 00c2 13       		.uleb128 0x13
+ 3294 00c3 00       		.byte	0
+ 3295 00c4 00       		.byte	0
+ 3296 00c5 00       		.byte	0
+ 3297              		.section	.debug_aranges,"",%progbits
+ 3298 0000 1C000000 		.4byte	0x1c
+ 3299 0004 0200     		.2byte	0x2
+ 3300 0006 00000000 		.4byte	.Ldebug_info0
+ 3301 000a 04       		.byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 64
+
+
+ 3302 000b 00       		.byte	0
+ 3303 000c 0000     		.2byte	0
+ 3304 000e 0000     		.2byte	0
+ 3305 0010 00000000 		.4byte	.LFB82
+ 3306 0014 9A140000 		.4byte	.LFE82-.LFB82
+ 3307 0018 00000000 		.4byte	0
+ 3308 001c 00000000 		.4byte	0
+ 3309              		.section	.debug_ranges,"",%progbits
+ 3310              	.Ldebug_ranges0:
+ 3311 0000 00000000 		.4byte	.LFB82
+ 3312 0004 9A140000 		.4byte	.LFE82
+ 3313 0008 00000000 		.4byte	0
+ 3314 000c 00000000 		.4byte	0
+ 3315              		.section	.debug_line,"",%progbits
+ 3316              	.Ldebug_line0:
+ 3317 0000 06020000 		.section	.debug_str,"MS",%progbits,1
+ 3317      02006201 
+ 3317      00000201 
+ 3317      FB0E0D00 
+ 3317      01010101 
+ 3318              	.LASF28:
+ 3319 0000 61726D5F 		.ascii	"arm_biquad_casd_df1_inst_q31\000"
+ 3319      62697175 
+ 3319      61645F63 
+ 3319      6173645F 
+ 3319      6466315F 
+ 3320              	.LASF16:
+ 3321 001d 696E7436 		.ascii	"int64_t\000"
+ 3321      345F7400 
+ 3322              	.LASF33:
+ 3323 0025 73686966 		.ascii	"shift\000"
+ 3323      7400
+ 3324              	.LASF4:
+ 3325 002b 5F5F7569 		.ascii	"__uint8_t\000"
+ 3325      6E74385F 
+ 3325      7400
+ 3326              	.LASF37:
+ 3327 0035 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_biquad_cascade_df1_"
+ 3327      63655C46 
+ 3327      696C7465 
+ 3327      72696E67 
+ 3327      46756E63 
+ 3328 0066 66617374 		.ascii	"fast_q31.c\000"
+ 3328      5F713331 
+ 3328      2E6300
+ 3329              	.LASF20:
+ 3330 0071 666C6F61 		.ascii	"float\000"
+ 3330      7400
+ 3331              	.LASF5:
+ 3332 0077 5F5F696E 		.ascii	"__int32_t\000"
+ 3332      7433325F 
+ 3332      7400
+ 3333              	.LASF6:
+ 3334 0081 6C6F6E67 		.ascii	"long int\000"
+ 3334      20696E74 
+ 3334      00
+ 3335              	.LASF38:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 65
+
+
+ 3336 008a 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 3336      73657273 
+ 3336      5C666E65 
+ 3336      7665735C 
+ 3336      446F6375 
+ 3337 00b7 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 3337      655F7370 
+ 3337      6565645F 
+ 3337      73656E73 
+ 3337      6F722E63 
+ 3338              	.LASF13:
+ 3339 00d0 75696E74 		.ascii	"uint8_t\000"
+ 3339      385F7400 
+ 3340              	.LASF19:
+ 3341 00d8 646F7562 		.ascii	"double\000"
+ 3341      6C6500
+ 3342              	.LASF35:
+ 3343 00df 73746167 		.ascii	"stage\000"
+ 3343      6500
+ 3344              	.LASF32:
+ 3345 00e5 704F7574 		.ascii	"pOut\000"
+ 3345      00
+ 3346              	.LASF31:
+ 3347 00ea 626C6F63 		.ascii	"blockSize\000"
+ 3347      6B53697A 
+ 3347      6500
+ 3348              	.LASF22:
+ 3349 00f4 7133315F 		.ascii	"q31_t\000"
+ 3349      7400
+ 3350              	.LASF1:
+ 3351 00fa 756E7369 		.ascii	"unsigned char\000"
+ 3351      676E6564 
+ 3351      20636861 
+ 3351      7200
+ 3352              	.LASF8:
+ 3353 0108 6C6F6E67 		.ascii	"long unsigned int\000"
+ 3353      20756E73 
+ 3353      69676E65 
+ 3353      6420696E 
+ 3353      7400
+ 3354              	.LASF3:
+ 3355 011a 73686F72 		.ascii	"short unsigned int\000"
+ 3355      7420756E 
+ 3355      7369676E 
+ 3355      65642069 
+ 3355      6E7400
+ 3356              	.LASF30:
+ 3357 012d 70447374 		.ascii	"pDst\000"
+ 3357      00
+ 3358              	.LASF27:
+ 3359 0132 706F7374 		.ascii	"postShift\000"
+ 3359      53686966 
+ 3359      7400
+ 3360              	.LASF25:
+ 3361 013c 70537461 		.ascii	"pState\000"
+ 3361      746500
+ 3362              	.LASF9:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 66
+
+
+ 3363 0143 5F5F696E 		.ascii	"__int64_t\000"
+ 3363      7436345F 
+ 3363      7400
+ 3364              	.LASF39:
+ 3365 014d 61726D5F 		.ascii	"arm_biquad_cascade_df1_fast_q31\000"
+ 3365      62697175 
+ 3365      61645F63 
+ 3365      61736361 
+ 3365      64655F64 
+ 3366              	.LASF7:
+ 3367 016d 5F5F7569 		.ascii	"__uint32_t\000"
+ 3367      6E743332 
+ 3367      5F7400
+ 3368              	.LASF12:
+ 3369 0178 756E7369 		.ascii	"unsigned int\000"
+ 3369      676E6564 
+ 3369      20696E74 
+ 3369      00
+ 3370              	.LASF11:
+ 3371 0185 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 3371      206C6F6E 
+ 3371      6720756E 
+ 3371      7369676E 
+ 3371      65642069 
+ 3372              	.LASF36:
+ 3373 019c 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 3373      4320342E 
+ 3373      392E3320 
+ 3373      32303135 
+ 3373      30333033 
+ 3374 01cf 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 3374      20726576 
+ 3374      6973696F 
+ 3374      6E203232 
+ 3374      31323230 
+ 3375 0202 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 3375      30202D66 
+ 3375      66756E63 
+ 3375      74696F6E 
+ 3375      2D736563 
+ 3376              	.LASF23:
+ 3377 022e 7136335F 		.ascii	"q63_t\000"
+ 3377      7400
+ 3378              	.LASF14:
+ 3379 0234 696E7433 		.ascii	"int32_t\000"
+ 3379      325F7400 
+ 3380              	.LASF17:
+ 3381 023c 73697A65 		.ascii	"sizetype\000"
+ 3381      74797065 
+ 3381      00
+ 3382              	.LASF10:
+ 3383 0245 6C6F6E67 		.ascii	"long long int\000"
+ 3383      206C6F6E 
+ 3383      6720696E 
+ 3383      7400
+ 3384              	.LASF18:
+ 3385 0253 63686172 		.ascii	"char\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccb1ZoVH.s 			page 67
+
+
+ 3385      00
+ 3386              	.LASF2:
+ 3387 0258 73686F72 		.ascii	"short int\000"
+ 3387      7420696E 
+ 3387      7400
+ 3388              	.LASF26:
+ 3389 0262 70436F65 		.ascii	"pCoeffs\000"
+ 3389      66667300 
+ 3390              	.LASF15:
+ 3391 026a 75696E74 		.ascii	"uint32_t\000"
+ 3391      33325F74 
+ 3391      00
+ 3392              	.LASF34:
+ 3393 0273 73616D70 		.ascii	"sample\000"
+ 3393      6C6500
+ 3394              	.LASF21:
+ 3395 027a 6C6F6E67 		.ascii	"long double\000"
+ 3395      20646F75 
+ 3395      626C6500 
+ 3396              	.LASF0:
+ 3397 0286 7369676E 		.ascii	"signed char\000"
+ 3397      65642063 
+ 3397      68617200 
+ 3398              	.LASF29:
+ 3399 0292 70537263 		.ascii	"pSrc\000"
+ 3399      00
+ 3400              	.LASF24:
+ 3401 0297 6E756D53 		.ascii	"numStages\000"
+ 3401      74616765 
+ 3401      7300
+ 3402              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

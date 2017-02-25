@@ -1,0 +1,1436 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_iir_lattice_f32.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_fmul
+  18              		.global	__aeabi_fsub
+  19              		.global	__aeabi_fadd
+  20              		.section	.text.arm_iir_lattice_f32,"ax",%progbits
+  21              		.align	2
+  22              		.global	arm_iir_lattice_f32
+  23              		.code	16
+  24              		.thumb_func
+  25              		.type	arm_iir_lattice_f32, %function
+  26              	arm_iir_lattice_f32:
+  27              	.LFB82:
+  28              		.file 1 "Source\\FilteringFunctions\\arm_iir_lattice_f32.c"
+   1:Source\FilteringFunctions/arm_iir_lattice_f32.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Title:        arm_iir_lattice_f32.c
+   4:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Description:  Floating-point IIR Lattice filter processing function
+   5:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *
+   6:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *
+   9:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_iir_lattice_f32.c **** /*
+  12:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *
+  14:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *
+  16:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *
+  20:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *
+  22:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  */
+  28:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+  29:Source\FilteringFunctions/arm_iir_lattice_f32.c **** #include "arm_math.h"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 2
+
+
+  30:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+  31:Source\FilteringFunctions/arm_iir_lattice_f32.c **** /**
+  32:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @ingroup groupFilters
+  33:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  */
+  34:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+  35:Source\FilteringFunctions/arm_iir_lattice_f32.c **** /**
+  36:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @defgroup IIR_Lattice Infinite Impulse Response (IIR) Lattice Filters
+  37:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *
+  38:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * This set of functions implements lattice filters
+  39:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * for Q15, Q31 and floating-point data types.  Lattice filters are used in a
+  40:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * variety of adaptive filter applications.  The filter structure has feedforward and
+  41:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * feedback components and the net impulse response is infinite length.
+  42:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * The functions operate on blocks
+  43:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * of input and output data and each call to the function processes
+  44:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <code>blockSize</code> samples through the filter.  <code>pSrc</code> and
+  45:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <code>pDst</code> point to input and output arrays containing <code>blockSize</code> values.
+  46:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+  47:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par Algorithm:
+  48:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \image html IIRLattice.gif "Infinite Impulse Response Lattice filter"
+  49:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <pre>
+  50:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *    fN(n)   =  x(n)
+  51:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *    fm-1(n) = fm(n) - km * gm-1(n-1)   for m = N, N-1, ...1
+  52:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *    gm(n)   = km * fm-1(n) + gm-1(n-1) for m = N, N-1, ...1
+  53:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *    y(n)    = vN * gN(n) + vN-1 * gN-1(n) + ...+ v0 * g0(n)
+  54:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * </pre>
+  55:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par
+  56:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <code>pkCoeffs</code> points to array of reflection coefficients of size <code>numStages</code>.
+  57:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Reflection coefficients are stored in time-reversed order.
+  58:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par
+  59:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <pre>
+  60:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *    {kN, kN-1, ....k1}
+  61:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * </pre>
+  62:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <code>pvCoeffs</code> points to the array of ladder coefficients of size <code>(numStages+1)</co
+  63:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Ladder coefficients are stored in time-reversed order.
+  64:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par
+  65:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <pre>
+  66:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *    {vN, vN-1, ...v0}
+  67:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * </pre>
+  68:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <code>pState</code> points to a state array of size <code>numStages + blockSize</code>.
+  69:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * The state variables shown in the figure above (the g values) are stored in the <code>pState</cod
+  70:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * The state variables are updated after each block of data is processed; the coefficients are unto
+  71:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par Instance Structure
+  72:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * The coefficients and state variables for a filter are stored together in an instance data struct
+  73:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * A separate instance structure must be defined for each filter.
+  74:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Coefficient arrays may be shared among several instances while state variable arrays cannot be s
+  75:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * There are separate instance structure declarations for each of the 3 supported data types.
+  76:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   *
+  77:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par Initialization Functions
+  78:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * There is also an associated initialization function for each data type.
+  79:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * The initialization function performs the following operations:
+  80:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * - Sets the values of the internal structure fields.
+  81:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * - Zeros out the values in the state buffer.
+  82:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * To do this manually without calling the init function, assign the follow subfields of the instan
+  83:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * numStages, pkCoeffs, pvCoeffs, pState. Also set all of the values in pState to zero.
+  84:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *
+  85:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par
+  86:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Use of the initialization function is optional.
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 3
+
+
+  87:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * However, if the initialization function is used, then the instance structure cannot be placed in
+  88:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * To place an instance structure into a const data section, the instance structure must be manuall
+  89:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Set the values in the state buffer to zeros and then manually initialize the instance structure 
+  90:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <pre>
+  91:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *arm_iir_lattice_instance_f32 S = {numStages, pState, pkCoeffs, pvCoeffs};
+  92:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *arm_iir_lattice_instance_q31 S = {numStages, pState, pkCoeffs, pvCoeffs};
+  93:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  *arm_iir_lattice_instance_q15 S = {numStages, pState, pkCoeffs, pvCoeffs};
+  94:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * </pre>
+  95:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par
+  96:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * where <code>numStages</code> is the number of stages in the filter; <code>pState</code> points t
+  97:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * <code>pkCoeffs</code> points to array of the reflection coefficients; <code>pvCoeffs</code> poin
+  98:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * \par Fixed-Point Behavior
+  99:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Care must be taken when using the fixed-point versions of the IIR lattice filter functions.
+ 100:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * In particular, the overflow and saturation behavior of the accumulator used in each function mus
+ 101:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * Refer to the function specific documentation below for usage guidelines.
+ 102:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  */
+ 103:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 104:Source\FilteringFunctions/arm_iir_lattice_f32.c **** /**
+ 105:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @addtogroup IIR_Lattice
+ 106:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @{
+ 107:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  */
+ 108:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 109:Source\FilteringFunctions/arm_iir_lattice_f32.c **** /**
+ 110:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @brief Processing function for the floating-point IIR lattice filter.
+ 111:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @param[in] *S points to an instance of the floating-point IIR lattice structure.
+ 112:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @param[in] *pSrc points to the block of input data.
+ 113:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @param[out] *pDst points to the block of output data.
+ 114:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @param[in] blockSize number of samples to process.
+ 115:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  * @return none.
+ 116:Source\FilteringFunctions/arm_iir_lattice_f32.c ****  */
+ 117:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 118:Source\FilteringFunctions/arm_iir_lattice_f32.c **** #if defined (ARM_MATH_DSP)
+ 119:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 120:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+ 121:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 122:Source\FilteringFunctions/arm_iir_lattice_f32.c **** void arm_iir_lattice_f32(
+ 123:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   const arm_iir_lattice_instance_f32 * S,
+ 124:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t * pSrc,
+ 125:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t * pDst,
+ 126:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   uint32_t blockSize)
+ 127:Source\FilteringFunctions/arm_iir_lattice_f32.c **** {
+ 128:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t fnext1, gcurr1, gnext;               /* Temporary variables for lattice stages */
+ 129:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t acc;                                 /* Accumlator */
+ 130:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   uint32_t blkCnt, tapCnt;                       /* temporary variables for counts */
+ 131:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t *px1, *px2, *pk, *pv;                /* temporary pointers for state and coef */
+ 132:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   uint32_t numStages = S->numStages;             /* number of stages */
+ 133:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t *pState;                             /* State pointer */
+ 134:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t *pStateCurnt;                        /* State current pointer */
+ 135:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t k1, k2;
+ 136:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t v1, v2, v3, v4;
+ 137:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t gcurr2;
+ 138:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t fnext2;
+ 139:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 140:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* initialise loop count */
+ 141:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   blkCnt = blockSize;
+ 142:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 143:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* initialise state pointer */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 4
+
+
+ 144:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   pState = &S->pState[0];
+ 145:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 146:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Sample processing */
+ 147:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   while (blkCnt > 0u)
+ 148:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   {
+ 149:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Read Sample from input buffer */
+ 150:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* fN(n) = x(n) */
+ 151:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     fnext2 = *pSrc++;
+ 152:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 153:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Initialize Ladder coeff pointer */
+ 154:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     pv = &S->pvCoeffs[0];
+ 155:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Initialize Reflection coeff pointer */
+ 156:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     pk = &S->pkCoeffs[0];
+ 157:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 158:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Initialize state read pointer */
+ 159:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     px1 = pState;
+ 160:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Initialize state write pointer */
+ 161:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     px2 = pState;
+ 162:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 163:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Set accumulator to zero */
+ 164:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     acc = 0.0;
+ 165:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 166:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Loop unrolling.  Process 4 taps at a time. */
+ 167:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     tapCnt = (numStages) >> 2;
+ 168:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 169:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     while (tapCnt > 0u)
+ 170:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     {
+ 171:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Read gN-1(n-1) from state buffer */
+ 172:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gcurr1 = *px1;
+ 173:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 174:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* read reflection coefficient kN */
+ 175:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       k1 = *pk;
+ 176:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 177:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* fN-1(n) = fN(n) - kN * gN-1(n-1) */
+ 178:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       fnext1 = fnext2 - (k1 * gcurr1);
+ 179:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 180:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* read ladder coefficient vN */
+ 181:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       v1 = *pv;
+ 182:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 183:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* read next reflection coefficient kN-1 */
+ 184:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       k2 = *(pk + 1u);
+ 185:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 186:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Read gN-2(n-1) from state buffer */
+ 187:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gcurr2 = *(px1 + 1u);
+ 188:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 189:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* read next ladder coefficient vN-1 */
+ 190:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       v2 = *(pv + 1u);
+ 191:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 192:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* fN-2(n) = fN-1(n) - kN-1 * gN-2(n-1) */
+ 193:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       fnext2 = fnext1 - (k2 * gcurr2);
+ 194:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 195:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* gN(n)   = kN * fN-1(n) + gN-1(n-1) */
+ 196:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gnext = gcurr1 + (k1 * fnext1);
+ 197:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 198:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* read reflection coefficient kN-2 */
+ 199:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       k1 = *(pk + 2u);
+ 200:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 5
+
+
+ 201:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* write gN(n) into state for next sample processing */
+ 202:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       *px2++ = gnext;
+ 203:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 204:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Read gN-3(n-1) from state buffer */
+ 205:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gcurr1 = *(px1 + 2u);
+ 206:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 207:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* y(n) += gN(n) * vN  */
+ 208:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       acc += (gnext * v1);
+ 209:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 210:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* fN-3(n) = fN-2(n) - kN-2 * gN-3(n-1) */
+ 211:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       fnext1 = fnext2 - (k1 * gcurr1);
+ 212:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 213:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* gN-1(n)   = kN-1 * fN-2(n) + gN-2(n-1) */
+ 214:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gnext = gcurr2 + (k2 * fnext2);
+ 215:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 216:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Read gN-4(n-1) from state buffer */
+ 217:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gcurr2 = *(px1 + 3u);
+ 218:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 219:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* y(n) += gN-1(n) * vN-1  */
+ 220:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       acc += (gnext * v2);
+ 221:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 222:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* read reflection coefficient kN-3 */
+ 223:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       k2 = *(pk + 3u);
+ 224:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 225:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* write gN-1(n) into state for next sample processing */
+ 226:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       *px2++ = gnext;
+ 227:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 228:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* fN-4(n) = fN-3(n) - kN-3 * gN-4(n-1) */
+ 229:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       fnext2 = fnext1 - (k2 * gcurr2);
+ 230:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 231:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* gN-2(n) = kN-2 * fN-3(n) + gN-3(n-1) */
+ 232:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gnext = gcurr1 + (k1 * fnext1);
+ 233:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 234:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* read ladder coefficient vN-2 */
+ 235:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       v3 = *(pv + 2u);
+ 236:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 237:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* y(n) += gN-2(n) * vN-2  */
+ 238:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       acc += (gnext * v3);
+ 239:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 240:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* write gN-2(n) into state for next sample processing */
+ 241:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       *px2++ = gnext;
+ 242:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 243:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* update pointer */
+ 244:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       pk += 4u;
+ 245:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 246:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* gN-3(n) = kN-3 * fN-4(n) + gN-4(n-1) */
+ 247:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gnext = (fnext2 * k2) + gcurr2;
+ 248:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 249:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* read next ladder coefficient vN-3 */
+ 250:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       v4 = *(pv + 3u);
+ 251:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 252:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* y(n) += gN-4(n) * vN-4  */
+ 253:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       acc += (gnext * v4);
+ 254:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 255:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* write gN-3(n) into state for next sample processing */
+ 256:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       *px2++ = gnext;
+ 257:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 6
+
+
+ 258:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* update pointers */
+ 259:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       px1 += 4u;
+ 260:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       pv += 4u;
+ 261:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 262:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       tapCnt--;
+ 263:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 264:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     }
+ 265:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 266:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* If the filter length is not a multiple of 4, compute the remaining filter taps */
+ 267:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     tapCnt = (numStages) % 0x4u;
+ 268:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 269:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     while (tapCnt > 0u)
+ 270:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     {
+ 271:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gcurr1 = *px1++;
+ 272:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Process sample for last taps */
+ 273:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       fnext1 = fnext2 - ((*pk) * gcurr1);
+ 274:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gnext = (fnext1 * (*pk++)) + gcurr1;
+ 275:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Output samples for last taps */
+ 276:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       acc += (gnext * (*pv++));
+ 277:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       *px2++ = gnext;
+ 278:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       fnext2 = fnext1;
+ 279:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 280:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       tapCnt--;
+ 281:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 282:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     }
+ 283:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 284:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* y(n) += g0(n) * v0 */
+ 285:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     acc += (fnext2 * (*pv));
+ 286:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 287:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *px2++ = fnext2;
+ 288:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 289:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* write out into pDst */
+ 290:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *pDst++ = acc;
+ 291:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 292:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Advance the state pointer by 4 to process the next group of 4 samples */
+ 293:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     pState = pState + 1u;
+ 294:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 295:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     blkCnt--;
+ 296:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 297:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   }
+ 298:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 299:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Processing is complete. Now copy last S->numStages samples to start of the buffer
+ 300:Source\FilteringFunctions/arm_iir_lattice_f32.c ****      for the preperation of next frame process */
+ 301:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 302:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Points to the start of the state buffer */
+ 303:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   pStateCurnt = &S->pState[0];
+ 304:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   pState = &S->pState[blockSize];
+ 305:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 306:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   tapCnt = numStages >> 2u;
+ 307:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 308:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* copy data */
+ 309:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   while (tapCnt > 0u)
+ 310:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   {
+ 311:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *pStateCurnt++ = *pState++;
+ 312:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *pStateCurnt++ = *pState++;
+ 313:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *pStateCurnt++ = *pState++;
+ 314:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *pStateCurnt++ = *pState++;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 7
+
+
+ 315:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 316:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Decrement the loop counter */
+ 317:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     tapCnt--;
+ 318:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 319:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   }
+ 320:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 321:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Calculate remaining number of copies */
+ 322:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   tapCnt = (numStages) % 0x4u;
+ 323:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 324:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Copy the remaining q31_t data */
+ 325:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   while (tapCnt > 0u)
+ 326:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   {
+ 327:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *pStateCurnt++ = *pState++;
+ 328:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 329:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Decrement the loop counter */
+ 330:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     tapCnt--;
+ 331:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   }
+ 332:Source\FilteringFunctions/arm_iir_lattice_f32.c **** }
+ 333:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 334:Source\FilteringFunctions/arm_iir_lattice_f32.c **** #else
+ 335:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 336:Source\FilteringFunctions/arm_iir_lattice_f32.c **** void arm_iir_lattice_f32(
+ 337:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   const arm_iir_lattice_instance_f32 * S,
+ 338:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t * pSrc,
+ 339:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t * pDst,
+ 340:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   uint32_t blockSize)
+ 341:Source\FilteringFunctions/arm_iir_lattice_f32.c **** {
+  29              		.loc 1 341 0
+  30              		.cfi_startproc
+  31 0000 80B5     		push	{r7, lr}
+  32              		.cfi_def_cfa_offset 8
+  33              		.cfi_offset 7, -8
+  34              		.cfi_offset 14, -4
+  35 0002 92B0     		sub	sp, sp, #72
+  36              		.cfi_def_cfa_offset 80
+  37 0004 00AF     		add	r7, sp, #0
+  38              		.cfi_def_cfa_register 7
+  39 0006 F860     		str	r0, [r7, #12]
+  40 0008 B960     		str	r1, [r7, #8]
+  41 000a 7A60     		str	r2, [r7, #4]
+  42 000c 3B60     		str	r3, [r7]
+ 342:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t fcurr, fnext = 0, gcurr, gnext;      /* Temporary variables for lattice stages */
+  43              		.loc 1 342 0
+  44 000e 0023     		mov	r3, #0
+  45 0010 3B64     		str	r3, [r7, #64]
+ 343:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t acc;                                 /* Accumlator */
+ 344:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   uint32_t blkCnt, tapCnt;                       /* temporary variables for counts */
+ 345:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t *px1, *px2, *pk, *pv;                /* temporary pointers for state and coef */
+ 346:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   uint32_t numStages = S->numStages;             /* number of stages */
+  46              		.loc 1 346 0
+  47 0012 FB68     		ldr	r3, [r7, #12]
+  48 0014 1B88     		ldrh	r3, [r3]
+  49 0016 BB61     		str	r3, [r7, #24]
+ 347:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t *pState;                             /* State pointer */
+ 348:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   float32_t *pStateCurnt;                        /* State current pointer */
+ 349:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 350:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 8
+
+
+ 351:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Run the below code for Cortex-M0 */
+ 352:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 353:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   blkCnt = blockSize;
+  50              		.loc 1 353 0
+  51 0018 3B68     		ldr	r3, [r7]
+  52 001a BB63     		str	r3, [r7, #56]
+ 354:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 355:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   pState = &S->pState[0];
+  53              		.loc 1 355 0
+  54 001c FB68     		ldr	r3, [r7, #12]
+  55 001e 5B68     		ldr	r3, [r3, #4]
+  56 0020 3B62     		str	r3, [r7, #32]
+ 356:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 357:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Sample processing */
+ 358:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   while (blkCnt > 0u)
+  57              		.loc 1 358 0
+  58 0022 6DE0     		b	.L2
+  59              	.L5:
+ 359:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   {
+ 360:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Read Sample from input buffer */
+ 361:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* fN(n) = x(n) */
+ 362:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     fcurr = *pSrc++;
+  60              		.loc 1 362 0
+  61 0024 BB68     		ldr	r3, [r7, #8]
+  62 0026 1A1D     		add	r2, r3, #4
+  63 0028 BA60     		str	r2, [r7, #8]
+  64 002a 1B68     		ldr	r3, [r3]
+  65 002c 7B64     		str	r3, [r7, #68]
+ 363:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 364:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Initialize state read pointer */
+ 365:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     px1 = pState;
+  66              		.loc 1 365 0
+  67 002e 3B6A     		ldr	r3, [r7, #32]
+  68 0030 3B63     		str	r3, [r7, #48]
+ 366:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Initialize state write pointer */
+ 367:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     px2 = pState;
+  69              		.loc 1 367 0
+  70 0032 3B6A     		ldr	r3, [r7, #32]
+  71 0034 FB62     		str	r3, [r7, #44]
+ 368:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Set accumulator to zero */
+ 369:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     acc = 0.0f;
+  72              		.loc 1 369 0
+  73 0036 0023     		mov	r3, #0
+  74 0038 FB63     		str	r3, [r7, #60]
+ 370:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Initialize Ladder coeff pointer */
+ 371:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     pv = &S->pvCoeffs[0];
+  75              		.loc 1 371 0
+  76 003a FB68     		ldr	r3, [r7, #12]
+  77 003c DB68     		ldr	r3, [r3, #12]
+  78 003e 7B62     		str	r3, [r7, #36]
+ 372:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Initialize Reflection coeff pointer */
+ 373:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     pk = &S->pkCoeffs[0];
+  79              		.loc 1 373 0
+  80 0040 FB68     		ldr	r3, [r7, #12]
+  81 0042 9B68     		ldr	r3, [r3, #8]
+  82 0044 BB62     		str	r3, [r7, #40]
+ 374:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 9
+
+
+ 375:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 376:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Process sample for numStages */
+ 377:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     tapCnt = numStages;
+  83              		.loc 1 377 0
+  84 0046 BB69     		ldr	r3, [r7, #24]
+  85 0048 7B63     		str	r3, [r7, #52]
+ 378:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 379:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     while (tapCnt > 0u)
+  86              		.loc 1 379 0
+  87 004a 39E0     		b	.L3
+  88              	.L4:
+ 380:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     {
+ 381:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gcurr = *px1++;
+  89              		.loc 1 381 0
+  90 004c 3B6B     		ldr	r3, [r7, #48]
+  91 004e 1A1D     		add	r2, r3, #4
+  92 0050 3A63     		str	r2, [r7, #48]
+  93 0052 1B68     		ldr	r3, [r3]
+  94 0054 7B61     		str	r3, [r7, #20]
+ 382:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Process sample for last taps */
+ 383:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       fnext = fcurr - ((*pk) * gcurr);
+  95              		.loc 1 383 0
+  96 0056 BB6A     		ldr	r3, [r7, #40]
+  97 0058 1B68     		ldr	r3, [r3]
+  98 005a 181C     		add	r0, r3, #0
+  99 005c 7969     		ldr	r1, [r7, #20]
+ 100 005e FFF7FEFF 		bl	__aeabi_fmul
+ 101 0062 031C     		add	r3, r0, #0
+ 102 0064 786C     		ldr	r0, [r7, #68]
+ 103 0066 191C     		add	r1, r3, #0
+ 104 0068 FFF7FEFF 		bl	__aeabi_fsub
+ 105 006c 031C     		add	r3, r0, #0
+ 106 006e 3B64     		str	r3, [r7, #64]
+ 384:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       gnext = (fnext * (*pk++)) + gcurr;
+ 107              		.loc 1 384 0
+ 108 0070 BB6A     		ldr	r3, [r7, #40]
+ 109 0072 1A1D     		add	r2, r3, #4
+ 110 0074 BA62     		str	r2, [r7, #40]
+ 111 0076 1B68     		ldr	r3, [r3]
+ 112 0078 181C     		add	r0, r3, #0
+ 113 007a 396C     		ldr	r1, [r7, #64]
+ 114 007c FFF7FEFF 		bl	__aeabi_fmul
+ 115 0080 031C     		add	r3, r0, #0
+ 116 0082 181C     		add	r0, r3, #0
+ 117 0084 7969     		ldr	r1, [r7, #20]
+ 118 0086 FFF7FEFF 		bl	__aeabi_fadd
+ 119 008a 031C     		add	r3, r0, #0
+ 120 008c 3B61     		str	r3, [r7, #16]
+ 385:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 386:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Output samples for last taps */
+ 387:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       acc += (gnext * (*pv++));
+ 121              		.loc 1 387 0
+ 122 008e 7B6A     		ldr	r3, [r7, #36]
+ 123 0090 1A1D     		add	r2, r3, #4
+ 124 0092 7A62     		str	r2, [r7, #36]
+ 125 0094 1B68     		ldr	r3, [r3]
+ 126 0096 181C     		add	r0, r3, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 10
+
+
+ 127 0098 3969     		ldr	r1, [r7, #16]
+ 128 009a FFF7FEFF 		bl	__aeabi_fmul
+ 129 009e 031C     		add	r3, r0, #0
+ 130 00a0 F86B     		ldr	r0, [r7, #60]
+ 131 00a2 191C     		add	r1, r3, #0
+ 132 00a4 FFF7FEFF 		bl	__aeabi_fadd
+ 133 00a8 031C     		add	r3, r0, #0
+ 134 00aa FB63     		str	r3, [r7, #60]
+ 388:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       *px2++ = gnext;
+ 135              		.loc 1 388 0
+ 136 00ac FB6A     		ldr	r3, [r7, #44]
+ 137 00ae 1A1D     		add	r2, r3, #4
+ 138 00b0 FA62     		str	r2, [r7, #44]
+ 139 00b2 3A69     		ldr	r2, [r7, #16]
+ 140 00b4 1A60     		str	r2, [r3]
+ 389:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       fcurr = fnext;
+ 141              		.loc 1 389 0
+ 142 00b6 3B6C     		ldr	r3, [r7, #64]
+ 143 00b8 7B64     		str	r3, [r7, #68]
+ 390:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 391:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       /* Decrementing loop counter */
+ 392:Source\FilteringFunctions/arm_iir_lattice_f32.c ****       tapCnt--;
+ 144              		.loc 1 392 0
+ 145 00ba 7B6B     		ldr	r3, [r7, #52]
+ 146 00bc 013B     		sub	r3, r3, #1
+ 147 00be 7B63     		str	r3, [r7, #52]
+ 148              	.L3:
+ 379:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     {
+ 149              		.loc 1 379 0
+ 150 00c0 7B6B     		ldr	r3, [r7, #52]
+ 151 00c2 002B     		cmp	r3, #0
+ 152 00c4 C2D1     		bne	.L4
+ 393:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 394:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     }
+ 395:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 396:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* y(n) += g0(n) * v0 */
+ 397:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     acc += (fnext * (*pv));
+ 153              		.loc 1 397 0
+ 154 00c6 7B6A     		ldr	r3, [r7, #36]
+ 155 00c8 1B68     		ldr	r3, [r3]
+ 156 00ca 181C     		add	r0, r3, #0
+ 157 00cc 396C     		ldr	r1, [r7, #64]
+ 158 00ce FFF7FEFF 		bl	__aeabi_fmul
+ 159 00d2 031C     		add	r3, r0, #0
+ 160 00d4 F86B     		ldr	r0, [r7, #60]
+ 161 00d6 191C     		add	r1, r3, #0
+ 162 00d8 FFF7FEFF 		bl	__aeabi_fadd
+ 163 00dc 031C     		add	r3, r0, #0
+ 164 00de FB63     		str	r3, [r7, #60]
+ 398:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 399:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *px2++ = fnext;
+ 165              		.loc 1 399 0
+ 166 00e0 FB6A     		ldr	r3, [r7, #44]
+ 167 00e2 1A1D     		add	r2, r3, #4
+ 168 00e4 FA62     		str	r2, [r7, #44]
+ 169 00e6 3A6C     		ldr	r2, [r7, #64]
+ 170 00e8 1A60     		str	r2, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 11
+
+
+ 400:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 401:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* write out into pDst */
+ 402:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *pDst++ = acc;
+ 171              		.loc 1 402 0
+ 172 00ea 7B68     		ldr	r3, [r7, #4]
+ 173 00ec 1A1D     		add	r2, r3, #4
+ 174 00ee 7A60     		str	r2, [r7, #4]
+ 175 00f0 FA6B     		ldr	r2, [r7, #60]
+ 176 00f2 1A60     		str	r2, [r3]
+ 403:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 404:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Advance the state pointer by 1 to process the next group of samples */
+ 405:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     pState = pState + 1u;
+ 177              		.loc 1 405 0
+ 178 00f4 3B6A     		ldr	r3, [r7, #32]
+ 179 00f6 0433     		add	r3, r3, #4
+ 180 00f8 3B62     		str	r3, [r7, #32]
+ 406:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     blkCnt--;
+ 181              		.loc 1 406 0
+ 182 00fa BB6B     		ldr	r3, [r7, #56]
+ 183 00fc 013B     		sub	r3, r3, #1
+ 184 00fe BB63     		str	r3, [r7, #56]
+ 185              	.L2:
+ 358:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   {
+ 186              		.loc 1 358 0
+ 187 0100 BB6B     		ldr	r3, [r7, #56]
+ 188 0102 002B     		cmp	r3, #0
+ 189 0104 8ED1     		bne	.L5
+ 407:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 408:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   }
+ 409:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 410:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Processing is complete. Now copy last S->numStages samples to start of the buffer
+ 411:Source\FilteringFunctions/arm_iir_lattice_f32.c ****      for the preperation of next frame process */
+ 412:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 413:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Points to the start of the state buffer */
+ 414:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   pStateCurnt = &S->pState[0];
+ 190              		.loc 1 414 0
+ 191 0106 FB68     		ldr	r3, [r7, #12]
+ 192 0108 5B68     		ldr	r3, [r3, #4]
+ 193 010a FB61     		str	r3, [r7, #28]
+ 415:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   pState = &S->pState[blockSize];
+ 194              		.loc 1 415 0
+ 195 010c FB68     		ldr	r3, [r7, #12]
+ 196 010e 5A68     		ldr	r2, [r3, #4]
+ 197 0110 3B68     		ldr	r3, [r7]
+ 198 0112 9B00     		lsl	r3, r3, #2
+ 199 0114 D318     		add	r3, r2, r3
+ 200 0116 3B62     		str	r3, [r7, #32]
+ 416:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 417:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   tapCnt = numStages;
+ 201              		.loc 1 417 0
+ 202 0118 BB69     		ldr	r3, [r7, #24]
+ 203 011a 7B63     		str	r3, [r7, #52]
+ 418:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 419:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   /* Copy the data */
+ 420:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   while (tapCnt > 0u)
+ 204              		.loc 1 420 0
+ 205 011c 0AE0     		b	.L6
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 12
+
+
+ 206              	.L7:
+ 421:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   {
+ 422:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     *pStateCurnt++ = *pState++;
+ 207              		.loc 1 422 0
+ 208 011e FB69     		ldr	r3, [r7, #28]
+ 209 0120 1A1D     		add	r2, r3, #4
+ 210 0122 FA61     		str	r2, [r7, #28]
+ 211 0124 3A6A     		ldr	r2, [r7, #32]
+ 212 0126 111D     		add	r1, r2, #4
+ 213 0128 3962     		str	r1, [r7, #32]
+ 214 012a 1268     		ldr	r2, [r2]
+ 215 012c 1A60     		str	r2, [r3]
+ 423:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 424:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     /* Decrement the loop counter */
+ 425:Source\FilteringFunctions/arm_iir_lattice_f32.c ****     tapCnt--;
+ 216              		.loc 1 425 0
+ 217 012e 7B6B     		ldr	r3, [r7, #52]
+ 218 0130 013B     		sub	r3, r3, #1
+ 219 0132 7B63     		str	r3, [r7, #52]
+ 220              	.L6:
+ 420:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   {
+ 221              		.loc 1 420 0
+ 222 0134 7B6B     		ldr	r3, [r7, #52]
+ 223 0136 002B     		cmp	r3, #0
+ 224 0138 F1D1     		bne	.L7
+ 426:Source\FilteringFunctions/arm_iir_lattice_f32.c ****   }
+ 427:Source\FilteringFunctions/arm_iir_lattice_f32.c **** 
+ 428:Source\FilteringFunctions/arm_iir_lattice_f32.c **** }
+ 225              		.loc 1 428 0
+ 226 013a BD46     		mov	sp, r7
+ 227 013c 12B0     		add	sp, sp, #72
+ 228              		@ sp needed
+ 229 013e 80BD     		pop	{r7, pc}
+ 230              		.cfi_endproc
+ 231              	.LFE82:
+ 232              		.size	arm_iir_lattice_f32, .-arm_iir_lattice_f32
+ 233              		.text
+ 234              	.Letext0:
+ 235              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 236              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 237              		.file 4 ".\\Include/arm_math.h"
+ 238              		.section	.debug_info,"",%progbits
+ 239              	.Ldebug_info0:
+ 240 0000 43020000 		.4byte	0x243
+ 241 0004 0400     		.2byte	0x4
+ 242 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 243 000a 04       		.byte	0x4
+ 244 000b 01       		.uleb128 0x1
+ 245 000c 4C010000 		.4byte	.LASF34
+ 246 0010 01       		.byte	0x1
+ 247 0011 6A000000 		.4byte	.LASF35
+ 248 0015 07000000 		.4byte	.LASF36
+ 249 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 250 001d 00000000 		.4byte	0
+ 251 0021 00000000 		.4byte	.Ldebug_line0
+ 252 0025 02       		.uleb128 0x2
+ 253 0026 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 13
+
+
+ 254 0027 06       		.byte	0x6
+ 255 0028 64020000 		.4byte	.LASF0
+ 256 002c 02       		.uleb128 0x2
+ 257 002d 01       		.byte	0x1
+ 258 002e 08       		.byte	0x8
+ 259 002f A6000000 		.4byte	.LASF1
+ 260 0033 02       		.uleb128 0x2
+ 261 0034 02       		.byte	0x2
+ 262 0035 05       		.byte	0x5
+ 263 0036 14020000 		.4byte	.LASF2
+ 264 003a 03       		.uleb128 0x3
+ 265 003b 1E020000 		.4byte	.LASF5
+ 266 003f 02       		.byte	0x2
+ 267 0040 2B       		.byte	0x2b
+ 268 0041 45000000 		.4byte	0x45
+ 269 0045 02       		.uleb128 0x2
+ 270 0046 02       		.byte	0x2
+ 271 0047 07       		.byte	0x7
+ 272 0048 D3000000 		.4byte	.LASF3
+ 273 004c 02       		.uleb128 0x2
+ 274 004d 04       		.byte	0x4
+ 275 004e 05       		.byte	0x5
+ 276 004f 4F020000 		.4byte	.LASF4
+ 277 0053 03       		.uleb128 0x3
+ 278 0054 08010000 		.4byte	.LASF6
+ 279 0058 02       		.byte	0x2
+ 280 0059 41       		.byte	0x41
+ 281 005a 5E000000 		.4byte	0x5e
+ 282 005e 02       		.uleb128 0x2
+ 283 005f 04       		.byte	0x4
+ 284 0060 07       		.byte	0x7
+ 285 0061 BB000000 		.4byte	.LASF7
+ 286 0065 02       		.uleb128 0x2
+ 287 0066 08       		.byte	0x8
+ 288 0067 05       		.byte	0x5
+ 289 0068 ED010000 		.4byte	.LASF8
+ 290 006c 02       		.uleb128 0x2
+ 291 006d 08       		.byte	0x8
+ 292 006e 07       		.byte	0x7
+ 293 006f 35010000 		.4byte	.LASF9
+ 294 0073 04       		.uleb128 0x4
+ 295 0074 04       		.byte	0x4
+ 296 0075 05       		.byte	0x5
+ 297 0076 696E7400 		.ascii	"int\000"
+ 298 007a 02       		.uleb128 0x2
+ 299 007b 04       		.byte	0x4
+ 300 007c 07       		.byte	0x7
+ 301 007d 28010000 		.4byte	.LASF10
+ 302 0081 03       		.uleb128 0x3
+ 303 0082 29020000 		.4byte	.LASF11
+ 304 0086 03       		.byte	0x3
+ 305 0087 21       		.byte	0x21
+ 306 0088 3A000000 		.4byte	0x3a
+ 307 008c 03       		.uleb128 0x3
+ 308 008d 46020000 		.4byte	.LASF12
+ 309 0091 03       		.byte	0x3
+ 310 0092 2D       		.byte	0x2d
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 14
+
+
+ 311 0093 53000000 		.4byte	0x53
+ 312 0097 02       		.uleb128 0x2
+ 313 0098 04       		.byte	0x4
+ 314 0099 07       		.byte	0x7
+ 315 009a E4010000 		.4byte	.LASF13
+ 316 009e 02       		.uleb128 0x2
+ 317 009f 01       		.byte	0x1
+ 318 00a0 08       		.byte	0x8
+ 319 00a1 05020000 		.4byte	.LASF14
+ 320 00a5 02       		.uleb128 0x2
+ 321 00a6 08       		.byte	0x8
+ 322 00a7 04       		.byte	0x4
+ 323 00a8 01010000 		.4byte	.LASF15
+ 324 00ac 02       		.uleb128 0x2
+ 325 00ad 04       		.byte	0x4
+ 326 00ae 04       		.byte	0x4
+ 327 00af A0000000 		.4byte	.LASF16
+ 328 00b3 02       		.uleb128 0x2
+ 329 00b4 08       		.byte	0x8
+ 330 00b5 04       		.byte	0x4
+ 331 00b6 58020000 		.4byte	.LASF17
+ 332 00ba 05       		.uleb128 0x5
+ 333 00bb 0A020000 		.4byte	.LASF18
+ 334 00bf 04       		.byte	0x4
+ 335 00c0 A501     		.2byte	0x1a5
+ 336 00c2 AC000000 		.4byte	0xac
+ 337 00c6 06       		.uleb128 0x6
+ 338 00c7 04       		.byte	0x4
+ 339 00c8 BA000000 		.4byte	0xba
+ 340 00cc 07       		.uleb128 0x7
+ 341 00cd 10       		.byte	0x10
+ 342 00ce 04       		.byte	0x4
+ 343 00cf 550F     		.2byte	0xf55
+ 344 00d1 0A010000 		.4byte	0x10a
+ 345 00d5 08       		.uleb128 0x8
+ 346 00d6 75020000 		.4byte	.LASF19
+ 347 00da 04       		.byte	0x4
+ 348 00db 570F     		.2byte	0xf57
+ 349 00dd 81000000 		.4byte	0x81
+ 350 00e1 00       		.byte	0
+ 351 00e2 08       		.uleb128 0x8
+ 352 00e3 00000000 		.4byte	.LASF20
+ 353 00e7 04       		.byte	0x4
+ 354 00e8 580F     		.2byte	0xf58
+ 355 00ea C6000000 		.4byte	0xc6
+ 356 00ee 04       		.byte	0x4
+ 357 00ef 08       		.uleb128 0x8
+ 358 00f0 1F010000 		.4byte	.LASF21
+ 359 00f4 04       		.byte	0x4
+ 360 00f5 590F     		.2byte	0xf59
+ 361 00f7 C6000000 		.4byte	0xc6
+ 362 00fb 08       		.byte	0x8
+ 363 00fc 08       		.uleb128 0x8
+ 364 00fd F1000000 		.4byte	.LASF22
+ 365 0101 04       		.byte	0x4
+ 366 0102 5A0F     		.2byte	0xf5a
+ 367 0104 C6000000 		.4byte	0xc6
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 15
+
+
+ 368 0108 0C       		.byte	0xc
+ 369 0109 00       		.byte	0
+ 370 010a 05       		.uleb128 0x5
+ 371 010b 4D000000 		.4byte	.LASF23
+ 372 010f 04       		.byte	0x4
+ 373 0110 5B0F     		.2byte	0xf5b
+ 374 0112 CC000000 		.4byte	0xcc
+ 375 0116 09       		.uleb128 0x9
+ 376 0117 32020000 		.4byte	.LASF37
+ 377 011b 01       		.byte	0x1
+ 378 011c 5001     		.2byte	0x150
+ 379 011e 00000000 		.4byte	.LFB82
+ 380 0122 40010000 		.4byte	.LFE82-.LFB82
+ 381 0126 01       		.uleb128 0x1
+ 382 0127 9C       		.byte	0x9c
+ 383 0128 3B020000 		.4byte	0x23b
+ 384 012c 0A       		.uleb128 0xa
+ 385 012d 5300     		.ascii	"S\000"
+ 386 012f 01       		.byte	0x1
+ 387 0130 5101     		.2byte	0x151
+ 388 0132 3B020000 		.4byte	0x23b
+ 389 0136 03       		.uleb128 0x3
+ 390 0137 91       		.byte	0x91
+ 391 0138 BC7F     		.sleb128 -68
+ 392 013a 0B       		.uleb128 0xb
+ 393 013b 70020000 		.4byte	.LASF24
+ 394 013f 01       		.byte	0x1
+ 395 0140 5201     		.2byte	0x152
+ 396 0142 C6000000 		.4byte	0xc6
+ 397 0146 03       		.uleb128 0x3
+ 398 0147 91       		.byte	0x91
+ 399 0148 B87F     		.sleb128 -72
+ 400 014a 0B       		.uleb128 0xb
+ 401 014b EC000000 		.4byte	.LASF25
+ 402 014f 01       		.byte	0x1
+ 403 0150 5301     		.2byte	0x153
+ 404 0152 C6000000 		.4byte	0xc6
+ 405 0156 03       		.uleb128 0x3
+ 406 0157 91       		.byte	0x91
+ 407 0158 B47F     		.sleb128 -76
+ 408 015a 0B       		.uleb128 0xb
+ 409 015b FB010000 		.4byte	.LASF26
+ 410 015f 01       		.byte	0x1
+ 411 0160 5401     		.2byte	0x154
+ 412 0162 8C000000 		.4byte	0x8c
+ 413 0166 03       		.uleb128 0x3
+ 414 0167 91       		.byte	0x91
+ 415 0168 B07F     		.sleb128 -80
+ 416 016a 0C       		.uleb128 0xc
+ 417 016b E6000000 		.4byte	.LASF27
+ 418 016f 01       		.byte	0x1
+ 419 0170 5601     		.2byte	0x156
+ 420 0172 BA000000 		.4byte	0xba
+ 421 0176 02       		.uleb128 0x2
+ 422 0177 91       		.byte	0x91
+ 423 0178 74       		.sleb128 -12
+ 424 0179 0C       		.uleb128 0xc
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 16
+
+
+ 425 017a CD000000 		.4byte	.LASF28
+ 426 017e 01       		.byte	0x1
+ 427 017f 5601     		.2byte	0x156
+ 428 0181 BA000000 		.4byte	0xba
+ 429 0185 02       		.uleb128 0x2
+ 430 0186 91       		.byte	0x91
+ 431 0187 70       		.sleb128 -16
+ 432 0188 0C       		.uleb128 0xc
+ 433 0189 DE010000 		.4byte	.LASF29
+ 434 018d 01       		.byte	0x1
+ 435 018e 5601     		.2byte	0x156
+ 436 0190 BA000000 		.4byte	0xba
+ 437 0194 02       		.uleb128 0x2
+ 438 0195 91       		.byte	0x91
+ 439 0196 44       		.sleb128 -60
+ 440 0197 0C       		.uleb128 0xc
+ 441 0198 9A000000 		.4byte	.LASF30
+ 442 019c 01       		.byte	0x1
+ 443 019d 5601     		.2byte	0x156
+ 444 019f BA000000 		.4byte	0xba
+ 445 01a3 02       		.uleb128 0x2
+ 446 01a4 91       		.byte	0x91
+ 447 01a5 40       		.sleb128 -64
+ 448 01a6 0D       		.uleb128 0xd
+ 449 01a7 61636300 		.ascii	"acc\000"
+ 450 01ab 01       		.byte	0x1
+ 451 01ac 5701     		.2byte	0x157
+ 452 01ae BA000000 		.4byte	0xba
+ 453 01b2 02       		.uleb128 0x2
+ 454 01b3 91       		.byte	0x91
+ 455 01b4 6C       		.sleb128 -20
+ 456 01b5 0C       		.uleb128 0xc
+ 457 01b6 B4000000 		.4byte	.LASF31
+ 458 01ba 01       		.byte	0x1
+ 459 01bb 5801     		.2byte	0x158
+ 460 01bd 8C000000 		.4byte	0x8c
+ 461 01c1 02       		.uleb128 0x2
+ 462 01c2 91       		.byte	0x91
+ 463 01c3 68       		.sleb128 -24
+ 464 01c4 0C       		.uleb128 0xc
+ 465 01c5 FA000000 		.4byte	.LASF32
+ 466 01c9 01       		.byte	0x1
+ 467 01ca 5801     		.2byte	0x158
+ 468 01cc 8C000000 		.4byte	0x8c
+ 469 01d0 02       		.uleb128 0x2
+ 470 01d1 91       		.byte	0x91
+ 471 01d2 64       		.sleb128 -28
+ 472 01d3 0D       		.uleb128 0xd
+ 473 01d4 70783100 		.ascii	"px1\000"
+ 474 01d8 01       		.byte	0x1
+ 475 01d9 5901     		.2byte	0x159
+ 476 01db C6000000 		.4byte	0xc6
+ 477 01df 02       		.uleb128 0x2
+ 478 01e0 91       		.byte	0x91
+ 479 01e1 60       		.sleb128 -32
+ 480 01e2 0D       		.uleb128 0xd
+ 481 01e3 70783200 		.ascii	"px2\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 17
+
+
+ 482 01e7 01       		.byte	0x1
+ 483 01e8 5901     		.2byte	0x159
+ 484 01ea C6000000 		.4byte	0xc6
+ 485 01ee 02       		.uleb128 0x2
+ 486 01ef 91       		.byte	0x91
+ 487 01f0 5C       		.sleb128 -36
+ 488 01f1 0D       		.uleb128 0xd
+ 489 01f2 706B00   		.ascii	"pk\000"
+ 490 01f5 01       		.byte	0x1
+ 491 01f6 5901     		.2byte	0x159
+ 492 01f8 C6000000 		.4byte	0xc6
+ 493 01fc 02       		.uleb128 0x2
+ 494 01fd 91       		.byte	0x91
+ 495 01fe 58       		.sleb128 -40
+ 496 01ff 0D       		.uleb128 0xd
+ 497 0200 707600   		.ascii	"pv\000"
+ 498 0203 01       		.byte	0x1
+ 499 0204 5901     		.2byte	0x159
+ 500 0206 C6000000 		.4byte	0xc6
+ 501 020a 02       		.uleb128 0x2
+ 502 020b 91       		.byte	0x91
+ 503 020c 54       		.sleb128 -44
+ 504 020d 0C       		.uleb128 0xc
+ 505 020e 75020000 		.4byte	.LASF19
+ 506 0212 01       		.byte	0x1
+ 507 0213 5A01     		.2byte	0x15a
+ 508 0215 8C000000 		.4byte	0x8c
+ 509 0219 02       		.uleb128 0x2
+ 510 021a 91       		.byte	0x91
+ 511 021b 48       		.sleb128 -56
+ 512 021c 0C       		.uleb128 0xc
+ 513 021d 00000000 		.4byte	.LASF20
+ 514 0221 01       		.byte	0x1
+ 515 0222 5B01     		.2byte	0x15b
+ 516 0224 C6000000 		.4byte	0xc6
+ 517 0228 02       		.uleb128 0x2
+ 518 0229 91       		.byte	0x91
+ 519 022a 50       		.sleb128 -48
+ 520 022b 0C       		.uleb128 0xc
+ 521 022c 13010000 		.4byte	.LASF33
+ 522 0230 01       		.byte	0x1
+ 523 0231 5C01     		.2byte	0x15c
+ 524 0233 C6000000 		.4byte	0xc6
+ 525 0237 02       		.uleb128 0x2
+ 526 0238 91       		.byte	0x91
+ 527 0239 4C       		.sleb128 -52
+ 528 023a 00       		.byte	0
+ 529 023b 06       		.uleb128 0x6
+ 530 023c 04       		.byte	0x4
+ 531 023d 41020000 		.4byte	0x241
+ 532 0241 0E       		.uleb128 0xe
+ 533 0242 0A010000 		.4byte	0x10a
+ 534 0246 00       		.byte	0
+ 535              		.section	.debug_abbrev,"",%progbits
+ 536              	.Ldebug_abbrev0:
+ 537 0000 01       		.uleb128 0x1
+ 538 0001 11       		.uleb128 0x11
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 18
+
+
+ 539 0002 01       		.byte	0x1
+ 540 0003 25       		.uleb128 0x25
+ 541 0004 0E       		.uleb128 0xe
+ 542 0005 13       		.uleb128 0x13
+ 543 0006 0B       		.uleb128 0xb
+ 544 0007 03       		.uleb128 0x3
+ 545 0008 0E       		.uleb128 0xe
+ 546 0009 1B       		.uleb128 0x1b
+ 547 000a 0E       		.uleb128 0xe
+ 548 000b 55       		.uleb128 0x55
+ 549 000c 17       		.uleb128 0x17
+ 550 000d 11       		.uleb128 0x11
+ 551 000e 01       		.uleb128 0x1
+ 552 000f 10       		.uleb128 0x10
+ 553 0010 17       		.uleb128 0x17
+ 554 0011 00       		.byte	0
+ 555 0012 00       		.byte	0
+ 556 0013 02       		.uleb128 0x2
+ 557 0014 24       		.uleb128 0x24
+ 558 0015 00       		.byte	0
+ 559 0016 0B       		.uleb128 0xb
+ 560 0017 0B       		.uleb128 0xb
+ 561 0018 3E       		.uleb128 0x3e
+ 562 0019 0B       		.uleb128 0xb
+ 563 001a 03       		.uleb128 0x3
+ 564 001b 0E       		.uleb128 0xe
+ 565 001c 00       		.byte	0
+ 566 001d 00       		.byte	0
+ 567 001e 03       		.uleb128 0x3
+ 568 001f 16       		.uleb128 0x16
+ 569 0020 00       		.byte	0
+ 570 0021 03       		.uleb128 0x3
+ 571 0022 0E       		.uleb128 0xe
+ 572 0023 3A       		.uleb128 0x3a
+ 573 0024 0B       		.uleb128 0xb
+ 574 0025 3B       		.uleb128 0x3b
+ 575 0026 0B       		.uleb128 0xb
+ 576 0027 49       		.uleb128 0x49
+ 577 0028 13       		.uleb128 0x13
+ 578 0029 00       		.byte	0
+ 579 002a 00       		.byte	0
+ 580 002b 04       		.uleb128 0x4
+ 581 002c 24       		.uleb128 0x24
+ 582 002d 00       		.byte	0
+ 583 002e 0B       		.uleb128 0xb
+ 584 002f 0B       		.uleb128 0xb
+ 585 0030 3E       		.uleb128 0x3e
+ 586 0031 0B       		.uleb128 0xb
+ 587 0032 03       		.uleb128 0x3
+ 588 0033 08       		.uleb128 0x8
+ 589 0034 00       		.byte	0
+ 590 0035 00       		.byte	0
+ 591 0036 05       		.uleb128 0x5
+ 592 0037 16       		.uleb128 0x16
+ 593 0038 00       		.byte	0
+ 594 0039 03       		.uleb128 0x3
+ 595 003a 0E       		.uleb128 0xe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 19
+
+
+ 596 003b 3A       		.uleb128 0x3a
+ 597 003c 0B       		.uleb128 0xb
+ 598 003d 3B       		.uleb128 0x3b
+ 599 003e 05       		.uleb128 0x5
+ 600 003f 49       		.uleb128 0x49
+ 601 0040 13       		.uleb128 0x13
+ 602 0041 00       		.byte	0
+ 603 0042 00       		.byte	0
+ 604 0043 06       		.uleb128 0x6
+ 605 0044 0F       		.uleb128 0xf
+ 606 0045 00       		.byte	0
+ 607 0046 0B       		.uleb128 0xb
+ 608 0047 0B       		.uleb128 0xb
+ 609 0048 49       		.uleb128 0x49
+ 610 0049 13       		.uleb128 0x13
+ 611 004a 00       		.byte	0
+ 612 004b 00       		.byte	0
+ 613 004c 07       		.uleb128 0x7
+ 614 004d 13       		.uleb128 0x13
+ 615 004e 01       		.byte	0x1
+ 616 004f 0B       		.uleb128 0xb
+ 617 0050 0B       		.uleb128 0xb
+ 618 0051 3A       		.uleb128 0x3a
+ 619 0052 0B       		.uleb128 0xb
+ 620 0053 3B       		.uleb128 0x3b
+ 621 0054 05       		.uleb128 0x5
+ 622 0055 01       		.uleb128 0x1
+ 623 0056 13       		.uleb128 0x13
+ 624 0057 00       		.byte	0
+ 625 0058 00       		.byte	0
+ 626 0059 08       		.uleb128 0x8
+ 627 005a 0D       		.uleb128 0xd
+ 628 005b 00       		.byte	0
+ 629 005c 03       		.uleb128 0x3
+ 630 005d 0E       		.uleb128 0xe
+ 631 005e 3A       		.uleb128 0x3a
+ 632 005f 0B       		.uleb128 0xb
+ 633 0060 3B       		.uleb128 0x3b
+ 634 0061 05       		.uleb128 0x5
+ 635 0062 49       		.uleb128 0x49
+ 636 0063 13       		.uleb128 0x13
+ 637 0064 38       		.uleb128 0x38
+ 638 0065 0B       		.uleb128 0xb
+ 639 0066 00       		.byte	0
+ 640 0067 00       		.byte	0
+ 641 0068 09       		.uleb128 0x9
+ 642 0069 2E       		.uleb128 0x2e
+ 643 006a 01       		.byte	0x1
+ 644 006b 3F       		.uleb128 0x3f
+ 645 006c 19       		.uleb128 0x19
+ 646 006d 03       		.uleb128 0x3
+ 647 006e 0E       		.uleb128 0xe
+ 648 006f 3A       		.uleb128 0x3a
+ 649 0070 0B       		.uleb128 0xb
+ 650 0071 3B       		.uleb128 0x3b
+ 651 0072 05       		.uleb128 0x5
+ 652 0073 27       		.uleb128 0x27
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 20
+
+
+ 653 0074 19       		.uleb128 0x19
+ 654 0075 11       		.uleb128 0x11
+ 655 0076 01       		.uleb128 0x1
+ 656 0077 12       		.uleb128 0x12
+ 657 0078 06       		.uleb128 0x6
+ 658 0079 40       		.uleb128 0x40
+ 659 007a 18       		.uleb128 0x18
+ 660 007b 9642     		.uleb128 0x2116
+ 661 007d 19       		.uleb128 0x19
+ 662 007e 01       		.uleb128 0x1
+ 663 007f 13       		.uleb128 0x13
+ 664 0080 00       		.byte	0
+ 665 0081 00       		.byte	0
+ 666 0082 0A       		.uleb128 0xa
+ 667 0083 05       		.uleb128 0x5
+ 668 0084 00       		.byte	0
+ 669 0085 03       		.uleb128 0x3
+ 670 0086 08       		.uleb128 0x8
+ 671 0087 3A       		.uleb128 0x3a
+ 672 0088 0B       		.uleb128 0xb
+ 673 0089 3B       		.uleb128 0x3b
+ 674 008a 05       		.uleb128 0x5
+ 675 008b 49       		.uleb128 0x49
+ 676 008c 13       		.uleb128 0x13
+ 677 008d 02       		.uleb128 0x2
+ 678 008e 18       		.uleb128 0x18
+ 679 008f 00       		.byte	0
+ 680 0090 00       		.byte	0
+ 681 0091 0B       		.uleb128 0xb
+ 682 0092 05       		.uleb128 0x5
+ 683 0093 00       		.byte	0
+ 684 0094 03       		.uleb128 0x3
+ 685 0095 0E       		.uleb128 0xe
+ 686 0096 3A       		.uleb128 0x3a
+ 687 0097 0B       		.uleb128 0xb
+ 688 0098 3B       		.uleb128 0x3b
+ 689 0099 05       		.uleb128 0x5
+ 690 009a 49       		.uleb128 0x49
+ 691 009b 13       		.uleb128 0x13
+ 692 009c 02       		.uleb128 0x2
+ 693 009d 18       		.uleb128 0x18
+ 694 009e 00       		.byte	0
+ 695 009f 00       		.byte	0
+ 696 00a0 0C       		.uleb128 0xc
+ 697 00a1 34       		.uleb128 0x34
+ 698 00a2 00       		.byte	0
+ 699 00a3 03       		.uleb128 0x3
+ 700 00a4 0E       		.uleb128 0xe
+ 701 00a5 3A       		.uleb128 0x3a
+ 702 00a6 0B       		.uleb128 0xb
+ 703 00a7 3B       		.uleb128 0x3b
+ 704 00a8 05       		.uleb128 0x5
+ 705 00a9 49       		.uleb128 0x49
+ 706 00aa 13       		.uleb128 0x13
+ 707 00ab 02       		.uleb128 0x2
+ 708 00ac 18       		.uleb128 0x18
+ 709 00ad 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 21
+
+
+ 710 00ae 00       		.byte	0
+ 711 00af 0D       		.uleb128 0xd
+ 712 00b0 34       		.uleb128 0x34
+ 713 00b1 00       		.byte	0
+ 714 00b2 03       		.uleb128 0x3
+ 715 00b3 08       		.uleb128 0x8
+ 716 00b4 3A       		.uleb128 0x3a
+ 717 00b5 0B       		.uleb128 0xb
+ 718 00b6 3B       		.uleb128 0x3b
+ 719 00b7 05       		.uleb128 0x5
+ 720 00b8 49       		.uleb128 0x49
+ 721 00b9 13       		.uleb128 0x13
+ 722 00ba 02       		.uleb128 0x2
+ 723 00bb 18       		.uleb128 0x18
+ 724 00bc 00       		.byte	0
+ 725 00bd 00       		.byte	0
+ 726 00be 0E       		.uleb128 0xe
+ 727 00bf 26       		.uleb128 0x26
+ 728 00c0 00       		.byte	0
+ 729 00c1 49       		.uleb128 0x49
+ 730 00c2 13       		.uleb128 0x13
+ 731 00c3 00       		.byte	0
+ 732 00c4 00       		.byte	0
+ 733 00c5 00       		.byte	0
+ 734              		.section	.debug_aranges,"",%progbits
+ 735 0000 1C000000 		.4byte	0x1c
+ 736 0004 0200     		.2byte	0x2
+ 737 0006 00000000 		.4byte	.Ldebug_info0
+ 738 000a 04       		.byte	0x4
+ 739 000b 00       		.byte	0
+ 740 000c 0000     		.2byte	0
+ 741 000e 0000     		.2byte	0
+ 742 0010 00000000 		.4byte	.LFB82
+ 743 0014 40010000 		.4byte	.LFE82-.LFB82
+ 744 0018 00000000 		.4byte	0
+ 745 001c 00000000 		.4byte	0
+ 746              		.section	.debug_ranges,"",%progbits
+ 747              	.Ldebug_ranges0:
+ 748 0000 00000000 		.4byte	.LFB82
+ 749 0004 40010000 		.4byte	.LFE82
+ 750 0008 00000000 		.4byte	0
+ 751 000c 00000000 		.4byte	0
+ 752              		.section	.debug_line,"",%progbits
+ 753              	.Ldebug_line0:
+ 754 0000 97010000 		.section	.debug_str,"MS",%progbits,1
+ 754      02005601 
+ 754      00000201 
+ 754      FB0E0D00 
+ 754      01010101 
+ 755              	.LASF20:
+ 756 0000 70537461 		.ascii	"pState\000"
+ 756      746500
+ 757              	.LASF36:
+ 758 0007 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 758      73657273 
+ 758      5C666E65 
+ 758      7665735C 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 22
+
+
+ 758      446F6375 
+ 759 0034 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 759      655F7370 
+ 759      6565645F 
+ 759      73656E73 
+ 759      6F722E63 
+ 760              	.LASF23:
+ 761 004d 61726D5F 		.ascii	"arm_iir_lattice_instance_f32\000"
+ 761      6969725F 
+ 761      6C617474 
+ 761      6963655F 
+ 761      696E7374 
+ 762              	.LASF35:
+ 763 006a 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_iir_lattice_f32.c\000"
+ 763      63655C46 
+ 763      696C7465 
+ 763      72696E67 
+ 763      46756E63 
+ 764              	.LASF30:
+ 765 009a 676E6578 		.ascii	"gnext\000"
+ 765      7400
+ 766              	.LASF16:
+ 767 00a0 666C6F61 		.ascii	"float\000"
+ 767      7400
+ 768              	.LASF1:
+ 769 00a6 756E7369 		.ascii	"unsigned char\000"
+ 769      676E6564 
+ 769      20636861 
+ 769      7200
+ 770              	.LASF31:
+ 771 00b4 626C6B43 		.ascii	"blkCnt\000"
+ 771      6E7400
+ 772              	.LASF7:
+ 773 00bb 6C6F6E67 		.ascii	"long unsigned int\000"
+ 773      20756E73 
+ 773      69676E65 
+ 773      6420696E 
+ 773      7400
+ 774              	.LASF28:
+ 775 00cd 666E6578 		.ascii	"fnext\000"
+ 775      7400
+ 776              	.LASF3:
+ 777 00d3 73686F72 		.ascii	"short unsigned int\000"
+ 777      7420756E 
+ 777      7369676E 
+ 777      65642069 
+ 777      6E7400
+ 778              	.LASF27:
+ 779 00e6 66637572 		.ascii	"fcurr\000"
+ 779      7200
+ 780              	.LASF25:
+ 781 00ec 70447374 		.ascii	"pDst\000"
+ 781      00
+ 782              	.LASF22:
+ 783 00f1 7076436F 		.ascii	"pvCoeffs\000"
+ 783      65666673 
+ 783      00
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 23
+
+
+ 784              	.LASF32:
+ 785 00fa 74617043 		.ascii	"tapCnt\000"
+ 785      6E7400
+ 786              	.LASF15:
+ 787 0101 646F7562 		.ascii	"double\000"
+ 787      6C6500
+ 788              	.LASF6:
+ 789 0108 5F5F7569 		.ascii	"__uint32_t\000"
+ 789      6E743332 
+ 789      5F7400
+ 790              	.LASF33:
+ 791 0113 70537461 		.ascii	"pStateCurnt\000"
+ 791      74654375 
+ 791      726E7400 
+ 792              	.LASF21:
+ 793 011f 706B436F 		.ascii	"pkCoeffs\000"
+ 793      65666673 
+ 793      00
+ 794              	.LASF10:
+ 795 0128 756E7369 		.ascii	"unsigned int\000"
+ 795      676E6564 
+ 795      20696E74 
+ 795      00
+ 796              	.LASF9:
+ 797 0135 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 797      206C6F6E 
+ 797      6720756E 
+ 797      7369676E 
+ 797      65642069 
+ 798              	.LASF34:
+ 799 014c 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 799      4320342E 
+ 799      392E3320 
+ 799      32303135 
+ 799      30333033 
+ 800 017f 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 800      20726576 
+ 800      6973696F 
+ 800      6E203232 
+ 800      31323230 
+ 801 01b2 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 801      30202D66 
+ 801      66756E63 
+ 801      74696F6E 
+ 801      2D736563 
+ 802              	.LASF29:
+ 803 01de 67637572 		.ascii	"gcurr\000"
+ 803      7200
+ 804              	.LASF13:
+ 805 01e4 73697A65 		.ascii	"sizetype\000"
+ 805      74797065 
+ 805      00
+ 806              	.LASF8:
+ 807 01ed 6C6F6E67 		.ascii	"long long int\000"
+ 807      206C6F6E 
+ 807      6720696E 
+ 807      7400
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccgOoZsK.s 			page 24
+
+
+ 808              	.LASF26:
+ 809 01fb 626C6F63 		.ascii	"blockSize\000"
+ 809      6B53697A 
+ 809      6500
+ 810              	.LASF14:
+ 811 0205 63686172 		.ascii	"char\000"
+ 811      00
+ 812              	.LASF18:
+ 813 020a 666C6F61 		.ascii	"float32_t\000"
+ 813      7433325F 
+ 813      7400
+ 814              	.LASF2:
+ 815 0214 73686F72 		.ascii	"short int\000"
+ 815      7420696E 
+ 815      7400
+ 816              	.LASF5:
+ 817 021e 5F5F7569 		.ascii	"__uint16_t\000"
+ 817      6E743136 
+ 817      5F7400
+ 818              	.LASF11:
+ 819 0229 75696E74 		.ascii	"uint16_t\000"
+ 819      31365F74 
+ 819      00
+ 820              	.LASF37:
+ 821 0232 61726D5F 		.ascii	"arm_iir_lattice_f32\000"
+ 821      6969725F 
+ 821      6C617474 
+ 821      6963655F 
+ 821      66333200 
+ 822              	.LASF12:
+ 823 0246 75696E74 		.ascii	"uint32_t\000"
+ 823      33325F74 
+ 823      00
+ 824              	.LASF4:
+ 825 024f 6C6F6E67 		.ascii	"long int\000"
+ 825      20696E74 
+ 825      00
+ 826              	.LASF17:
+ 827 0258 6C6F6E67 		.ascii	"long double\000"
+ 827      20646F75 
+ 827      626C6500 
+ 828              	.LASF0:
+ 829 0264 7369676E 		.ascii	"signed char\000"
+ 829      65642063 
+ 829      68617200 
+ 830              	.LASF24:
+ 831 0270 70537263 		.ascii	"pSrc\000"
+ 831      00
+ 832              	.LASF19:
+ 833 0275 6E756D53 		.ascii	"numStages\000"
+ 833      74616765 
+ 833      7300
+ 834              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

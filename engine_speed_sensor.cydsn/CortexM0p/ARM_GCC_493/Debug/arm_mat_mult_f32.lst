@@ -1,0 +1,1362 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_mat_mult_f32.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_fmul
+  18              		.global	__aeabi_fadd
+  19              		.section	.text.arm_mat_mult_f32,"ax",%progbits
+  20              		.align	2
+  21              		.global	arm_mat_mult_f32
+  22              		.code	16
+  23              		.thumb_func
+  24              		.type	arm_mat_mult_f32, %function
+  25              	arm_mat_mult_f32:
+  26              	.LFB82:
+  27              		.file 1 "Source\\MatrixFunctions\\arm_mat_mult_f32.c"
+   1:Source\MatrixFunctions/arm_mat_mult_f32.c **** /* ----------------------------------------------------------------------
+   2:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Project:      CMSIS DSP Library
+   3:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Title:        arm_mat_mult_f32.c
+   4:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Description:  Floating-point matrix multiplication
+   5:Source\MatrixFunctions/arm_mat_mult_f32.c ****  *
+   6:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * $Date:        27. January 2017
+   7:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * $Revision:    V.1.5.1
+   8:Source\MatrixFunctions/arm_mat_mult_f32.c ****  *
+   9:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Target Processor: Cortex-M cores
+  10:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * -------------------------------------------------------------------- */
+  11:Source\MatrixFunctions/arm_mat_mult_f32.c **** /*
+  12:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\MatrixFunctions/arm_mat_mult_f32.c ****  *
+  14:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\MatrixFunctions/arm_mat_mult_f32.c ****  *
+  16:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * not use this file except in compliance with the License.
+  18:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * You may obtain a copy of the License at
+  19:Source\MatrixFunctions/arm_mat_mult_f32.c ****  *
+  20:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\MatrixFunctions/arm_mat_mult_f32.c ****  *
+  22:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * See the License for the specific language governing permissions and
+  26:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * limitations under the License.
+  27:Source\MatrixFunctions/arm_mat_mult_f32.c ****  */
+  28:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  29:Source\MatrixFunctions/arm_mat_mult_f32.c **** #include "arm_math.h"
+  30:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 2
+
+
+  31:Source\MatrixFunctions/arm_mat_mult_f32.c **** /**
+  32:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @ingroup groupMatrix
+  33:Source\MatrixFunctions/arm_mat_mult_f32.c ****  */
+  34:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  35:Source\MatrixFunctions/arm_mat_mult_f32.c **** /**
+  36:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @defgroup MatrixMult Matrix Multiplication
+  37:Source\MatrixFunctions/arm_mat_mult_f32.c ****  *
+  38:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Multiplies two matrices.
+  39:Source\MatrixFunctions/arm_mat_mult_f32.c ****  *
+  40:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * \image html MatrixMultiplication.gif "Multiplication of two 3 x 3 matrices"
+  41:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  42:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Matrix multiplication is only defined if the number of columns of the
+  43:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * first matrix equals the number of rows of the second matrix.
+  44:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * Multiplying an <code>M x N</code> matrix with an <code>N x P</code> matrix results
+  45:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * in an <code>M x P</code> matrix.
+  46:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * When matrix size checking is enabled, the functions check: (1) that the inner dimensions of
+  47:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * <code>pSrcA</code> and <code>pSrcB</code> are equal; and (2) that the size of the output
+  48:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * matrix equals the outer dimensions of <code>pSrcA</code> and <code>pSrcB</code>.
+  49:Source\MatrixFunctions/arm_mat_mult_f32.c ****  */
+  50:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  51:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  52:Source\MatrixFunctions/arm_mat_mult_f32.c **** /**
+  53:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @addtogroup MatrixMult
+  54:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @{
+  55:Source\MatrixFunctions/arm_mat_mult_f32.c ****  */
+  56:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  57:Source\MatrixFunctions/arm_mat_mult_f32.c **** /**
+  58:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @brief Floating-point matrix multiplication.
+  59:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @param[in]       *pSrcA points to the first input matrix structure
+  60:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @param[in]       *pSrcB points to the second input matrix structure
+  61:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @param[out]      *pDst points to output matrix structure
+  62:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * @return     		The function returns either
+  63:Source\MatrixFunctions/arm_mat_mult_f32.c ****  * <code>ARM_MATH_SIZE_MISMATCH</code> or <code>ARM_MATH_SUCCESS</code> based on the outcome of siz
+  64:Source\MatrixFunctions/arm_mat_mult_f32.c ****  */
+  65:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  66:Source\MatrixFunctions/arm_mat_mult_f32.c **** arm_status arm_mat_mult_f32(
+  67:Source\MatrixFunctions/arm_mat_mult_f32.c ****   const arm_matrix_instance_f32 * pSrcA,
+  68:Source\MatrixFunctions/arm_mat_mult_f32.c ****   const arm_matrix_instance_f32 * pSrcB,
+  69:Source\MatrixFunctions/arm_mat_mult_f32.c ****   arm_matrix_instance_f32 * pDst)
+  70:Source\MatrixFunctions/arm_mat_mult_f32.c **** {
+  28              		.loc 1 70 0
+  29              		.cfi_startproc
+  30 0000 80B5     		push	{r7, lr}
+  31              		.cfi_def_cfa_offset 8
+  32              		.cfi_offset 7, -8
+  33              		.cfi_offset 14, -4
+  34 0002 90B0     		sub	sp, sp, #64
+  35              		.cfi_def_cfa_offset 72
+  36 0004 00AF     		add	r7, sp, #0
+  37              		.cfi_def_cfa_register 7
+  38 0006 F860     		str	r0, [r7, #12]
+  39 0008 B960     		str	r1, [r7, #8]
+  40 000a 7A60     		str	r2, [r7, #4]
+  71:Source\MatrixFunctions/arm_mat_mult_f32.c ****   float32_t *pIn1 = pSrcA->pData;                /* input data matrix pointer A */
+  41              		.loc 1 71 0
+  42 000c FB68     		ldr	r3, [r7, #12]
+  43 000e 5B68     		ldr	r3, [r3, #4]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 3
+
+
+  44 0010 FB63     		str	r3, [r7, #60]
+  72:Source\MatrixFunctions/arm_mat_mult_f32.c ****   float32_t *pIn2 = pSrcB->pData;                /* input data matrix pointer B */
+  45              		.loc 1 72 0
+  46 0012 BB68     		ldr	r3, [r7, #8]
+  47 0014 5B68     		ldr	r3, [r3, #4]
+  48 0016 BB63     		str	r3, [r7, #56]
+  73:Source\MatrixFunctions/arm_mat_mult_f32.c ****   float32_t *pInA = pSrcA->pData;                /* input data matrix pointer A  */
+  49              		.loc 1 73 0
+  50 0018 FB68     		ldr	r3, [r7, #12]
+  51 001a 5B68     		ldr	r3, [r3, #4]
+  52 001c 7B63     		str	r3, [r7, #52]
+  74:Source\MatrixFunctions/arm_mat_mult_f32.c ****   float32_t *pOut = pDst->pData;                 /* output data matrix pointer */
+  53              		.loc 1 74 0
+  54 001e 7B68     		ldr	r3, [r7, #4]
+  55 0020 5B68     		ldr	r3, [r3, #4]
+  56 0022 3B62     		str	r3, [r7, #32]
+  75:Source\MatrixFunctions/arm_mat_mult_f32.c ****   float32_t *px;                                 /* Temporary output data matrix pointer */
+  76:Source\MatrixFunctions/arm_mat_mult_f32.c ****   float32_t sum;                                 /* Accumulator */
+  77:Source\MatrixFunctions/arm_mat_mult_f32.c ****   uint16_t numRowsA = pSrcA->numRows;            /* number of rows of input matrix A */
+  57              		.loc 1 77 0
+  58 0024 1E23     		mov	r3, #30
+  59 0026 FB18     		add	r3, r7, r3
+  60 0028 FA68     		ldr	r2, [r7, #12]
+  61 002a 1288     		ldrh	r2, [r2]
+  62 002c 1A80     		strh	r2, [r3]
+  78:Source\MatrixFunctions/arm_mat_mult_f32.c ****   uint16_t numColsB = pSrcB->numCols;            /* number of columns of input matrix B */
+  63              		.loc 1 78 0
+  64 002e 1C23     		mov	r3, #28
+  65 0030 FB18     		add	r3, r7, r3
+  66 0032 BA68     		ldr	r2, [r7, #8]
+  67 0034 5288     		ldrh	r2, [r2, #2]
+  68 0036 1A80     		strh	r2, [r3]
+  79:Source\MatrixFunctions/arm_mat_mult_f32.c ****   uint16_t numColsA = pSrcA->numCols;            /* number of columns of input matrix A */
+  69              		.loc 1 79 0
+  70 0038 1A23     		mov	r3, #26
+  71 003a FB18     		add	r3, r7, r3
+  72 003c FA68     		ldr	r2, [r7, #12]
+  73 003e 5288     		ldrh	r2, [r2, #2]
+  74 0040 1A80     		strh	r2, [r3]
+  80:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  81:Source\MatrixFunctions/arm_mat_mult_f32.c **** #if defined (ARM_MATH_DSP)
+  82:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  83:Source\MatrixFunctions/arm_mat_mult_f32.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+  84:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  85:Source\MatrixFunctions/arm_mat_mult_f32.c ****   float32_t in1, in2, in3, in4;
+  86:Source\MatrixFunctions/arm_mat_mult_f32.c ****   uint16_t col, i = 0u, j, row = numRowsA, colCnt;      /* loop counters */
+  87:Source\MatrixFunctions/arm_mat_mult_f32.c ****   arm_status status;                             /* status of matrix multiplication */
+  88:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  89:Source\MatrixFunctions/arm_mat_mult_f32.c **** #ifdef ARM_MATH_MATRIX_CHECK
+  90:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  91:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  92:Source\MatrixFunctions/arm_mat_mult_f32.c ****   /* Check for matrix mismatch condition */
+  93:Source\MatrixFunctions/arm_mat_mult_f32.c ****   if ((pSrcA->numCols != pSrcB->numRows) ||
+  94:Source\MatrixFunctions/arm_mat_mult_f32.c ****      (pSrcA->numRows != pDst->numRows) || (pSrcB->numCols != pDst->numCols))
+  95:Source\MatrixFunctions/arm_mat_mult_f32.c ****   {
+  96:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+  97:Source\MatrixFunctions/arm_mat_mult_f32.c ****     /* Set status as ARM_MATH_SIZE_MISMATCH */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 4
+
+
+  98:Source\MatrixFunctions/arm_mat_mult_f32.c ****     status = ARM_MATH_SIZE_MISMATCH;
+  99:Source\MatrixFunctions/arm_mat_mult_f32.c ****   }
+ 100:Source\MatrixFunctions/arm_mat_mult_f32.c ****   else
+ 101:Source\MatrixFunctions/arm_mat_mult_f32.c **** #endif /*      #ifdef ARM_MATH_MATRIX_CHECK    */
+ 102:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 103:Source\MatrixFunctions/arm_mat_mult_f32.c ****   {
+ 104:Source\MatrixFunctions/arm_mat_mult_f32.c ****     /* The following loop performs the dot-product of each row in pSrcA with each column in pSrcB *
+ 105:Source\MatrixFunctions/arm_mat_mult_f32.c ****     /* row loop */
+ 106:Source\MatrixFunctions/arm_mat_mult_f32.c ****     do
+ 107:Source\MatrixFunctions/arm_mat_mult_f32.c ****     {
+ 108:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* Output pointer is set to starting address of the row being processed */
+ 109:Source\MatrixFunctions/arm_mat_mult_f32.c ****       px = pOut + i;
+ 110:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 111:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* For every row wise process, the column loop counter is to be initiated */
+ 112:Source\MatrixFunctions/arm_mat_mult_f32.c ****       col = numColsB;
+ 113:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 114:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* For every row wise process, the pIn2 pointer is set
+ 115:Source\MatrixFunctions/arm_mat_mult_f32.c ****        ** to the starting address of the pSrcB data */
+ 116:Source\MatrixFunctions/arm_mat_mult_f32.c ****       pIn2 = pSrcB->pData;
+ 117:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 118:Source\MatrixFunctions/arm_mat_mult_f32.c ****       j = 0u;
+ 119:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 120:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* column loop */
+ 121:Source\MatrixFunctions/arm_mat_mult_f32.c ****       do
+ 122:Source\MatrixFunctions/arm_mat_mult_f32.c ****       {
+ 123:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Set the variable sum, that acts as accumulator, to zero */
+ 124:Source\MatrixFunctions/arm_mat_mult_f32.c ****         sum = 0.0f;
+ 125:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 126:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Initiate the pointer pIn1 to point to the starting address of the column being processed
+ 127:Source\MatrixFunctions/arm_mat_mult_f32.c ****         pIn1 = pInA;
+ 128:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 129:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Apply loop unrolling and compute 4 MACs simultaneously. */
+ 130:Source\MatrixFunctions/arm_mat_mult_f32.c ****         colCnt = numColsA >> 2u;
+ 131:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 132:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* matrix multiplication        */
+ 133:Source\MatrixFunctions/arm_mat_mult_f32.c ****         while (colCnt > 0u)
+ 134:Source\MatrixFunctions/arm_mat_mult_f32.c ****         {
+ 135:Source\MatrixFunctions/arm_mat_mult_f32.c ****           /* c(m,n) = a(1,1)*b(1,1) + a(1,2) * b(2,1) + .... + a(m,p)*b(p,n) */
+ 136:Source\MatrixFunctions/arm_mat_mult_f32.c ****           in3 = *pIn2;
+ 137:Source\MatrixFunctions/arm_mat_mult_f32.c ****           pIn2 += numColsB;
+ 138:Source\MatrixFunctions/arm_mat_mult_f32.c ****           in1 = pIn1[0];
+ 139:Source\MatrixFunctions/arm_mat_mult_f32.c ****           in2 = pIn1[1];
+ 140:Source\MatrixFunctions/arm_mat_mult_f32.c ****           sum += in1 * in3;
+ 141:Source\MatrixFunctions/arm_mat_mult_f32.c ****           in4 = *pIn2;
+ 142:Source\MatrixFunctions/arm_mat_mult_f32.c ****           pIn2 += numColsB;
+ 143:Source\MatrixFunctions/arm_mat_mult_f32.c ****           sum += in2 * in4;
+ 144:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 145:Source\MatrixFunctions/arm_mat_mult_f32.c ****           in3 = *pIn2;
+ 146:Source\MatrixFunctions/arm_mat_mult_f32.c ****           pIn2 += numColsB;
+ 147:Source\MatrixFunctions/arm_mat_mult_f32.c ****           in1 = pIn1[2];
+ 148:Source\MatrixFunctions/arm_mat_mult_f32.c ****           in2 = pIn1[3];
+ 149:Source\MatrixFunctions/arm_mat_mult_f32.c ****           sum += in1 * in3;
+ 150:Source\MatrixFunctions/arm_mat_mult_f32.c ****           in4 = *pIn2;
+ 151:Source\MatrixFunctions/arm_mat_mult_f32.c ****           pIn2 += numColsB;
+ 152:Source\MatrixFunctions/arm_mat_mult_f32.c ****           sum += in2 * in4;
+ 153:Source\MatrixFunctions/arm_mat_mult_f32.c ****           pIn1 += 4u;
+ 154:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 5
+
+
+ 155:Source\MatrixFunctions/arm_mat_mult_f32.c ****           /* Decrement the loop count */
+ 156:Source\MatrixFunctions/arm_mat_mult_f32.c ****           colCnt--;
+ 157:Source\MatrixFunctions/arm_mat_mult_f32.c ****         }
+ 158:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 159:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* If the columns of pSrcA is not a multiple of 4, compute any remaining MACs here.
+ 160:Source\MatrixFunctions/arm_mat_mult_f32.c ****          ** No loop unrolling is used. */
+ 161:Source\MatrixFunctions/arm_mat_mult_f32.c ****         colCnt = numColsA % 0x4u;
+ 162:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 163:Source\MatrixFunctions/arm_mat_mult_f32.c ****         while (colCnt > 0u)
+ 164:Source\MatrixFunctions/arm_mat_mult_f32.c ****         {
+ 165:Source\MatrixFunctions/arm_mat_mult_f32.c ****           /* c(m,n) = a(1,1)*b(1,1) + a(1,2) * b(2,1) + .... + a(m,p)*b(p,n) */
+ 166:Source\MatrixFunctions/arm_mat_mult_f32.c ****           sum += *pIn1++ * (*pIn2);
+ 167:Source\MatrixFunctions/arm_mat_mult_f32.c ****           pIn2 += numColsB;
+ 168:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 169:Source\MatrixFunctions/arm_mat_mult_f32.c ****           /* Decrement the loop counter */
+ 170:Source\MatrixFunctions/arm_mat_mult_f32.c ****           colCnt--;
+ 171:Source\MatrixFunctions/arm_mat_mult_f32.c ****         }
+ 172:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 173:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Store the result in the destination buffer */
+ 174:Source\MatrixFunctions/arm_mat_mult_f32.c ****         *px++ = sum;
+ 175:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 176:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Update the pointer pIn2 to point to the  starting address of the next column */
+ 177:Source\MatrixFunctions/arm_mat_mult_f32.c ****         j++;
+ 178:Source\MatrixFunctions/arm_mat_mult_f32.c ****         pIn2 = pSrcB->pData + j;
+ 179:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 180:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Decrement the column loop counter */
+ 181:Source\MatrixFunctions/arm_mat_mult_f32.c ****         col--;
+ 182:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 183:Source\MatrixFunctions/arm_mat_mult_f32.c ****       } while (col > 0u);
+ 184:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 185:Source\MatrixFunctions/arm_mat_mult_f32.c **** #else
+ 186:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 187:Source\MatrixFunctions/arm_mat_mult_f32.c ****   /* Run the below code for Cortex-M0 */
+ 188:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 189:Source\MatrixFunctions/arm_mat_mult_f32.c ****   float32_t *pInB = pSrcB->pData;                /* input data matrix pointer B */
+  75              		.loc 1 189 0
+  76 0042 BB68     		ldr	r3, [r7, #8]
+  77 0044 5B68     		ldr	r3, [r3, #4]
+  78 0046 7B61     		str	r3, [r7, #20]
+ 190:Source\MatrixFunctions/arm_mat_mult_f32.c ****   uint16_t col, i = 0u, row = numRowsA, colCnt;  /* loop counters */
+  79              		.loc 1 190 0
+  80 0048 2823     		mov	r3, #40
+  81 004a FB18     		add	r3, r7, r3
+  82 004c 0022     		mov	r2, #0
+  83 004e 1A80     		strh	r2, [r3]
+  84 0050 2623     		mov	r3, #38
+  85 0052 FB18     		add	r3, r7, r3
+  86 0054 1E22     		mov	r2, #30
+  87 0056 BA18     		add	r2, r7, r2
+  88 0058 1288     		ldrh	r2, [r2]
+  89 005a 1A80     		strh	r2, [r3]
+  90              	.L5:
+ 191:Source\MatrixFunctions/arm_mat_mult_f32.c ****   arm_status status;                             /* status of matrix multiplication */
+ 192:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 193:Source\MatrixFunctions/arm_mat_mult_f32.c **** #ifdef ARM_MATH_MATRIX_CHECK
+ 194:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 195:Source\MatrixFunctions/arm_mat_mult_f32.c ****   /* Check for matrix mismatch condition */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 6
+
+
+ 196:Source\MatrixFunctions/arm_mat_mult_f32.c ****   if ((pSrcA->numCols != pSrcB->numRows) ||
+ 197:Source\MatrixFunctions/arm_mat_mult_f32.c ****      (pSrcA->numRows != pDst->numRows) || (pSrcB->numCols != pDst->numCols))
+ 198:Source\MatrixFunctions/arm_mat_mult_f32.c ****   {
+ 199:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 200:Source\MatrixFunctions/arm_mat_mult_f32.c ****     /* Set status as ARM_MATH_SIZE_MISMATCH */
+ 201:Source\MatrixFunctions/arm_mat_mult_f32.c ****     status = ARM_MATH_SIZE_MISMATCH;
+ 202:Source\MatrixFunctions/arm_mat_mult_f32.c ****   }
+ 203:Source\MatrixFunctions/arm_mat_mult_f32.c ****   else
+ 204:Source\MatrixFunctions/arm_mat_mult_f32.c **** #endif /*      #ifdef ARM_MATH_MATRIX_CHECK    */
+ 205:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 206:Source\MatrixFunctions/arm_mat_mult_f32.c ****   {
+ 207:Source\MatrixFunctions/arm_mat_mult_f32.c ****     /* The following loop performs the dot-product of each row in pInA with each column in pInB */
+ 208:Source\MatrixFunctions/arm_mat_mult_f32.c ****     /* row loop */
+ 209:Source\MatrixFunctions/arm_mat_mult_f32.c ****     do
+ 210:Source\MatrixFunctions/arm_mat_mult_f32.c ****     {
+ 211:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* Output pointer is set to starting address of the row being processed */
+ 212:Source\MatrixFunctions/arm_mat_mult_f32.c ****       px = pOut + i;
+  91              		.loc 1 212 0
+  92 005c 2823     		mov	r3, #40
+  93 005e FB18     		add	r3, r7, r3
+  94 0060 1B88     		ldrh	r3, [r3]
+  95 0062 9B00     		lsl	r3, r3, #2
+  96 0064 3A6A     		ldr	r2, [r7, #32]
+  97 0066 D318     		add	r3, r2, r3
+  98 0068 3B63     		str	r3, [r7, #48]
+ 213:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 214:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* For every row wise process, the column loop counter is to be initiated */
+ 215:Source\MatrixFunctions/arm_mat_mult_f32.c ****       col = numColsB;
+  99              		.loc 1 215 0
+ 100 006a 2A23     		mov	r3, #42
+ 101 006c FB18     		add	r3, r7, r3
+ 102 006e 1C22     		mov	r2, #28
+ 103 0070 BA18     		add	r2, r7, r2
+ 104 0072 1288     		ldrh	r2, [r2]
+ 105 0074 1A80     		strh	r2, [r3]
+ 216:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 217:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* For every row wise process, the pIn2 pointer is set
+ 218:Source\MatrixFunctions/arm_mat_mult_f32.c ****        ** to the starting address of the pSrcB data */
+ 219:Source\MatrixFunctions/arm_mat_mult_f32.c ****       pIn2 = pSrcB->pData;
+ 106              		.loc 1 219 0
+ 107 0076 BB68     		ldr	r3, [r7, #8]
+ 108 0078 5B68     		ldr	r3, [r3, #4]
+ 109 007a BB63     		str	r3, [r7, #56]
+ 110              	.L4:
+ 220:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 221:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* column loop */
+ 222:Source\MatrixFunctions/arm_mat_mult_f32.c ****       do
+ 223:Source\MatrixFunctions/arm_mat_mult_f32.c ****       {
+ 224:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Set the variable sum, that acts as accumulator, to zero */
+ 225:Source\MatrixFunctions/arm_mat_mult_f32.c ****         sum = 0.0f;
+ 111              		.loc 1 225 0
+ 112 007c 0023     		mov	r3, #0
+ 113 007e FB62     		str	r3, [r7, #44]
+ 226:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 227:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Initialize the pointer pIn1 to point to the starting address of the row being processed 
+ 228:Source\MatrixFunctions/arm_mat_mult_f32.c ****         pIn1 = pInA;
+ 114              		.loc 1 228 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 7
+
+
+ 115 0080 7B6B     		ldr	r3, [r7, #52]
+ 116 0082 FB63     		str	r3, [r7, #60]
+ 229:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 230:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Matrix A columns number of MAC operations are to be performed */
+ 231:Source\MatrixFunctions/arm_mat_mult_f32.c ****         colCnt = numColsA;
+ 117              		.loc 1 231 0
+ 118 0084 2423     		mov	r3, #36
+ 119 0086 FB18     		add	r3, r7, r3
+ 120 0088 1A22     		mov	r2, #26
+ 121 008a BA18     		add	r2, r7, r2
+ 122 008c 1288     		ldrh	r2, [r2]
+ 123 008e 1A80     		strh	r2, [r3]
+ 232:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 233:Source\MatrixFunctions/arm_mat_mult_f32.c ****         while (colCnt > 0u)
+ 124              		.loc 1 233 0
+ 125 0090 1EE0     		b	.L2
+ 126              	.L3:
+ 234:Source\MatrixFunctions/arm_mat_mult_f32.c ****         {
+ 235:Source\MatrixFunctions/arm_mat_mult_f32.c ****           /* c(m,n) = a(1,1)*b(1,1) + a(1,2) * b(2,1) + .... + a(m,p)*b(p,n) */
+ 236:Source\MatrixFunctions/arm_mat_mult_f32.c ****           sum += *pIn1++ * (*pIn2);
+ 127              		.loc 1 236 0
+ 128 0092 FB6B     		ldr	r3, [r7, #60]
+ 129 0094 1A1D     		add	r2, r3, #4
+ 130 0096 FA63     		str	r2, [r7, #60]
+ 131 0098 1A68     		ldr	r2, [r3]
+ 132 009a BB6B     		ldr	r3, [r7, #56]
+ 133 009c 1B68     		ldr	r3, [r3]
+ 134 009e 101C     		add	r0, r2, #0
+ 135 00a0 191C     		add	r1, r3, #0
+ 136 00a2 FFF7FEFF 		bl	__aeabi_fmul
+ 137 00a6 031C     		add	r3, r0, #0
+ 138 00a8 F86A     		ldr	r0, [r7, #44]
+ 139 00aa 191C     		add	r1, r3, #0
+ 140 00ac FFF7FEFF 		bl	__aeabi_fadd
+ 141 00b0 031C     		add	r3, r0, #0
+ 142 00b2 FB62     		str	r3, [r7, #44]
+ 237:Source\MatrixFunctions/arm_mat_mult_f32.c ****           pIn2 += numColsB;
+ 143              		.loc 1 237 0
+ 144 00b4 1C23     		mov	r3, #28
+ 145 00b6 FB18     		add	r3, r7, r3
+ 146 00b8 1B88     		ldrh	r3, [r3]
+ 147 00ba 9B00     		lsl	r3, r3, #2
+ 148 00bc BA6B     		ldr	r2, [r7, #56]
+ 149 00be D318     		add	r3, r2, r3
+ 150 00c0 BB63     		str	r3, [r7, #56]
+ 238:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 239:Source\MatrixFunctions/arm_mat_mult_f32.c ****           /* Decrement the loop counter */
+ 240:Source\MatrixFunctions/arm_mat_mult_f32.c ****           colCnt--;
+ 151              		.loc 1 240 0
+ 152 00c2 2423     		mov	r3, #36
+ 153 00c4 FB18     		add	r3, r7, r3
+ 154 00c6 1A88     		ldrh	r2, [r3]
+ 155 00c8 2423     		mov	r3, #36
+ 156 00ca FB18     		add	r3, r7, r3
+ 157 00cc 013A     		sub	r2, r2, #1
+ 158 00ce 1A80     		strh	r2, [r3]
+ 159              	.L2:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 8
+
+
+ 233:Source\MatrixFunctions/arm_mat_mult_f32.c ****         {
+ 160              		.loc 1 233 0
+ 161 00d0 2423     		mov	r3, #36
+ 162 00d2 FB18     		add	r3, r7, r3
+ 163 00d4 1B88     		ldrh	r3, [r3]
+ 164 00d6 002B     		cmp	r3, #0
+ 165 00d8 DBD1     		bne	.L3
+ 241:Source\MatrixFunctions/arm_mat_mult_f32.c ****         }
+ 242:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 243:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Store the result in the destination buffer */
+ 244:Source\MatrixFunctions/arm_mat_mult_f32.c ****         *px++ = sum;
+ 166              		.loc 1 244 0
+ 167 00da 3B6B     		ldr	r3, [r7, #48]
+ 168 00dc 1A1D     		add	r2, r3, #4
+ 169 00de 3A63     		str	r2, [r7, #48]
+ 170 00e0 FA6A     		ldr	r2, [r7, #44]
+ 171 00e2 1A60     		str	r2, [r3]
+ 245:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 246:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Decrement the column loop counter */
+ 247:Source\MatrixFunctions/arm_mat_mult_f32.c ****         col--;
+ 172              		.loc 1 247 0
+ 173 00e4 2A23     		mov	r3, #42
+ 174 00e6 FB18     		add	r3, r7, r3
+ 175 00e8 1A88     		ldrh	r2, [r3]
+ 176 00ea 2A23     		mov	r3, #42
+ 177 00ec FB18     		add	r3, r7, r3
+ 178 00ee 013A     		sub	r2, r2, #1
+ 179 00f0 1A80     		strh	r2, [r3]
+ 248:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 249:Source\MatrixFunctions/arm_mat_mult_f32.c ****         /* Update the pointer pIn2 to point to the  starting address of the next column */
+ 250:Source\MatrixFunctions/arm_mat_mult_f32.c ****         pIn2 = pInB + (numColsB - col);
+ 180              		.loc 1 250 0
+ 181 00f2 1C23     		mov	r3, #28
+ 182 00f4 FB18     		add	r3, r7, r3
+ 183 00f6 1A88     		ldrh	r2, [r3]
+ 184 00f8 2A23     		mov	r3, #42
+ 185 00fa FB18     		add	r3, r7, r3
+ 186 00fc 1B88     		ldrh	r3, [r3]
+ 187 00fe D31A     		sub	r3, r2, r3
+ 188 0100 9B00     		lsl	r3, r3, #2
+ 189 0102 7A69     		ldr	r2, [r7, #20]
+ 190 0104 D318     		add	r3, r2, r3
+ 191 0106 BB63     		str	r3, [r7, #56]
+ 251:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 252:Source\MatrixFunctions/arm_mat_mult_f32.c ****       } while (col > 0u);
+ 192              		.loc 1 252 0
+ 193 0108 2A23     		mov	r3, #42
+ 194 010a FB18     		add	r3, r7, r3
+ 195 010c 1B88     		ldrh	r3, [r3]
+ 196 010e 002B     		cmp	r3, #0
+ 197 0110 B4D1     		bne	.L4
+ 253:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 254:Source\MatrixFunctions/arm_mat_mult_f32.c **** #endif /* #if defined (ARM_MATH_DSP) */
+ 255:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 256:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* Update the pointer pInA to point to the  starting address of the next row */
+ 257:Source\MatrixFunctions/arm_mat_mult_f32.c ****       i = i + numColsB;
+ 198              		.loc 1 257 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 9
+
+
+ 199 0112 2823     		mov	r3, #40
+ 200 0114 FB18     		add	r3, r7, r3
+ 201 0116 2822     		mov	r2, #40
+ 202 0118 B918     		add	r1, r7, r2
+ 203 011a 1C22     		mov	r2, #28
+ 204 011c BA18     		add	r2, r7, r2
+ 205 011e 0988     		ldrh	r1, [r1]
+ 206 0120 1288     		ldrh	r2, [r2]
+ 207 0122 8A18     		add	r2, r1, r2
+ 208 0124 1A80     		strh	r2, [r3]
+ 258:Source\MatrixFunctions/arm_mat_mult_f32.c ****       pInA = pInA + numColsA;
+ 209              		.loc 1 258 0
+ 210 0126 1A23     		mov	r3, #26
+ 211 0128 FB18     		add	r3, r7, r3
+ 212 012a 1B88     		ldrh	r3, [r3]
+ 213 012c 9B00     		lsl	r3, r3, #2
+ 214 012e 7A6B     		ldr	r2, [r7, #52]
+ 215 0130 D318     		add	r3, r2, r3
+ 216 0132 7B63     		str	r3, [r7, #52]
+ 259:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 260:Source\MatrixFunctions/arm_mat_mult_f32.c ****       /* Decrement the row loop counter */
+ 261:Source\MatrixFunctions/arm_mat_mult_f32.c ****       row--;
+ 217              		.loc 1 261 0
+ 218 0134 2623     		mov	r3, #38
+ 219 0136 FB18     		add	r3, r7, r3
+ 220 0138 1A88     		ldrh	r2, [r3]
+ 221 013a 2623     		mov	r3, #38
+ 222 013c FB18     		add	r3, r7, r3
+ 223 013e 013A     		sub	r2, r2, #1
+ 224 0140 1A80     		strh	r2, [r3]
+ 262:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 263:Source\MatrixFunctions/arm_mat_mult_f32.c ****     } while (row > 0u);
+ 225              		.loc 1 263 0
+ 226 0142 2623     		mov	r3, #38
+ 227 0144 FB18     		add	r3, r7, r3
+ 228 0146 1B88     		ldrh	r3, [r3]
+ 229 0148 002B     		cmp	r3, #0
+ 230 014a 00D0     		beq	.LCB181
+ 231 014c 86E7     		b	.L5	@long jump
+ 232              	.LCB181:
+ 264:Source\MatrixFunctions/arm_mat_mult_f32.c ****     /* Set status as ARM_MATH_SUCCESS */
+ 265:Source\MatrixFunctions/arm_mat_mult_f32.c ****     status = ARM_MATH_SUCCESS;
+ 233              		.loc 1 265 0
+ 234 014e 1323     		mov	r3, #19
+ 235 0150 FB18     		add	r3, r7, r3
+ 236 0152 0022     		mov	r2, #0
+ 237 0154 1A70     		strb	r2, [r3]
+ 266:Source\MatrixFunctions/arm_mat_mult_f32.c ****   }
+ 267:Source\MatrixFunctions/arm_mat_mult_f32.c **** 
+ 268:Source\MatrixFunctions/arm_mat_mult_f32.c ****   /* Return to application */
+ 269:Source\MatrixFunctions/arm_mat_mult_f32.c ****   return (status);
+ 238              		.loc 1 269 0
+ 239 0156 1323     		mov	r3, #19
+ 240 0158 FB18     		add	r3, r7, r3
+ 241 015a 1B78     		ldrb	r3, [r3]
+ 242 015c 5BB2     		sxtb	r3, r3
+ 270:Source\MatrixFunctions/arm_mat_mult_f32.c **** }
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 10
+
+
+ 243              		.loc 1 270 0
+ 244 015e 181C     		mov	r0, r3
+ 245 0160 BD46     		mov	sp, r7
+ 246 0162 10B0     		add	sp, sp, #64
+ 247              		@ sp needed
+ 248 0164 80BD     		pop	{r7, pc}
+ 249              		.cfi_endproc
+ 250              	.LFE82:
+ 251              		.size	arm_mat_mult_f32, .-arm_mat_mult_f32
+ 252 0166 C046     		.text
+ 253              	.Letext0:
+ 254              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 255              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 256              		.file 4 ".\\Include/arm_math.h"
+ 257              		.section	.debug_info,"",%progbits
+ 258              	.Ldebug_info0:
+ 259 0000 55020000 		.4byte	0x255
+ 260 0004 0400     		.2byte	0x4
+ 261 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 262 000a 04       		.byte	0x4
+ 263 000b 01       		.uleb128 0x1
+ 264 000c 7B010000 		.4byte	.LASF42
+ 265 0010 01       		.byte	0x1
+ 266 0011 90000000 		.4byte	.LASF43
+ 267 0015 4A000000 		.4byte	.LASF44
+ 268 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 269 001d 00000000 		.4byte	0
+ 270 0021 00000000 		.4byte	.Ldebug_line0
+ 271 0025 02       		.uleb128 0x2
+ 272 0026 01       		.byte	0x1
+ 273 0027 06       		.byte	0x6
+ 274 0028 BE020000 		.4byte	.LASF0
+ 275 002c 02       		.uleb128 0x2
+ 276 002d 01       		.byte	0x1
+ 277 002e 08       		.byte	0x8
+ 278 002f CC000000 		.4byte	.LASF1
+ 279 0033 02       		.uleb128 0x2
+ 280 0034 02       		.byte	0x2
+ 281 0035 05       		.byte	0x5
+ 282 0036 6E020000 		.4byte	.LASF2
+ 283 003a 03       		.uleb128 0x3
+ 284 003b 1A010000 		.4byte	.LASF9
+ 285 003f 02       		.byte	0x2
+ 286 0040 2B       		.byte	0x2b
+ 287 0041 45000000 		.4byte	0x45
+ 288 0045 02       		.uleb128 0x2
+ 289 0046 02       		.byte	0x2
+ 290 0047 07       		.byte	0x7
+ 291 0048 02010000 		.4byte	.LASF3
+ 292 004c 02       		.uleb128 0x2
+ 293 004d 04       		.byte	0x4
+ 294 004e 05       		.byte	0x5
+ 295 004f 8C020000 		.4byte	.LASF4
+ 296 0053 02       		.uleb128 0x2
+ 297 0054 04       		.byte	0x4
+ 298 0055 07       		.byte	0x7
+ 299 0056 F0000000 		.4byte	.LASF5
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 11
+
+
+ 300 005a 02       		.uleb128 0x2
+ 301 005b 08       		.byte	0x8
+ 302 005c 05       		.byte	0x5
+ 303 005d 44020000 		.4byte	.LASF6
+ 304 0061 02       		.uleb128 0x2
+ 305 0062 08       		.byte	0x8
+ 306 0063 07       		.byte	0x7
+ 307 0064 64010000 		.4byte	.LASF7
+ 308 0068 04       		.uleb128 0x4
+ 309 0069 04       		.byte	0x4
+ 310 006a 05       		.byte	0x5
+ 311 006b 696E7400 		.ascii	"int\000"
+ 312 006f 02       		.uleb128 0x2
+ 313 0070 04       		.byte	0x4
+ 314 0071 07       		.byte	0x7
+ 315 0072 57010000 		.4byte	.LASF8
+ 316 0076 03       		.uleb128 0x3
+ 317 0077 78020000 		.4byte	.LASF10
+ 318 007b 03       		.byte	0x3
+ 319 007c 21       		.byte	0x21
+ 320 007d 3A000000 		.4byte	0x3a
+ 321 0081 02       		.uleb128 0x2
+ 322 0082 04       		.byte	0x4
+ 323 0083 07       		.byte	0x7
+ 324 0084 3B020000 		.4byte	.LASF11
+ 325 0088 02       		.uleb128 0x2
+ 326 0089 01       		.byte	0x1
+ 327 008a 08       		.byte	0x8
+ 328 008b 58020000 		.4byte	.LASF12
+ 329 008f 02       		.uleb128 0x2
+ 330 0090 08       		.byte	0x8
+ 331 0091 04       		.byte	0x4
+ 332 0092 25010000 		.4byte	.LASF13
+ 333 0096 02       		.uleb128 0x2
+ 334 0097 04       		.byte	0x4
+ 335 0098 04       		.byte	0x4
+ 336 0099 52020000 		.4byte	.LASF14
+ 337 009d 02       		.uleb128 0x2
+ 338 009e 08       		.byte	0x8
+ 339 009f 04       		.byte	0x4
+ 340 00a0 9A020000 		.4byte	.LASF15
+ 341 00a4 05       		.uleb128 0x5
+ 342 00a5 01       		.byte	0x1
+ 343 00a6 04       		.byte	0x4
+ 344 00a7 8401     		.2byte	0x184
+ 345 00a9 D8000000 		.4byte	0xd8
+ 346 00ad 06       		.uleb128 0x6
+ 347 00ae 5D020000 		.4byte	.LASF16
+ 348 00b2 00       		.sleb128 0
+ 349 00b3 06       		.uleb128 0x6
+ 350 00b4 3F010000 		.4byte	.LASF17
+ 351 00b8 7F       		.sleb128 -1
+ 352 00b9 06       		.uleb128 0x6
+ 353 00ba 12000000 		.4byte	.LASF18
+ 354 00be 7E       		.sleb128 -2
+ 355 00bf 06       		.uleb128 0x6
+ 356 00c0 0D020000 		.4byte	.LASF19
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 12
+
+
+ 357 00c4 7D       		.sleb128 -3
+ 358 00c5 06       		.uleb128 0x6
+ 359 00c6 2B020000 		.4byte	.LASF20
+ 360 00ca 7C       		.sleb128 -4
+ 361 00cb 06       		.uleb128 0x6
+ 362 00cc E4020000 		.4byte	.LASF21
+ 363 00d0 7B       		.sleb128 -5
+ 364 00d1 06       		.uleb128 0x6
+ 365 00d2 DA000000 		.4byte	.LASF22
+ 366 00d6 7A       		.sleb128 -6
+ 367 00d7 00       		.byte	0
+ 368 00d8 07       		.uleb128 0x7
+ 369 00d9 81020000 		.4byte	.LASF23
+ 370 00dd 04       		.byte	0x4
+ 371 00de 8C01     		.2byte	0x18c
+ 372 00e0 A4000000 		.4byte	0xa4
+ 373 00e4 07       		.uleb128 0x7
+ 374 00e5 2C010000 		.4byte	.LASF24
+ 375 00e9 04       		.byte	0x4
+ 376 00ea A501     		.2byte	0x1a5
+ 377 00ec 96000000 		.4byte	0x96
+ 378 00f0 08       		.uleb128 0x8
+ 379 00f1 04       		.byte	0x4
+ 380 00f2 E4000000 		.4byte	0xe4
+ 381 00f6 09       		.uleb128 0x9
+ 382 00f7 08       		.byte	0x8
+ 383 00f8 04       		.byte	0x4
+ 384 00f9 9A05     		.2byte	0x59a
+ 385 00fb 27010000 		.4byte	0x127
+ 386 00ff 0A       		.uleb128 0xa
+ 387 0100 CA020000 		.4byte	.LASF25
+ 388 0104 04       		.byte	0x4
+ 389 0105 9C05     		.2byte	0x59c
+ 390 0107 76000000 		.4byte	0x76
+ 391 010b 00       		.byte	0
+ 392 010c 0A       		.uleb128 0xa
+ 393 010d D2020000 		.4byte	.LASF26
+ 394 0111 04       		.byte	0x4
+ 395 0112 9D05     		.2byte	0x59d
+ 396 0114 76000000 		.4byte	0x76
+ 397 0118 02       		.byte	0x2
+ 398 0119 0A       		.uleb128 0xa
+ 399 011a C1000000 		.4byte	.LASF27
+ 400 011e 04       		.byte	0x4
+ 401 011f 9E05     		.2byte	0x59e
+ 402 0121 F0000000 		.4byte	0xf0
+ 403 0125 04       		.byte	0x4
+ 404 0126 00       		.byte	0
+ 405 0127 07       		.uleb128 0x7
+ 406 0128 A6020000 		.4byte	.LASF28
+ 407 012c 04       		.byte	0x4
+ 408 012d 9F05     		.2byte	0x59f
+ 409 012f F6000000 		.4byte	0xf6
+ 410 0133 0B       		.uleb128 0xb
+ 411 0134 39000000 		.4byte	.LASF45
+ 412 0138 01       		.byte	0x1
+ 413 0139 42       		.byte	0x42
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 13
+
+
+ 414 013a D8000000 		.4byte	0xd8
+ 415 013e 00000000 		.4byte	.LFB82
+ 416 0142 66010000 		.4byte	.LFE82-.LFB82
+ 417 0146 01       		.uleb128 0x1
+ 418 0147 9C       		.byte	0x9c
+ 419 0148 47020000 		.4byte	0x247
+ 420 014c 0C       		.uleb128 0xc
+ 421 014d 28000000 		.4byte	.LASF29
+ 422 0151 01       		.byte	0x1
+ 423 0152 43       		.byte	0x43
+ 424 0153 47020000 		.4byte	0x247
+ 425 0157 02       		.uleb128 0x2
+ 426 0158 91       		.byte	0x91
+ 427 0159 44       		.sleb128 -60
+ 428 015a 0C       		.uleb128 0xc
+ 429 015b 2E000000 		.4byte	.LASF30
+ 430 015f 01       		.byte	0x1
+ 431 0160 44       		.byte	0x44
+ 432 0161 47020000 		.4byte	0x247
+ 433 0165 02       		.uleb128 0x2
+ 434 0166 91       		.byte	0x91
+ 435 0167 40       		.sleb128 -64
+ 436 0168 0C       		.uleb128 0xc
+ 437 0169 15010000 		.4byte	.LASF31
+ 438 016d 01       		.byte	0x1
+ 439 016e 45       		.byte	0x45
+ 440 016f 52020000 		.4byte	0x252
+ 441 0173 03       		.uleb128 0x3
+ 442 0174 91       		.byte	0x91
+ 443 0175 BC7F     		.sleb128 -68
+ 444 0177 0D       		.uleb128 0xd
+ 445 0178 DA020000 		.4byte	.LASF32
+ 446 017c 01       		.byte	0x1
+ 447 017d 47       		.byte	0x47
+ 448 017e F0000000 		.4byte	0xf0
+ 449 0182 02       		.uleb128 0x2
+ 450 0183 91       		.byte	0x91
+ 451 0184 74       		.sleb128 -12
+ 452 0185 0D       		.uleb128 0xd
+ 453 0186 DF020000 		.4byte	.LASF33
+ 454 018a 01       		.byte	0x1
+ 455 018b 48       		.byte	0x48
+ 456 018c F0000000 		.4byte	0xf0
+ 457 0190 02       		.uleb128 0x2
+ 458 0191 91       		.byte	0x91
+ 459 0192 70       		.sleb128 -16
+ 460 0193 0D       		.uleb128 0xd
+ 461 0194 95020000 		.4byte	.LASF34
+ 462 0198 01       		.byte	0x1
+ 463 0199 49       		.byte	0x49
+ 464 019a F0000000 		.4byte	0xf0
+ 465 019e 02       		.uleb128 0x2
+ 466 019f 91       		.byte	0x91
+ 467 01a0 6C       		.sleb128 -20
+ 468 01a1 0D       		.uleb128 0xd
+ 469 01a2 C7000000 		.4byte	.LASF35
+ 470 01a6 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 14
+
+
+ 471 01a7 4A       		.byte	0x4a
+ 472 01a8 F0000000 		.4byte	0xf0
+ 473 01ac 02       		.uleb128 0x2
+ 474 01ad 91       		.byte	0x91
+ 475 01ae 58       		.sleb128 -40
+ 476 01af 0E       		.uleb128 0xe
+ 477 01b0 707800   		.ascii	"px\000"
+ 478 01b3 01       		.byte	0x1
+ 479 01b4 4B       		.byte	0x4b
+ 480 01b5 F0000000 		.4byte	0xf0
+ 481 01b9 02       		.uleb128 0x2
+ 482 01ba 91       		.byte	0x91
+ 483 01bb 68       		.sleb128 -24
+ 484 01bc 0E       		.uleb128 0xe
+ 485 01bd 73756D00 		.ascii	"sum\000"
+ 486 01c1 01       		.byte	0x1
+ 487 01c2 4C       		.byte	0x4c
+ 488 01c3 E4000000 		.4byte	0xe4
+ 489 01c7 02       		.uleb128 0x2
+ 490 01c8 91       		.byte	0x91
+ 491 01c9 64       		.sleb128 -28
+ 492 01ca 0D       		.uleb128 0xd
+ 493 01cb 36010000 		.4byte	.LASF36
+ 494 01cf 01       		.byte	0x1
+ 495 01d0 4D       		.byte	0x4d
+ 496 01d1 76000000 		.4byte	0x76
+ 497 01d5 02       		.uleb128 0x2
+ 498 01d6 91       		.byte	0x91
+ 499 01d7 56       		.sleb128 -42
+ 500 01d8 0D       		.uleb128 0xd
+ 501 01d9 09000000 		.4byte	.LASF37
+ 502 01dd 01       		.byte	0x1
+ 503 01de 4E       		.byte	0x4e
+ 504 01df 76000000 		.4byte	0x76
+ 505 01e3 02       		.uleb128 0x2
+ 506 01e4 91       		.byte	0x91
+ 507 01e5 54       		.sleb128 -44
+ 508 01e6 0D       		.uleb128 0xd
+ 509 01e7 00000000 		.4byte	.LASF38
+ 510 01eb 01       		.byte	0x1
+ 511 01ec 4F       		.byte	0x4f
+ 512 01ed 76000000 		.4byte	0x76
+ 513 01f1 02       		.uleb128 0x2
+ 514 01f2 91       		.byte	0x91
+ 515 01f3 52       		.sleb128 -46
+ 516 01f4 0D       		.uleb128 0xd
+ 517 01f5 34000000 		.4byte	.LASF39
+ 518 01f9 01       		.byte	0x1
+ 519 01fa BD       		.byte	0xbd
+ 520 01fb F0000000 		.4byte	0xf0
+ 521 01ff 02       		.uleb128 0x2
+ 522 0200 91       		.byte	0x91
+ 523 0201 4C       		.sleb128 -52
+ 524 0202 0E       		.uleb128 0xe
+ 525 0203 636F6C00 		.ascii	"col\000"
+ 526 0207 01       		.byte	0x1
+ 527 0208 BE       		.byte	0xbe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 15
+
+
+ 528 0209 76000000 		.4byte	0x76
+ 529 020d 02       		.uleb128 0x2
+ 530 020e 91       		.byte	0x91
+ 531 020f 62       		.sleb128 -30
+ 532 0210 0E       		.uleb128 0xe
+ 533 0211 6900     		.ascii	"i\000"
+ 534 0213 01       		.byte	0x1
+ 535 0214 BE       		.byte	0xbe
+ 536 0215 76000000 		.4byte	0x76
+ 537 0219 02       		.uleb128 0x2
+ 538 021a 91       		.byte	0x91
+ 539 021b 60       		.sleb128 -32
+ 540 021c 0E       		.uleb128 0xe
+ 541 021d 726F7700 		.ascii	"row\000"
+ 542 0221 01       		.byte	0x1
+ 543 0222 BE       		.byte	0xbe
+ 544 0223 76000000 		.4byte	0x76
+ 545 0227 02       		.uleb128 0x2
+ 546 0228 91       		.byte	0x91
+ 547 0229 5E       		.sleb128 -34
+ 548 022a 0D       		.uleb128 0xd
+ 549 022b 24020000 		.4byte	.LASF40
+ 550 022f 01       		.byte	0x1
+ 551 0230 BE       		.byte	0xbe
+ 552 0231 76000000 		.4byte	0x76
+ 553 0235 02       		.uleb128 0x2
+ 554 0236 91       		.byte	0x91
+ 555 0237 5C       		.sleb128 -36
+ 556 0238 0D       		.uleb128 0xd
+ 557 0239 BA000000 		.4byte	.LASF41
+ 558 023d 01       		.byte	0x1
+ 559 023e BF       		.byte	0xbf
+ 560 023f D8000000 		.4byte	0xd8
+ 561 0243 02       		.uleb128 0x2
+ 562 0244 91       		.byte	0x91
+ 563 0245 4B       		.sleb128 -53
+ 564 0246 00       		.byte	0
+ 565 0247 08       		.uleb128 0x8
+ 566 0248 04       		.byte	0x4
+ 567 0249 4D020000 		.4byte	0x24d
+ 568 024d 0F       		.uleb128 0xf
+ 569 024e 27010000 		.4byte	0x127
+ 570 0252 08       		.uleb128 0x8
+ 571 0253 04       		.byte	0x4
+ 572 0254 27010000 		.4byte	0x127
+ 573 0258 00       		.byte	0
+ 574              		.section	.debug_abbrev,"",%progbits
+ 575              	.Ldebug_abbrev0:
+ 576 0000 01       		.uleb128 0x1
+ 577 0001 11       		.uleb128 0x11
+ 578 0002 01       		.byte	0x1
+ 579 0003 25       		.uleb128 0x25
+ 580 0004 0E       		.uleb128 0xe
+ 581 0005 13       		.uleb128 0x13
+ 582 0006 0B       		.uleb128 0xb
+ 583 0007 03       		.uleb128 0x3
+ 584 0008 0E       		.uleb128 0xe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 16
+
+
+ 585 0009 1B       		.uleb128 0x1b
+ 586 000a 0E       		.uleb128 0xe
+ 587 000b 55       		.uleb128 0x55
+ 588 000c 17       		.uleb128 0x17
+ 589 000d 11       		.uleb128 0x11
+ 590 000e 01       		.uleb128 0x1
+ 591 000f 10       		.uleb128 0x10
+ 592 0010 17       		.uleb128 0x17
+ 593 0011 00       		.byte	0
+ 594 0012 00       		.byte	0
+ 595 0013 02       		.uleb128 0x2
+ 596 0014 24       		.uleb128 0x24
+ 597 0015 00       		.byte	0
+ 598 0016 0B       		.uleb128 0xb
+ 599 0017 0B       		.uleb128 0xb
+ 600 0018 3E       		.uleb128 0x3e
+ 601 0019 0B       		.uleb128 0xb
+ 602 001a 03       		.uleb128 0x3
+ 603 001b 0E       		.uleb128 0xe
+ 604 001c 00       		.byte	0
+ 605 001d 00       		.byte	0
+ 606 001e 03       		.uleb128 0x3
+ 607 001f 16       		.uleb128 0x16
+ 608 0020 00       		.byte	0
+ 609 0021 03       		.uleb128 0x3
+ 610 0022 0E       		.uleb128 0xe
+ 611 0023 3A       		.uleb128 0x3a
+ 612 0024 0B       		.uleb128 0xb
+ 613 0025 3B       		.uleb128 0x3b
+ 614 0026 0B       		.uleb128 0xb
+ 615 0027 49       		.uleb128 0x49
+ 616 0028 13       		.uleb128 0x13
+ 617 0029 00       		.byte	0
+ 618 002a 00       		.byte	0
+ 619 002b 04       		.uleb128 0x4
+ 620 002c 24       		.uleb128 0x24
+ 621 002d 00       		.byte	0
+ 622 002e 0B       		.uleb128 0xb
+ 623 002f 0B       		.uleb128 0xb
+ 624 0030 3E       		.uleb128 0x3e
+ 625 0031 0B       		.uleb128 0xb
+ 626 0032 03       		.uleb128 0x3
+ 627 0033 08       		.uleb128 0x8
+ 628 0034 00       		.byte	0
+ 629 0035 00       		.byte	0
+ 630 0036 05       		.uleb128 0x5
+ 631 0037 04       		.uleb128 0x4
+ 632 0038 01       		.byte	0x1
+ 633 0039 0B       		.uleb128 0xb
+ 634 003a 0B       		.uleb128 0xb
+ 635 003b 3A       		.uleb128 0x3a
+ 636 003c 0B       		.uleb128 0xb
+ 637 003d 3B       		.uleb128 0x3b
+ 638 003e 05       		.uleb128 0x5
+ 639 003f 01       		.uleb128 0x1
+ 640 0040 13       		.uleb128 0x13
+ 641 0041 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 17
+
+
+ 642 0042 00       		.byte	0
+ 643 0043 06       		.uleb128 0x6
+ 644 0044 28       		.uleb128 0x28
+ 645 0045 00       		.byte	0
+ 646 0046 03       		.uleb128 0x3
+ 647 0047 0E       		.uleb128 0xe
+ 648 0048 1C       		.uleb128 0x1c
+ 649 0049 0D       		.uleb128 0xd
+ 650 004a 00       		.byte	0
+ 651 004b 00       		.byte	0
+ 652 004c 07       		.uleb128 0x7
+ 653 004d 16       		.uleb128 0x16
+ 654 004e 00       		.byte	0
+ 655 004f 03       		.uleb128 0x3
+ 656 0050 0E       		.uleb128 0xe
+ 657 0051 3A       		.uleb128 0x3a
+ 658 0052 0B       		.uleb128 0xb
+ 659 0053 3B       		.uleb128 0x3b
+ 660 0054 05       		.uleb128 0x5
+ 661 0055 49       		.uleb128 0x49
+ 662 0056 13       		.uleb128 0x13
+ 663 0057 00       		.byte	0
+ 664 0058 00       		.byte	0
+ 665 0059 08       		.uleb128 0x8
+ 666 005a 0F       		.uleb128 0xf
+ 667 005b 00       		.byte	0
+ 668 005c 0B       		.uleb128 0xb
+ 669 005d 0B       		.uleb128 0xb
+ 670 005e 49       		.uleb128 0x49
+ 671 005f 13       		.uleb128 0x13
+ 672 0060 00       		.byte	0
+ 673 0061 00       		.byte	0
+ 674 0062 09       		.uleb128 0x9
+ 675 0063 13       		.uleb128 0x13
+ 676 0064 01       		.byte	0x1
+ 677 0065 0B       		.uleb128 0xb
+ 678 0066 0B       		.uleb128 0xb
+ 679 0067 3A       		.uleb128 0x3a
+ 680 0068 0B       		.uleb128 0xb
+ 681 0069 3B       		.uleb128 0x3b
+ 682 006a 05       		.uleb128 0x5
+ 683 006b 01       		.uleb128 0x1
+ 684 006c 13       		.uleb128 0x13
+ 685 006d 00       		.byte	0
+ 686 006e 00       		.byte	0
+ 687 006f 0A       		.uleb128 0xa
+ 688 0070 0D       		.uleb128 0xd
+ 689 0071 00       		.byte	0
+ 690 0072 03       		.uleb128 0x3
+ 691 0073 0E       		.uleb128 0xe
+ 692 0074 3A       		.uleb128 0x3a
+ 693 0075 0B       		.uleb128 0xb
+ 694 0076 3B       		.uleb128 0x3b
+ 695 0077 05       		.uleb128 0x5
+ 696 0078 49       		.uleb128 0x49
+ 697 0079 13       		.uleb128 0x13
+ 698 007a 38       		.uleb128 0x38
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 18
+
+
+ 699 007b 0B       		.uleb128 0xb
+ 700 007c 00       		.byte	0
+ 701 007d 00       		.byte	0
+ 702 007e 0B       		.uleb128 0xb
+ 703 007f 2E       		.uleb128 0x2e
+ 704 0080 01       		.byte	0x1
+ 705 0081 3F       		.uleb128 0x3f
+ 706 0082 19       		.uleb128 0x19
+ 707 0083 03       		.uleb128 0x3
+ 708 0084 0E       		.uleb128 0xe
+ 709 0085 3A       		.uleb128 0x3a
+ 710 0086 0B       		.uleb128 0xb
+ 711 0087 3B       		.uleb128 0x3b
+ 712 0088 0B       		.uleb128 0xb
+ 713 0089 27       		.uleb128 0x27
+ 714 008a 19       		.uleb128 0x19
+ 715 008b 49       		.uleb128 0x49
+ 716 008c 13       		.uleb128 0x13
+ 717 008d 11       		.uleb128 0x11
+ 718 008e 01       		.uleb128 0x1
+ 719 008f 12       		.uleb128 0x12
+ 720 0090 06       		.uleb128 0x6
+ 721 0091 40       		.uleb128 0x40
+ 722 0092 18       		.uleb128 0x18
+ 723 0093 9642     		.uleb128 0x2116
+ 724 0095 19       		.uleb128 0x19
+ 725 0096 01       		.uleb128 0x1
+ 726 0097 13       		.uleb128 0x13
+ 727 0098 00       		.byte	0
+ 728 0099 00       		.byte	0
+ 729 009a 0C       		.uleb128 0xc
+ 730 009b 05       		.uleb128 0x5
+ 731 009c 00       		.byte	0
+ 732 009d 03       		.uleb128 0x3
+ 733 009e 0E       		.uleb128 0xe
+ 734 009f 3A       		.uleb128 0x3a
+ 735 00a0 0B       		.uleb128 0xb
+ 736 00a1 3B       		.uleb128 0x3b
+ 737 00a2 0B       		.uleb128 0xb
+ 738 00a3 49       		.uleb128 0x49
+ 739 00a4 13       		.uleb128 0x13
+ 740 00a5 02       		.uleb128 0x2
+ 741 00a6 18       		.uleb128 0x18
+ 742 00a7 00       		.byte	0
+ 743 00a8 00       		.byte	0
+ 744 00a9 0D       		.uleb128 0xd
+ 745 00aa 34       		.uleb128 0x34
+ 746 00ab 00       		.byte	0
+ 747 00ac 03       		.uleb128 0x3
+ 748 00ad 0E       		.uleb128 0xe
+ 749 00ae 3A       		.uleb128 0x3a
+ 750 00af 0B       		.uleb128 0xb
+ 751 00b0 3B       		.uleb128 0x3b
+ 752 00b1 0B       		.uleb128 0xb
+ 753 00b2 49       		.uleb128 0x49
+ 754 00b3 13       		.uleb128 0x13
+ 755 00b4 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 19
+
+
+ 756 00b5 18       		.uleb128 0x18
+ 757 00b6 00       		.byte	0
+ 758 00b7 00       		.byte	0
+ 759 00b8 0E       		.uleb128 0xe
+ 760 00b9 34       		.uleb128 0x34
+ 761 00ba 00       		.byte	0
+ 762 00bb 03       		.uleb128 0x3
+ 763 00bc 08       		.uleb128 0x8
+ 764 00bd 3A       		.uleb128 0x3a
+ 765 00be 0B       		.uleb128 0xb
+ 766 00bf 3B       		.uleb128 0x3b
+ 767 00c0 0B       		.uleb128 0xb
+ 768 00c1 49       		.uleb128 0x49
+ 769 00c2 13       		.uleb128 0x13
+ 770 00c3 02       		.uleb128 0x2
+ 771 00c4 18       		.uleb128 0x18
+ 772 00c5 00       		.byte	0
+ 773 00c6 00       		.byte	0
+ 774 00c7 0F       		.uleb128 0xf
+ 775 00c8 26       		.uleb128 0x26
+ 776 00c9 00       		.byte	0
+ 777 00ca 49       		.uleb128 0x49
+ 778 00cb 13       		.uleb128 0x13
+ 779 00cc 00       		.byte	0
+ 780 00cd 00       		.byte	0
+ 781 00ce 00       		.byte	0
+ 782              		.section	.debug_aranges,"",%progbits
+ 783 0000 1C000000 		.4byte	0x1c
+ 784 0004 0200     		.2byte	0x2
+ 785 0006 00000000 		.4byte	.Ldebug_info0
+ 786 000a 04       		.byte	0x4
+ 787 000b 00       		.byte	0
+ 788 000c 0000     		.2byte	0
+ 789 000e 0000     		.2byte	0
+ 790 0010 00000000 		.4byte	.LFB82
+ 791 0014 66010000 		.4byte	.LFE82-.LFB82
+ 792 0018 00000000 		.4byte	0
+ 793 001c 00000000 		.4byte	0
+ 794              		.section	.debug_ranges,"",%progbits
+ 795              	.Ldebug_ranges0:
+ 796 0000 00000000 		.4byte	.LFB82
+ 797 0004 66010000 		.4byte	.LFE82
+ 798 0008 00000000 		.4byte	0
+ 799 000c 00000000 		.4byte	0
+ 800              		.section	.debug_line,"",%progbits
+ 801              	.Ldebug_line0:
+ 802 0000 8F010000 		.section	.debug_str,"MS",%progbits,1
+ 802      02005001 
+ 802      00000201 
+ 802      FB0E0D00 
+ 802      01010101 
+ 803              	.LASF38:
+ 804 0000 6E756D43 		.ascii	"numColsA\000"
+ 804      6F6C7341 
+ 804      00
+ 805              	.LASF37:
+ 806 0009 6E756D43 		.ascii	"numColsB\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 20
+
+
+ 806      6F6C7342 
+ 806      00
+ 807              	.LASF18:
+ 808 0012 41524D5F 		.ascii	"ARM_MATH_LENGTH_ERROR\000"
+ 808      4D415448 
+ 808      5F4C454E 
+ 808      4754485F 
+ 808      4552524F 
+ 809              	.LASF29:
+ 810 0028 70537263 		.ascii	"pSrcA\000"
+ 810      4100
+ 811              	.LASF30:
+ 812 002e 70537263 		.ascii	"pSrcB\000"
+ 812      4200
+ 813              	.LASF39:
+ 814 0034 70496E42 		.ascii	"pInB\000"
+ 814      00
+ 815              	.LASF45:
+ 816 0039 61726D5F 		.ascii	"arm_mat_mult_f32\000"
+ 816      6D61745F 
+ 816      6D756C74 
+ 816      5F663332 
+ 816      00
+ 817              	.LASF44:
+ 818 004a 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 818      73657273 
+ 818      5C666E65 
+ 818      7665735C 
+ 818      446F6375 
+ 819 0077 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 819      655F7370 
+ 819      6565645F 
+ 819      73656E73 
+ 819      6F722E63 
+ 820              	.LASF43:
+ 821 0090 536F7572 		.ascii	"Source\\MatrixFunctions\\arm_mat_mult_f32.c\000"
+ 821      63655C4D 
+ 821      61747269 
+ 821      7846756E 
+ 821      6374696F 
+ 822              	.LASF41:
+ 823 00ba 73746174 		.ascii	"status\000"
+ 823      757300
+ 824              	.LASF27:
+ 825 00c1 70446174 		.ascii	"pData\000"
+ 825      6100
+ 826              	.LASF35:
+ 827 00c7 704F7574 		.ascii	"pOut\000"
+ 827      00
+ 828              	.LASF1:
+ 829 00cc 756E7369 		.ascii	"unsigned char\000"
+ 829      676E6564 
+ 829      20636861 
+ 829      7200
+ 830              	.LASF22:
+ 831 00da 41524D5F 		.ascii	"ARM_MATH_TEST_FAILURE\000"
+ 831      4D415448 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 21
+
+
+ 831      5F544553 
+ 831      545F4641 
+ 831      494C5552 
+ 832              	.LASF5:
+ 833 00f0 6C6F6E67 		.ascii	"long unsigned int\000"
+ 833      20756E73 
+ 833      69676E65 
+ 833      6420696E 
+ 833      7400
+ 834              	.LASF3:
+ 835 0102 73686F72 		.ascii	"short unsigned int\000"
+ 835      7420756E 
+ 835      7369676E 
+ 835      65642069 
+ 835      6E7400
+ 836              	.LASF31:
+ 837 0115 70447374 		.ascii	"pDst\000"
+ 837      00
+ 838              	.LASF9:
+ 839 011a 5F5F7569 		.ascii	"__uint16_t\000"
+ 839      6E743136 
+ 839      5F7400
+ 840              	.LASF13:
+ 841 0125 646F7562 		.ascii	"double\000"
+ 841      6C6500
+ 842              	.LASF24:
+ 843 012c 666C6F61 		.ascii	"float32_t\000"
+ 843      7433325F 
+ 843      7400
+ 844              	.LASF36:
+ 845 0136 6E756D52 		.ascii	"numRowsA\000"
+ 845      6F777341 
+ 845      00
+ 846              	.LASF17:
+ 847 013f 41524D5F 		.ascii	"ARM_MATH_ARGUMENT_ERROR\000"
+ 847      4D415448 
+ 847      5F415247 
+ 847      554D454E 
+ 847      545F4552 
+ 848              	.LASF8:
+ 849 0157 756E7369 		.ascii	"unsigned int\000"
+ 849      676E6564 
+ 849      20696E74 
+ 849      00
+ 850              	.LASF7:
+ 851 0164 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 851      206C6F6E 
+ 851      6720756E 
+ 851      7369676E 
+ 851      65642069 
+ 852              	.LASF42:
+ 853 017b 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 853      4320342E 
+ 853      392E3320 
+ 853      32303135 
+ 853      30333033 
+ 854 01ae 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 22
+
+
+ 854      20726576 
+ 854      6973696F 
+ 854      6E203232 
+ 854      31323230 
+ 855 01e1 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 855      30202D66 
+ 855      66756E63 
+ 855      74696F6E 
+ 855      2D736563 
+ 856              	.LASF19:
+ 857 020d 41524D5F 		.ascii	"ARM_MATH_SIZE_MISMATCH\000"
+ 857      4D415448 
+ 857      5F53495A 
+ 857      455F4D49 
+ 857      534D4154 
+ 858              	.LASF40:
+ 859 0224 636F6C43 		.ascii	"colCnt\000"
+ 859      6E7400
+ 860              	.LASF20:
+ 861 022b 41524D5F 		.ascii	"ARM_MATH_NANINF\000"
+ 861      4D415448 
+ 861      5F4E414E 
+ 861      494E4600 
+ 862              	.LASF11:
+ 863 023b 73697A65 		.ascii	"sizetype\000"
+ 863      74797065 
+ 863      00
+ 864              	.LASF6:
+ 865 0244 6C6F6E67 		.ascii	"long long int\000"
+ 865      206C6F6E 
+ 865      6720696E 
+ 865      7400
+ 866              	.LASF14:
+ 867 0252 666C6F61 		.ascii	"float\000"
+ 867      7400
+ 868              	.LASF12:
+ 869 0258 63686172 		.ascii	"char\000"
+ 869      00
+ 870              	.LASF16:
+ 871 025d 41524D5F 		.ascii	"ARM_MATH_SUCCESS\000"
+ 871      4D415448 
+ 871      5F535543 
+ 871      43455353 
+ 871      00
+ 872              	.LASF2:
+ 873 026e 73686F72 		.ascii	"short int\000"
+ 873      7420696E 
+ 873      7400
+ 874              	.LASF10:
+ 875 0278 75696E74 		.ascii	"uint16_t\000"
+ 875      31365F74 
+ 875      00
+ 876              	.LASF23:
+ 877 0281 61726D5F 		.ascii	"arm_status\000"
+ 877      73746174 
+ 877      757300
+ 878              	.LASF4:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccSGs59u.s 			page 23
+
+
+ 879 028c 6C6F6E67 		.ascii	"long int\000"
+ 879      20696E74 
+ 879      00
+ 880              	.LASF34:
+ 881 0295 70496E41 		.ascii	"pInA\000"
+ 881      00
+ 882              	.LASF15:
+ 883 029a 6C6F6E67 		.ascii	"long double\000"
+ 883      20646F75 
+ 883      626C6500 
+ 884              	.LASF28:
+ 885 02a6 61726D5F 		.ascii	"arm_matrix_instance_f32\000"
+ 885      6D617472 
+ 885      69785F69 
+ 885      6E737461 
+ 885      6E63655F 
+ 886              	.LASF0:
+ 887 02be 7369676E 		.ascii	"signed char\000"
+ 887      65642063 
+ 887      68617200 
+ 888              	.LASF25:
+ 889 02ca 6E756D52 		.ascii	"numRows\000"
+ 889      6F777300 
+ 890              	.LASF26:
+ 891 02d2 6E756D43 		.ascii	"numCols\000"
+ 891      6F6C7300 
+ 892              	.LASF32:
+ 893 02da 70496E31 		.ascii	"pIn1\000"
+ 893      00
+ 894              	.LASF33:
+ 895 02df 70496E32 		.ascii	"pIn2\000"
+ 895      00
+ 896              	.LASF21:
+ 897 02e4 41524D5F 		.ascii	"ARM_MATH_SINGULAR\000"
+ 897      4D415448 
+ 897      5F53494E 
+ 897      47554C41 
+ 897      5200
+ 898              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

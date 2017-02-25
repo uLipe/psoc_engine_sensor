@@ -1,0 +1,1708 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_biquad_cascade_df1_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_lmul
+  18              		.section	.text.arm_biquad_cascade_df1_q31,"ax",%progbits
+  19              		.align	2
+  20              		.global	arm_biquad_cascade_df1_q31
+  21              		.code	16
+  22              		.thumb_func
+  23              		.type	arm_biquad_cascade_df1_q31, %function
+  24              	arm_biquad_cascade_df1_q31:
+  25              	.LFB82:
+  26              		.file 1 "Source\\FilteringFunctions\\arm_biquad_cascade_df1_q31.c"
+   1:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Title:        arm_biquad_cascade_df1_q31.c
+   4:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Description:  Processing function for the Q31 Biquad cascade filter
+   5:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  *
+   6:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  *
+   9:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** /*
+  12:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  *
+  14:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  *
+  16:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  *
+  20:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  *
+  22:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  */
+  28:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  29:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** #include "arm_math.h"
+  30:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  31:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** /**
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 2
+
+
+  32:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @ingroup groupFilters
+  33:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  */
+  34:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  35:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** /**
+  36:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @addtogroup BiquadCascadeDF1
+  37:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @{
+  38:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  */
+  39:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  40:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** /**
+  41:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @brief Processing function for the Q31 Biquad cascade filter.
+  42:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @param[in]  *S         points to an instance of the Q31 Biquad cascade structure.
+  43:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @param[in]  *pSrc      points to the block of input data.
+  44:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @param[out] *pDst      points to the block of output data.
+  45:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @param[in]  blockSize  number of samples to process per call.
+  46:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * @return none.
+  47:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  *
+  48:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * <b>Scaling and Overflow Behavior:</b>
+  49:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * \par
+  50:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * The function is implemented using an internal 64-bit accumulator.
+  51:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * The accumulator has a 2.62 format and maintains full precision of the intermediate multiplicatio
+  52:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Thus, if the accumulator result overflows it wraps around rather than clip.
+  53:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * In order to avoid overflows completely the input signal must be scaled down by 2 bits and lie in
+  54:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * After all 5 multiply-accumulates are performed, the 2.62 accumulator is shifted by <code>postShi
+  55:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * 1.31 format by discarding the low 32 bits.
+  56:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  *
+  57:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * \par
+  58:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  * Refer to the function <code>arm_biquad_cascade_df1_fast_q31()</code> for a faster but less preci
+  59:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****  */
+  60:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  61:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** void arm_biquad_cascade_df1_q31(
+  62:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   const arm_biquad_casd_df1_inst_q31 * S,
+  63:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t * pSrc,
+  64:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t * pDst,
+  65:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   uint32_t blockSize)
+  66:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** {
+  27              		.loc 1 66 0
+  28              		.cfi_startproc
+  29 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  30              		.cfi_def_cfa_offset 20
+  31              		.cfi_offset 4, -20
+  32              		.cfi_offset 5, -16
+  33              		.cfi_offset 6, -12
+  34              		.cfi_offset 7, -8
+  35              		.cfi_offset 14, -4
+  36 0002 ABB0     		sub	sp, sp, #172
+  37              		.cfi_def_cfa_offset 192
+  38 0004 00AF     		add	r7, sp, #0
+  39              		.cfi_def_cfa_register 7
+  40 0006 7865     		str	r0, [r7, #84]
+  41 0008 3965     		str	r1, [r7, #80]
+  42 000a FA64     		str	r2, [r7, #76]
+  43 000c BB64     		str	r3, [r7, #72]
+  67:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q63_t acc;                                     /*  accumulator                   */
+  68:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   uint32_t uShift = ((uint32_t) S->postShift + 1u);
+  44              		.loc 1 68 0
+  45 000e 7B6D     		ldr	r3, [r7, #84]
+  46 0010 1B7B     		ldrb	r3, [r3, #12]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 3
+
+
+  47 0012 0133     		add	r3, r3, #1
+  48 0014 FB67     		str	r3, [r7, #124]
+  69:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   uint32_t lShift = 32u - uShift;                /*  Shift to be applied to the output */
+  49              		.loc 1 69 0
+  50 0016 FA6F     		ldr	r2, [r7, #124]
+  51 0018 2023     		mov	r3, #32
+  52 001a 9B1A     		sub	r3, r3, r2
+  53 001c BB67     		str	r3, [r7, #120]
+  70:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t *pIn = pSrc;                             /*  input pointer initialization  */
+  54              		.loc 1 70 0
+  55 001e 3B6D     		ldr	r3, [r7, #80]
+  56 0020 A422     		mov	r2, #164
+  57 0022 BA18     		add	r2, r7, r2
+  58 0024 1360     		str	r3, [r2]
+  71:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t *pOut = pDst;                            /*  output pointer initialization */
+  59              		.loc 1 71 0
+  60 0026 FB6C     		ldr	r3, [r7, #76]
+  61 0028 A022     		mov	r2, #160
+  62 002a BA18     		add	r2, r7, r2
+  63 002c 1360     		str	r3, [r2]
+  72:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t *pState = S->pState;                     /*  pState pointer initialization */
+  64              		.loc 1 72 0
+  65 002e 7B6D     		ldr	r3, [r7, #84]
+  66 0030 5B68     		ldr	r3, [r3, #4]
+  67 0032 9C22     		mov	r2, #156
+  68 0034 BA18     		add	r2, r7, r2
+  69 0036 1360     		str	r3, [r2]
+  73:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t *pCoeffs = S->pCoeffs;                   /*  coeff pointer initialization  */
+  70              		.loc 1 73 0
+  71 0038 7B6D     		ldr	r3, [r7, #84]
+  72 003a 9B68     		ldr	r3, [r3, #8]
+  73 003c 9822     		mov	r2, #152
+  74 003e BA18     		add	r2, r7, r2
+  75 0040 1360     		str	r3, [r2]
+  74:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t Xn1, Xn2, Yn1, Yn2;                      /*  Filter state variables        */
+  75:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t b0, b1, b2, a1, a2;                      /*  Filter coefficients           */
+  76:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t Xn;                                      /*  temporary input               */
+  77:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   uint32_t sample, stage = S->numStages;         /*  loop counters                     */
+  76              		.loc 1 77 0
+  77 0042 7B6D     		ldr	r3, [r7, #84]
+  78 0044 1B68     		ldr	r3, [r3]
+  79 0046 8022     		mov	r2, #128
+  80 0048 BA18     		add	r2, r7, r2
+  81 004a 1360     		str	r3, [r2]
+  82              	.L6:
+  78:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  79:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  80:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** #if defined (ARM_MATH_DSP)
+  81:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  82:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   q31_t acc_l, acc_h;                            /*  temporary output variables    */
+  83:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  84:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+  85:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  86:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   do
+  87:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   {
+  88:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* Reading the coefficients */
+  89:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     b0 = *pCoeffs++;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 4
+
+
+  90:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     b1 = *pCoeffs++;
+  91:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     b2 = *pCoeffs++;
+  92:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     a1 = *pCoeffs++;
+  93:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     a2 = *pCoeffs++;
+  94:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+  95:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* Reading the state values */
+  96:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     Xn1 = pState[0];
+  97:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     Xn2 = pState[1];
+  98:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     Yn1 = pState[2];
+  99:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     Yn2 = pState[3];
+ 100:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 101:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* Apply loop unrolling and compute 4 output values simultaneously. */
+ 102:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /*      The variable acc hold output values that are being computed:
+ 103:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****      *
+ 104:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****      *    acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
+ 105:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****      */
+ 106:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 107:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     sample = blockSize >> 2u;
+ 108:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 109:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* First part of the processing with loop unrolling.  Compute 4 outputs at a time.
+ 110:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****      ** a second loop below computes the remaining 1 to 3 samples. */
+ 111:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     while (sample > 0u)
+ 112:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     {
+ 113:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Read the input */
+ 114:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn = *pIn++;
+ 115:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 116:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 117:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 118:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] */
+ 119:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc = (q63_t) b0 *Xn;
+ 120:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 121:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b1 *Xn1;
+ 122:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 123:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b2 *Xn2;
+ 124:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 125:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a1 *Yn1;
+ 126:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 127:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a2 *Yn2;
+ 128:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 129:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The result is converted to 1.31 , Yn2 variable is reused */
+ 130:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 131:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Calc lower part of acc */
+ 132:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc_l = acc & 0xffffffff;
+ 133:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 134:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Calc upper part of acc */
+ 135:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc_h = (acc >> 32) & 0xffffffff;
+ 136:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 137:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Apply shift for lower part of acc and upper part of acc */
+ 138:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Yn2 = (uint32_t) acc_l >> lShift | acc_h << uShift;
+ 139:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 140:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Store the output in the destination buffer. */
+ 141:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       *pOut++ = Yn2;
+ 142:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 143:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Read the second input */
+ 144:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn2 = *pIn++;
+ 145:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 146:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 5
+
+
+ 147:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 148:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] */
+ 149:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc = (q63_t) b0 *Xn2;
+ 150:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 151:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b1 *Xn;
+ 152:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 153:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b2 *Xn1;
+ 154:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 155:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a1 *Yn2;
+ 156:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 157:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a2 *Yn1;
+ 158:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 159:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 160:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The result is converted to 1.31, Yn1 variable is reused  */
+ 161:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 162:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Calc lower part of acc */
+ 163:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc_l = acc & 0xffffffff;
+ 164:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 165:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Calc upper part of acc */
+ 166:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc_h = (acc >> 32) & 0xffffffff;
+ 167:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 168:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 169:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Apply shift for lower part of acc and upper part of acc */
+ 170:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Yn1 = (uint32_t) acc_l >> lShift | acc_h << uShift;
+ 171:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 172:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Store the output in the destination buffer. */
+ 173:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       *pOut++ = Yn1;
+ 174:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 175:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Read the third input  */
+ 176:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn1 = *pIn++;
+ 177:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 178:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 179:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 180:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] */
+ 181:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc = (q63_t) b0 *Xn1;
+ 182:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 183:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b1 *Xn2;
+ 184:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 185:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b2 *Xn;
+ 186:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 187:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a1 *Yn1;
+ 188:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 189:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a2 *Yn2;
+ 190:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 191:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The result is converted to 1.31, Yn2 variable is reused  */
+ 192:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Calc lower part of acc */
+ 193:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc_l = acc & 0xffffffff;
+ 194:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 195:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Calc upper part of acc */
+ 196:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc_h = (acc >> 32) & 0xffffffff;
+ 197:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 198:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 199:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Apply shift for lower part of acc and upper part of acc */
+ 200:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Yn2 = (uint32_t) acc_l >> lShift | acc_h << uShift;
+ 201:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 202:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Store the output in the destination buffer. */
+ 203:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       *pOut++ = Yn2;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 6
+
+
+ 204:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 205:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Read the forth input */
+ 206:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn = *pIn++;
+ 207:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 208:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 209:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 210:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] */
+ 211:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc = (q63_t) b0 *Xn;
+ 212:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 213:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b1 *Xn1;
+ 214:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 215:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b2 *Xn2;
+ 216:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 217:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a1 *Yn2;
+ 218:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 219:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a2 *Yn1;
+ 220:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 221:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The result is converted to 1.31, Yn1 variable is reused  */
+ 222:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Calc lower part of acc */
+ 223:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc_l = acc & 0xffffffff;
+ 224:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 225:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Calc upper part of acc */
+ 226:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc_h = (acc >> 32) & 0xffffffff;
+ 227:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 228:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Apply shift for lower part of acc and upper part of acc */
+ 229:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Yn1 = (uint32_t) acc_l >> lShift | acc_h << uShift;
+ 230:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 231:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Every time after the output is computed state should be updated. */
+ 232:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The states should be updated as:  */
+ 233:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Xn2 = Xn1    */
+ 234:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Xn1 = Xn     */
+ 235:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Yn2 = Yn1    */
+ 236:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Yn1 = acc    */
+ 237:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn2 = Xn1;
+ 238:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn1 = Xn;
+ 239:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 240:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Store the output in the destination buffer. */
+ 241:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       *pOut++ = Yn1;
+ 242:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 243:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* decrement the loop counter */
+ 244:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       sample--;
+ 245:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     }
+ 246:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 247:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* If the blockSize is not a multiple of 4, compute any remaining output samples here.
+ 248:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****      ** No loop unrolling is used. */
+ 249:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     sample = (blockSize & 0x3u);
+ 250:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 251:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     while (sample > 0u)
+ 252:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     {
+ 253:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Read the input */
+ 254:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn = *pIn++;
+ 255:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 256:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 257:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 258:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] */
+ 259:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc = (q63_t) b0 *Xn;
+ 260:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b1 * x[n-1] */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 7
+
+
+ 261:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b1 *Xn1;
+ 262:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 263:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b2 *Xn2;
+ 264:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 265:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a1 *Yn1;
+ 266:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 267:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a2 *Yn2;
+ 268:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 269:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The result is converted to 1.31  */
+ 270:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc = acc >> lShift;
+ 271:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 272:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Every time after the output is computed state should be updated. */
+ 273:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The states should be updated as:  */
+ 274:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Xn2 = Xn1    */
+ 275:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Xn1 = Xn     */
+ 276:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Yn2 = Yn1    */
+ 277:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Yn1 = acc    */
+ 278:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn2 = Xn1;
+ 279:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn1 = Xn;
+ 280:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Yn2 = Yn1;
+ 281:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Yn1 = (q31_t) acc;
+ 282:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 283:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Store the output in the destination buffer. */
+ 284:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       *pOut++ = (q31_t) acc;
+ 285:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 286:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* decrement the loop counter */
+ 287:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       sample--;
+ 288:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     }
+ 289:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 290:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /*  The first stage goes from the input buffer to the output buffer. */
+ 291:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /*  Subsequent stages occur in-place in the output buffer */
+ 292:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     pIn = pDst;
+ 293:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 294:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* Reset to destination pointer */
+ 295:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     pOut = pDst;
+ 296:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 297:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /*  Store the updated state variables back into the pState array */
+ 298:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     *pState++ = Xn1;
+ 299:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     *pState++ = Xn2;
+ 300:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     *pState++ = Yn1;
+ 301:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     *pState++ = Yn2;
+ 302:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 303:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   } while (--stage);
+ 304:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 305:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** #else
+ 306:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 307:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   /* Run the below code for Cortex-M0 */
+ 308:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 309:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   do
+ 310:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   {
+ 311:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* Reading the coefficients */
+ 312:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     b0 = *pCoeffs++;
+  83              		.loc 1 312 0
+  84 004c 9823     		mov	r3, #152
+  85 004e FB18     		add	r3, r7, r3
+  86 0050 1A68     		ldr	r2, [r3]
+  87 0052 131D     		add	r3, r2, #4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 8
+
+
+  88 0054 9821     		mov	r1, #152
+  89 0056 7918     		add	r1, r7, r1
+  90 0058 0B60     		str	r3, [r1]
+  91 005a 1368     		ldr	r3, [r2]
+  92 005c 7B67     		str	r3, [r7, #116]
+ 313:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     b1 = *pCoeffs++;
+  93              		.loc 1 313 0
+  94 005e 9823     		mov	r3, #152
+  95 0060 FB18     		add	r3, r7, r3
+  96 0062 1A68     		ldr	r2, [r3]
+  97 0064 131D     		add	r3, r2, #4
+  98 0066 9821     		mov	r1, #152
+  99 0068 7918     		add	r1, r7, r1
+ 100 006a 0B60     		str	r3, [r1]
+ 101 006c 1368     		ldr	r3, [r2]
+ 102 006e 3B67     		str	r3, [r7, #112]
+ 314:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     b2 = *pCoeffs++;
+ 103              		.loc 1 314 0
+ 104 0070 9823     		mov	r3, #152
+ 105 0072 FB18     		add	r3, r7, r3
+ 106 0074 1A68     		ldr	r2, [r3]
+ 107 0076 131D     		add	r3, r2, #4
+ 108 0078 9821     		mov	r1, #152
+ 109 007a 7918     		add	r1, r7, r1
+ 110 007c 0B60     		str	r3, [r1]
+ 111 007e 1368     		ldr	r3, [r2]
+ 112 0080 FB66     		str	r3, [r7, #108]
+ 315:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     a1 = *pCoeffs++;
+ 113              		.loc 1 315 0
+ 114 0082 9823     		mov	r3, #152
+ 115 0084 FB18     		add	r3, r7, r3
+ 116 0086 1A68     		ldr	r2, [r3]
+ 117 0088 131D     		add	r3, r2, #4
+ 118 008a 9821     		mov	r1, #152
+ 119 008c 7918     		add	r1, r7, r1
+ 120 008e 0B60     		str	r3, [r1]
+ 121 0090 1368     		ldr	r3, [r2]
+ 122 0092 BB66     		str	r3, [r7, #104]
+ 316:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     a2 = *pCoeffs++;
+ 123              		.loc 1 316 0
+ 124 0094 9823     		mov	r3, #152
+ 125 0096 FB18     		add	r3, r7, r3
+ 126 0098 1A68     		ldr	r2, [r3]
+ 127 009a 131D     		add	r3, r2, #4
+ 128 009c 9821     		mov	r1, #152
+ 129 009e 7918     		add	r1, r7, r1
+ 130 00a0 0B60     		str	r3, [r1]
+ 131 00a2 1368     		ldr	r3, [r2]
+ 132 00a4 7B66     		str	r3, [r7, #100]
+ 317:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 318:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* Reading the state values */
+ 319:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     Xn1 = pState[0];
+ 133              		.loc 1 319 0
+ 134 00a6 9C23     		mov	r3, #156
+ 135 00a8 FB18     		add	r3, r7, r3
+ 136 00aa 1B68     		ldr	r3, [r3]
+ 137 00ac 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 9
+
+
+ 138 00ae 9422     		mov	r2, #148
+ 139 00b0 BA18     		add	r2, r7, r2
+ 140 00b2 1360     		str	r3, [r2]
+ 320:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     Xn2 = pState[1];
+ 141              		.loc 1 320 0
+ 142 00b4 9C23     		mov	r3, #156
+ 143 00b6 FB18     		add	r3, r7, r3
+ 144 00b8 1B68     		ldr	r3, [r3]
+ 145 00ba 5B68     		ldr	r3, [r3, #4]
+ 146 00bc 9022     		mov	r2, #144
+ 147 00be BA18     		add	r2, r7, r2
+ 148 00c0 1360     		str	r3, [r2]
+ 321:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     Yn1 = pState[2];
+ 149              		.loc 1 321 0
+ 150 00c2 9C23     		mov	r3, #156
+ 151 00c4 FB18     		add	r3, r7, r3
+ 152 00c6 1B68     		ldr	r3, [r3]
+ 153 00c8 9B68     		ldr	r3, [r3, #8]
+ 154 00ca 8C22     		mov	r2, #140
+ 155 00cc BA18     		add	r2, r7, r2
+ 156 00ce 1360     		str	r3, [r2]
+ 322:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     Yn2 = pState[3];
+ 157              		.loc 1 322 0
+ 158 00d0 9C23     		mov	r3, #156
+ 159 00d2 FB18     		add	r3, r7, r3
+ 160 00d4 1B68     		ldr	r3, [r3]
+ 161 00d6 DB68     		ldr	r3, [r3, #12]
+ 162 00d8 8822     		mov	r2, #136
+ 163 00da BA18     		add	r2, r7, r2
+ 164 00dc 1360     		str	r3, [r2]
+ 323:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 324:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /*      The variables acc holds the output value that is computed:
+ 325:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****      *    acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2]
+ 326:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****      */
+ 327:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 328:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     sample = blockSize;
+ 165              		.loc 1 328 0
+ 166 00de BB6C     		ldr	r3, [r7, #72]
+ 167 00e0 8422     		mov	r2, #132
+ 168 00e2 BA18     		add	r2, r7, r2
+ 169 00e4 1360     		str	r3, [r2]
+ 329:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 330:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     while (sample > 0u)
+ 170              		.loc 1 330 0
+ 171 00e6 BBE0     		b	.L2
+ 172              	.L5:
+ 331:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     {
+ 332:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Read the input */
+ 333:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn = *pIn++;
+ 173              		.loc 1 333 0
+ 174 00e8 A423     		mov	r3, #164
+ 175 00ea FB18     		add	r3, r7, r3
+ 176 00ec 1A68     		ldr	r2, [r3]
+ 177 00ee 131D     		add	r3, r2, #4
+ 178 00f0 A421     		mov	r1, #164
+ 179 00f2 7918     		add	r1, r7, r1
+ 180 00f4 0B60     		str	r3, [r1]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 10
+
+
+ 181 00f6 1368     		ldr	r3, [r2]
+ 182 00f8 3B66     		str	r3, [r7, #96]
+ 334:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 335:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] + a1 * y[n-1] + a2 * y[n-2] */
+ 336:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc =  b0 * x[n] */
+ 337:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc = (q63_t) b0 *Xn;
+ 183              		.loc 1 337 0
+ 184 00fa 7B6F     		ldr	r3, [r7, #116]
+ 185 00fc 3B64     		str	r3, [r7, #64]
+ 186 00fe DB17     		asr	r3, r3, #31
+ 187 0100 7B64     		str	r3, [r7, #68]
+ 188 0102 3B6E     		ldr	r3, [r7, #96]
+ 189 0104 BB63     		str	r3, [r7, #56]
+ 190 0106 DB17     		asr	r3, r3, #31
+ 191 0108 FB63     		str	r3, [r7, #60]
+ 192 010a 386C     		ldr	r0, [r7, #64]
+ 193 010c 796C     		ldr	r1, [r7, #68]
+ 194 010e BA6B     		ldr	r2, [r7, #56]
+ 195 0110 FB6B     		ldr	r3, [r7, #60]
+ 196 0112 FFF7FEFF 		bl	__aeabi_lmul
+ 197 0116 031C     		mov	r3, r0
+ 198 0118 0C1C     		mov	r4, r1
+ 199 011a BB65     		str	r3, [r7, #88]
+ 200 011c FC65     		str	r4, [r7, #92]
+ 338:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 339:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b1 * x[n-1] */
+ 340:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b1 *Xn1;
+ 201              		.loc 1 340 0
+ 202 011e 3B6F     		ldr	r3, [r7, #112]
+ 203 0120 3B63     		str	r3, [r7, #48]
+ 204 0122 DB17     		asr	r3, r3, #31
+ 205 0124 7B63     		str	r3, [r7, #52]
+ 206 0126 9423     		mov	r3, #148
+ 207 0128 FB18     		add	r3, r7, r3
+ 208 012a 1B68     		ldr	r3, [r3]
+ 209 012c BB62     		str	r3, [r7, #40]
+ 210 012e DB17     		asr	r3, r3, #31
+ 211 0130 FB62     		str	r3, [r7, #44]
+ 212 0132 386B     		ldr	r0, [r7, #48]
+ 213 0134 796B     		ldr	r1, [r7, #52]
+ 214 0136 BA6A     		ldr	r2, [r7, #40]
+ 215 0138 FB6A     		ldr	r3, [r7, #44]
+ 216 013a FFF7FEFF 		bl	__aeabi_lmul
+ 217 013e 031C     		mov	r3, r0
+ 218 0140 0C1C     		mov	r4, r1
+ 219 0142 191C     		mov	r1, r3
+ 220 0144 221C     		mov	r2, r4
+ 221 0146 BB6D     		ldr	r3, [r7, #88]
+ 222 0148 FC6D     		ldr	r4, [r7, #92]
+ 223 014a 5B18     		add	r3, r3, r1
+ 224 014c 5441     		adc	r4, r4, r2
+ 225 014e BB65     		str	r3, [r7, #88]
+ 226 0150 FC65     		str	r4, [r7, #92]
+ 341:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  b[2] * x[n-2] */
+ 342:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) b2 *Xn2;
+ 227              		.loc 1 342 0
+ 228 0152 FB6E     		ldr	r3, [r7, #108]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 11
+
+
+ 229 0154 3B62     		str	r3, [r7, #32]
+ 230 0156 DB17     		asr	r3, r3, #31
+ 231 0158 7B62     		str	r3, [r7, #36]
+ 232 015a 9023     		mov	r3, #144
+ 233 015c FB18     		add	r3, r7, r3
+ 234 015e 1B68     		ldr	r3, [r3]
+ 235 0160 BB61     		str	r3, [r7, #24]
+ 236 0162 DB17     		asr	r3, r3, #31
+ 237 0164 FB61     		str	r3, [r7, #28]
+ 238 0166 386A     		ldr	r0, [r7, #32]
+ 239 0168 796A     		ldr	r1, [r7, #36]
+ 240 016a BA69     		ldr	r2, [r7, #24]
+ 241 016c FB69     		ldr	r3, [r7, #28]
+ 242 016e FFF7FEFF 		bl	__aeabi_lmul
+ 243 0172 031C     		mov	r3, r0
+ 244 0174 0C1C     		mov	r4, r1
+ 245 0176 191C     		mov	r1, r3
+ 246 0178 221C     		mov	r2, r4
+ 247 017a BB6D     		ldr	r3, [r7, #88]
+ 248 017c FC6D     		ldr	r4, [r7, #92]
+ 249 017e 5B18     		add	r3, r3, r1
+ 250 0180 5441     		adc	r4, r4, r2
+ 251 0182 BB65     		str	r3, [r7, #88]
+ 252 0184 FC65     		str	r4, [r7, #92]
+ 343:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a1 * y[n-1] */
+ 344:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a1 *Yn1;
+ 253              		.loc 1 344 0
+ 254 0186 BB6E     		ldr	r3, [r7, #104]
+ 255 0188 3B61     		str	r3, [r7, #16]
+ 256 018a DB17     		asr	r3, r3, #31
+ 257 018c 7B61     		str	r3, [r7, #20]
+ 258 018e 8C23     		mov	r3, #140
+ 259 0190 FB18     		add	r3, r7, r3
+ 260 0192 1B68     		ldr	r3, [r3]
+ 261 0194 BB60     		str	r3, [r7, #8]
+ 262 0196 DB17     		asr	r3, r3, #31
+ 263 0198 FB60     		str	r3, [r7, #12]
+ 264 019a 3869     		ldr	r0, [r7, #16]
+ 265 019c 7969     		ldr	r1, [r7, #20]
+ 266 019e BA68     		ldr	r2, [r7, #8]
+ 267 01a0 FB68     		ldr	r3, [r7, #12]
+ 268 01a2 FFF7FEFF 		bl	__aeabi_lmul
+ 269 01a6 031C     		mov	r3, r0
+ 270 01a8 0C1C     		mov	r4, r1
+ 271 01aa 191C     		mov	r1, r3
+ 272 01ac 221C     		mov	r2, r4
+ 273 01ae BB6D     		ldr	r3, [r7, #88]
+ 274 01b0 FC6D     		ldr	r4, [r7, #92]
+ 275 01b2 5B18     		add	r3, r3, r1
+ 276 01b4 5441     		adc	r4, r4, r2
+ 277 01b6 BB65     		str	r3, [r7, #88]
+ 278 01b8 FC65     		str	r4, [r7, #92]
+ 345:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* acc +=  a2 * y[n-2] */
+ 346:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc += (q63_t) a2 *Yn2;
+ 279              		.loc 1 346 0
+ 280 01ba 7B6E     		ldr	r3, [r7, #100]
+ 281 01bc 3B60     		str	r3, [r7]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 12
+
+
+ 282 01be DB17     		asr	r3, r3, #31
+ 283 01c0 7B60     		str	r3, [r7, #4]
+ 284 01c2 8823     		mov	r3, #136
+ 285 01c4 FB18     		add	r3, r7, r3
+ 286 01c6 1B68     		ldr	r3, [r3]
+ 287 01c8 1D1C     		mov	r5, r3
+ 288 01ca DB17     		asr	r3, r3, #31
+ 289 01cc 1E1C     		mov	r6, r3
+ 290 01ce 3868     		ldr	r0, [r7]
+ 291 01d0 7968     		ldr	r1, [r7, #4]
+ 292 01d2 2A1C     		mov	r2, r5
+ 293 01d4 331C     		mov	r3, r6
+ 294 01d6 FFF7FEFF 		bl	__aeabi_lmul
+ 295 01da 031C     		mov	r3, r0
+ 296 01dc 0C1C     		mov	r4, r1
+ 297 01de 191C     		mov	r1, r3
+ 298 01e0 221C     		mov	r2, r4
+ 299 01e2 BB6D     		ldr	r3, [r7, #88]
+ 300 01e4 FC6D     		ldr	r4, [r7, #92]
+ 301 01e6 5B18     		add	r3, r3, r1
+ 302 01e8 5441     		adc	r4, r4, r2
+ 303 01ea BB65     		str	r3, [r7, #88]
+ 304 01ec FC65     		str	r4, [r7, #92]
+ 347:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 348:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The result is converted to 1.31  */
+ 349:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       acc = acc >> lShift;
+ 305              		.loc 1 349 0
+ 306 01ee B96F     		ldr	r1, [r7, #120]
+ 307 01f0 0A1C     		mov	r2, r1
+ 308 01f2 203A     		sub	r2, r2, #32
+ 309 01f4 002A     		cmp	r2, #0
+ 310 01f6 03DB     		blt	.L3
+ 311 01f8 FB6D     		ldr	r3, [r7, #92]
+ 312 01fa 1341     		asr	r3, r3, r2
+ 313 01fc BB65     		str	r3, [r7, #88]
+ 314 01fe 08E0     		b	.L4
+ 315              	.L3:
+ 316 0200 2023     		mov	r3, #32
+ 317 0202 5A1A     		sub	r2, r3, r1
+ 318 0204 FB6D     		ldr	r3, [r7, #92]
+ 319 0206 9340     		lsl	r3, r3, r2
+ 320 0208 1A1C     		mov	r2, r3
+ 321 020a BB6D     		ldr	r3, [r7, #88]
+ 322 020c CB40     		lsr	r3, r3, r1
+ 323 020e 1343     		orr	r3, r2
+ 324 0210 BB65     		str	r3, [r7, #88]
+ 325              	.L4:
+ 326 0212 FB6D     		ldr	r3, [r7, #92]
+ 327 0214 0B41     		asr	r3, r3, r1
+ 328 0216 FB65     		str	r3, [r7, #92]
+ 350:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 351:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Every time after the output is computed state should be updated. */
+ 352:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* The states should be updated as:  */
+ 353:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Xn2 = Xn1    */
+ 354:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Xn1 = Xn     */
+ 355:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Yn2 = Yn1    */
+ 356:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Yn1 = acc    */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 13
+
+
+ 357:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn2 = Xn1;
+ 329              		.loc 1 357 0
+ 330 0218 9423     		mov	r3, #148
+ 331 021a FB18     		add	r3, r7, r3
+ 332 021c 1B68     		ldr	r3, [r3]
+ 333 021e 9022     		mov	r2, #144
+ 334 0220 BA18     		add	r2, r7, r2
+ 335 0222 1360     		str	r3, [r2]
+ 358:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Xn1 = Xn;
+ 336              		.loc 1 358 0
+ 337 0224 3B6E     		ldr	r3, [r7, #96]
+ 338 0226 9422     		mov	r2, #148
+ 339 0228 BA18     		add	r2, r7, r2
+ 340 022a 1360     		str	r3, [r2]
+ 359:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Yn2 = Yn1;
+ 341              		.loc 1 359 0
+ 342 022c 8C23     		mov	r3, #140
+ 343 022e FB18     		add	r3, r7, r3
+ 344 0230 1B68     		ldr	r3, [r3]
+ 345 0232 8822     		mov	r2, #136
+ 346 0234 BA18     		add	r2, r7, r2
+ 347 0236 1360     		str	r3, [r2]
+ 360:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       Yn1 = (q31_t) acc;
+ 348              		.loc 1 360 0
+ 349 0238 BB6D     		ldr	r3, [r7, #88]
+ 350 023a 8C22     		mov	r2, #140
+ 351 023c BA18     		add	r2, r7, r2
+ 352 023e 1360     		str	r3, [r2]
+ 361:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 362:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* Store the output in the destination buffer. */
+ 363:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       *pOut++ = (q31_t) acc;
+ 353              		.loc 1 363 0
+ 354 0240 A023     		mov	r3, #160
+ 355 0242 FB18     		add	r3, r7, r3
+ 356 0244 1A68     		ldr	r2, [r3]
+ 357 0246 131D     		add	r3, r2, #4
+ 358 0248 A021     		mov	r1, #160
+ 359 024a 7918     		add	r1, r7, r1
+ 360 024c 0B60     		str	r3, [r1]
+ 361 024e BB6D     		ldr	r3, [r7, #88]
+ 362 0250 1360     		str	r3, [r2]
+ 364:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 365:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       /* decrement the loop counter */
+ 366:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****       sample--;
+ 363              		.loc 1 366 0
+ 364 0252 8423     		mov	r3, #132
+ 365 0254 FB18     		add	r3, r7, r3
+ 366 0256 1B68     		ldr	r3, [r3]
+ 367 0258 013B     		sub	r3, r3, #1
+ 368 025a 8422     		mov	r2, #132
+ 369 025c BA18     		add	r2, r7, r2
+ 370 025e 1360     		str	r3, [r2]
+ 371              	.L2:
+ 330:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     {
+ 372              		.loc 1 330 0
+ 373 0260 8423     		mov	r3, #132
+ 374 0262 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 14
+
+
+ 375 0264 1B68     		ldr	r3, [r3]
+ 376 0266 002B     		cmp	r3, #0
+ 377 0268 00D0     		beq	.LCB305
+ 378 026a 3DE7     		b	.L5	@long jump
+ 379              	.LCB305:
+ 367:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     }
+ 368:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 369:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /*  The first stage goes from the input buffer to the output buffer. */
+ 370:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /*  Subsequent stages occur in-place in the output buffer */
+ 371:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     pIn = pDst;
+ 380              		.loc 1 371 0
+ 381 026c FB6C     		ldr	r3, [r7, #76]
+ 382 026e A422     		mov	r2, #164
+ 383 0270 BA18     		add	r2, r7, r2
+ 384 0272 1360     		str	r3, [r2]
+ 372:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 373:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /* Reset to destination pointer */
+ 374:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     pOut = pDst;
+ 385              		.loc 1 374 0
+ 386 0274 FB6C     		ldr	r3, [r7, #76]
+ 387 0276 A022     		mov	r2, #160
+ 388 0278 BA18     		add	r2, r7, r2
+ 389 027a 1360     		str	r3, [r2]
+ 375:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 376:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     /*  Store the updated state variables back into the pState array */
+ 377:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     *pState++ = Xn1;
+ 390              		.loc 1 377 0
+ 391 027c 9C23     		mov	r3, #156
+ 392 027e FB18     		add	r3, r7, r3
+ 393 0280 1A68     		ldr	r2, [r3]
+ 394 0282 131D     		add	r3, r2, #4
+ 395 0284 9C21     		mov	r1, #156
+ 396 0286 7918     		add	r1, r7, r1
+ 397 0288 0B60     		str	r3, [r1]
+ 398 028a 9423     		mov	r3, #148
+ 399 028c FB18     		add	r3, r7, r3
+ 400 028e 1B68     		ldr	r3, [r3]
+ 401 0290 1360     		str	r3, [r2]
+ 378:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     *pState++ = Xn2;
+ 402              		.loc 1 378 0
+ 403 0292 9C23     		mov	r3, #156
+ 404 0294 FB18     		add	r3, r7, r3
+ 405 0296 1A68     		ldr	r2, [r3]
+ 406 0298 131D     		add	r3, r2, #4
+ 407 029a 9C21     		mov	r1, #156
+ 408 029c 7918     		add	r1, r7, r1
+ 409 029e 0B60     		str	r3, [r1]
+ 410 02a0 9023     		mov	r3, #144
+ 411 02a2 FB18     		add	r3, r7, r3
+ 412 02a4 1B68     		ldr	r3, [r3]
+ 413 02a6 1360     		str	r3, [r2]
+ 379:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     *pState++ = Yn1;
+ 414              		.loc 1 379 0
+ 415 02a8 9C23     		mov	r3, #156
+ 416 02aa FB18     		add	r3, r7, r3
+ 417 02ac 1A68     		ldr	r2, [r3]
+ 418 02ae 131D     		add	r3, r2, #4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 15
+
+
+ 419 02b0 9C21     		mov	r1, #156
+ 420 02b2 7918     		add	r1, r7, r1
+ 421 02b4 0B60     		str	r3, [r1]
+ 422 02b6 8C23     		mov	r3, #140
+ 423 02b8 FB18     		add	r3, r7, r3
+ 424 02ba 1B68     		ldr	r3, [r3]
+ 425 02bc 1360     		str	r3, [r2]
+ 380:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****     *pState++ = Yn2;
+ 426              		.loc 1 380 0
+ 427 02be 9C23     		mov	r3, #156
+ 428 02c0 FB18     		add	r3, r7, r3
+ 429 02c2 1A68     		ldr	r2, [r3]
+ 430 02c4 131D     		add	r3, r2, #4
+ 431 02c6 9C21     		mov	r1, #156
+ 432 02c8 7918     		add	r1, r7, r1
+ 433 02ca 0B60     		str	r3, [r1]
+ 434 02cc 8823     		mov	r3, #136
+ 435 02ce FB18     		add	r3, r7, r3
+ 436 02d0 1B68     		ldr	r3, [r3]
+ 437 02d2 1360     		str	r3, [r2]
+ 381:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 382:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c ****   } while (--stage);
+ 438              		.loc 1 382 0
+ 439 02d4 8023     		mov	r3, #128
+ 440 02d6 FB18     		add	r3, r7, r3
+ 441 02d8 1B68     		ldr	r3, [r3]
+ 442 02da 013B     		sub	r3, r3, #1
+ 443 02dc 8022     		mov	r2, #128
+ 444 02de BA18     		add	r2, r7, r2
+ 445 02e0 1360     		str	r3, [r2]
+ 446 02e2 8023     		mov	r3, #128
+ 447 02e4 FB18     		add	r3, r7, r3
+ 448 02e6 1B68     		ldr	r3, [r3]
+ 449 02e8 002B     		cmp	r3, #0
+ 450 02ea 00D0     		beq	.LCB369
+ 451 02ec AEE6     		b	.L6	@long jump
+ 452              	.LCB369:
+ 383:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** 
+ 384:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** #endif /*  #if defined (ARM_MATH_DSP) */
+ 385:Source\FilteringFunctions/arm_biquad_cascade_df1_q31.c **** }
+ 453              		.loc 1 385 0
+ 454 02ee BD46     		mov	sp, r7
+ 455 02f0 2BB0     		add	sp, sp, #172
+ 456              		@ sp needed
+ 457 02f2 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 458              		.cfi_endproc
+ 459              	.LFE82:
+ 460              		.size	arm_biquad_cascade_df1_q31, .-arm_biquad_cascade_df1_q31
+ 461              		.text
+ 462              	.Letext0:
+ 463              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 464              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 465              		.file 4 ".\\Include/arm_math.h"
+ 466              		.section	.debug_info,"",%progbits
+ 467              	.Ldebug_info0:
+ 468 0000 B3020000 		.4byte	0x2b3
+ 469 0004 0400     		.2byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 16
+
+
+ 470 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 471 000a 04       		.byte	0x4
+ 472 000b 01       		.uleb128 0x1
+ 473 000c 48010000 		.4byte	.LASF37
+ 474 0010 01       		.byte	0x1
+ 475 0011 0E020000 		.4byte	.LASF38
+ 476 0015 47000000 		.4byte	.LASF39
+ 477 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 478 001d 00000000 		.4byte	0
+ 479 0021 00000000 		.4byte	.Ldebug_line0
+ 480 0025 02       		.uleb128 0x2
+ 481 0026 01       		.byte	0x1
+ 482 0027 06       		.byte	0x6
+ 483 0028 69020000 		.4byte	.LASF0
+ 484 002c 03       		.uleb128 0x3
+ 485 002d 25000000 		.4byte	.LASF4
+ 486 0031 02       		.byte	0x2
+ 487 0032 1D       		.byte	0x1d
+ 488 0033 37000000 		.4byte	0x37
+ 489 0037 02       		.uleb128 0x2
+ 490 0038 01       		.byte	0x1
+ 491 0039 08       		.byte	0x8
+ 492 003a B1000000 		.4byte	.LASF1
+ 493 003e 02       		.uleb128 0x2
+ 494 003f 02       		.byte	0x2
+ 495 0040 05       		.byte	0x5
+ 496 0041 04020000 		.4byte	.LASF2
+ 497 0045 02       		.uleb128 0x2
+ 498 0046 02       		.byte	0x2
+ 499 0047 07       		.byte	0x7
+ 500 0048 D8000000 		.4byte	.LASF3
+ 501 004c 03       		.uleb128 0x3
+ 502 004d 2F000000 		.4byte	.LASF5
+ 503 0051 02       		.byte	0x2
+ 504 0052 3F       		.byte	0x3f
+ 505 0053 57000000 		.4byte	0x57
+ 506 0057 02       		.uleb128 0x2
+ 507 0058 04       		.byte	0x4
+ 508 0059 05       		.byte	0x5
+ 509 005a 3E000000 		.4byte	.LASF6
+ 510 005e 03       		.uleb128 0x3
+ 511 005f 12010000 		.4byte	.LASF7
+ 512 0063 02       		.byte	0x2
+ 513 0064 41       		.byte	0x41
+ 514 0065 69000000 		.4byte	0x69
+ 515 0069 02       		.uleb128 0x2
+ 516 006a 04       		.byte	0x4
+ 517 006b 07       		.byte	0x7
+ 518 006c C6000000 		.4byte	.LASF8
+ 519 0070 03       		.uleb128 0x3
+ 520 0071 01010000 		.4byte	.LASF9
+ 521 0075 02       		.byte	0x2
+ 522 0076 59       		.byte	0x59
+ 523 0077 7B000000 		.4byte	0x7b
+ 524 007b 02       		.uleb128 0x2
+ 525 007c 08       		.byte	0x8
+ 526 007d 05       		.byte	0x5
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 17
+
+
+ 527 007e F1010000 		.4byte	.LASF10
+ 528 0082 02       		.uleb128 0x2
+ 529 0083 08       		.byte	0x8
+ 530 0084 07       		.byte	0x7
+ 531 0085 31010000 		.4byte	.LASF11
+ 532 0089 04       		.uleb128 0x4
+ 533 008a 04       		.byte	0x4
+ 534 008b 05       		.byte	0x5
+ 535 008c 696E7400 		.ascii	"int\000"
+ 536 0090 02       		.uleb128 0x2
+ 537 0091 04       		.byte	0x4
+ 538 0092 07       		.byte	0x7
+ 539 0093 24010000 		.4byte	.LASF12
+ 540 0097 03       		.uleb128 0x3
+ 541 0098 8D000000 		.4byte	.LASF13
+ 542 009c 03       		.byte	0x3
+ 543 009d 15       		.byte	0x15
+ 544 009e 2C000000 		.4byte	0x2c
+ 545 00a2 03       		.uleb128 0x3
+ 546 00a3 E0010000 		.4byte	.LASF14
+ 547 00a7 03       		.byte	0x3
+ 548 00a8 2C       		.byte	0x2c
+ 549 00a9 4C000000 		.4byte	0x4c
+ 550 00ad 03       		.uleb128 0x3
+ 551 00ae 4D020000 		.4byte	.LASF15
+ 552 00b2 03       		.byte	0x3
+ 553 00b3 2D       		.byte	0x2d
+ 554 00b4 5E000000 		.4byte	0x5e
+ 555 00b8 03       		.uleb128 0x3
+ 556 00b9 1D000000 		.4byte	.LASF16
+ 557 00bd 03       		.byte	0x3
+ 558 00be 38       		.byte	0x38
+ 559 00bf 70000000 		.4byte	0x70
+ 560 00c3 02       		.uleb128 0x2
+ 561 00c4 04       		.byte	0x4
+ 562 00c5 07       		.byte	0x7
+ 563 00c6 E8010000 		.4byte	.LASF17
+ 564 00ca 02       		.uleb128 0x2
+ 565 00cb 01       		.byte	0x1
+ 566 00cc 08       		.byte	0x8
+ 567 00cd FF010000 		.4byte	.LASF18
+ 568 00d1 02       		.uleb128 0x2
+ 569 00d2 08       		.byte	0x8
+ 570 00d3 04       		.byte	0x4
+ 571 00d4 0B010000 		.4byte	.LASF19
+ 572 00d8 02       		.uleb128 0x2
+ 573 00d9 04       		.byte	0x4
+ 574 00da 04       		.byte	0x4
+ 575 00db 9B000000 		.4byte	.LASF20
+ 576 00df 02       		.uleb128 0x2
+ 577 00e0 08       		.byte	0x8
+ 578 00e1 04       		.byte	0x4
+ 579 00e2 5D020000 		.4byte	.LASF21
+ 580 00e6 05       		.uleb128 0x5
+ 581 00e7 AB000000 		.4byte	.LASF22
+ 582 00eb 04       		.byte	0x4
+ 583 00ec 9B01     		.2byte	0x19b
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 18
+
+
+ 584 00ee A2000000 		.4byte	0xa2
+ 585 00f2 05       		.uleb128 0x5
+ 586 00f3 DA010000 		.4byte	.LASF23
+ 587 00f7 04       		.byte	0x4
+ 588 00f8 A001     		.2byte	0x1a0
+ 589 00fa B8000000 		.4byte	0xb8
+ 590 00fe 06       		.uleb128 0x6
+ 591 00ff 04       		.byte	0x4
+ 592 0100 E6000000 		.4byte	0xe6
+ 593 0104 07       		.uleb128 0x7
+ 594 0105 10       		.byte	0x10
+ 595 0106 04       		.byte	0x4
+ 596 0107 1005     		.2byte	0x510
+ 597 0109 42010000 		.4byte	0x142
+ 598 010d 08       		.uleb128 0x8
+ 599 010e 7A020000 		.4byte	.LASF24
+ 600 0112 04       		.byte	0x4
+ 601 0113 1205     		.2byte	0x512
+ 602 0115 AD000000 		.4byte	0xad
+ 603 0119 00       		.byte	0
+ 604 011a 08       		.uleb128 0x8
+ 605 011b FA000000 		.4byte	.LASF25
+ 606 011f 04       		.byte	0x4
+ 607 0120 1305     		.2byte	0x513
+ 608 0122 FE000000 		.4byte	0xfe
+ 609 0126 04       		.byte	0x4
+ 610 0127 08       		.uleb128 0x8
+ 611 0128 45020000 		.4byte	.LASF26
+ 612 012c 04       		.byte	0x4
+ 613 012d 1405     		.2byte	0x514
+ 614 012f FE000000 		.4byte	0xfe
+ 615 0133 08       		.byte	0x8
+ 616 0134 08       		.uleb128 0x8
+ 617 0135 F0000000 		.4byte	.LASF27
+ 618 0139 04       		.byte	0x4
+ 619 013a 1505     		.2byte	0x515
+ 620 013c 97000000 		.4byte	0x97
+ 621 0140 0C       		.byte	0xc
+ 622 0141 00       		.byte	0
+ 623 0142 05       		.uleb128 0x5
+ 624 0143 00000000 		.4byte	.LASF28
+ 625 0147 04       		.byte	0x4
+ 626 0148 1605     		.2byte	0x516
+ 627 014a 04010000 		.4byte	0x104
+ 628 014e 09       		.uleb128 0x9
+ 629 014f 84020000 		.4byte	.LASF40
+ 630 0153 01       		.byte	0x1
+ 631 0154 3D       		.byte	0x3d
+ 632 0155 00000000 		.4byte	.LFB82
+ 633 0159 F4020000 		.4byte	.LFE82-.LFB82
+ 634 015d 01       		.uleb128 0x1
+ 635 015e 9C       		.byte	0x9c
+ 636 015f AB020000 		.4byte	0x2ab
+ 637 0163 0A       		.uleb128 0xa
+ 638 0164 5300     		.ascii	"S\000"
+ 639 0166 01       		.byte	0x1
+ 640 0167 3E       		.byte	0x3e
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 19
+
+
+ 641 0168 AB020000 		.4byte	0x2ab
+ 642 016c 03       		.uleb128 0x3
+ 643 016d 91       		.byte	0x91
+ 644 016e 947F     		.sleb128 -108
+ 645 0170 0B       		.uleb128 0xb
+ 646 0171 75020000 		.4byte	.LASF29
+ 647 0175 01       		.byte	0x1
+ 648 0176 3F       		.byte	0x3f
+ 649 0177 FE000000 		.4byte	0xfe
+ 650 017b 03       		.uleb128 0x3
+ 651 017c 91       		.byte	0x91
+ 652 017d 907F     		.sleb128 -112
+ 653 017f 0B       		.uleb128 0xb
+ 654 0180 EB000000 		.4byte	.LASF30
+ 655 0184 01       		.byte	0x1
+ 656 0185 40       		.byte	0x40
+ 657 0186 FE000000 		.4byte	0xfe
+ 658 018a 03       		.uleb128 0x3
+ 659 018b 91       		.byte	0x91
+ 660 018c 8C7F     		.sleb128 -116
+ 661 018e 0B       		.uleb128 0xb
+ 662 018f A1000000 		.4byte	.LASF31
+ 663 0193 01       		.byte	0x1
+ 664 0194 41       		.byte	0x41
+ 665 0195 AD000000 		.4byte	0xad
+ 666 0199 03       		.uleb128 0x3
+ 667 019a 91       		.byte	0x91
+ 668 019b 887F     		.sleb128 -120
+ 669 019d 0C       		.uleb128 0xc
+ 670 019e 61636300 		.ascii	"acc\000"
+ 671 01a2 01       		.byte	0x1
+ 672 01a3 43       		.byte	0x43
+ 673 01a4 F2000000 		.4byte	0xf2
+ 674 01a8 03       		.uleb128 0x3
+ 675 01a9 91       		.byte	0x91
+ 676 01aa 987F     		.sleb128 -104
+ 677 01ac 0D       		.uleb128 0xd
+ 678 01ad 1D010000 		.4byte	.LASF32
+ 679 01b1 01       		.byte	0x1
+ 680 01b2 44       		.byte	0x44
+ 681 01b3 AD000000 		.4byte	0xad
+ 682 01b7 03       		.uleb128 0x3
+ 683 01b8 91       		.byte	0x91
+ 684 01b9 BC7F     		.sleb128 -68
+ 685 01bb 0D       		.uleb128 0xd
+ 686 01bc BF000000 		.4byte	.LASF33
+ 687 01c0 01       		.byte	0x1
+ 688 01c1 45       		.byte	0x45
+ 689 01c2 AD000000 		.4byte	0xad
+ 690 01c6 03       		.uleb128 0x3
+ 691 01c7 91       		.byte	0x91
+ 692 01c8 B87F     		.sleb128 -72
+ 693 01ca 0C       		.uleb128 0xc
+ 694 01cb 70496E00 		.ascii	"pIn\000"
+ 695 01cf 01       		.byte	0x1
+ 696 01d0 46       		.byte	0x46
+ 697 01d1 FE000000 		.4byte	0xfe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 20
+
+
+ 698 01d5 02       		.uleb128 0x2
+ 699 01d6 91       		.byte	0x91
+ 700 01d7 64       		.sleb128 -28
+ 701 01d8 0D       		.uleb128 0xd
+ 702 01d9 39000000 		.4byte	.LASF34
+ 703 01dd 01       		.byte	0x1
+ 704 01de 47       		.byte	0x47
+ 705 01df FE000000 		.4byte	0xfe
+ 706 01e3 02       		.uleb128 0x2
+ 707 01e4 91       		.byte	0x91
+ 708 01e5 60       		.sleb128 -32
+ 709 01e6 0D       		.uleb128 0xd
+ 710 01e7 FA000000 		.4byte	.LASF25
+ 711 01eb 01       		.byte	0x1
+ 712 01ec 48       		.byte	0x48
+ 713 01ed FE000000 		.4byte	0xfe
+ 714 01f1 02       		.uleb128 0x2
+ 715 01f2 91       		.byte	0x91
+ 716 01f3 5C       		.sleb128 -36
+ 717 01f4 0D       		.uleb128 0xd
+ 718 01f5 45020000 		.4byte	.LASF26
+ 719 01f9 01       		.byte	0x1
+ 720 01fa 49       		.byte	0x49
+ 721 01fb FE000000 		.4byte	0xfe
+ 722 01ff 02       		.uleb128 0x2
+ 723 0200 91       		.byte	0x91
+ 724 0201 58       		.sleb128 -40
+ 725 0202 0C       		.uleb128 0xc
+ 726 0203 586E3100 		.ascii	"Xn1\000"
+ 727 0207 01       		.byte	0x1
+ 728 0208 4A       		.byte	0x4a
+ 729 0209 E6000000 		.4byte	0xe6
+ 730 020d 02       		.uleb128 0x2
+ 731 020e 91       		.byte	0x91
+ 732 020f 54       		.sleb128 -44
+ 733 0210 0C       		.uleb128 0xc
+ 734 0211 586E3200 		.ascii	"Xn2\000"
+ 735 0215 01       		.byte	0x1
+ 736 0216 4A       		.byte	0x4a
+ 737 0217 E6000000 		.4byte	0xe6
+ 738 021b 02       		.uleb128 0x2
+ 739 021c 91       		.byte	0x91
+ 740 021d 50       		.sleb128 -48
+ 741 021e 0C       		.uleb128 0xc
+ 742 021f 596E3100 		.ascii	"Yn1\000"
+ 743 0223 01       		.byte	0x1
+ 744 0224 4A       		.byte	0x4a
+ 745 0225 E6000000 		.4byte	0xe6
+ 746 0229 02       		.uleb128 0x2
+ 747 022a 91       		.byte	0x91
+ 748 022b 4C       		.sleb128 -52
+ 749 022c 0C       		.uleb128 0xc
+ 750 022d 596E3200 		.ascii	"Yn2\000"
+ 751 0231 01       		.byte	0x1
+ 752 0232 4A       		.byte	0x4a
+ 753 0233 E6000000 		.4byte	0xe6
+ 754 0237 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 21
+
+
+ 755 0238 91       		.byte	0x91
+ 756 0239 48       		.sleb128 -56
+ 757 023a 0C       		.uleb128 0xc
+ 758 023b 623000   		.ascii	"b0\000"
+ 759 023e 01       		.byte	0x1
+ 760 023f 4B       		.byte	0x4b
+ 761 0240 E6000000 		.4byte	0xe6
+ 762 0244 03       		.uleb128 0x3
+ 763 0245 91       		.byte	0x91
+ 764 0246 B47F     		.sleb128 -76
+ 765 0248 0C       		.uleb128 0xc
+ 766 0249 623100   		.ascii	"b1\000"
+ 767 024c 01       		.byte	0x1
+ 768 024d 4B       		.byte	0x4b
+ 769 024e E6000000 		.4byte	0xe6
+ 770 0252 03       		.uleb128 0x3
+ 771 0253 91       		.byte	0x91
+ 772 0254 B07F     		.sleb128 -80
+ 773 0256 0C       		.uleb128 0xc
+ 774 0257 623200   		.ascii	"b2\000"
+ 775 025a 01       		.byte	0x1
+ 776 025b 4B       		.byte	0x4b
+ 777 025c E6000000 		.4byte	0xe6
+ 778 0260 03       		.uleb128 0x3
+ 779 0261 91       		.byte	0x91
+ 780 0262 AC7F     		.sleb128 -84
+ 781 0264 0C       		.uleb128 0xc
+ 782 0265 613100   		.ascii	"a1\000"
+ 783 0268 01       		.byte	0x1
+ 784 0269 4B       		.byte	0x4b
+ 785 026a E6000000 		.4byte	0xe6
+ 786 026e 03       		.uleb128 0x3
+ 787 026f 91       		.byte	0x91
+ 788 0270 A87F     		.sleb128 -88
+ 789 0272 0C       		.uleb128 0xc
+ 790 0273 613200   		.ascii	"a2\000"
+ 791 0276 01       		.byte	0x1
+ 792 0277 4B       		.byte	0x4b
+ 793 0278 E6000000 		.4byte	0xe6
+ 794 027c 03       		.uleb128 0x3
+ 795 027d 91       		.byte	0x91
+ 796 027e A47F     		.sleb128 -92
+ 797 0280 0C       		.uleb128 0xc
+ 798 0281 586E00   		.ascii	"Xn\000"
+ 799 0284 01       		.byte	0x1
+ 800 0285 4C       		.byte	0x4c
+ 801 0286 E6000000 		.4byte	0xe6
+ 802 028a 03       		.uleb128 0x3
+ 803 028b 91       		.byte	0x91
+ 804 028c A07F     		.sleb128 -96
+ 805 028e 0D       		.uleb128 0xd
+ 806 028f 56020000 		.4byte	.LASF35
+ 807 0293 01       		.byte	0x1
+ 808 0294 4D       		.byte	0x4d
+ 809 0295 AD000000 		.4byte	0xad
+ 810 0299 02       		.uleb128 0x2
+ 811 029a 91       		.byte	0x91
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 22
+
+
+ 812 029b 44       		.sleb128 -60
+ 813 029c 0D       		.uleb128 0xd
+ 814 029d 95000000 		.4byte	.LASF36
+ 815 02a1 01       		.byte	0x1
+ 816 02a2 4D       		.byte	0x4d
+ 817 02a3 AD000000 		.4byte	0xad
+ 818 02a7 02       		.uleb128 0x2
+ 819 02a8 91       		.byte	0x91
+ 820 02a9 40       		.sleb128 -64
+ 821 02aa 00       		.byte	0
+ 822 02ab 06       		.uleb128 0x6
+ 823 02ac 04       		.byte	0x4
+ 824 02ad B1020000 		.4byte	0x2b1
+ 825 02b1 0E       		.uleb128 0xe
+ 826 02b2 42010000 		.4byte	0x142
+ 827 02b6 00       		.byte	0
+ 828              		.section	.debug_abbrev,"",%progbits
+ 829              	.Ldebug_abbrev0:
+ 830 0000 01       		.uleb128 0x1
+ 831 0001 11       		.uleb128 0x11
+ 832 0002 01       		.byte	0x1
+ 833 0003 25       		.uleb128 0x25
+ 834 0004 0E       		.uleb128 0xe
+ 835 0005 13       		.uleb128 0x13
+ 836 0006 0B       		.uleb128 0xb
+ 837 0007 03       		.uleb128 0x3
+ 838 0008 0E       		.uleb128 0xe
+ 839 0009 1B       		.uleb128 0x1b
+ 840 000a 0E       		.uleb128 0xe
+ 841 000b 55       		.uleb128 0x55
+ 842 000c 17       		.uleb128 0x17
+ 843 000d 11       		.uleb128 0x11
+ 844 000e 01       		.uleb128 0x1
+ 845 000f 10       		.uleb128 0x10
+ 846 0010 17       		.uleb128 0x17
+ 847 0011 00       		.byte	0
+ 848 0012 00       		.byte	0
+ 849 0013 02       		.uleb128 0x2
+ 850 0014 24       		.uleb128 0x24
+ 851 0015 00       		.byte	0
+ 852 0016 0B       		.uleb128 0xb
+ 853 0017 0B       		.uleb128 0xb
+ 854 0018 3E       		.uleb128 0x3e
+ 855 0019 0B       		.uleb128 0xb
+ 856 001a 03       		.uleb128 0x3
+ 857 001b 0E       		.uleb128 0xe
+ 858 001c 00       		.byte	0
+ 859 001d 00       		.byte	0
+ 860 001e 03       		.uleb128 0x3
+ 861 001f 16       		.uleb128 0x16
+ 862 0020 00       		.byte	0
+ 863 0021 03       		.uleb128 0x3
+ 864 0022 0E       		.uleb128 0xe
+ 865 0023 3A       		.uleb128 0x3a
+ 866 0024 0B       		.uleb128 0xb
+ 867 0025 3B       		.uleb128 0x3b
+ 868 0026 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 23
+
+
+ 869 0027 49       		.uleb128 0x49
+ 870 0028 13       		.uleb128 0x13
+ 871 0029 00       		.byte	0
+ 872 002a 00       		.byte	0
+ 873 002b 04       		.uleb128 0x4
+ 874 002c 24       		.uleb128 0x24
+ 875 002d 00       		.byte	0
+ 876 002e 0B       		.uleb128 0xb
+ 877 002f 0B       		.uleb128 0xb
+ 878 0030 3E       		.uleb128 0x3e
+ 879 0031 0B       		.uleb128 0xb
+ 880 0032 03       		.uleb128 0x3
+ 881 0033 08       		.uleb128 0x8
+ 882 0034 00       		.byte	0
+ 883 0035 00       		.byte	0
+ 884 0036 05       		.uleb128 0x5
+ 885 0037 16       		.uleb128 0x16
+ 886 0038 00       		.byte	0
+ 887 0039 03       		.uleb128 0x3
+ 888 003a 0E       		.uleb128 0xe
+ 889 003b 3A       		.uleb128 0x3a
+ 890 003c 0B       		.uleb128 0xb
+ 891 003d 3B       		.uleb128 0x3b
+ 892 003e 05       		.uleb128 0x5
+ 893 003f 49       		.uleb128 0x49
+ 894 0040 13       		.uleb128 0x13
+ 895 0041 00       		.byte	0
+ 896 0042 00       		.byte	0
+ 897 0043 06       		.uleb128 0x6
+ 898 0044 0F       		.uleb128 0xf
+ 899 0045 00       		.byte	0
+ 900 0046 0B       		.uleb128 0xb
+ 901 0047 0B       		.uleb128 0xb
+ 902 0048 49       		.uleb128 0x49
+ 903 0049 13       		.uleb128 0x13
+ 904 004a 00       		.byte	0
+ 905 004b 00       		.byte	0
+ 906 004c 07       		.uleb128 0x7
+ 907 004d 13       		.uleb128 0x13
+ 908 004e 01       		.byte	0x1
+ 909 004f 0B       		.uleb128 0xb
+ 910 0050 0B       		.uleb128 0xb
+ 911 0051 3A       		.uleb128 0x3a
+ 912 0052 0B       		.uleb128 0xb
+ 913 0053 3B       		.uleb128 0x3b
+ 914 0054 05       		.uleb128 0x5
+ 915 0055 01       		.uleb128 0x1
+ 916 0056 13       		.uleb128 0x13
+ 917 0057 00       		.byte	0
+ 918 0058 00       		.byte	0
+ 919 0059 08       		.uleb128 0x8
+ 920 005a 0D       		.uleb128 0xd
+ 921 005b 00       		.byte	0
+ 922 005c 03       		.uleb128 0x3
+ 923 005d 0E       		.uleb128 0xe
+ 924 005e 3A       		.uleb128 0x3a
+ 925 005f 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 24
+
+
+ 926 0060 3B       		.uleb128 0x3b
+ 927 0061 05       		.uleb128 0x5
+ 928 0062 49       		.uleb128 0x49
+ 929 0063 13       		.uleb128 0x13
+ 930 0064 38       		.uleb128 0x38
+ 931 0065 0B       		.uleb128 0xb
+ 932 0066 00       		.byte	0
+ 933 0067 00       		.byte	0
+ 934 0068 09       		.uleb128 0x9
+ 935 0069 2E       		.uleb128 0x2e
+ 936 006a 01       		.byte	0x1
+ 937 006b 3F       		.uleb128 0x3f
+ 938 006c 19       		.uleb128 0x19
+ 939 006d 03       		.uleb128 0x3
+ 940 006e 0E       		.uleb128 0xe
+ 941 006f 3A       		.uleb128 0x3a
+ 942 0070 0B       		.uleb128 0xb
+ 943 0071 3B       		.uleb128 0x3b
+ 944 0072 0B       		.uleb128 0xb
+ 945 0073 27       		.uleb128 0x27
+ 946 0074 19       		.uleb128 0x19
+ 947 0075 11       		.uleb128 0x11
+ 948 0076 01       		.uleb128 0x1
+ 949 0077 12       		.uleb128 0x12
+ 950 0078 06       		.uleb128 0x6
+ 951 0079 40       		.uleb128 0x40
+ 952 007a 18       		.uleb128 0x18
+ 953 007b 9642     		.uleb128 0x2116
+ 954 007d 19       		.uleb128 0x19
+ 955 007e 01       		.uleb128 0x1
+ 956 007f 13       		.uleb128 0x13
+ 957 0080 00       		.byte	0
+ 958 0081 00       		.byte	0
+ 959 0082 0A       		.uleb128 0xa
+ 960 0083 05       		.uleb128 0x5
+ 961 0084 00       		.byte	0
+ 962 0085 03       		.uleb128 0x3
+ 963 0086 08       		.uleb128 0x8
+ 964 0087 3A       		.uleb128 0x3a
+ 965 0088 0B       		.uleb128 0xb
+ 966 0089 3B       		.uleb128 0x3b
+ 967 008a 0B       		.uleb128 0xb
+ 968 008b 49       		.uleb128 0x49
+ 969 008c 13       		.uleb128 0x13
+ 970 008d 02       		.uleb128 0x2
+ 971 008e 18       		.uleb128 0x18
+ 972 008f 00       		.byte	0
+ 973 0090 00       		.byte	0
+ 974 0091 0B       		.uleb128 0xb
+ 975 0092 05       		.uleb128 0x5
+ 976 0093 00       		.byte	0
+ 977 0094 03       		.uleb128 0x3
+ 978 0095 0E       		.uleb128 0xe
+ 979 0096 3A       		.uleb128 0x3a
+ 980 0097 0B       		.uleb128 0xb
+ 981 0098 3B       		.uleb128 0x3b
+ 982 0099 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 25
+
+
+ 983 009a 49       		.uleb128 0x49
+ 984 009b 13       		.uleb128 0x13
+ 985 009c 02       		.uleb128 0x2
+ 986 009d 18       		.uleb128 0x18
+ 987 009e 00       		.byte	0
+ 988 009f 00       		.byte	0
+ 989 00a0 0C       		.uleb128 0xc
+ 990 00a1 34       		.uleb128 0x34
+ 991 00a2 00       		.byte	0
+ 992 00a3 03       		.uleb128 0x3
+ 993 00a4 08       		.uleb128 0x8
+ 994 00a5 3A       		.uleb128 0x3a
+ 995 00a6 0B       		.uleb128 0xb
+ 996 00a7 3B       		.uleb128 0x3b
+ 997 00a8 0B       		.uleb128 0xb
+ 998 00a9 49       		.uleb128 0x49
+ 999 00aa 13       		.uleb128 0x13
+ 1000 00ab 02       		.uleb128 0x2
+ 1001 00ac 18       		.uleb128 0x18
+ 1002 00ad 00       		.byte	0
+ 1003 00ae 00       		.byte	0
+ 1004 00af 0D       		.uleb128 0xd
+ 1005 00b0 34       		.uleb128 0x34
+ 1006 00b1 00       		.byte	0
+ 1007 00b2 03       		.uleb128 0x3
+ 1008 00b3 0E       		.uleb128 0xe
+ 1009 00b4 3A       		.uleb128 0x3a
+ 1010 00b5 0B       		.uleb128 0xb
+ 1011 00b6 3B       		.uleb128 0x3b
+ 1012 00b7 0B       		.uleb128 0xb
+ 1013 00b8 49       		.uleb128 0x49
+ 1014 00b9 13       		.uleb128 0x13
+ 1015 00ba 02       		.uleb128 0x2
+ 1016 00bb 18       		.uleb128 0x18
+ 1017 00bc 00       		.byte	0
+ 1018 00bd 00       		.byte	0
+ 1019 00be 0E       		.uleb128 0xe
+ 1020 00bf 26       		.uleb128 0x26
+ 1021 00c0 00       		.byte	0
+ 1022 00c1 49       		.uleb128 0x49
+ 1023 00c2 13       		.uleb128 0x13
+ 1024 00c3 00       		.byte	0
+ 1025 00c4 00       		.byte	0
+ 1026 00c5 00       		.byte	0
+ 1027              		.section	.debug_aranges,"",%progbits
+ 1028 0000 1C000000 		.4byte	0x1c
+ 1029 0004 0200     		.2byte	0x2
+ 1030 0006 00000000 		.4byte	.Ldebug_info0
+ 1031 000a 04       		.byte	0x4
+ 1032 000b 00       		.byte	0
+ 1033 000c 0000     		.2byte	0
+ 1034 000e 0000     		.2byte	0
+ 1035 0010 00000000 		.4byte	.LFB82
+ 1036 0014 F4020000 		.4byte	.LFE82-.LFB82
+ 1037 0018 00000000 		.4byte	0
+ 1038 001c 00000000 		.4byte	0
+ 1039              		.section	.debug_ranges,"",%progbits
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 26
+
+
+ 1040              	.Ldebug_ranges0:
+ 1041 0000 00000000 		.4byte	.LFB82
+ 1042 0004 F4020000 		.4byte	.LFE82
+ 1043 0008 00000000 		.4byte	0
+ 1044 000c 00000000 		.4byte	0
+ 1045              		.section	.debug_line,"",%progbits
+ 1046              	.Ldebug_line0:
+ 1047 0000 A8010000 		.section	.debug_str,"MS",%progbits,1
+ 1047      02005D01 
+ 1047      00000201 
+ 1047      FB0E0D00 
+ 1047      01010101 
+ 1048              	.LASF28:
+ 1049 0000 61726D5F 		.ascii	"arm_biquad_casd_df1_inst_q31\000"
+ 1049      62697175 
+ 1049      61645F63 
+ 1049      6173645F 
+ 1049      6466315F 
+ 1050              	.LASF16:
+ 1051 001d 696E7436 		.ascii	"int64_t\000"
+ 1051      345F7400 
+ 1052              	.LASF4:
+ 1053 0025 5F5F7569 		.ascii	"__uint8_t\000"
+ 1053      6E74385F 
+ 1053      7400
+ 1054              	.LASF5:
+ 1055 002f 5F5F696E 		.ascii	"__int32_t\000"
+ 1055      7433325F 
+ 1055      7400
+ 1056              	.LASF34:
+ 1057 0039 704F7574 		.ascii	"pOut\000"
+ 1057      00
+ 1058              	.LASF6:
+ 1059 003e 6C6F6E67 		.ascii	"long int\000"
+ 1059      20696E74 
+ 1059      00
+ 1060              	.LASF39:
+ 1061 0047 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 1061      73657273 
+ 1061      5C666E65 
+ 1061      7665735C 
+ 1061      446F6375 
+ 1062 0074 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 1062      655F7370 
+ 1062      6565645F 
+ 1062      73656E73 
+ 1062      6F722E63 
+ 1063              	.LASF13:
+ 1064 008d 75696E74 		.ascii	"uint8_t\000"
+ 1064      385F7400 
+ 1065              	.LASF36:
+ 1066 0095 73746167 		.ascii	"stage\000"
+ 1066      6500
+ 1067              	.LASF20:
+ 1068 009b 666C6F61 		.ascii	"float\000"
+ 1068      7400
+ 1069              	.LASF31:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 27
+
+
+ 1070 00a1 626C6F63 		.ascii	"blockSize\000"
+ 1070      6B53697A 
+ 1070      6500
+ 1071              	.LASF22:
+ 1072 00ab 7133315F 		.ascii	"q31_t\000"
+ 1072      7400
+ 1073              	.LASF1:
+ 1074 00b1 756E7369 		.ascii	"unsigned char\000"
+ 1074      676E6564 
+ 1074      20636861 
+ 1074      7200
+ 1075              	.LASF33:
+ 1076 00bf 6C536869 		.ascii	"lShift\000"
+ 1076      667400
+ 1077              	.LASF8:
+ 1078 00c6 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1078      20756E73 
+ 1078      69676E65 
+ 1078      6420696E 
+ 1078      7400
+ 1079              	.LASF3:
+ 1080 00d8 73686F72 		.ascii	"short unsigned int\000"
+ 1080      7420756E 
+ 1080      7369676E 
+ 1080      65642069 
+ 1080      6E7400
+ 1081              	.LASF30:
+ 1082 00eb 70447374 		.ascii	"pDst\000"
+ 1082      00
+ 1083              	.LASF27:
+ 1084 00f0 706F7374 		.ascii	"postShift\000"
+ 1084      53686966 
+ 1084      7400
+ 1085              	.LASF25:
+ 1086 00fa 70537461 		.ascii	"pState\000"
+ 1086      746500
+ 1087              	.LASF9:
+ 1088 0101 5F5F696E 		.ascii	"__int64_t\000"
+ 1088      7436345F 
+ 1088      7400
+ 1089              	.LASF19:
+ 1090 010b 646F7562 		.ascii	"double\000"
+ 1090      6C6500
+ 1091              	.LASF7:
+ 1092 0112 5F5F7569 		.ascii	"__uint32_t\000"
+ 1092      6E743332 
+ 1092      5F7400
+ 1093              	.LASF32:
+ 1094 011d 75536869 		.ascii	"uShift\000"
+ 1094      667400
+ 1095              	.LASF12:
+ 1096 0124 756E7369 		.ascii	"unsigned int\000"
+ 1096      676E6564 
+ 1096      20696E74 
+ 1096      00
+ 1097              	.LASF11:
+ 1098 0131 6C6F6E67 		.ascii	"long long unsigned int\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 28
+
+
+ 1098      206C6F6E 
+ 1098      6720756E 
+ 1098      7369676E 
+ 1098      65642069 
+ 1099              	.LASF37:
+ 1100 0148 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 1100      4320342E 
+ 1100      392E3320 
+ 1100      32303135 
+ 1100      30333033 
+ 1101 017b 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 1101      20726576 
+ 1101      6973696F 
+ 1101      6E203232 
+ 1101      31323230 
+ 1102 01ae 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 1102      30202D66 
+ 1102      66756E63 
+ 1102      74696F6E 
+ 1102      2D736563 
+ 1103              	.LASF23:
+ 1104 01da 7136335F 		.ascii	"q63_t\000"
+ 1104      7400
+ 1105              	.LASF14:
+ 1106 01e0 696E7433 		.ascii	"int32_t\000"
+ 1106      325F7400 
+ 1107              	.LASF17:
+ 1108 01e8 73697A65 		.ascii	"sizetype\000"
+ 1108      74797065 
+ 1108      00
+ 1109              	.LASF10:
+ 1110 01f1 6C6F6E67 		.ascii	"long long int\000"
+ 1110      206C6F6E 
+ 1110      6720696E 
+ 1110      7400
+ 1111              	.LASF18:
+ 1112 01ff 63686172 		.ascii	"char\000"
+ 1112      00
+ 1113              	.LASF2:
+ 1114 0204 73686F72 		.ascii	"short int\000"
+ 1114      7420696E 
+ 1114      7400
+ 1115              	.LASF38:
+ 1116 020e 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_biquad_cascade_df1_"
+ 1116      63655C46 
+ 1116      696C7465 
+ 1116      72696E67 
+ 1116      46756E63 
+ 1117 023f 7133312E 		.ascii	"q31.c\000"
+ 1117      6300
+ 1118              	.LASF26:
+ 1119 0245 70436F65 		.ascii	"pCoeffs\000"
+ 1119      66667300 
+ 1120              	.LASF15:
+ 1121 024d 75696E74 		.ascii	"uint32_t\000"
+ 1121      33325F74 
+ 1121      00
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccMrqurY.s 			page 29
+
+
+ 1122              	.LASF35:
+ 1123 0256 73616D70 		.ascii	"sample\000"
+ 1123      6C6500
+ 1124              	.LASF21:
+ 1125 025d 6C6F6E67 		.ascii	"long double\000"
+ 1125      20646F75 
+ 1125      626C6500 
+ 1126              	.LASF0:
+ 1127 0269 7369676E 		.ascii	"signed char\000"
+ 1127      65642063 
+ 1127      68617200 
+ 1128              	.LASF29:
+ 1129 0275 70537263 		.ascii	"pSrc\000"
+ 1129      00
+ 1130              	.LASF24:
+ 1131 027a 6E756D53 		.ascii	"numStages\000"
+ 1131      74616765 
+ 1131      7300
+ 1132              	.LASF40:
+ 1133 0284 61726D5F 		.ascii	"arm_biquad_cascade_df1_q31\000"
+ 1133      62697175 
+ 1133      61645F63 
+ 1133      61736361 
+ 1133      64655F64 
+ 1134              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

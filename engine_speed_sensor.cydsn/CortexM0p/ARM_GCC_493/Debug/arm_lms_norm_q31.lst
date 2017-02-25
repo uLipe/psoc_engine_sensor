@@ -1,0 +1,4152 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_lms_norm_q31.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_lmul
+  18              		.global	__clzsi2
+  19              		.section	.text.arm_lms_norm_q31,"ax",%progbits
+  20              		.align	2
+  21              		.global	arm_lms_norm_q31
+  22              		.code	16
+  23              		.thumb_func
+  24              		.type	arm_lms_norm_q31, %function
+  25              	arm_lms_norm_q31:
+  26              	.LFB82:
+  27              		.file 1 "Source\\FilteringFunctions\\arm_lms_norm_q31.c"
+   1:Source\FilteringFunctions/arm_lms_norm_q31.c **** /* ----------------------------------------------------------------------
+   2:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * Project:      CMSIS DSP Library
+   3:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * Title:        arm_lms_norm_q31.c
+   4:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * Description:  Processing function for the Q31 NLMS filter
+   5:Source\FilteringFunctions/arm_lms_norm_q31.c ****  *
+   6:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * $Date:        27. January 2017
+   7:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * $Revision:    V.1.5.1
+   8:Source\FilteringFunctions/arm_lms_norm_q31.c ****  *
+   9:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * Target Processor: Cortex-M cores
+  10:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * -------------------------------------------------------------------- */
+  11:Source\FilteringFunctions/arm_lms_norm_q31.c **** /*
+  12:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\FilteringFunctions/arm_lms_norm_q31.c ****  *
+  14:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\FilteringFunctions/arm_lms_norm_q31.c ****  *
+  16:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * not use this file except in compliance with the License.
+  18:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * You may obtain a copy of the License at
+  19:Source\FilteringFunctions/arm_lms_norm_q31.c ****  *
+  20:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\FilteringFunctions/arm_lms_norm_q31.c ****  *
+  22:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * See the License for the specific language governing permissions and
+  26:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * limitations under the License.
+  27:Source\FilteringFunctions/arm_lms_norm_q31.c ****  */
+  28:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+  29:Source\FilteringFunctions/arm_lms_norm_q31.c **** #include "arm_math.h"
+  30:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 2
+
+
+  31:Source\FilteringFunctions/arm_lms_norm_q31.c **** /**
+  32:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * @ingroup groupFilters
+  33:Source\FilteringFunctions/arm_lms_norm_q31.c ****  */
+  34:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+  35:Source\FilteringFunctions/arm_lms_norm_q31.c **** /**
+  36:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * @addtogroup LMS_NORM
+  37:Source\FilteringFunctions/arm_lms_norm_q31.c ****  * @{
+  38:Source\FilteringFunctions/arm_lms_norm_q31.c ****  */
+  39:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+  40:Source\FilteringFunctions/arm_lms_norm_q31.c **** /**
+  41:Source\FilteringFunctions/arm_lms_norm_q31.c **** * @brief Processing function for Q31 normalized LMS filter.
+  42:Source\FilteringFunctions/arm_lms_norm_q31.c **** * @param[in] *S points to an instance of the Q31 normalized LMS filter structure.
+  43:Source\FilteringFunctions/arm_lms_norm_q31.c **** * @param[in] *pSrc points to the block of input data.
+  44:Source\FilteringFunctions/arm_lms_norm_q31.c **** * @param[in] *pRef points to the block of reference data.
+  45:Source\FilteringFunctions/arm_lms_norm_q31.c **** * @param[out] *pOut points to the block of output data.
+  46:Source\FilteringFunctions/arm_lms_norm_q31.c **** * @param[out] *pErr points to the block of error data.
+  47:Source\FilteringFunctions/arm_lms_norm_q31.c **** * @param[in] blockSize number of samples to process.
+  48:Source\FilteringFunctions/arm_lms_norm_q31.c **** * @return none.
+  49:Source\FilteringFunctions/arm_lms_norm_q31.c **** *
+  50:Source\FilteringFunctions/arm_lms_norm_q31.c **** * <b>Scaling and Overflow Behavior:</b>
+  51:Source\FilteringFunctions/arm_lms_norm_q31.c **** * \par
+  52:Source\FilteringFunctions/arm_lms_norm_q31.c **** * The function is implemented using an internal 64-bit accumulator.
+  53:Source\FilteringFunctions/arm_lms_norm_q31.c **** * The accumulator has a 2.62 format and maintains full precision of the intermediate
+  54:Source\FilteringFunctions/arm_lms_norm_q31.c **** * multiplication results but provides only a single guard bit.
+  55:Source\FilteringFunctions/arm_lms_norm_q31.c **** * Thus, if the accumulator result overflows it wraps around rather than clip.
+  56:Source\FilteringFunctions/arm_lms_norm_q31.c **** * In order to avoid overflows completely the input signal must be scaled down by
+  57:Source\FilteringFunctions/arm_lms_norm_q31.c **** * log2(numTaps) bits. The reference signal should not be scaled down.
+  58:Source\FilteringFunctions/arm_lms_norm_q31.c **** * After all multiply-accumulates are performed, the 2.62 accumulator is shifted
+  59:Source\FilteringFunctions/arm_lms_norm_q31.c **** * and saturated to 1.31 format to yield the final result.
+  60:Source\FilteringFunctions/arm_lms_norm_q31.c **** * The output signal and error signal are in 1.31 format.
+  61:Source\FilteringFunctions/arm_lms_norm_q31.c **** *
+  62:Source\FilteringFunctions/arm_lms_norm_q31.c **** * \par
+  63:Source\FilteringFunctions/arm_lms_norm_q31.c **** * 	In this filter, filter coefficients are updated for each sample and the
+  64:Source\FilteringFunctions/arm_lms_norm_q31.c **** * updation of filter cofficients are saturted.
+  65:Source\FilteringFunctions/arm_lms_norm_q31.c **** *
+  66:Source\FilteringFunctions/arm_lms_norm_q31.c **** */
+  67:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+  68:Source\FilteringFunctions/arm_lms_norm_q31.c **** void arm_lms_norm_q31(
+  69:Source\FilteringFunctions/arm_lms_norm_q31.c ****   arm_lms_norm_instance_q31 * S,
+  70:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t * pSrc,
+  71:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t * pRef,
+  72:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t * pOut,
+  73:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t * pErr,
+  74:Source\FilteringFunctions/arm_lms_norm_q31.c ****   uint32_t blockSize)
+  75:Source\FilteringFunctions/arm_lms_norm_q31.c **** {
+  28              		.loc 1 75 0
+  29              		.cfi_startproc
+  30 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  31              		.cfi_def_cfa_offset 20
+  32              		.cfi_offset 4, -20
+  33              		.cfi_offset 5, -16
+  34              		.cfi_offset 6, -12
+  35              		.cfi_offset 7, -8
+  36              		.cfi_offset 14, -4
+  37 0002 F1B0     		sub	sp, sp, #452
+  38              		.cfi_def_cfa_offset 472
+  39 0004 00AF     		add	r7, sp, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 3
+
+
+  40              		.cfi_def_cfa_register 7
+  41 0006 8A24     		mov	r4, #138
+  42 0008 6400     		lsl	r4, r4, #1
+  43 000a 3C19     		add	r4, r7, r4
+  44 000c 2060     		str	r0, [r4]
+  45 000e 8820     		mov	r0, #136
+  46 0010 4000     		lsl	r0, r0, #1
+  47 0012 3818     		add	r0, r7, r0
+  48 0014 0160     		str	r1, [r0]
+  49 0016 8621     		mov	r1, #134
+  50 0018 4900     		lsl	r1, r1, #1
+  51 001a 7918     		add	r1, r7, r1
+  52 001c 0A60     		str	r2, [r1]
+  53 001e 8422     		mov	r2, #132
+  54 0020 5200     		lsl	r2, r2, #1
+  55 0022 BA18     		add	r2, r7, r2
+  56 0024 1360     		str	r3, [r2]
+  76:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t *pState = S->pState;                     /* State pointer */
+  57              		.loc 1 76 0
+  58 0026 8A23     		mov	r3, #138
+  59 0028 5B00     		lsl	r3, r3, #1
+  60 002a FB18     		add	r3, r7, r3
+  61 002c 1B68     		ldr	r3, [r3]
+  62 002e 5B68     		ldr	r3, [r3, #4]
+  63 0030 B422     		mov	r2, #180
+  64 0032 8421     		mov	r1, #132
+  65 0034 4900     		lsl	r1, r1, #1
+  66 0036 8C46     		mov	ip, r1
+  67 0038 BC44     		add	ip, ip, r7
+  68 003a 6244     		add	r2, r2, ip
+  69 003c 1360     		str	r3, [r2]
+  77:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t *pCoeffs = S->pCoeffs;                   /* Coefficient pointer */
+  70              		.loc 1 77 0
+  71 003e 8A23     		mov	r3, #138
+  72 0040 5B00     		lsl	r3, r3, #1
+  73 0042 FB18     		add	r3, r7, r3
+  74 0044 1B68     		ldr	r3, [r3]
+  75 0046 9B68     		ldr	r3, [r3, #8]
+  76 0048 8822     		mov	r2, #136
+  77 004a 8421     		mov	r1, #132
+  78 004c 4900     		lsl	r1, r1, #1
+  79 004e 8C46     		mov	ip, r1
+  80 0050 BC44     		add	ip, ip, r7
+  81 0052 6244     		add	r2, r2, ip
+  82 0054 1360     		str	r3, [r2]
+  78:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t *pStateCurnt;                            /* Points to the current sample of the state */
+  79:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t *px, *pb;                                /* Temporary pointers for state and coefficient bu
+  80:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t mu = S->mu;                              /* Adaptive factor */
+  83              		.loc 1 80 0
+  84 0056 8A23     		mov	r3, #138
+  85 0058 5B00     		lsl	r3, r3, #1
+  86 005a FB18     		add	r3, r7, r3
+  87 005c 1B68     		ldr	r3, [r3]
+  88 005e DB68     		ldr	r3, [r3, #12]
+  89 0060 8422     		mov	r2, #132
+  90 0062 8421     		mov	r1, #132
+  91 0064 4900     		lsl	r1, r1, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 4
+
+
+  92 0066 8C46     		mov	ip, r1
+  93 0068 BC44     		add	ip, ip, r7
+  94 006a 6244     		add	r2, r2, ip
+  95 006c 1360     		str	r3, [r2]
+  81:Source\FilteringFunctions/arm_lms_norm_q31.c ****   uint32_t numTaps = S->numTaps;                 /* Number of filter coefficients in the filter */
+  96              		.loc 1 81 0
+  97 006e 8A23     		mov	r3, #138
+  98 0070 5B00     		lsl	r3, r3, #1
+  99 0072 FB18     		add	r3, r7, r3
+ 100 0074 1B68     		ldr	r3, [r3]
+ 101 0076 1B88     		ldrh	r3, [r3]
+ 102 0078 8022     		mov	r2, #128
+ 103 007a 8421     		mov	r1, #132
+ 104 007c 4900     		lsl	r1, r1, #1
+ 105 007e 8C46     		mov	ip, r1
+ 106 0080 BC44     		add	ip, ip, r7
+ 107 0082 6244     		add	r2, r2, ip
+ 108 0084 1360     		str	r3, [r2]
+  82:Source\FilteringFunctions/arm_lms_norm_q31.c ****   uint32_t tapCnt, blkCnt;                       /* Loop counters */
+  83:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q63_t energy;                                  /* Energy of the input */
+  84:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q63_t acc;                                     /* Accumulator */
+  85:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t e = 0, d = 0;                            /* error, reference data sample */
+ 109              		.loc 1 85 0
+ 110 0086 0023     		mov	r3, #0
+ 111 0088 C222     		mov	r2, #194
+ 112 008a 5200     		lsl	r2, r2, #1
+ 113 008c BA18     		add	r2, r7, r2
+ 114 008e 1360     		str	r3, [r2]
+ 115 0090 0023     		mov	r3, #0
+ 116 0092 C022     		mov	r2, #192
+ 117 0094 5200     		lsl	r2, r2, #1
+ 118 0096 BA18     		add	r2, r7, r2
+ 119 0098 1360     		str	r3, [r2]
+  86:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t w = 0, in;                               /* weight factor and state */
+ 120              		.loc 1 86 0
+ 121 009a 0023     		mov	r3, #0
+ 122 009c BE22     		mov	r2, #190
+ 123 009e 5200     		lsl	r2, r2, #1
+ 124 00a0 BA18     		add	r2, r7, r2
+ 125 00a2 1360     		str	r3, [r2]
+  87:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t x0;                                      /* temporary variable to hold input sample */
+  88:Source\FilteringFunctions/arm_lms_norm_q31.c **** //  uint32_t shift = 32u - ((uint32_t) S->postShift + 1u);        /* Shift to be applied to the out
+  89:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t errorXmu, oneByEnergy;                   /* Temporary variables to store error and mu produ
+  90:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t postShift;                               /* Post shift to be applied to weight after recipr
+  91:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t coef;                                    /* Temporary variable for coef */
+  92:Source\FilteringFunctions/arm_lms_norm_q31.c ****   q31_t acc_l, acc_h;                            /*  temporary input */
+  93:Source\FilteringFunctions/arm_lms_norm_q31.c ****   uint32_t uShift = ((uint32_t) S->postShift + 1u);
+ 126              		.loc 1 93 0
+ 127 00a4 8A23     		mov	r3, #138
+ 128 00a6 5B00     		lsl	r3, r3, #1
+ 129 00a8 FB18     		add	r3, r7, r3
+ 130 00aa 1B68     		ldr	r3, [r3]
+ 131 00ac 1B7C     		ldrb	r3, [r3, #16]
+ 132 00ae 0133     		add	r3, r3, #1
+ 133 00b0 BC22     		mov	r2, #188
+ 134 00b2 5200     		lsl	r2, r2, #1
+ 135 00b4 BA18     		add	r2, r7, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 5
+
+
+ 136 00b6 1360     		str	r3, [r2]
+  94:Source\FilteringFunctions/arm_lms_norm_q31.c ****   uint32_t lShift = 32u - uShift;                /*  Shift to be applied to the output */
+ 137              		.loc 1 94 0
+ 138 00b8 BC23     		mov	r3, #188
+ 139 00ba 5B00     		lsl	r3, r3, #1
+ 140 00bc FB18     		add	r3, r7, r3
+ 141 00be 1A68     		ldr	r2, [r3]
+ 142 00c0 2023     		mov	r3, #32
+ 143 00c2 9B1A     		sub	r3, r3, r2
+ 144 00c4 BA22     		mov	r2, #186
+ 145 00c6 5200     		lsl	r2, r2, #1
+ 146 00c8 BA18     		add	r2, r7, r2
+ 147 00ca 1360     		str	r3, [r2]
+  95:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+  96:Source\FilteringFunctions/arm_lms_norm_q31.c ****   energy = S->energy;
+ 148              		.loc 1 96 0
+ 149 00cc 8A23     		mov	r3, #138
+ 150 00ce 5B00     		lsl	r3, r3, #1
+ 151 00d0 FB18     		add	r3, r7, r3
+ 152 00d2 1B68     		ldr	r3, [r3]
+ 153 00d4 9B69     		ldr	r3, [r3, #24]
+ 154 00d6 9822     		mov	r2, #152
+ 155 00d8 8421     		mov	r1, #132
+ 156 00da 4900     		lsl	r1, r1, #1
+ 157 00dc 8C46     		mov	ip, r1
+ 158 00de BC44     		add	ip, ip, r7
+ 159 00e0 6244     		add	r2, r2, ip
+ 160 00e2 1360     		str	r3, [r2]
+ 161 00e4 DB17     		asr	r3, r3, #31
+ 162 00e6 9C22     		mov	r2, #156
+ 163 00e8 8421     		mov	r1, #132
+ 164 00ea 4900     		lsl	r1, r1, #1
+ 165 00ec 8C46     		mov	ip, r1
+ 166 00ee BC44     		add	ip, ip, r7
+ 167 00f0 6244     		add	r2, r2, ip
+ 168 00f2 1360     		str	r3, [r2]
+  97:Source\FilteringFunctions/arm_lms_norm_q31.c ****   x0 = S->x0;
+ 169              		.loc 1 97 0
+ 170 00f4 8A23     		mov	r3, #138
+ 171 00f6 5B00     		lsl	r3, r3, #1
+ 172 00f8 FB18     		add	r3, r7, r3
+ 173 00fa 1B68     		ldr	r3, [r3]
+ 174 00fc DB69     		ldr	r3, [r3, #28]
+ 175 00fe 8C22     		mov	r2, #140
+ 176 0100 8421     		mov	r1, #132
+ 177 0102 4900     		lsl	r1, r1, #1
+ 178 0104 8C46     		mov	ip, r1
+ 179 0106 BC44     		add	ip, ip, r7
+ 180 0108 6244     		add	r2, r2, ip
+ 181 010a 1360     		str	r3, [r2]
+  98:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+  99:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* S->pState points to buffer which contains previous frame (numTaps - 1) samples */
+ 100:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* pStateCurnt points to the location where the new input data should be written */
+ 101:Source\FilteringFunctions/arm_lms_norm_q31.c ****   pStateCurnt = &(S->pState[(numTaps - 1u)]);
+ 182              		.loc 1 101 0
+ 183 010c 8A23     		mov	r3, #138
+ 184 010e 5B00     		lsl	r3, r3, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 6
+
+
+ 185 0110 FB18     		add	r3, r7, r3
+ 186 0112 1B68     		ldr	r3, [r3]
+ 187 0114 5A68     		ldr	r2, [r3, #4]
+ 188 0116 8023     		mov	r3, #128
+ 189 0118 8421     		mov	r1, #132
+ 190 011a 4900     		lsl	r1, r1, #1
+ 191 011c 8C46     		mov	ip, r1
+ 192 011e BC44     		add	ip, ip, r7
+ 193 0120 6344     		add	r3, r3, ip
+ 194 0122 1B68     		ldr	r3, [r3]
+ 195 0124 9149     		ldr	r1, .L28
+ 196 0126 8C46     		mov	ip, r1
+ 197 0128 6344     		add	r3, r3, ip
+ 198 012a 9B00     		lsl	r3, r3, #2
+ 199 012c D318     		add	r3, r2, r3
+ 200 012e B022     		mov	r2, #176
+ 201 0130 8421     		mov	r1, #132
+ 202 0132 4900     		lsl	r1, r1, #1
+ 203 0134 8C46     		mov	ip, r1
+ 204 0136 BC44     		add	ip, ip, r7
+ 205 0138 6244     		add	r2, r2, ip
+ 206 013a 1360     		str	r3, [r2]
+ 102:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 103:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Loop over blockSize number of values */
+ 104:Source\FilteringFunctions/arm_lms_norm_q31.c ****   blkCnt = blockSize;
+ 207              		.loc 1 104 0
+ 208 013c D423     		mov	r3, #212
+ 209 013e 8422     		mov	r2, #132
+ 210 0140 5200     		lsl	r2, r2, #1
+ 211 0142 9446     		mov	ip, r2
+ 212 0144 BC44     		add	ip, ip, r7
+ 213 0146 6344     		add	r3, r3, ip
+ 214 0148 1B68     		ldr	r3, [r3]
+ 215 014a A022     		mov	r2, #160
+ 216 014c 8421     		mov	r1, #132
+ 217 014e 4900     		lsl	r1, r1, #1
+ 218 0150 8C46     		mov	ip, r1
+ 219 0152 BC44     		add	ip, ip, r7
+ 220 0154 6244     		add	r2, r2, ip
+ 221 0156 1360     		str	r3, [r2]
+ 105:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 106:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 107:Source\FilteringFunctions/arm_lms_norm_q31.c **** #if defined (ARM_MATH_DSP)
+ 108:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 109:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+ 110:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 111:Source\FilteringFunctions/arm_lms_norm_q31.c ****   while (blkCnt > 0u)
+ 112:Source\FilteringFunctions/arm_lms_norm_q31.c ****   {
+ 113:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 114:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Copy the new input sample into the state buffer */
+ 115:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pStateCurnt++ = *pSrc;
+ 116:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 117:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Initialize pState pointer */
+ 118:Source\FilteringFunctions/arm_lms_norm_q31.c ****     px = pState;
+ 119:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 120:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Initialize coeff pointer */
+ 121:Source\FilteringFunctions/arm_lms_norm_q31.c ****     pb = (pCoeffs);
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 7
+
+
+ 122:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 123:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Read the sample from input buffer */
+ 124:Source\FilteringFunctions/arm_lms_norm_q31.c ****     in = *pSrc++;
+ 125:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 126:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Update the energy calculation */
+ 127:Source\FilteringFunctions/arm_lms_norm_q31.c ****     energy = (q31_t) ((((q63_t) energy << 32) -
+ 128:Source\FilteringFunctions/arm_lms_norm_q31.c ****                        (((q63_t) x0 * x0) << 1)) >> 32);
+ 129:Source\FilteringFunctions/arm_lms_norm_q31.c ****     energy = (q31_t) (((((q63_t) in * in) << 1) + (energy << 32)) >> 32);
+ 130:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 131:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Set the accumulator to zero */
+ 132:Source\FilteringFunctions/arm_lms_norm_q31.c ****     acc = 0;
+ 133:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 134:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Loop unrolling.  Process 4 taps at a time. */
+ 135:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt = numTaps >> 2;
+ 136:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 137:Source\FilteringFunctions/arm_lms_norm_q31.c ****     while (tapCnt > 0u)
+ 138:Source\FilteringFunctions/arm_lms_norm_q31.c ****     {
+ 139:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Perform the multiply-accumulate */
+ 140:Source\FilteringFunctions/arm_lms_norm_q31.c ****       acc += ((q63_t) (*px++)) * (*pb++);
+ 141:Source\FilteringFunctions/arm_lms_norm_q31.c ****       acc += ((q63_t) (*px++)) * (*pb++);
+ 142:Source\FilteringFunctions/arm_lms_norm_q31.c ****       acc += ((q63_t) (*px++)) * (*pb++);
+ 143:Source\FilteringFunctions/arm_lms_norm_q31.c ****       acc += ((q63_t) (*px++)) * (*pb++);
+ 144:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 145:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Decrement the loop counter */
+ 146:Source\FilteringFunctions/arm_lms_norm_q31.c ****       tapCnt--;
+ 147:Source\FilteringFunctions/arm_lms_norm_q31.c ****     }
+ 148:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 149:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* If the filter length is not a multiple of 4, compute the remaining filter taps */
+ 150:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt = numTaps % 0x4u;
+ 151:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 152:Source\FilteringFunctions/arm_lms_norm_q31.c ****     while (tapCnt > 0u)
+ 153:Source\FilteringFunctions/arm_lms_norm_q31.c ****     {
+ 154:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Perform the multiply-accumulate */
+ 155:Source\FilteringFunctions/arm_lms_norm_q31.c ****       acc += ((q63_t) (*px++)) * (*pb++);
+ 156:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 157:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Decrement the loop counter */
+ 158:Source\FilteringFunctions/arm_lms_norm_q31.c ****       tapCnt--;
+ 159:Source\FilteringFunctions/arm_lms_norm_q31.c ****     }
+ 160:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 161:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Converting the result to 1.31 format */
+ 162:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Calc lower part of acc */
+ 163:Source\FilteringFunctions/arm_lms_norm_q31.c ****     acc_l = acc & 0xffffffff;
+ 164:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 165:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Calc upper part of acc */
+ 166:Source\FilteringFunctions/arm_lms_norm_q31.c ****     acc_h = (acc >> 32) & 0xffffffff;
+ 167:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 168:Source\FilteringFunctions/arm_lms_norm_q31.c ****     acc = (uint32_t) acc_l >> lShift | acc_h << uShift;
+ 169:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 170:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Store the result from accumulator into the destination buffer. */
+ 171:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pOut++ = (q31_t) acc;
+ 172:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 173:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Compute and store error */
+ 174:Source\FilteringFunctions/arm_lms_norm_q31.c ****     d = *pRef++;
+ 175:Source\FilteringFunctions/arm_lms_norm_q31.c ****     e = d - (q31_t) acc;
+ 176:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pErr++ = e;
+ 177:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 178:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Calculates the reciprocal of energy */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 8
+
+
+ 179:Source\FilteringFunctions/arm_lms_norm_q31.c ****     postShift = arm_recip_q31(energy + DELTA_Q31,
+ 180:Source\FilteringFunctions/arm_lms_norm_q31.c ****                               &oneByEnergy, &S->recipTable[0]);
+ 181:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 182:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Calculation of product of (e * mu) */
+ 183:Source\FilteringFunctions/arm_lms_norm_q31.c ****     errorXmu = (q31_t) (((q63_t) e * mu) >> 31);
+ 184:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 185:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Weighting factor for the normalized version */
+ 186:Source\FilteringFunctions/arm_lms_norm_q31.c ****     w = clip_q63_to_q31(((q63_t) errorXmu * oneByEnergy) >> (31 - postShift));
+ 187:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 188:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Initialize pState pointer */
+ 189:Source\FilteringFunctions/arm_lms_norm_q31.c ****     px = pState;
+ 190:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 191:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Initialize coeff pointer */
+ 192:Source\FilteringFunctions/arm_lms_norm_q31.c ****     pb = (pCoeffs);
+ 193:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 194:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Loop unrolling.  Process 4 taps at a time. */
+ 195:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt = numTaps >> 2;
+ 196:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 197:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Update filter coefficients */
+ 198:Source\FilteringFunctions/arm_lms_norm_q31.c ****     while (tapCnt > 0u)
+ 199:Source\FilteringFunctions/arm_lms_norm_q31.c ****     {
+ 200:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Perform the multiply-accumulate */
+ 201:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 202:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* coef is in 2.30 format */
+ 203:Source\FilteringFunctions/arm_lms_norm_q31.c ****       coef = (q31_t) (((q63_t) w * (*px++)) >> (32));
+ 204:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* get coef in 1.31 format by left shifting */
+ 205:Source\FilteringFunctions/arm_lms_norm_q31.c ****       *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+ 206:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* update coefficient buffer to next coefficient */
+ 207:Source\FilteringFunctions/arm_lms_norm_q31.c ****       pb++;
+ 208:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 209:Source\FilteringFunctions/arm_lms_norm_q31.c ****       coef = (q31_t) (((q63_t) w * (*px++)) >> (32));
+ 210:Source\FilteringFunctions/arm_lms_norm_q31.c ****       *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+ 211:Source\FilteringFunctions/arm_lms_norm_q31.c ****       pb++;
+ 212:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 213:Source\FilteringFunctions/arm_lms_norm_q31.c ****       coef = (q31_t) (((q63_t) w * (*px++)) >> (32));
+ 214:Source\FilteringFunctions/arm_lms_norm_q31.c ****       *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+ 215:Source\FilteringFunctions/arm_lms_norm_q31.c ****       pb++;
+ 216:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 217:Source\FilteringFunctions/arm_lms_norm_q31.c ****       coef = (q31_t) (((q63_t) w * (*px++)) >> (32));
+ 218:Source\FilteringFunctions/arm_lms_norm_q31.c ****       *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+ 219:Source\FilteringFunctions/arm_lms_norm_q31.c ****       pb++;
+ 220:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 221:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Decrement the loop counter */
+ 222:Source\FilteringFunctions/arm_lms_norm_q31.c ****       tapCnt--;
+ 223:Source\FilteringFunctions/arm_lms_norm_q31.c ****     }
+ 224:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 225:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* If the filter length is not a multiple of 4, compute the remaining filter taps */
+ 226:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt = numTaps % 0x4u;
+ 227:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 228:Source\FilteringFunctions/arm_lms_norm_q31.c ****     while (tapCnt > 0u)
+ 229:Source\FilteringFunctions/arm_lms_norm_q31.c ****     {
+ 230:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Perform the multiply-accumulate */
+ 231:Source\FilteringFunctions/arm_lms_norm_q31.c ****       coef = (q31_t) (((q63_t) w * (*px++)) >> (32));
+ 232:Source\FilteringFunctions/arm_lms_norm_q31.c ****       *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+ 233:Source\FilteringFunctions/arm_lms_norm_q31.c ****       pb++;
+ 234:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 235:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Decrement the loop counter */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 9
+
+
+ 236:Source\FilteringFunctions/arm_lms_norm_q31.c ****       tapCnt--;
+ 237:Source\FilteringFunctions/arm_lms_norm_q31.c ****     }
+ 238:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 239:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Read the sample from state buffer */
+ 240:Source\FilteringFunctions/arm_lms_norm_q31.c ****     x0 = *pState;
+ 241:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 242:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Advance state pointer by 1 for the next sample */
+ 243:Source\FilteringFunctions/arm_lms_norm_q31.c ****     pState = pState + 1;
+ 244:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 245:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Decrement the loop counter */
+ 246:Source\FilteringFunctions/arm_lms_norm_q31.c ****     blkCnt--;
+ 247:Source\FilteringFunctions/arm_lms_norm_q31.c ****   }
+ 248:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 249:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Save energy and x0 values for the next frame */
+ 250:Source\FilteringFunctions/arm_lms_norm_q31.c ****   S->energy = (q31_t) energy;
+ 251:Source\FilteringFunctions/arm_lms_norm_q31.c ****   S->x0 = x0;
+ 252:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 253:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Processing is complete. Now copy the last numTaps - 1 samples to the
+ 254:Source\FilteringFunctions/arm_lms_norm_q31.c ****      satrt of the state buffer. This prepares the state buffer for the
+ 255:Source\FilteringFunctions/arm_lms_norm_q31.c ****      next function call. */
+ 256:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 257:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Points to the start of the pState buffer */
+ 258:Source\FilteringFunctions/arm_lms_norm_q31.c ****   pStateCurnt = S->pState;
+ 259:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 260:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Loop unrolling for (numTaps - 1u) samples copy */
+ 261:Source\FilteringFunctions/arm_lms_norm_q31.c ****   tapCnt = (numTaps - 1u) >> 2u;
+ 262:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 263:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* copy data */
+ 264:Source\FilteringFunctions/arm_lms_norm_q31.c ****   while (tapCnt > 0u)
+ 265:Source\FilteringFunctions/arm_lms_norm_q31.c ****   {
+ 266:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pStateCurnt++ = *pState++;
+ 267:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pStateCurnt++ = *pState++;
+ 268:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pStateCurnt++ = *pState++;
+ 269:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pStateCurnt++ = *pState++;
+ 270:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 271:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Decrement the loop counter */
+ 272:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt--;
+ 273:Source\FilteringFunctions/arm_lms_norm_q31.c ****   }
+ 274:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 275:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Calculate remaining number of copies */
+ 276:Source\FilteringFunctions/arm_lms_norm_q31.c ****   tapCnt = (numTaps - 1u) % 0x4u;
+ 277:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 278:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Copy the remaining q31_t data */
+ 279:Source\FilteringFunctions/arm_lms_norm_q31.c ****   while (tapCnt > 0u)
+ 280:Source\FilteringFunctions/arm_lms_norm_q31.c ****   {
+ 281:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pStateCurnt++ = *pState++;
+ 282:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 283:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Decrement the loop counter */
+ 284:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt--;
+ 285:Source\FilteringFunctions/arm_lms_norm_q31.c ****   }
+ 286:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 287:Source\FilteringFunctions/arm_lms_norm_q31.c **** #else
+ 288:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 289:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Run the below code for Cortex-M0 */
+ 290:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 291:Source\FilteringFunctions/arm_lms_norm_q31.c ****   while (blkCnt > 0u)
+ 222              		.loc 1 291 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 10
+
+
+ 223 0158 00F0C5FC 		bl	.L2	@ far jump
+ 224              	.L23:
+ 292:Source\FilteringFunctions/arm_lms_norm_q31.c ****   {
+ 293:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 294:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Copy the new input sample into the state buffer */
+ 295:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pStateCurnt++ = *pSrc;
+ 225              		.loc 1 295 0
+ 226 015c B023     		mov	r3, #176
+ 227 015e 8422     		mov	r2, #132
+ 228 0160 5200     		lsl	r2, r2, #1
+ 229 0162 9446     		mov	ip, r2
+ 230 0164 BC44     		add	ip, ip, r7
+ 231 0166 6344     		add	r3, r3, ip
+ 232 0168 1A68     		ldr	r2, [r3]
+ 233 016a 131D     		add	r3, r2, #4
+ 234 016c B021     		mov	r1, #176
+ 235 016e 8420     		mov	r0, #132
+ 236 0170 4000     		lsl	r0, r0, #1
+ 237 0172 8446     		mov	ip, r0
+ 238 0174 BC44     		add	ip, ip, r7
+ 239 0176 6144     		add	r1, r1, ip
+ 240 0178 0B60     		str	r3, [r1]
+ 241 017a 8823     		mov	r3, #136
+ 242 017c 5B00     		lsl	r3, r3, #1
+ 243 017e FB18     		add	r3, r7, r3
+ 244 0180 1B68     		ldr	r3, [r3]
+ 245 0182 1B68     		ldr	r3, [r3]
+ 246 0184 1360     		str	r3, [r2]
+ 296:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 297:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Initialize pState pointer */
+ 298:Source\FilteringFunctions/arm_lms_norm_q31.c ****     px = pState;
+ 247              		.loc 1 298 0
+ 248 0186 B423     		mov	r3, #180
+ 249 0188 8422     		mov	r2, #132
+ 250 018a 5200     		lsl	r2, r2, #1
+ 251 018c 9446     		mov	ip, r2
+ 252 018e BC44     		add	ip, ip, r7
+ 253 0190 6344     		add	r3, r3, ip
+ 254 0192 1B68     		ldr	r3, [r3]
+ 255 0194 AC22     		mov	r2, #172
+ 256 0196 8421     		mov	r1, #132
+ 257 0198 4900     		lsl	r1, r1, #1
+ 258 019a 8C46     		mov	ip, r1
+ 259 019c BC44     		add	ip, ip, r7
+ 260 019e 6244     		add	r2, r2, ip
+ 261 01a0 1360     		str	r3, [r2]
+ 299:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 300:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Initialize pCoeffs pointer */
+ 301:Source\FilteringFunctions/arm_lms_norm_q31.c ****     pb = pCoeffs;
+ 262              		.loc 1 301 0
+ 263 01a2 8823     		mov	r3, #136
+ 264 01a4 8422     		mov	r2, #132
+ 265 01a6 5200     		lsl	r2, r2, #1
+ 266 01a8 9446     		mov	ip, r2
+ 267 01aa BC44     		add	ip, ip, r7
+ 268 01ac 6344     		add	r3, r3, ip
+ 269 01ae 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 11
+
+
+ 270 01b0 A822     		mov	r2, #168
+ 271 01b2 8421     		mov	r1, #132
+ 272 01b4 4900     		lsl	r1, r1, #1
+ 273 01b6 8C46     		mov	ip, r1
+ 274 01b8 BC44     		add	ip, ip, r7
+ 275 01ba 6244     		add	r2, r2, ip
+ 276 01bc 1360     		str	r3, [r2]
+ 302:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 303:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Read the sample from input buffer */
+ 304:Source\FilteringFunctions/arm_lms_norm_q31.c ****     in = *pSrc++;
+ 277              		.loc 1 304 0
+ 278 01be 8823     		mov	r3, #136
+ 279 01c0 5B00     		lsl	r3, r3, #1
+ 280 01c2 FB18     		add	r3, r7, r3
+ 281 01c4 1A68     		ldr	r2, [r3]
+ 282 01c6 131D     		add	r3, r2, #4
+ 283 01c8 8821     		mov	r1, #136
+ 284 01ca 4900     		lsl	r1, r1, #1
+ 285 01cc 7918     		add	r1, r7, r1
+ 286 01ce 0B60     		str	r3, [r1]
+ 287 01d0 1368     		ldr	r3, [r2]
+ 288 01d2 B822     		mov	r2, #184
+ 289 01d4 5200     		lsl	r2, r2, #1
+ 290 01d6 BA18     		add	r2, r7, r2
+ 291 01d8 1360     		str	r3, [r2]
+ 305:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 306:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Update the energy calculation */
+ 307:Source\FilteringFunctions/arm_lms_norm_q31.c ****     energy =
+ 308:Source\FilteringFunctions/arm_lms_norm_q31.c ****       (q31_t) ((((q63_t) energy << 32) - (((q63_t) x0 * x0) << 1)) >> 32);
+ 292              		.loc 1 308 0
+ 293 01da 9823     		mov	r3, #152
+ 294 01dc 8422     		mov	r2, #132
+ 295 01de 5200     		lsl	r2, r2, #1
+ 296 01e0 9446     		mov	ip, r2
+ 297 01e2 BC44     		add	ip, ip, r7
+ 298 01e4 6344     		add	r3, r3, ip
+ 299 01e6 1B68     		ldr	r3, [r3]
+ 300 01e8 1B00     		lsl	r3, r3, #0
+ 301 01ea EC22     		mov	r2, #236
+ 302 01ec BA18     		add	r2, r7, r2
+ 303 01ee 1360     		str	r3, [r2]
+ 304 01f0 0023     		mov	r3, #0
+ 305 01f2 E822     		mov	r2, #232
+ 306 01f4 BA18     		add	r2, r7, r2
+ 307 01f6 1360     		str	r3, [r2]
+ 308 01f8 8C23     		mov	r3, #140
+ 309 01fa 8422     		mov	r2, #132
+ 310 01fc 5200     		lsl	r2, r2, #1
+ 311 01fe 9446     		mov	ip, r2
+ 312 0200 BC44     		add	ip, ip, r7
+ 313 0202 6344     		add	r3, r3, ip
+ 314 0204 1B68     		ldr	r3, [r3]
+ 315 0206 E022     		mov	r2, #224
+ 316 0208 BA18     		add	r2, r7, r2
+ 317 020a 1360     		str	r3, [r2]
+ 318 020c DB17     		asr	r3, r3, #31
+ 319 020e E422     		mov	r2, #228
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 12
+
+
+ 320 0210 BA18     		add	r2, r7, r2
+ 321 0212 1360     		str	r3, [r2]
+ 322 0214 8C23     		mov	r3, #140
+ 323 0216 8422     		mov	r2, #132
+ 324 0218 5200     		lsl	r2, r2, #1
+ 325 021a 9446     		mov	ip, r2
+ 326 021c BC44     		add	ip, ip, r7
+ 327 021e 6344     		add	r3, r3, ip
+ 328 0220 1B68     		ldr	r3, [r3]
+ 329 0222 D822     		mov	r2, #216
+ 330 0224 BA18     		add	r2, r7, r2
+ 331 0226 1360     		str	r3, [r2]
+ 332 0228 DB17     		asr	r3, r3, #31
+ 333 022a DC22     		mov	r2, #220
+ 334 022c BA18     		add	r2, r7, r2
+ 335 022e 1360     		str	r3, [r2]
+ 336 0230 E023     		mov	r3, #224
+ 337 0232 FB18     		add	r3, r7, r3
+ 338 0234 1868     		ldr	r0, [r3]
+ 339 0236 5968     		ldr	r1, [r3, #4]
+ 340 0238 D823     		mov	r3, #216
+ 341 023a FB18     		add	r3, r7, r3
+ 342 023c 1A68     		ldr	r2, [r3]
+ 343 023e 5B68     		ldr	r3, [r3, #4]
+ 344 0240 FFF7FEFF 		bl	__aeabi_lmul
+ 345 0244 031C     		mov	r3, r0
+ 346 0246 0C1C     		mov	r4, r1
+ 347 0248 DB18     		add	r3, r3, r3
+ 348 024a 6441     		adc	r4, r4, r4
+ 349 024c E822     		mov	r2, #232
+ 350 024e BA18     		add	r2, r7, r2
+ 351 0250 1168     		ldr	r1, [r2]
+ 352 0252 5268     		ldr	r2, [r2, #4]
+ 353 0254 C91A     		sub	r1, r1, r3
+ 354 0256 A241     		sbc	r2, r2, r4
+ 355 0258 0B1C     		mov	r3, r1
+ 356 025a 141C     		mov	r4, r2
+ 357 025c 2200     		asr	r2, r4, #0
+ 358 025e D021     		mov	r1, #208
+ 359 0260 7918     		add	r1, r7, r1
+ 360 0262 0A60     		str	r2, [r1]
+ 361 0264 E317     		asr	r3, r4, #31
+ 362 0266 D422     		mov	r2, #212
+ 363 0268 BA18     		add	r2, r7, r2
+ 364 026a 1360     		str	r3, [r2]
+ 365 026c D023     		mov	r3, #208
+ 366 026e FB18     		add	r3, r7, r3
+ 367 0270 1B68     		ldr	r3, [r3]
+ 307:Source\FilteringFunctions/arm_lms_norm_q31.c ****       (q31_t) ((((q63_t) energy << 32) - (((q63_t) x0 * x0) << 1)) >> 32);
+ 368              		.loc 1 307 0
+ 369 0272 9822     		mov	r2, #152
+ 370 0274 8421     		mov	r1, #132
+ 371 0276 4900     		lsl	r1, r1, #1
+ 372 0278 8C46     		mov	ip, r1
+ 373 027a BC44     		add	ip, ip, r7
+ 374 027c 6244     		add	r2, r2, ip
+ 375 027e 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 13
+
+
+ 376 0280 DB17     		asr	r3, r3, #31
+ 377 0282 9C22     		mov	r2, #156
+ 378 0284 8421     		mov	r1, #132
+ 379 0286 4900     		lsl	r1, r1, #1
+ 380 0288 8C46     		mov	ip, r1
+ 381 028a BC44     		add	ip, ip, r7
+ 382 028c 6244     		add	r2, r2, ip
+ 383 028e 1360     		str	r3, [r2]
+ 309:Source\FilteringFunctions/arm_lms_norm_q31.c ****     energy = (q31_t) (((((q63_t) in * in) << 1) + (energy << 32)) >> 32);
+ 384              		.loc 1 309 0
+ 385 0290 B823     		mov	r3, #184
+ 386 0292 5B00     		lsl	r3, r3, #1
+ 387 0294 FB18     		add	r3, r7, r3
+ 388 0296 1B68     		ldr	r3, [r3]
+ 389 0298 C822     		mov	r2, #200
+ 390 029a BA18     		add	r2, r7, r2
+ 391 029c 1360     		str	r3, [r2]
+ 392 029e DB17     		asr	r3, r3, #31
+ 393 02a0 CC22     		mov	r2, #204
+ 394 02a2 BA18     		add	r2, r7, r2
+ 395 02a4 1360     		str	r3, [r2]
+ 396 02a6 B823     		mov	r3, #184
+ 397 02a8 5B00     		lsl	r3, r3, #1
+ 398 02aa FB18     		add	r3, r7, r3
+ 399 02ac 1B68     		ldr	r3, [r3]
+ 400 02ae C022     		mov	r2, #192
+ 401 02b0 BA18     		add	r2, r7, r2
+ 402 02b2 1360     		str	r3, [r2]
+ 403 02b4 DB17     		asr	r3, r3, #31
+ 404 02b6 C422     		mov	r2, #196
+ 405 02b8 BA18     		add	r2, r7, r2
+ 406 02ba 1360     		str	r3, [r2]
+ 407 02bc C823     		mov	r3, #200
+ 408 02be FB18     		add	r3, r7, r3
+ 409 02c0 1868     		ldr	r0, [r3]
+ 410 02c2 5968     		ldr	r1, [r3, #4]
+ 411 02c4 C023     		mov	r3, #192
+ 412 02c6 FB18     		add	r3, r7, r3
+ 413 02c8 1A68     		ldr	r2, [r3]
+ 414 02ca 5B68     		ldr	r3, [r3, #4]
+ 415 02cc FFF7FEFF 		bl	__aeabi_lmul
+ 416 02d0 031C     		mov	r3, r0
+ 417 02d2 0C1C     		mov	r4, r1
+ 418 02d4 DB18     		add	r3, r3, r3
+ 419 02d6 6441     		adc	r4, r4, r4
+ 420 02d8 191C     		mov	r1, r3
+ 421 02da 221C     		mov	r2, r4
+ 422 02dc 9823     		mov	r3, #152
+ 423 02de 8420     		mov	r0, #132
+ 424 02e0 4000     		lsl	r0, r0, #1
+ 425 02e2 8446     		mov	ip, r0
+ 426 02e4 BC44     		add	ip, ip, r7
+ 427 02e6 6344     		add	r3, r3, ip
+ 428 02e8 1B68     		ldr	r3, [r3]
+ 429 02ea 1B00     		lsl	r3, r3, #0
+ 430 02ec BC20     		mov	r0, #188
+ 431 02ee 3818     		add	r0, r7, r0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 14
+
+
+ 432 02f0 0360     		str	r3, [r0]
+ 433 02f2 0023     		mov	r3, #0
+ 434 02f4 B820     		mov	r0, #184
+ 435 02f6 3818     		add	r0, r7, r0
+ 436 02f8 0360     		str	r3, [r0]
+ 437 02fa B823     		mov	r3, #184
+ 438 02fc FB18     		add	r3, r7, r3
+ 439 02fe 5C68     		ldr	r4, [r3, #4]
+ 440 0300 1B68     		ldr	r3, [r3]
+ 441 0302 5B18     		add	r3, r3, r1
+ 442 0304 5441     		adc	r4, r4, r2
+ 443 0306 2200     		asr	r2, r4, #0
+ 444 0308 B021     		mov	r1, #176
+ 445 030a 7918     		add	r1, r7, r1
+ 446 030c 0A60     		str	r2, [r1]
+ 447 030e E317     		asr	r3, r4, #31
+ 448 0310 B422     		mov	r2, #180
+ 449 0312 BA18     		add	r2, r7, r2
+ 450 0314 1360     		str	r3, [r2]
+ 451 0316 B023     		mov	r3, #176
+ 452 0318 FB18     		add	r3, r7, r3
+ 453 031a 1B68     		ldr	r3, [r3]
+ 454 031c 9822     		mov	r2, #152
+ 455 031e 8421     		mov	r1, #132
+ 456 0320 4900     		lsl	r1, r1, #1
+ 457 0322 8C46     		mov	ip, r1
+ 458 0324 BC44     		add	ip, ip, r7
+ 459 0326 6244     		add	r2, r2, ip
+ 460 0328 1360     		str	r3, [r2]
+ 461 032a DB17     		asr	r3, r3, #31
+ 462 032c 9C22     		mov	r2, #156
+ 463 032e 8421     		mov	r1, #132
+ 464 0330 4900     		lsl	r1, r1, #1
+ 465 0332 8C46     		mov	ip, r1
+ 466 0334 BC44     		add	ip, ip, r7
+ 467 0336 6244     		add	r2, r2, ip
+ 468 0338 1360     		str	r3, [r2]
+ 310:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 311:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Set the accumulator to zero */
+ 312:Source\FilteringFunctions/arm_lms_norm_q31.c ****     acc = 0;
+ 469              		.loc 1 312 0
+ 470 033a 0023     		mov	r3, #0
+ 471 033c 0024     		mov	r4, #0
+ 472 033e 9022     		mov	r2, #144
+ 473 0340 8421     		mov	r1, #132
+ 474 0342 4900     		lsl	r1, r1, #1
+ 475 0344 8C46     		mov	ip, r1
+ 476 0346 BC44     		add	ip, ip, r7
+ 477 0348 6244     		add	r2, r2, ip
+ 478 034a 1360     		str	r3, [r2]
+ 479 034c 5460     		str	r4, [r2, #4]
+ 313:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 314:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Loop over numTaps number of values */
+ 315:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt = numTaps;
+ 480              		.loc 1 315 0
+ 481 034e 8023     		mov	r3, #128
+ 482 0350 8422     		mov	r2, #132
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 15
+
+
+ 483 0352 5200     		lsl	r2, r2, #1
+ 484 0354 9446     		mov	ip, r2
+ 485 0356 BC44     		add	ip, ip, r7
+ 486 0358 6344     		add	r3, r3, ip
+ 487 035a 1B68     		ldr	r3, [r3]
+ 488 035c A422     		mov	r2, #164
+ 489 035e 8421     		mov	r1, #132
+ 490 0360 4900     		lsl	r1, r1, #1
+ 491 0362 8C46     		mov	ip, r1
+ 492 0364 BC44     		add	ip, ip, r7
+ 493 0366 6244     		add	r2, r2, ip
+ 494 0368 1360     		str	r3, [r2]
+ 316:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 317:Source\FilteringFunctions/arm_lms_norm_q31.c ****     while (tapCnt > 0u)
+ 495              		.loc 1 317 0
+ 496 036a 5EE0     		b	.L3
+ 497              	.L29:
+ 498              		.align	2
+ 499              	.L28:
+ 500 036c FFFFFF3F 		.word	1073741823
+ 501              	.L4:
+ 318:Source\FilteringFunctions/arm_lms_norm_q31.c ****     {
+ 319:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Perform the multiply-accumulate */
+ 320:Source\FilteringFunctions/arm_lms_norm_q31.c ****       acc += ((q63_t) (*px++)) * (*pb++);
+ 502              		.loc 1 320 0
+ 503 0370 AC23     		mov	r3, #172
+ 504 0372 8422     		mov	r2, #132
+ 505 0374 5200     		lsl	r2, r2, #1
+ 506 0376 9446     		mov	ip, r2
+ 507 0378 BC44     		add	ip, ip, r7
+ 508 037a 6344     		add	r3, r3, ip
+ 509 037c 1A68     		ldr	r2, [r3]
+ 510 037e 131D     		add	r3, r2, #4
+ 511 0380 AC21     		mov	r1, #172
+ 512 0382 8420     		mov	r0, #132
+ 513 0384 4000     		lsl	r0, r0, #1
+ 514 0386 8446     		mov	ip, r0
+ 515 0388 BC44     		add	ip, ip, r7
+ 516 038a 6144     		add	r1, r1, ip
+ 517 038c 0B60     		str	r3, [r1]
+ 518 038e 1368     		ldr	r3, [r2]
+ 519 0390 A822     		mov	r2, #168
+ 520 0392 BA18     		add	r2, r7, r2
+ 521 0394 1360     		str	r3, [r2]
+ 522 0396 DB17     		asr	r3, r3, #31
+ 523 0398 AC22     		mov	r2, #172
+ 524 039a BA18     		add	r2, r7, r2
+ 525 039c 1360     		str	r3, [r2]
+ 526 039e A823     		mov	r3, #168
+ 527 03a0 8422     		mov	r2, #132
+ 528 03a2 5200     		lsl	r2, r2, #1
+ 529 03a4 9446     		mov	ip, r2
+ 530 03a6 BC44     		add	ip, ip, r7
+ 531 03a8 6344     		add	r3, r3, ip
+ 532 03aa 1A68     		ldr	r2, [r3]
+ 533 03ac 131D     		add	r3, r2, #4
+ 534 03ae A821     		mov	r1, #168
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 16
+
+
+ 535 03b0 8420     		mov	r0, #132
+ 536 03b2 4000     		lsl	r0, r0, #1
+ 537 03b4 8446     		mov	ip, r0
+ 538 03b6 BC44     		add	ip, ip, r7
+ 539 03b8 6144     		add	r1, r1, ip
+ 540 03ba 0B60     		str	r3, [r1]
+ 541 03bc 1368     		ldr	r3, [r2]
+ 542 03be A022     		mov	r2, #160
+ 543 03c0 BA18     		add	r2, r7, r2
+ 544 03c2 1360     		str	r3, [r2]
+ 545 03c4 DB17     		asr	r3, r3, #31
+ 546 03c6 A422     		mov	r2, #164
+ 547 03c8 BA18     		add	r2, r7, r2
+ 548 03ca 1360     		str	r3, [r2]
+ 549 03cc A823     		mov	r3, #168
+ 550 03ce FB18     		add	r3, r7, r3
+ 551 03d0 1868     		ldr	r0, [r3]
+ 552 03d2 5968     		ldr	r1, [r3, #4]
+ 553 03d4 A023     		mov	r3, #160
+ 554 03d6 FB18     		add	r3, r7, r3
+ 555 03d8 1A68     		ldr	r2, [r3]
+ 556 03da 5B68     		ldr	r3, [r3, #4]
+ 557 03dc FFF7FEFF 		bl	__aeabi_lmul
+ 558 03e0 031C     		mov	r3, r0
+ 559 03e2 0C1C     		mov	r4, r1
+ 560 03e4 191C     		mov	r1, r3
+ 561 03e6 221C     		mov	r2, r4
+ 562 03e8 9023     		mov	r3, #144
+ 563 03ea 8420     		mov	r0, #132
+ 564 03ec 4000     		lsl	r0, r0, #1
+ 565 03ee 8446     		mov	ip, r0
+ 566 03f0 BC44     		add	ip, ip, r7
+ 567 03f2 6344     		add	r3, r3, ip
+ 568 03f4 5C68     		ldr	r4, [r3, #4]
+ 569 03f6 1B68     		ldr	r3, [r3]
+ 570 03f8 5B18     		add	r3, r3, r1
+ 571 03fa 5441     		adc	r4, r4, r2
+ 572 03fc 9022     		mov	r2, #144
+ 573 03fe 8421     		mov	r1, #132
+ 574 0400 4900     		lsl	r1, r1, #1
+ 575 0402 8C46     		mov	ip, r1
+ 576 0404 BC44     		add	ip, ip, r7
+ 577 0406 6244     		add	r2, r2, ip
+ 578 0408 1360     		str	r3, [r2]
+ 579 040a 5460     		str	r4, [r2, #4]
+ 321:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 322:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Decrement the loop counter */
+ 323:Source\FilteringFunctions/arm_lms_norm_q31.c ****       tapCnt--;
+ 580              		.loc 1 323 0
+ 581 040c A423     		mov	r3, #164
+ 582 040e 8422     		mov	r2, #132
+ 583 0410 5200     		lsl	r2, r2, #1
+ 584 0412 9446     		mov	ip, r2
+ 585 0414 BC44     		add	ip, ip, r7
+ 586 0416 6344     		add	r3, r3, ip
+ 587 0418 1B68     		ldr	r3, [r3]
+ 588 041a 013B     		sub	r3, r3, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 17
+
+
+ 589 041c A422     		mov	r2, #164
+ 590 041e 8421     		mov	r1, #132
+ 591 0420 4900     		lsl	r1, r1, #1
+ 592 0422 8C46     		mov	ip, r1
+ 593 0424 BC44     		add	ip, ip, r7
+ 594 0426 6244     		add	r2, r2, ip
+ 595 0428 1360     		str	r3, [r2]
+ 596              	.L3:
+ 317:Source\FilteringFunctions/arm_lms_norm_q31.c ****     {
+ 597              		.loc 1 317 0
+ 598 042a A423     		mov	r3, #164
+ 599 042c 8422     		mov	r2, #132
+ 600 042e 5200     		lsl	r2, r2, #1
+ 601 0430 9446     		mov	ip, r2
+ 602 0432 BC44     		add	ip, ip, r7
+ 603 0434 6344     		add	r3, r3, ip
+ 604 0436 1B68     		ldr	r3, [r3]
+ 605 0438 002B     		cmp	r3, #0
+ 606 043a 99D1     		bne	.L4
+ 324:Source\FilteringFunctions/arm_lms_norm_q31.c ****     }
+ 325:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 326:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Converting the result to 1.31 format */
+ 327:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Converting the result to 1.31 format */
+ 328:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Calc lower part of acc */
+ 329:Source\FilteringFunctions/arm_lms_norm_q31.c ****     acc_l = acc & 0xffffffff;
+ 607              		.loc 1 329 0
+ 608 043c 9023     		mov	r3, #144
+ 609 043e 8422     		mov	r2, #132
+ 610 0440 5200     		lsl	r2, r2, #1
+ 611 0442 9446     		mov	ip, r2
+ 612 0444 BC44     		add	ip, ip, r7
+ 613 0446 6344     		add	r3, r3, ip
+ 614 0448 1B68     		ldr	r3, [r3]
+ 615 044a B622     		mov	r2, #182
+ 616 044c 5200     		lsl	r2, r2, #1
+ 617 044e BA18     		add	r2, r7, r2
+ 618 0450 1360     		str	r3, [r2]
+ 330:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 331:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Calc upper part of acc */
+ 332:Source\FilteringFunctions/arm_lms_norm_q31.c ****     acc_h = (acc >> 32) & 0xffffffff;
+ 619              		.loc 1 332 0
+ 620 0452 9023     		mov	r3, #144
+ 621 0454 8422     		mov	r2, #132
+ 622 0456 5200     		lsl	r2, r2, #1
+ 623 0458 9446     		mov	ip, r2
+ 624 045a BC44     		add	ip, ip, r7
+ 625 045c 6344     		add	r3, r3, ip
+ 626 045e 5C68     		ldr	r4, [r3, #4]
+ 627 0460 1B68     		ldr	r3, [r3]
+ 628 0462 2300     		lsr	r3, r4, #0
+ 629 0464 9822     		mov	r2, #152
+ 630 0466 BA18     		add	r2, r7, r2
+ 631 0468 1360     		str	r3, [r2]
+ 632 046a 0023     		mov	r3, #0
+ 633 046c 9C22     		mov	r2, #156
+ 634 046e BA18     		add	r2, r7, r2
+ 635 0470 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 18
+
+
+ 636 0472 9823     		mov	r3, #152
+ 637 0474 FB18     		add	r3, r7, r3
+ 638 0476 1B68     		ldr	r3, [r3]
+ 639 0478 B422     		mov	r2, #180
+ 640 047a 5200     		lsl	r2, r2, #1
+ 641 047c BA18     		add	r2, r7, r2
+ 642 047e 1360     		str	r3, [r2]
+ 333:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 334:Source\FilteringFunctions/arm_lms_norm_q31.c ****     acc = (uint32_t) acc_l >> lShift | acc_h << uShift;
+ 643              		.loc 1 334 0
+ 644 0480 B623     		mov	r3, #182
+ 645 0482 5B00     		lsl	r3, r3, #1
+ 646 0484 FB18     		add	r3, r7, r3
+ 647 0486 1A68     		ldr	r2, [r3]
+ 648 0488 BA23     		mov	r3, #186
+ 649 048a 5B00     		lsl	r3, r3, #1
+ 650 048c FB18     		add	r3, r7, r3
+ 651 048e 1B68     		ldr	r3, [r3]
+ 652 0490 DA40     		lsr	r2, r2, r3
+ 653 0492 111C     		mov	r1, r2
+ 654 0494 BC23     		mov	r3, #188
+ 655 0496 5B00     		lsl	r3, r3, #1
+ 656 0498 FB18     		add	r3, r7, r3
+ 657 049a 1A68     		ldr	r2, [r3]
+ 658 049c B423     		mov	r3, #180
+ 659 049e 5B00     		lsl	r3, r3, #1
+ 660 04a0 FB18     		add	r3, r7, r3
+ 661 04a2 1B68     		ldr	r3, [r3]
+ 662 04a4 9340     		lsl	r3, r3, r2
+ 663 04a6 0B43     		orr	r3, r1
+ 664 04a8 9022     		mov	r2, #144
+ 665 04aa 8421     		mov	r1, #132
+ 666 04ac 4900     		lsl	r1, r1, #1
+ 667 04ae 8C46     		mov	ip, r1
+ 668 04b0 BC44     		add	ip, ip, r7
+ 669 04b2 6244     		add	r2, r2, ip
+ 670 04b4 1360     		str	r3, [r2]
+ 671 04b6 0023     		mov	r3, #0
+ 672 04b8 9422     		mov	r2, #148
+ 673 04ba 8421     		mov	r1, #132
+ 674 04bc 4900     		lsl	r1, r1, #1
+ 675 04be 8C46     		mov	ip, r1
+ 676 04c0 BC44     		add	ip, ip, r7
+ 677 04c2 6244     		add	r2, r2, ip
+ 678 04c4 1360     		str	r3, [r2]
+ 335:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 336:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 337:Source\FilteringFunctions/arm_lms_norm_q31.c ****     //acc = (q31_t) (acc >> shift);
+ 338:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 339:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Store the result from accumulator into the destination buffer. */
+ 340:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pOut++ = (q31_t) acc;
+ 679              		.loc 1 340 0
+ 680 04c6 8423     		mov	r3, #132
+ 681 04c8 5B00     		lsl	r3, r3, #1
+ 682 04ca FB18     		add	r3, r7, r3
+ 683 04cc 1A68     		ldr	r2, [r3]
+ 684 04ce 131D     		add	r3, r2, #4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 19
+
+
+ 685 04d0 8421     		mov	r1, #132
+ 686 04d2 4900     		lsl	r1, r1, #1
+ 687 04d4 7918     		add	r1, r7, r1
+ 688 04d6 0B60     		str	r3, [r1]
+ 689 04d8 9023     		mov	r3, #144
+ 690 04da 8421     		mov	r1, #132
+ 691 04dc 4900     		lsl	r1, r1, #1
+ 692 04de 8C46     		mov	ip, r1
+ 693 04e0 BC44     		add	ip, ip, r7
+ 694 04e2 6344     		add	r3, r3, ip
+ 695 04e4 1B68     		ldr	r3, [r3]
+ 696 04e6 1360     		str	r3, [r2]
+ 341:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 342:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Compute and store error */
+ 343:Source\FilteringFunctions/arm_lms_norm_q31.c ****     d = *pRef++;
+ 697              		.loc 1 343 0
+ 698 04e8 8623     		mov	r3, #134
+ 699 04ea 5B00     		lsl	r3, r3, #1
+ 700 04ec FB18     		add	r3, r7, r3
+ 701 04ee 1A68     		ldr	r2, [r3]
+ 702 04f0 131D     		add	r3, r2, #4
+ 703 04f2 8621     		mov	r1, #134
+ 704 04f4 4900     		lsl	r1, r1, #1
+ 705 04f6 7918     		add	r1, r7, r1
+ 706 04f8 0B60     		str	r3, [r1]
+ 707 04fa 1368     		ldr	r3, [r2]
+ 708 04fc C022     		mov	r2, #192
+ 709 04fe 5200     		lsl	r2, r2, #1
+ 710 0500 BA18     		add	r2, r7, r2
+ 711 0502 1360     		str	r3, [r2]
+ 344:Source\FilteringFunctions/arm_lms_norm_q31.c ****     e = d - (q31_t) acc;
+ 712              		.loc 1 344 0
+ 713 0504 9023     		mov	r3, #144
+ 714 0506 8422     		mov	r2, #132
+ 715 0508 5200     		lsl	r2, r2, #1
+ 716 050a 9446     		mov	ip, r2
+ 717 050c BC44     		add	ip, ip, r7
+ 718 050e 6344     		add	r3, r3, ip
+ 719 0510 1A68     		ldr	r2, [r3]
+ 720 0512 C023     		mov	r3, #192
+ 721 0514 5B00     		lsl	r3, r3, #1
+ 722 0516 FB18     		add	r3, r7, r3
+ 723 0518 1B68     		ldr	r3, [r3]
+ 724 051a 9B1A     		sub	r3, r3, r2
+ 725 051c C222     		mov	r2, #194
+ 726 051e 5200     		lsl	r2, r2, #1
+ 727 0520 BA18     		add	r2, r7, r2
+ 728 0522 1360     		str	r3, [r2]
+ 345:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pErr++ = e;
+ 729              		.loc 1 345 0
+ 730 0524 D023     		mov	r3, #208
+ 731 0526 8422     		mov	r2, #132
+ 732 0528 5200     		lsl	r2, r2, #1
+ 733 052a 9446     		mov	ip, r2
+ 734 052c BC44     		add	ip, ip, r7
+ 735 052e 6344     		add	r3, r3, ip
+ 736 0530 1A68     		ldr	r2, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 20
+
+
+ 737 0532 131D     		add	r3, r2, #4
+ 738 0534 D021     		mov	r1, #208
+ 739 0536 8420     		mov	r0, #132
+ 740 0538 4000     		lsl	r0, r0, #1
+ 741 053a 8446     		mov	ip, r0
+ 742 053c BC44     		add	ip, ip, r7
+ 743 053e 6144     		add	r1, r1, ip
+ 744 0540 0B60     		str	r3, [r1]
+ 745 0542 C223     		mov	r3, #194
+ 746 0544 5B00     		lsl	r3, r3, #1
+ 747 0546 FB18     		add	r3, r7, r3
+ 748 0548 1B68     		ldr	r3, [r3]
+ 749 054a 1360     		str	r3, [r2]
+ 346:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 347:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Calculates the reciprocal of energy */
+ 348:Source\FilteringFunctions/arm_lms_norm_q31.c ****     postShift =
+ 349:Source\FilteringFunctions/arm_lms_norm_q31.c ****       arm_recip_q31(energy + DELTA_Q31, &oneByEnergy, &S->recipTable[0]);
+ 750              		.loc 1 349 0
+ 751 054c 9823     		mov	r3, #152
+ 752 054e 8422     		mov	r2, #132
+ 753 0550 5200     		lsl	r2, r2, #1
+ 754 0552 9446     		mov	ip, r2
+ 755 0554 BC44     		add	ip, ip, r7
+ 756 0556 6344     		add	r3, r3, ip
+ 757 0558 1B68     		ldr	r3, [r3]
+ 758 055a 0133     		add	r3, r3, #1
+ 759 055c FF33     		add	r3, r3, #255
+ 760 055e 191C     		mov	r1, r3
+ 761 0560 8A23     		mov	r3, #138
+ 762 0562 5B00     		lsl	r3, r3, #1
+ 763 0564 FB18     		add	r3, r7, r3
+ 764 0566 1B68     		ldr	r3, [r3]
+ 765 0568 5A69     		ldr	r2, [r3, #20]
+ 766 056a AC23     		mov	r3, #172
+ 767 056c 5B00     		lsl	r3, r3, #1
+ 768 056e FB18     		add	r3, r7, r3
+ 769 0570 1960     		str	r1, [r3]
+ 770 0572 1423     		mov	r3, #20
+ 771 0574 8421     		mov	r1, #132
+ 772 0576 4900     		lsl	r1, r1, #1
+ 773 0578 8C46     		mov	ip, r1
+ 774 057a BC44     		add	ip, ip, r7
+ 775 057c 6344     		add	r3, r3, ip
+ 776 057e AA21     		mov	r1, #170
+ 777 0580 4900     		lsl	r1, r1, #1
+ 778 0582 7918     		add	r1, r7, r1
+ 779 0584 0B60     		str	r3, [r1]
+ 780 0586 A823     		mov	r3, #168
+ 781 0588 5B00     		lsl	r3, r3, #1
+ 782 058a FB18     		add	r3, r7, r3
+ 783 058c 1A60     		str	r2, [r3]
+ 784              	.LBB12:
+ 785              	.LBB13:
+ 786              		.file 2 ".\\Include/arm_math.h"
+   1:.\Include/arm_math.h **** /* ----------------------------------------------------------------------
+   2:.\Include/arm_math.h ****  * Project:      CMSIS DSP Library
+   3:.\Include/arm_math.h ****  * Title:        arm_math.h
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 21
+
+
+   4:.\Include/arm_math.h ****  * Description:  Public header file for CMSIS DSP Library
+   5:.\Include/arm_math.h ****  *
+   6:.\Include/arm_math.h ****  * $Date:        27. January 2017
+   7:.\Include/arm_math.h ****  * $Revision:    V.1.5.1
+   8:.\Include/arm_math.h ****  *
+   9:.\Include/arm_math.h ****  * Target Processor: Cortex-M cores
+  10:.\Include/arm_math.h ****  * -------------------------------------------------------------------- */
+  11:.\Include/arm_math.h **** /*
+  12:.\Include/arm_math.h ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:.\Include/arm_math.h ****  *
+  14:.\Include/arm_math.h ****  * SPDX-License-Identifier: Apache-2.0
+  15:.\Include/arm_math.h ****  *
+  16:.\Include/arm_math.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:.\Include/arm_math.h ****  * not use this file except in compliance with the License.
+  18:.\Include/arm_math.h ****  * You may obtain a copy of the License at
+  19:.\Include/arm_math.h ****  *
+  20:.\Include/arm_math.h ****  * www.apache.org/licenses/LICENSE-2.0
+  21:.\Include/arm_math.h ****  *
+  22:.\Include/arm_math.h ****  * Unless required by applicable law or agreed to in writing, software
+  23:.\Include/arm_math.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:.\Include/arm_math.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:.\Include/arm_math.h ****  * See the License for the specific language governing permissions and
+  26:.\Include/arm_math.h ****  * limitations under the License.
+  27:.\Include/arm_math.h ****  */
+  28:.\Include/arm_math.h **** 
+  29:.\Include/arm_math.h **** /**
+  30:.\Include/arm_math.h ****    \mainpage CMSIS DSP Software Library
+  31:.\Include/arm_math.h ****    *
+  32:.\Include/arm_math.h ****    * Introduction
+  33:.\Include/arm_math.h ****    * ------------
+  34:.\Include/arm_math.h ****    *
+  35:.\Include/arm_math.h ****    * This user manual describes the CMSIS DSP software library,
+  36:.\Include/arm_math.h ****    * a suite of common signal processing functions for use on Cortex-M processor based devices.
+  37:.\Include/arm_math.h ****    *
+  38:.\Include/arm_math.h ****    * The library is divided into a number of functions each covering a specific category:
+  39:.\Include/arm_math.h ****    * - Basic math functions
+  40:.\Include/arm_math.h ****    * - Fast math functions
+  41:.\Include/arm_math.h ****    * - Complex math functions
+  42:.\Include/arm_math.h ****    * - Filters
+  43:.\Include/arm_math.h ****    * - Matrix functions
+  44:.\Include/arm_math.h ****    * - Transforms
+  45:.\Include/arm_math.h ****    * - Motor control functions
+  46:.\Include/arm_math.h ****    * - Statistical functions
+  47:.\Include/arm_math.h ****    * - Support functions
+  48:.\Include/arm_math.h ****    * - Interpolation functions
+  49:.\Include/arm_math.h ****    *
+  50:.\Include/arm_math.h ****    * The library has separate functions for operating on 8-bit integers, 16-bit integers,
+  51:.\Include/arm_math.h ****    * 32-bit integer and 32-bit floating-point values.
+  52:.\Include/arm_math.h ****    *
+  53:.\Include/arm_math.h ****    * Using the Library
+  54:.\Include/arm_math.h ****    * ------------
+  55:.\Include/arm_math.h ****    *
+  56:.\Include/arm_math.h ****    * The library installer contains prebuilt versions of the libraries in the <code>Lib</code> fold
+  57:.\Include/arm_math.h ****    * - arm_cortexM7lfdp_math.lib (Cortex-M7, Little endian, Double Precision Floating Point Unit)
+  58:.\Include/arm_math.h ****    * - arm_cortexM7bfdp_math.lib (Cortex-M7, Big endian, Double Precision Floating Point Unit)
+  59:.\Include/arm_math.h ****    * - arm_cortexM7lfsp_math.lib (Cortex-M7, Little endian, Single Precision Floating Point Unit)
+  60:.\Include/arm_math.h ****    * - arm_cortexM7bfsp_math.lib (Cortex-M7, Big endian and Single Precision Floating Point Unit on
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 22
+
+
+  61:.\Include/arm_math.h ****    * - arm_cortexM7l_math.lib (Cortex-M7, Little endian)
+  62:.\Include/arm_math.h ****    * - arm_cortexM7b_math.lib (Cortex-M7, Big endian)
+  63:.\Include/arm_math.h ****    * - arm_cortexM4lf_math.lib (Cortex-M4, Little endian, Floating Point Unit)
+  64:.\Include/arm_math.h ****    * - arm_cortexM4bf_math.lib (Cortex-M4, Big endian, Floating Point Unit)
+  65:.\Include/arm_math.h ****    * - arm_cortexM4l_math.lib (Cortex-M4, Little endian)
+  66:.\Include/arm_math.h ****    * - arm_cortexM4b_math.lib (Cortex-M4, Big endian)
+  67:.\Include/arm_math.h ****    * - arm_cortexM3l_math.lib (Cortex-M3, Little endian)
+  68:.\Include/arm_math.h ****    * - arm_cortexM3b_math.lib (Cortex-M3, Big endian)
+  69:.\Include/arm_math.h ****    * - arm_cortexM0l_math.lib (Cortex-M0 / Cortex-M0+, Little endian)
+  70:.\Include/arm_math.h ****    * - arm_cortexM0b_math.lib (Cortex-M0 / Cortex-M0+, Big endian)
+  71:.\Include/arm_math.h ****    * - arm_ARMv8MBLl_math.lib (ARMv8M Baseline, Little endian)
+  72:.\Include/arm_math.h ****    * - arm_ARMv8MMLl_math.lib (ARMv8M Mainline, Little endian)
+  73:.\Include/arm_math.h ****    * - arm_ARMv8MMLlfsp_math.lib (ARMv8M Mainline, Little endian, Single Precision Floating Point U
+  74:.\Include/arm_math.h ****    * - arm_ARMv8MMLld_math.lib (ARMv8M Mainline, Little endian, DSP instructions)
+  75:.\Include/arm_math.h ****    * - arm_ARMv8MMLldfsp_math.lib (ARMv8M Mainline, Little endian, DSP instructions, Single Precisi
+  76:.\Include/arm_math.h ****    *
+  77:.\Include/arm_math.h ****    * The library functions are declared in the public file <code>arm_math.h</code> which is placed 
+  78:.\Include/arm_math.h ****    * Simply include this file and link the appropriate library in the application and begin calling
+  79:.\Include/arm_math.h ****    * public header file <code> arm_math.h</code> for Cortex-M cores with little endian and big endi
+  80:.\Include/arm_math.h ****    * Define the appropriate pre processor MACRO ARM_MATH_CM7 or ARM_MATH_CM4 or  ARM_MATH_CM3 or
+  81:.\Include/arm_math.h ****    * ARM_MATH_CM0 or ARM_MATH_CM0PLUS depending on the target processor in the application.
+  82:.\Include/arm_math.h ****    * For ARMv8M cores define pre processor MACRO ARM_MATH_ARMV8MBL or ARM_MATH_ARMV8MML.
+  83:.\Include/arm_math.h ****    * Set Pre processor MACRO __DSP_PRESENT if ARMv8M Mainline core supports DSP instructions.
+  84:.\Include/arm_math.h ****    * 
+  85:.\Include/arm_math.h ****    *
+  86:.\Include/arm_math.h ****    * Examples
+  87:.\Include/arm_math.h ****    * --------
+  88:.\Include/arm_math.h ****    *
+  89:.\Include/arm_math.h ****    * The library ships with a number of examples which demonstrate how to use the library functions
+  90:.\Include/arm_math.h ****    *
+  91:.\Include/arm_math.h ****    * Toolchain Support
+  92:.\Include/arm_math.h ****    * ------------
+  93:.\Include/arm_math.h ****    *
+  94:.\Include/arm_math.h ****    * The library has been developed and tested with MDK-ARM version 5.14.0.0
+  95:.\Include/arm_math.h ****    * The library is being tested in GCC and IAR toolchains and updates on this activity will be mad
+  96:.\Include/arm_math.h ****    *
+  97:.\Include/arm_math.h ****    * Building the Library
+  98:.\Include/arm_math.h ****    * ------------
+  99:.\Include/arm_math.h ****    *
+ 100:.\Include/arm_math.h ****    * The library installer contains a project file to re build libraries on MDK-ARM Tool chain in t
+ 101:.\Include/arm_math.h ****    * - arm_cortexM_math.uvprojx
+ 102:.\Include/arm_math.h ****    *
+ 103:.\Include/arm_math.h ****    *
+ 104:.\Include/arm_math.h ****    * The libraries can be built by opening the arm_cortexM_math.uvprojx project in MDK-ARM, selecti
+ 105:.\Include/arm_math.h ****    *
+ 106:.\Include/arm_math.h ****    * Pre-processor Macros
+ 107:.\Include/arm_math.h ****    * ------------
+ 108:.\Include/arm_math.h ****    *
+ 109:.\Include/arm_math.h ****    * Each library project have differant pre-processor macros.
+ 110:.\Include/arm_math.h ****    *
+ 111:.\Include/arm_math.h ****    * - UNALIGNED_SUPPORT_DISABLE:
+ 112:.\Include/arm_math.h ****    *
+ 113:.\Include/arm_math.h ****    * Define macro UNALIGNED_SUPPORT_DISABLE, If the silicon does not support unaligned memory acces
+ 114:.\Include/arm_math.h ****    *
+ 115:.\Include/arm_math.h ****    * - ARM_MATH_BIG_ENDIAN:
+ 116:.\Include/arm_math.h ****    *
+ 117:.\Include/arm_math.h ****    * Define macro ARM_MATH_BIG_ENDIAN to build the library for big endian targets. By default libra
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 23
+
+
+ 118:.\Include/arm_math.h ****    *
+ 119:.\Include/arm_math.h ****    * - ARM_MATH_MATRIX_CHECK:
+ 120:.\Include/arm_math.h ****    *
+ 121:.\Include/arm_math.h ****    * Define macro ARM_MATH_MATRIX_CHECK for checking on the input and output sizes of matrices
+ 122:.\Include/arm_math.h ****    *
+ 123:.\Include/arm_math.h ****    * - ARM_MATH_ROUNDING:
+ 124:.\Include/arm_math.h ****    *
+ 125:.\Include/arm_math.h ****    * Define macro ARM_MATH_ROUNDING for rounding on support functions
+ 126:.\Include/arm_math.h ****    *
+ 127:.\Include/arm_math.h ****    * - ARM_MATH_CMx:
+ 128:.\Include/arm_math.h ****    *
+ 129:.\Include/arm_math.h ****    * Define macro ARM_MATH_CM4 for building the library on Cortex-M4 target, ARM_MATH_CM3 for build
+ 130:.\Include/arm_math.h ****    * and ARM_MATH_CM0 for building library on Cortex-M0 target, ARM_MATH_CM0PLUS for building libra
+ 131:.\Include/arm_math.h ****    * ARM_MATH_CM7 for building the library on cortex-M7.
+ 132:.\Include/arm_math.h ****    *
+ 133:.\Include/arm_math.h ****    * - ARM_MATH_ARMV8MxL:
+ 134:.\Include/arm_math.h ****    *
+ 135:.\Include/arm_math.h ****    * Define macro ARM_MATH_ARMV8MBL for building the library on ARMv8M Baseline target, ARM_MATH_AR
+ 136:.\Include/arm_math.h ****    * on ARMv8M Mainline target.
+ 137:.\Include/arm_math.h ****    *
+ 138:.\Include/arm_math.h ****    * - __FPU_PRESENT:
+ 139:.\Include/arm_math.h ****    *
+ 140:.\Include/arm_math.h ****    * Initialize macro __FPU_PRESENT = 1 when building on FPU supported Targets. Enable this macro f
+ 141:.\Include/arm_math.h ****    *
+ 142:.\Include/arm_math.h ****    * - __DSP_PRESENT:
+ 143:.\Include/arm_math.h ****    *
+ 144:.\Include/arm_math.h ****    * Initialize macro __DSP_PRESENT = 1 when ARMv8M Mainline core supports DSP instructions.
+ 145:.\Include/arm_math.h ****    *
+ 146:.\Include/arm_math.h ****    * <hr>
+ 147:.\Include/arm_math.h ****    * CMSIS-DSP in ARM::CMSIS Pack
+ 148:.\Include/arm_math.h ****    * -----------------------------
+ 149:.\Include/arm_math.h ****    *
+ 150:.\Include/arm_math.h ****    * The following files relevant to CMSIS-DSP are present in the <b>ARM::CMSIS</b> Pack directorie
+ 151:.\Include/arm_math.h ****    * |File/Folder                   |Content                                                       
+ 152:.\Include/arm_math.h ****    * |------------------------------|--------------------------------------------------------------
+ 153:.\Include/arm_math.h ****    * |\b CMSIS\\Documentation\\DSP  | This documentation                                           
+ 154:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib             | Software license agreement (license.txt)                     
+ 155:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib\\Examples   | Example projects demonstrating the usage of the library funct
+ 156:.\Include/arm_math.h ****    * |\b CMSIS\\DSP_Lib\\Source     | Source files for rebuilding the library                      
+ 157:.\Include/arm_math.h ****    *
+ 158:.\Include/arm_math.h ****    * <hr>
+ 159:.\Include/arm_math.h ****    * Revision History of CMSIS-DSP
+ 160:.\Include/arm_math.h ****    * ------------
+ 161:.\Include/arm_math.h ****    * Please refer to \ref ChangeLog_pg.
+ 162:.\Include/arm_math.h ****    *
+ 163:.\Include/arm_math.h ****    * Copyright Notice
+ 164:.\Include/arm_math.h ****    * ------------
+ 165:.\Include/arm_math.h ****    *
+ 166:.\Include/arm_math.h ****    * Copyright (C) 2010-2015 ARM Limited. All rights reserved.
+ 167:.\Include/arm_math.h ****    */
+ 168:.\Include/arm_math.h **** 
+ 169:.\Include/arm_math.h **** 
+ 170:.\Include/arm_math.h **** /**
+ 171:.\Include/arm_math.h ****  * @defgroup groupMath Basic Math Functions
+ 172:.\Include/arm_math.h ****  */
+ 173:.\Include/arm_math.h **** 
+ 174:.\Include/arm_math.h **** /**
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 24
+
+
+ 175:.\Include/arm_math.h ****  * @defgroup groupFastMath Fast Math Functions
+ 176:.\Include/arm_math.h ****  * This set of functions provides a fast approximation to sine, cosine, and square root.
+ 177:.\Include/arm_math.h ****  * As compared to most of the other functions in the CMSIS math library, the fast math functions
+ 178:.\Include/arm_math.h ****  * operate on individual values and not arrays.
+ 179:.\Include/arm_math.h ****  * There are separate functions for Q15, Q31, and floating-point data.
+ 180:.\Include/arm_math.h ****  *
+ 181:.\Include/arm_math.h ****  */
+ 182:.\Include/arm_math.h **** 
+ 183:.\Include/arm_math.h **** /**
+ 184:.\Include/arm_math.h ****  * @defgroup groupCmplxMath Complex Math Functions
+ 185:.\Include/arm_math.h ****  * This set of functions operates on complex data vectors.
+ 186:.\Include/arm_math.h ****  * The data in the complex arrays is stored in an interleaved fashion
+ 187:.\Include/arm_math.h ****  * (real, imag, real, imag, ...).
+ 188:.\Include/arm_math.h ****  * In the API functions, the number of samples in a complex array refers
+ 189:.\Include/arm_math.h ****  * to the number of complex values; the array contains twice this number of
+ 190:.\Include/arm_math.h ****  * real values.
+ 191:.\Include/arm_math.h ****  */
+ 192:.\Include/arm_math.h **** 
+ 193:.\Include/arm_math.h **** /**
+ 194:.\Include/arm_math.h ****  * @defgroup groupFilters Filtering Functions
+ 195:.\Include/arm_math.h ****  */
+ 196:.\Include/arm_math.h **** 
+ 197:.\Include/arm_math.h **** /**
+ 198:.\Include/arm_math.h ****  * @defgroup groupMatrix Matrix Functions
+ 199:.\Include/arm_math.h ****  *
+ 200:.\Include/arm_math.h ****  * This set of functions provides basic matrix math operations.
+ 201:.\Include/arm_math.h ****  * The functions operate on matrix data structures.  For example,
+ 202:.\Include/arm_math.h ****  * the type
+ 203:.\Include/arm_math.h ****  * definition for the floating-point matrix structure is shown
+ 204:.\Include/arm_math.h ****  * below:
+ 205:.\Include/arm_math.h ****  * <pre>
+ 206:.\Include/arm_math.h ****  *     typedef struct
+ 207:.\Include/arm_math.h ****  *     {
+ 208:.\Include/arm_math.h ****  *       uint16_t numRows;     // number of rows of the matrix.
+ 209:.\Include/arm_math.h ****  *       uint16_t numCols;     // number of columns of the matrix.
+ 210:.\Include/arm_math.h ****  *       float32_t *pData;     // points to the data of the matrix.
+ 211:.\Include/arm_math.h ****  *     } arm_matrix_instance_f32;
+ 212:.\Include/arm_math.h ****  * </pre>
+ 213:.\Include/arm_math.h ****  * There are similar definitions for Q15 and Q31 data types.
+ 214:.\Include/arm_math.h ****  *
+ 215:.\Include/arm_math.h ****  * The structure specifies the size of the matrix and then points to
+ 216:.\Include/arm_math.h ****  * an array of data.  The array is of size <code>numRows X numCols</code>
+ 217:.\Include/arm_math.h ****  * and the values are arranged in row order.  That is, the
+ 218:.\Include/arm_math.h ****  * matrix element (i, j) is stored at:
+ 219:.\Include/arm_math.h ****  * <pre>
+ 220:.\Include/arm_math.h ****  *     pData[i*numCols + j]
+ 221:.\Include/arm_math.h ****  * </pre>
+ 222:.\Include/arm_math.h ****  *
+ 223:.\Include/arm_math.h ****  * \par Init Functions
+ 224:.\Include/arm_math.h ****  * There is an associated initialization function for each type of matrix
+ 225:.\Include/arm_math.h ****  * data structure.
+ 226:.\Include/arm_math.h ****  * The initialization function sets the values of the internal structure fields.
+ 227:.\Include/arm_math.h ****  * Refer to the function <code>arm_mat_init_f32()</code>, <code>arm_mat_init_q31()</code>
+ 228:.\Include/arm_math.h ****  * and <code>arm_mat_init_q15()</code> for floating-point, Q31 and Q15 types,  respectively.
+ 229:.\Include/arm_math.h ****  *
+ 230:.\Include/arm_math.h ****  * \par
+ 231:.\Include/arm_math.h ****  * Use of the initialization function is optional. However, if initialization function is used
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 25
+
+
+ 232:.\Include/arm_math.h ****  * then the instance structure cannot be placed into a const data section.
+ 233:.\Include/arm_math.h ****  * To place the instance structure in a const data
+ 234:.\Include/arm_math.h ****  * section, manually initialize the data structure.  For example:
+ 235:.\Include/arm_math.h ****  * <pre>
+ 236:.\Include/arm_math.h ****  * <code>arm_matrix_instance_f32 S = {nRows, nColumns, pData};</code>
+ 237:.\Include/arm_math.h ****  * <code>arm_matrix_instance_q31 S = {nRows, nColumns, pData};</code>
+ 238:.\Include/arm_math.h ****  * <code>arm_matrix_instance_q15 S = {nRows, nColumns, pData};</code>
+ 239:.\Include/arm_math.h ****  * </pre>
+ 240:.\Include/arm_math.h ****  * where <code>nRows</code> specifies the number of rows, <code>nColumns</code>
+ 241:.\Include/arm_math.h ****  * specifies the number of columns, and <code>pData</code> points to the
+ 242:.\Include/arm_math.h ****  * data array.
+ 243:.\Include/arm_math.h ****  *
+ 244:.\Include/arm_math.h ****  * \par Size Checking
+ 245:.\Include/arm_math.h ****  * By default all of the matrix functions perform size checking on the input and
+ 246:.\Include/arm_math.h ****  * output matrices.  For example, the matrix addition function verifies that the
+ 247:.\Include/arm_math.h ****  * two input matrices and the output matrix all have the same number of rows and
+ 248:.\Include/arm_math.h ****  * columns.  If the size check fails the functions return:
+ 249:.\Include/arm_math.h ****  * <pre>
+ 250:.\Include/arm_math.h ****  *     ARM_MATH_SIZE_MISMATCH
+ 251:.\Include/arm_math.h ****  * </pre>
+ 252:.\Include/arm_math.h ****  * Otherwise the functions return
+ 253:.\Include/arm_math.h ****  * <pre>
+ 254:.\Include/arm_math.h ****  *     ARM_MATH_SUCCESS
+ 255:.\Include/arm_math.h ****  * </pre>
+ 256:.\Include/arm_math.h ****  * There is some overhead associated with this matrix size checking.
+ 257:.\Include/arm_math.h ****  * The matrix size checking is enabled via the \#define
+ 258:.\Include/arm_math.h ****  * <pre>
+ 259:.\Include/arm_math.h ****  *     ARM_MATH_MATRIX_CHECK
+ 260:.\Include/arm_math.h ****  * </pre>
+ 261:.\Include/arm_math.h ****  * within the library project settings.  By default this macro is defined
+ 262:.\Include/arm_math.h ****  * and size checking is enabled.  By changing the project settings and
+ 263:.\Include/arm_math.h ****  * undefining this macro size checking is eliminated and the functions
+ 264:.\Include/arm_math.h ****  * run a bit faster.  With size checking disabled the functions always
+ 265:.\Include/arm_math.h ****  * return <code>ARM_MATH_SUCCESS</code>.
+ 266:.\Include/arm_math.h ****  */
+ 267:.\Include/arm_math.h **** 
+ 268:.\Include/arm_math.h **** /**
+ 269:.\Include/arm_math.h ****  * @defgroup groupTransforms Transform Functions
+ 270:.\Include/arm_math.h ****  */
+ 271:.\Include/arm_math.h **** 
+ 272:.\Include/arm_math.h **** /**
+ 273:.\Include/arm_math.h ****  * @defgroup groupController Controller Functions
+ 274:.\Include/arm_math.h ****  */
+ 275:.\Include/arm_math.h **** 
+ 276:.\Include/arm_math.h **** /**
+ 277:.\Include/arm_math.h ****  * @defgroup groupStats Statistics Functions
+ 278:.\Include/arm_math.h ****  */
+ 279:.\Include/arm_math.h **** /**
+ 280:.\Include/arm_math.h ****  * @defgroup groupSupport Support Functions
+ 281:.\Include/arm_math.h ****  */
+ 282:.\Include/arm_math.h **** 
+ 283:.\Include/arm_math.h **** /**
+ 284:.\Include/arm_math.h ****  * @defgroup groupInterpolation Interpolation Functions
+ 285:.\Include/arm_math.h ****  * These functions perform 1- and 2-dimensional interpolation of data.
+ 286:.\Include/arm_math.h ****  * Linear interpolation is used for 1-dimensional data and
+ 287:.\Include/arm_math.h ****  * bilinear interpolation is used for 2-dimensional data.
+ 288:.\Include/arm_math.h ****  */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 26
+
+
+ 289:.\Include/arm_math.h **** 
+ 290:.\Include/arm_math.h **** /**
+ 291:.\Include/arm_math.h ****  * @defgroup groupExamples Examples
+ 292:.\Include/arm_math.h ****  */
+ 293:.\Include/arm_math.h **** #ifndef _ARM_MATH_H
+ 294:.\Include/arm_math.h **** #define _ARM_MATH_H
+ 295:.\Include/arm_math.h **** 
+ 296:.\Include/arm_math.h **** /* ignore some GCC warnings */
+ 297:.\Include/arm_math.h **** #if defined ( __GNUC__ )
+ 298:.\Include/arm_math.h **** #pragma GCC diagnostic push
+ 299:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+ 300:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wconversion"
+ 301:.\Include/arm_math.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+ 302:.\Include/arm_math.h **** #endif
+ 303:.\Include/arm_math.h **** 
+ 304:.\Include/arm_math.h **** #define __CMSIS_GENERIC         /* disable NVIC and Systick functions */
+ 305:.\Include/arm_math.h **** 
+ 306:.\Include/arm_math.h **** #if defined(ARM_MATH_CM7)
+ 307:.\Include/arm_math.h ****   #include "core_cm7.h"
+ 308:.\Include/arm_math.h ****   #define ARM_MATH_DSP
+ 309:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM4)
+ 310:.\Include/arm_math.h ****   #include "core_cm4.h"
+ 311:.\Include/arm_math.h ****   #define ARM_MATH_DSP
+ 312:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM3)
+ 313:.\Include/arm_math.h ****   #include "core_cm3.h"
+ 314:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM0)
+ 315:.\Include/arm_math.h ****   #include "core_cm0.h"
+ 316:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 317:.\Include/arm_math.h **** #elif defined (ARM_MATH_CM0PLUS)
+ 318:.\Include/arm_math.h ****   #include "core_cm0plus.h"
+ 319:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 320:.\Include/arm_math.h **** #elif defined (ARM_MATH_ARMV8MBL)
+ 321:.\Include/arm_math.h ****   #include "core_armv8mbl.h"
+ 322:.\Include/arm_math.h ****   #define ARM_MATH_CM0_FAMILY
+ 323:.\Include/arm_math.h **** #elif defined (ARM_MATH_ARMV8MML)
+ 324:.\Include/arm_math.h ****   #include "core_armv8mml.h"
+ 325:.\Include/arm_math.h ****   #if (defined (__DSP_PRESENT) && (__DSP_PRESENT == 1))
+ 326:.\Include/arm_math.h ****     #define ARM_MATH_DSP
+ 327:.\Include/arm_math.h ****   #endif
+ 328:.\Include/arm_math.h **** #else
+ 329:.\Include/arm_math.h ****   #error "Define according the used Cortex core ARM_MATH_CM7, ARM_MATH_CM4, ARM_MATH_CM3, ARM_MATH_
+ 330:.\Include/arm_math.h **** #endif
+ 331:.\Include/arm_math.h **** 
+ 332:.\Include/arm_math.h **** #undef  __CMSIS_GENERIC         /* enable NVIC and Systick functions */
+ 333:.\Include/arm_math.h **** #include "string.h"
+ 334:.\Include/arm_math.h **** #include "math.h"
+ 335:.\Include/arm_math.h **** #ifdef   __cplusplus
+ 336:.\Include/arm_math.h **** extern "C"
+ 337:.\Include/arm_math.h **** {
+ 338:.\Include/arm_math.h **** #endif
+ 339:.\Include/arm_math.h **** 
+ 340:.\Include/arm_math.h **** 
+ 341:.\Include/arm_math.h ****   /**
+ 342:.\Include/arm_math.h ****    * @brief Macros required for reciprocal calculation in Normalized LMS
+ 343:.\Include/arm_math.h ****    */
+ 344:.\Include/arm_math.h **** 
+ 345:.\Include/arm_math.h **** #define DELTA_Q31          (0x100)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 27
+
+
+ 346:.\Include/arm_math.h **** #define DELTA_Q15          0x5
+ 347:.\Include/arm_math.h **** #define INDEX_MASK         0x0000003F
+ 348:.\Include/arm_math.h **** #ifndef PI
+ 349:.\Include/arm_math.h ****   #define PI               3.14159265358979f
+ 350:.\Include/arm_math.h **** #endif
+ 351:.\Include/arm_math.h **** 
+ 352:.\Include/arm_math.h ****   /**
+ 353:.\Include/arm_math.h ****    * @brief Macros required for SINE and COSINE Fast math approximations
+ 354:.\Include/arm_math.h ****    */
+ 355:.\Include/arm_math.h **** 
+ 356:.\Include/arm_math.h **** #define FAST_MATH_TABLE_SIZE  512
+ 357:.\Include/arm_math.h **** #define FAST_MATH_Q31_SHIFT   (32 - 10)
+ 358:.\Include/arm_math.h **** #define FAST_MATH_Q15_SHIFT   (16 - 10)
+ 359:.\Include/arm_math.h **** #define CONTROLLER_Q31_SHIFT  (32 - 9)
+ 360:.\Include/arm_math.h **** #define TABLE_SPACING_Q31     0x400000
+ 361:.\Include/arm_math.h **** #define TABLE_SPACING_Q15     0x80
+ 362:.\Include/arm_math.h **** 
+ 363:.\Include/arm_math.h ****   /**
+ 364:.\Include/arm_math.h ****    * @brief Macros required for SINE and COSINE Controller functions
+ 365:.\Include/arm_math.h ****    */
+ 366:.\Include/arm_math.h ****   /* 1.31(q31) Fixed value of 2/360 */
+ 367:.\Include/arm_math.h ****   /* -1 to +1 is divided into 360 values so total spacing is (2/360) */
+ 368:.\Include/arm_math.h **** #define INPUT_SPACING         0xB60B61
+ 369:.\Include/arm_math.h **** 
+ 370:.\Include/arm_math.h ****   /**
+ 371:.\Include/arm_math.h ****    * @brief Macro for Unaligned Support
+ 372:.\Include/arm_math.h ****    */
+ 373:.\Include/arm_math.h **** #ifndef UNALIGNED_SUPPORT_DISABLE
+ 374:.\Include/arm_math.h ****     #define ALIGN4
+ 375:.\Include/arm_math.h **** #else
+ 376:.\Include/arm_math.h ****   #if defined  (__GNUC__)
+ 377:.\Include/arm_math.h ****     #define ALIGN4 __attribute__((aligned(4)))
+ 378:.\Include/arm_math.h ****   #else
+ 379:.\Include/arm_math.h ****     #define ALIGN4 __align(4)
+ 380:.\Include/arm_math.h ****   #endif
+ 381:.\Include/arm_math.h **** #endif   /* #ifndef UNALIGNED_SUPPORT_DISABLE */
+ 382:.\Include/arm_math.h **** 
+ 383:.\Include/arm_math.h ****   /**
+ 384:.\Include/arm_math.h ****    * @brief Error status returned by some functions in the library.
+ 385:.\Include/arm_math.h ****    */
+ 386:.\Include/arm_math.h **** 
+ 387:.\Include/arm_math.h ****   typedef enum
+ 388:.\Include/arm_math.h ****   {
+ 389:.\Include/arm_math.h ****     ARM_MATH_SUCCESS = 0,                /**< No error */
+ 390:.\Include/arm_math.h ****     ARM_MATH_ARGUMENT_ERROR = -1,        /**< One or more arguments are incorrect */
+ 391:.\Include/arm_math.h ****     ARM_MATH_LENGTH_ERROR = -2,          /**< Length of data buffer is incorrect */
+ 392:.\Include/arm_math.h ****     ARM_MATH_SIZE_MISMATCH = -3,         /**< Size of matrices is not compatible with the operation
+ 393:.\Include/arm_math.h ****     ARM_MATH_NANINF = -4,                /**< Not-a-number (NaN) or infinity is generated */
+ 394:.\Include/arm_math.h ****     ARM_MATH_SINGULAR = -5,              /**< Generated by matrix inversion if the input matrix is 
+ 395:.\Include/arm_math.h ****     ARM_MATH_TEST_FAILURE = -6           /**< Test Failed  */
+ 396:.\Include/arm_math.h ****   } arm_status;
+ 397:.\Include/arm_math.h **** 
+ 398:.\Include/arm_math.h ****   /**
+ 399:.\Include/arm_math.h ****    * @brief 8-bit fractional data type in 1.7 format.
+ 400:.\Include/arm_math.h ****    */
+ 401:.\Include/arm_math.h ****   typedef int8_t q7_t;
+ 402:.\Include/arm_math.h **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 28
+
+
+ 403:.\Include/arm_math.h ****   /**
+ 404:.\Include/arm_math.h ****    * @brief 16-bit fractional data type in 1.15 format.
+ 405:.\Include/arm_math.h ****    */
+ 406:.\Include/arm_math.h ****   typedef int16_t q15_t;
+ 407:.\Include/arm_math.h **** 
+ 408:.\Include/arm_math.h ****   /**
+ 409:.\Include/arm_math.h ****    * @brief 32-bit fractional data type in 1.31 format.
+ 410:.\Include/arm_math.h ****    */
+ 411:.\Include/arm_math.h ****   typedef int32_t q31_t;
+ 412:.\Include/arm_math.h **** 
+ 413:.\Include/arm_math.h ****   /**
+ 414:.\Include/arm_math.h ****    * @brief 64-bit fractional data type in 1.63 format.
+ 415:.\Include/arm_math.h ****    */
+ 416:.\Include/arm_math.h ****   typedef int64_t q63_t;
+ 417:.\Include/arm_math.h **** 
+ 418:.\Include/arm_math.h ****   /**
+ 419:.\Include/arm_math.h ****    * @brief 32-bit floating-point type definition.
+ 420:.\Include/arm_math.h ****    */
+ 421:.\Include/arm_math.h ****   typedef float float32_t;
+ 422:.\Include/arm_math.h **** 
+ 423:.\Include/arm_math.h ****   /**
+ 424:.\Include/arm_math.h ****    * @brief 64-bit floating-point type definition.
+ 425:.\Include/arm_math.h ****    */
+ 426:.\Include/arm_math.h ****   typedef double float64_t;
+ 427:.\Include/arm_math.h **** 
+ 428:.\Include/arm_math.h ****   /**
+ 429:.\Include/arm_math.h ****    * @brief definition to read/write two 16 bit values.
+ 430:.\Include/arm_math.h ****    */
+ 431:.\Include/arm_math.h **** #if   defined ( __CC_ARM )
+ 432:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t __packed
+ 433:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 434:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 435:.\Include/arm_math.h **** 
+ 436:.\Include/arm_math.h **** #elif defined ( __ARMCC_VERSION ) && ( __ARMCC_VERSION >= 6010050 )
+ 437:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 438:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 439:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 440:.\Include/arm_math.h **** 
+ 441:.\Include/arm_math.h **** #elif defined ( __GNUC__ )
+ 442:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 443:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 444:.\Include/arm_math.h ****   #define CMSIS_INLINE __attribute__((always_inline))
+ 445:.\Include/arm_math.h **** 
+ 446:.\Include/arm_math.h **** #elif defined ( __ICCARM__ )
+ 447:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t __packed
+ 448:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 449:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 450:.\Include/arm_math.h **** 
+ 451:.\Include/arm_math.h **** #elif defined ( __TI_ARM__ )
+ 452:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 453:.\Include/arm_math.h ****   #define CMSIS_UNUSED __attribute__((unused))
+ 454:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 455:.\Include/arm_math.h **** 
+ 456:.\Include/arm_math.h **** #elif defined ( __CSMC__ )
+ 457:.\Include/arm_math.h ****   #define __SIMD32_TYPE int32_t
+ 458:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 459:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 29
+
+
+ 460:.\Include/arm_math.h **** 
+ 461:.\Include/arm_math.h **** #elif defined ( __TASKING__ )
+ 462:.\Include/arm_math.h ****   #define __SIMD32_TYPE __unaligned int32_t
+ 463:.\Include/arm_math.h ****   #define CMSIS_UNUSED
+ 464:.\Include/arm_math.h ****   #define CMSIS_INLINE
+ 465:.\Include/arm_math.h **** 
+ 466:.\Include/arm_math.h **** #else
+ 467:.\Include/arm_math.h ****   #error Unknown compiler
+ 468:.\Include/arm_math.h **** #endif
+ 469:.\Include/arm_math.h **** 
+ 470:.\Include/arm_math.h **** #define __SIMD32(addr)        (*(__SIMD32_TYPE **) & (addr))
+ 471:.\Include/arm_math.h **** #define __SIMD32_CONST(addr)  ((__SIMD32_TYPE *)(addr))
+ 472:.\Include/arm_math.h **** #define _SIMD32_OFFSET(addr)  (*(__SIMD32_TYPE *)  (addr))
+ 473:.\Include/arm_math.h **** #define __SIMD64(addr)        (*(int64_t **) & (addr))
+ 474:.\Include/arm_math.h **** 
+ 475:.\Include/arm_math.h **** /* #if defined (ARM_MATH_CM3) || defined (ARM_MATH_CM0_FAMILY) */
+ 476:.\Include/arm_math.h **** #if !defined (ARM_MATH_DSP)
+ 477:.\Include/arm_math.h ****   /**
+ 478:.\Include/arm_math.h ****    * @brief definition to pack two 16 bit values.
+ 479:.\Include/arm_math.h ****    */
+ 480:.\Include/arm_math.h **** #define __PKHBT(ARG1, ARG2, ARG3) ( (((int32_t)(ARG1) <<    0) & (int32_t)0x0000FFFF) | \
+ 481:.\Include/arm_math.h ****                                     (((int32_t)(ARG2) << ARG3) & (int32_t)0xFFFF0000)  )
+ 482:.\Include/arm_math.h **** #define __PKHTB(ARG1, ARG2, ARG3) ( (((int32_t)(ARG1) <<    0) & (int32_t)0xFFFF0000) | \
+ 483:.\Include/arm_math.h ****                                     (((int32_t)(ARG2) >> ARG3) & (int32_t)0x0000FFFF)  )
+ 484:.\Include/arm_math.h **** 
+ 485:.\Include/arm_math.h **** /* #endif // defined (ARM_MATH_CM3) || defined (ARM_MATH_CM0_FAMILY) */
+ 486:.\Include/arm_math.h **** #endif /* !defined (ARM_MATH_DSP) */
+ 487:.\Include/arm_math.h **** 
+ 488:.\Include/arm_math.h ****    /**
+ 489:.\Include/arm_math.h ****    * @brief definition to pack four 8 bit values.
+ 490:.\Include/arm_math.h ****    */
+ 491:.\Include/arm_math.h **** #ifndef ARM_MATH_BIG_ENDIAN
+ 492:.\Include/arm_math.h **** 
+ 493:.\Include/arm_math.h **** #define __PACKq7(v0,v1,v2,v3) ( (((int32_t)(v0) <<  0) & (int32_t)0x000000FF) | \
+ 494:.\Include/arm_math.h ****                                 (((int32_t)(v1) <<  8) & (int32_t)0x0000FF00) | \
+ 495:.\Include/arm_math.h ****                                 (((int32_t)(v2) << 16) & (int32_t)0x00FF0000) | \
+ 496:.\Include/arm_math.h ****                                 (((int32_t)(v3) << 24) & (int32_t)0xFF000000)  )
+ 497:.\Include/arm_math.h **** #else
+ 498:.\Include/arm_math.h **** 
+ 499:.\Include/arm_math.h **** #define __PACKq7(v0,v1,v2,v3) ( (((int32_t)(v3) <<  0) & (int32_t)0x000000FF) | \
+ 500:.\Include/arm_math.h ****                                 (((int32_t)(v2) <<  8) & (int32_t)0x0000FF00) | \
+ 501:.\Include/arm_math.h ****                                 (((int32_t)(v1) << 16) & (int32_t)0x00FF0000) | \
+ 502:.\Include/arm_math.h ****                                 (((int32_t)(v0) << 24) & (int32_t)0xFF000000)  )
+ 503:.\Include/arm_math.h **** 
+ 504:.\Include/arm_math.h **** #endif
+ 505:.\Include/arm_math.h **** 
+ 506:.\Include/arm_math.h **** 
+ 507:.\Include/arm_math.h ****   /**
+ 508:.\Include/arm_math.h ****    * @brief Clips Q63 to Q31 values.
+ 509:.\Include/arm_math.h ****    */
+ 510:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE q31_t clip_q63_to_q31(
+ 511:.\Include/arm_math.h ****   q63_t x)
+ 512:.\Include/arm_math.h ****   {
+ 513:.\Include/arm_math.h ****     return ((q31_t) (x >> 32) != ((q31_t) x >> 31)) ?
+ 514:.\Include/arm_math.h ****       ((0x7FFFFFFF ^ ((q31_t) (x >> 63)))) : (q31_t) x;
+ 515:.\Include/arm_math.h ****   }
+ 516:.\Include/arm_math.h **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 30
+
+
+ 517:.\Include/arm_math.h ****   /**
+ 518:.\Include/arm_math.h ****    * @brief Clips Q63 to Q15 values.
+ 519:.\Include/arm_math.h ****    */
+ 520:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE q15_t clip_q63_to_q15(
+ 521:.\Include/arm_math.h ****   q63_t x)
+ 522:.\Include/arm_math.h ****   {
+ 523:.\Include/arm_math.h ****     return ((q31_t) (x >> 32) != ((q31_t) x >> 31)) ?
+ 524:.\Include/arm_math.h ****       ((0x7FFF ^ ((q15_t) (x >> 63)))) : (q15_t) (x >> 15);
+ 525:.\Include/arm_math.h ****   }
+ 526:.\Include/arm_math.h **** 
+ 527:.\Include/arm_math.h ****   /**
+ 528:.\Include/arm_math.h ****    * @brief Clips Q31 to Q7 values.
+ 529:.\Include/arm_math.h ****    */
+ 530:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE q7_t clip_q31_to_q7(
+ 531:.\Include/arm_math.h ****   q31_t x)
+ 532:.\Include/arm_math.h ****   {
+ 533:.\Include/arm_math.h ****     return ((q31_t) (x >> 24) != ((q31_t) x >> 23)) ?
+ 534:.\Include/arm_math.h ****       ((0x7F ^ ((q7_t) (x >> 31)))) : (q7_t) x;
+ 535:.\Include/arm_math.h ****   }
+ 536:.\Include/arm_math.h **** 
+ 537:.\Include/arm_math.h ****   /**
+ 538:.\Include/arm_math.h ****    * @brief Clips Q31 to Q15 values.
+ 539:.\Include/arm_math.h ****    */
+ 540:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE q15_t clip_q31_to_q15(
+ 541:.\Include/arm_math.h ****   q31_t x)
+ 542:.\Include/arm_math.h ****   {
+ 543:.\Include/arm_math.h ****     return ((q31_t) (x >> 16) != ((q31_t) x >> 15)) ?
+ 544:.\Include/arm_math.h ****       ((0x7FFF ^ ((q15_t) (x >> 31)))) : (q15_t) x;
+ 545:.\Include/arm_math.h ****   }
+ 546:.\Include/arm_math.h **** 
+ 547:.\Include/arm_math.h ****   /**
+ 548:.\Include/arm_math.h ****    * @brief Multiplies 32 X 64 and returns 32 bit result in 2.30 format.
+ 549:.\Include/arm_math.h ****    */
+ 550:.\Include/arm_math.h **** 
+ 551:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE q63_t mult32x64(
+ 552:.\Include/arm_math.h ****   q63_t x,
+ 553:.\Include/arm_math.h ****   q31_t y)
+ 554:.\Include/arm_math.h ****   {
+ 555:.\Include/arm_math.h ****     return ((((q63_t) (x & 0x00000000FFFFFFFF) * y) >> 32) +
+ 556:.\Include/arm_math.h ****             (((q63_t) (x >> 32) * y)));
+ 557:.\Include/arm_math.h ****   }
+ 558:.\Include/arm_math.h **** 
+ 559:.\Include/arm_math.h **** /*
+ 560:.\Include/arm_math.h ****   #if defined (ARM_MATH_CM0_FAMILY) && defined ( __CC_ARM   )
+ 561:.\Include/arm_math.h ****   #define __CLZ __clz
+ 562:.\Include/arm_math.h ****   #endif
+ 563:.\Include/arm_math.h ****  */
+ 564:.\Include/arm_math.h **** /* note: function can be removed when all toolchain support __CLZ for Cortex-M0 */
+ 565:.\Include/arm_math.h **** #if defined (ARM_MATH_CM0_FAMILY) && ((defined (__ICCARM__))  )
+ 566:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE uint32_t __CLZ(
+ 567:.\Include/arm_math.h ****   q31_t data);
+ 568:.\Include/arm_math.h **** 
+ 569:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE uint32_t __CLZ(
+ 570:.\Include/arm_math.h ****   q31_t data)
+ 571:.\Include/arm_math.h ****   {
+ 572:.\Include/arm_math.h ****     uint32_t count = 0;
+ 573:.\Include/arm_math.h ****     uint32_t mask = 0x80000000;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 31
+
+
+ 574:.\Include/arm_math.h **** 
+ 575:.\Include/arm_math.h ****     while ((data & mask) == 0)
+ 576:.\Include/arm_math.h ****     {
+ 577:.\Include/arm_math.h ****       count += 1u;
+ 578:.\Include/arm_math.h ****       mask = mask >> 1u;
+ 579:.\Include/arm_math.h ****     }
+ 580:.\Include/arm_math.h **** 
+ 581:.\Include/arm_math.h ****     return (count);
+ 582:.\Include/arm_math.h ****   }
+ 583:.\Include/arm_math.h **** #endif
+ 584:.\Include/arm_math.h **** 
+ 585:.\Include/arm_math.h ****   /**
+ 586:.\Include/arm_math.h ****    * @brief Function to Calculates 1/in (reciprocal) value of Q31 Data type.
+ 587:.\Include/arm_math.h ****    */
+ 588:.\Include/arm_math.h **** 
+ 589:.\Include/arm_math.h ****   CMSIS_INLINE __STATIC_INLINE uint32_t arm_recip_q31(
+ 590:.\Include/arm_math.h ****   q31_t in,
+ 591:.\Include/arm_math.h ****   q31_t * dst,
+ 592:.\Include/arm_math.h ****   q31_t * pRecipTable)
+ 593:.\Include/arm_math.h ****   {
+ 594:.\Include/arm_math.h ****     q31_t out;
+ 595:.\Include/arm_math.h ****     uint32_t tempVal;
+ 596:.\Include/arm_math.h ****     uint32_t index, i;
+ 597:.\Include/arm_math.h ****     uint32_t signBits;
+ 598:.\Include/arm_math.h **** 
+ 599:.\Include/arm_math.h ****     if (in > 0)
+ 787              		.loc 2 599 0
+ 788 058e AC23     		mov	r3, #172
+ 789 0590 5B00     		lsl	r3, r3, #1
+ 790 0592 FB18     		add	r3, r7, r3
+ 791 0594 1B68     		ldr	r3, [r3]
+ 792 0596 002B     		cmp	r3, #0
+ 793 0598 0DDD     		ble	.L5
+ 600:.\Include/arm_math.h ****     {
+ 601:.\Include/arm_math.h ****       signBits = ((uint32_t) (__CLZ( in) - 1));
+ 794              		.loc 2 601 0
+ 795 059a AC23     		mov	r3, #172
+ 796 059c 5B00     		lsl	r3, r3, #1
+ 797 059e FB18     		add	r3, r7, r3
+ 798 05a0 1B68     		ldr	r3, [r3]
+ 799 05a2 181C     		mov	r0, r3
+ 800 05a4 FFF7FEFF 		bl	__clzsi2
+ 801 05a8 031C     		mov	r3, r0
+ 802 05aa 013B     		sub	r3, r3, #1
+ 803 05ac A622     		mov	r2, #166
+ 804 05ae 5200     		lsl	r2, r2, #1
+ 805 05b0 BA18     		add	r2, r7, r2
+ 806 05b2 1360     		str	r3, [r2]
+ 807 05b4 0DE0     		b	.L6
+ 808              	.L5:
+ 602:.\Include/arm_math.h ****     }
+ 603:.\Include/arm_math.h ****     else
+ 604:.\Include/arm_math.h ****     {
+ 605:.\Include/arm_math.h ****       signBits = ((uint32_t) (__CLZ(-in) - 1));
+ 809              		.loc 2 605 0
+ 810 05b6 AC23     		mov	r3, #172
+ 811 05b8 5B00     		lsl	r3, r3, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 32
+
+
+ 812 05ba FB18     		add	r3, r7, r3
+ 813 05bc 1B68     		ldr	r3, [r3]
+ 814 05be 5B42     		neg	r3, r3
+ 815 05c0 181C     		mov	r0, r3
+ 816 05c2 FFF7FEFF 		bl	__clzsi2
+ 817 05c6 031C     		mov	r3, r0
+ 818 05c8 013B     		sub	r3, r3, #1
+ 819 05ca A622     		mov	r2, #166
+ 820 05cc 5200     		lsl	r2, r2, #1
+ 821 05ce BA18     		add	r2, r7, r2
+ 822 05d0 1360     		str	r3, [r2]
+ 823              	.L6:
+ 606:.\Include/arm_math.h ****     }
+ 607:.\Include/arm_math.h **** 
+ 608:.\Include/arm_math.h ****     /* Convert input sample to 1.31 format */
+ 609:.\Include/arm_math.h ****     in = (in << signBits);
+ 824              		.loc 2 609 0
+ 825 05d2 A623     		mov	r3, #166
+ 826 05d4 5B00     		lsl	r3, r3, #1
+ 827 05d6 FB18     		add	r3, r7, r3
+ 828 05d8 1A68     		ldr	r2, [r3]
+ 829 05da AC23     		mov	r3, #172
+ 830 05dc 5B00     		lsl	r3, r3, #1
+ 831 05de FB18     		add	r3, r7, r3
+ 832 05e0 1B68     		ldr	r3, [r3]
+ 833 05e2 9340     		lsl	r3, r3, r2
+ 834 05e4 AC22     		mov	r2, #172
+ 835 05e6 5200     		lsl	r2, r2, #1
+ 836 05e8 BA18     		add	r2, r7, r2
+ 837 05ea 1360     		str	r3, [r2]
+ 610:.\Include/arm_math.h **** 
+ 611:.\Include/arm_math.h ****     /* calculation of index for initial approximated Val */
+ 612:.\Include/arm_math.h ****     index = (uint32_t)(in >> 24);
+ 838              		.loc 2 612 0
+ 839 05ec AC23     		mov	r3, #172
+ 840 05ee 5B00     		lsl	r3, r3, #1
+ 841 05f0 FB18     		add	r3, r7, r3
+ 842 05f2 1B68     		ldr	r3, [r3]
+ 843 05f4 1B16     		asr	r3, r3, #24
+ 844 05f6 A422     		mov	r2, #164
+ 845 05f8 5200     		lsl	r2, r2, #1
+ 846 05fa BA18     		add	r2, r7, r2
+ 847 05fc 1360     		str	r3, [r2]
+ 613:.\Include/arm_math.h ****     index = (index & INDEX_MASK);
+ 848              		.loc 2 613 0
+ 849 05fe A423     		mov	r3, #164
+ 850 0600 5B00     		lsl	r3, r3, #1
+ 851 0602 FB18     		add	r3, r7, r3
+ 852 0604 1A68     		ldr	r2, [r3]
+ 853 0606 3F23     		mov	r3, #63
+ 854 0608 1340     		and	r3, r2
+ 855 060a A422     		mov	r2, #164
+ 856 060c 5200     		lsl	r2, r2, #1
+ 857 060e BA18     		add	r2, r7, r2
+ 858 0610 1360     		str	r3, [r2]
+ 614:.\Include/arm_math.h **** 
+ 615:.\Include/arm_math.h ****     /* 1.31 with exp 1 */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 33
+
+
+ 616:.\Include/arm_math.h ****     out = pRecipTable[index];
+ 859              		.loc 2 616 0
+ 860 0612 A423     		mov	r3, #164
+ 861 0614 5B00     		lsl	r3, r3, #1
+ 862 0616 FB18     		add	r3, r7, r3
+ 863 0618 1B68     		ldr	r3, [r3]
+ 864 061a 9A00     		lsl	r2, r3, #2
+ 865 061c A823     		mov	r3, #168
+ 866 061e 5B00     		lsl	r3, r3, #1
+ 867 0620 FB18     		add	r3, r7, r3
+ 868 0622 1B68     		ldr	r3, [r3]
+ 869 0624 9B18     		add	r3, r3, r2
+ 870 0626 1B68     		ldr	r3, [r3]
+ 871 0628 A222     		mov	r2, #162
+ 872 062a 5200     		lsl	r2, r2, #1
+ 873 062c BA18     		add	r2, r7, r2
+ 874 062e 1360     		str	r3, [r2]
+ 617:.\Include/arm_math.h **** 
+ 618:.\Include/arm_math.h ****     /* calculation of reciprocal value */
+ 619:.\Include/arm_math.h ****     /* running approximation for two iterations */
+ 620:.\Include/arm_math.h ****     for (i = 0u; i < 2u; i++)
+ 875              		.loc 2 620 0
+ 876 0630 0023     		mov	r3, #0
+ 877 0632 A022     		mov	r2, #160
+ 878 0634 5200     		lsl	r2, r2, #1
+ 879 0636 BA18     		add	r2, r7, r2
+ 880 0638 1360     		str	r3, [r2]
+ 881 063a 9AE0     		b	.L7
+ 882              	.L11:
+ 621:.\Include/arm_math.h ****     {
+ 622:.\Include/arm_math.h ****       tempVal = (uint32_t) (((q63_t) in * out) >> 31);
+ 883              		.loc 2 622 0
+ 884 063c AC23     		mov	r3, #172
+ 885 063e 5B00     		lsl	r3, r3, #1
+ 886 0640 FB18     		add	r3, r7, r3
+ 887 0642 1B68     		ldr	r3, [r3]
+ 888 0644 BB64     		str	r3, [r7, #72]
+ 889 0646 DB17     		asr	r3, r3, #31
+ 890 0648 FB64     		str	r3, [r7, #76]
+ 891 064a A223     		mov	r3, #162
+ 892 064c 5B00     		lsl	r3, r3, #1
+ 893 064e FB18     		add	r3, r7, r3
+ 894 0650 1B68     		ldr	r3, [r3]
+ 895 0652 3B64     		str	r3, [r7, #64]
+ 896 0654 DB17     		asr	r3, r3, #31
+ 897 0656 7B64     		str	r3, [r7, #68]
+ 898 0658 B86C     		ldr	r0, [r7, #72]
+ 899 065a F96C     		ldr	r1, [r7, #76]
+ 900 065c 3A6C     		ldr	r2, [r7, #64]
+ 901 065e 7B6C     		ldr	r3, [r7, #68]
+ 902 0660 FFF7FEFF 		bl	__aeabi_lmul
+ 903 0664 031C     		mov	r3, r0
+ 904 0666 0C1C     		mov	r4, r1
+ 905 0668 6200     		lsl	r2, r4, #1
+ 906 066a D90F     		lsr	r1, r3, #31
+ 907 066c F820     		mov	r0, #248
+ 908 066e 3818     		add	r0, r7, r0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 34
+
+
+ 909 0670 0160     		str	r1, [r0]
+ 910 0672 F821     		mov	r1, #248
+ 911 0674 7918     		add	r1, r7, r1
+ 912 0676 0968     		ldr	r1, [r1]
+ 913 0678 1143     		orr	r1, r2
+ 914 067a F822     		mov	r2, #248
+ 915 067c BA18     		add	r2, r7, r2
+ 916 067e 1160     		str	r1, [r2]
+ 917 0680 E317     		asr	r3, r4, #31
+ 918 0682 FC22     		mov	r2, #252
+ 919 0684 BA18     		add	r2, r7, r2
+ 920 0686 1360     		str	r3, [r2]
+ 921 0688 F823     		mov	r3, #248
+ 922 068a FB18     		add	r3, r7, r3
+ 923 068c 1B68     		ldr	r3, [r3]
+ 924 068e 9E22     		mov	r2, #158
+ 925 0690 5200     		lsl	r2, r2, #1
+ 926 0692 BA18     		add	r2, r7, r2
+ 927 0694 1360     		str	r3, [r2]
+ 623:.\Include/arm_math.h ****       tempVal = 0x7FFFFFFFu - tempVal;
+ 928              		.loc 2 623 0
+ 929 0696 9E23     		mov	r3, #158
+ 930 0698 5B00     		lsl	r3, r3, #1
+ 931 069a FB18     		add	r3, r7, r3
+ 932 069c 1A68     		ldr	r2, [r3]
+ 933 069e E04B     		ldr	r3, .L30
+ 934 06a0 9B1A     		sub	r3, r3, r2
+ 935 06a2 9E22     		mov	r2, #158
+ 936 06a4 5200     		lsl	r2, r2, #1
+ 937 06a6 BA18     		add	r2, r7, r2
+ 938 06a8 1360     		str	r3, [r2]
+ 624:.\Include/arm_math.h ****       /*      1.31 with exp 1 */
+ 625:.\Include/arm_math.h ****       /* out = (q31_t) (((q63_t) out * tempVal) >> 30); */
+ 626:.\Include/arm_math.h ****       out = clip_q63_to_q31(((q63_t) out * tempVal) >> 30);
+ 939              		.loc 2 626 0
+ 940 06aa A223     		mov	r3, #162
+ 941 06ac 5B00     		lsl	r3, r3, #1
+ 942 06ae FB18     		add	r3, r7, r3
+ 943 06b0 1B68     		ldr	r3, [r3]
+ 944 06b2 BB63     		str	r3, [r7, #56]
+ 945 06b4 DB17     		asr	r3, r3, #31
+ 946 06b6 FB63     		str	r3, [r7, #60]
+ 947 06b8 9E23     		mov	r3, #158
+ 948 06ba 5B00     		lsl	r3, r3, #1
+ 949 06bc FB18     		add	r3, r7, r3
+ 950 06be 1B68     		ldr	r3, [r3]
+ 951 06c0 3B63     		str	r3, [r7, #48]
+ 952 06c2 0023     		mov	r3, #0
+ 953 06c4 7B63     		str	r3, [r7, #52]
+ 954 06c6 B86B     		ldr	r0, [r7, #56]
+ 955 06c8 F96B     		ldr	r1, [r7, #60]
+ 956 06ca 3A6B     		ldr	r2, [r7, #48]
+ 957 06cc 7B6B     		ldr	r3, [r7, #52]
+ 958 06ce FFF7FEFF 		bl	__aeabi_lmul
+ 959 06d2 031C     		mov	r3, r0
+ 960 06d4 0C1C     		mov	r4, r1
+ 961 06d6 A200     		lsl	r2, r4, #2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 35
+
+
+ 962 06d8 990F     		lsr	r1, r3, #30
+ 963 06da F020     		mov	r0, #240
+ 964 06dc 3818     		add	r0, r7, r0
+ 965 06de 0160     		str	r1, [r0]
+ 966 06e0 F021     		mov	r1, #240
+ 967 06e2 7918     		add	r1, r7, r1
+ 968 06e4 0968     		ldr	r1, [r1]
+ 969 06e6 1143     		orr	r1, r2
+ 970 06e8 F022     		mov	r2, #240
+ 971 06ea BA18     		add	r2, r7, r2
+ 972 06ec 1160     		str	r1, [r2]
+ 973 06ee A317     		asr	r3, r4, #30
+ 974 06f0 F422     		mov	r2, #244
+ 975 06f2 BA18     		add	r2, r7, r2
+ 976 06f4 1360     		str	r3, [r2]
+ 977 06f6 F023     		mov	r3, #240
+ 978 06f8 FB18     		add	r3, r7, r3
+ 979 06fa 5C68     		ldr	r4, [r3, #4]
+ 980 06fc 1B68     		ldr	r3, [r3]
+ 981 06fe 9822     		mov	r2, #152
+ 982 0700 5200     		lsl	r2, r2, #1
+ 983 0702 BA18     		add	r2, r7, r2
+ 984 0704 1360     		str	r3, [r2]
+ 985 0706 5460     		str	r4, [r2, #4]
+ 986              	.LBB14:
+ 987              	.LBB15:
+ 513:.\Include/arm_math.h ****       ((0x7FFFFFFF ^ ((q31_t) (x >> 63)))) : (q31_t) x;
+ 988              		.loc 2 513 0
+ 989 0708 9A23     		mov	r3, #154
+ 990 070a 5B00     		lsl	r3, r3, #1
+ 991 070c FB18     		add	r3, r7, r3
+ 992 070e 1B68     		ldr	r3, [r3]
+ 993 0710 1B00     		asr	r3, r3, #0
+ 994 0712 BB62     		str	r3, [r7, #40]
+ 995 0714 9A23     		mov	r3, #154
+ 996 0716 5B00     		lsl	r3, r3, #1
+ 997 0718 FB18     		add	r3, r7, r3
+ 998 071a 1B68     		ldr	r3, [r3]
+ 999 071c DB17     		asr	r3, r3, #31
+ 1000 071e FB62     		str	r3, [r7, #44]
+ 1001 0720 BA6A     		ldr	r2, [r7, #40]
+ 1002 0722 9823     		mov	r3, #152
+ 1003 0724 5B00     		lsl	r3, r3, #1
+ 1004 0726 FB18     		add	r3, r7, r3
+ 1005 0728 1B68     		ldr	r3, [r3]
+ 1006 072a DB17     		asr	r3, r3, #31
+ 514:.\Include/arm_math.h ****   }
+ 1007              		.loc 2 514 0
+ 1008 072c 9A42     		cmp	r2, r3
+ 1009 072e 0FD0     		beq	.L8
+ 1010 0730 9A23     		mov	r3, #154
+ 1011 0732 5B00     		lsl	r3, r3, #1
+ 1012 0734 FB18     		add	r3, r7, r3
+ 1013 0736 1B68     		ldr	r3, [r3]
+ 1014 0738 DB17     		asr	r3, r3, #31
+ 1015 073a 3B62     		str	r3, [r7, #32]
+ 1016 073c 9A23     		mov	r3, #154
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 36
+
+
+ 1017 073e 5B00     		lsl	r3, r3, #1
+ 1018 0740 FB18     		add	r3, r7, r3
+ 1019 0742 1B68     		ldr	r3, [r3]
+ 1020 0744 DB17     		asr	r3, r3, #31
+ 1021 0746 7B62     		str	r3, [r7, #36]
+ 1022 0748 3A6A     		ldr	r2, [r7, #32]
+ 1023 074a B54B     		ldr	r3, .L30
+ 1024 074c 5340     		eor	r3, r2
+ 1025 074e 03E0     		b	.L26
+ 1026              	.L8:
+ 1027 0750 9823     		mov	r3, #152
+ 1028 0752 5B00     		lsl	r3, r3, #1
+ 1029 0754 FB18     		add	r3, r7, r3
+ 1030 0756 1B68     		ldr	r3, [r3]
+ 1031              	.L26:
+ 1032              	.LBE15:
+ 1033              	.LBE14:
+ 1034              		.loc 2 626 0
+ 1035 0758 A222     		mov	r2, #162
+ 1036 075a 5200     		lsl	r2, r2, #1
+ 1037 075c BA18     		add	r2, r7, r2
+ 1038 075e 1360     		str	r3, [r2]
+ 620:.\Include/arm_math.h ****     {
+ 1039              		.loc 2 620 0
+ 1040 0760 A023     		mov	r3, #160
+ 1041 0762 5B00     		lsl	r3, r3, #1
+ 1042 0764 FB18     		add	r3, r7, r3
+ 1043 0766 1B68     		ldr	r3, [r3]
+ 1044 0768 0133     		add	r3, r3, #1
+ 1045 076a A022     		mov	r2, #160
+ 1046 076c 5200     		lsl	r2, r2, #1
+ 1047 076e BA18     		add	r2, r7, r2
+ 1048 0770 1360     		str	r3, [r2]
+ 1049              	.L7:
+ 1050 0772 A023     		mov	r3, #160
+ 1051 0774 5B00     		lsl	r3, r3, #1
+ 1052 0776 FB18     		add	r3, r7, r3
+ 1053 0778 1B68     		ldr	r3, [r3]
+ 1054 077a 012B     		cmp	r3, #1
+ 1055 077c 00D8     		bhi	.LCB972
+ 1056 077e 5DE7     		b	.L11	@long jump
+ 1057              	.LCB972:
+ 627:.\Include/arm_math.h ****     }
+ 628:.\Include/arm_math.h **** 
+ 629:.\Include/arm_math.h ****     /* write output */
+ 630:.\Include/arm_math.h ****     *dst = out;
+ 1058              		.loc 2 630 0
+ 1059 0780 AA23     		mov	r3, #170
+ 1060 0782 5B00     		lsl	r3, r3, #1
+ 1061 0784 FB18     		add	r3, r7, r3
+ 1062 0786 1A68     		ldr	r2, [r3]
+ 1063 0788 A223     		mov	r3, #162
+ 1064 078a 5B00     		lsl	r3, r3, #1
+ 1065 078c FB18     		add	r3, r7, r3
+ 1066 078e 1B68     		ldr	r3, [r3]
+ 1067 0790 1360     		str	r3, [r2]
+ 631:.\Include/arm_math.h **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 37
+
+
+ 632:.\Include/arm_math.h ****     /* return num of signbits of out = 1/in value */
+ 633:.\Include/arm_math.h ****     return (signBits + 1u);
+ 1068              		.loc 2 633 0
+ 1069 0792 A623     		mov	r3, #166
+ 1070 0794 5B00     		lsl	r3, r3, #1
+ 1071 0796 FB18     		add	r3, r7, r3
+ 1072 0798 1B68     		ldr	r3, [r3]
+ 1073 079a 0133     		add	r3, r3, #1
+ 1074              	.LBE13:
+ 1075              	.LBE12:
+ 348:Source\FilteringFunctions/arm_lms_norm_q31.c ****       arm_recip_q31(energy + DELTA_Q31, &oneByEnergy, &S->recipTable[0]);
+ 1076              		.loc 1 348 0
+ 1077 079c B222     		mov	r2, #178
+ 1078 079e 5200     		lsl	r2, r2, #1
+ 1079 07a0 BA18     		add	r2, r7, r2
+ 1080 07a2 1360     		str	r3, [r2]
+ 350:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 351:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Calculation of product of (e * mu) */
+ 352:Source\FilteringFunctions/arm_lms_norm_q31.c ****     errorXmu = (q31_t) (((q63_t) e * mu) >> 31);
+ 1081              		.loc 1 352 0
+ 1082 07a4 C223     		mov	r3, #194
+ 1083 07a6 5B00     		lsl	r3, r3, #1
+ 1084 07a8 FB18     		add	r3, r7, r3
+ 1085 07aa 1B68     		ldr	r3, [r3]
+ 1086 07ac 9022     		mov	r2, #144
+ 1087 07ae BA18     		add	r2, r7, r2
+ 1088 07b0 1360     		str	r3, [r2]
+ 1089 07b2 DB17     		asr	r3, r3, #31
+ 1090 07b4 9422     		mov	r2, #148
+ 1091 07b6 BA18     		add	r2, r7, r2
+ 1092 07b8 1360     		str	r3, [r2]
+ 1093 07ba 8423     		mov	r3, #132
+ 1094 07bc 8422     		mov	r2, #132
+ 1095 07be 5200     		lsl	r2, r2, #1
+ 1096 07c0 9446     		mov	ip, r2
+ 1097 07c2 BC44     		add	ip, ip, r7
+ 1098 07c4 6344     		add	r3, r3, ip
+ 1099 07c6 1B68     		ldr	r3, [r3]
+ 1100 07c8 8822     		mov	r2, #136
+ 1101 07ca BA18     		add	r2, r7, r2
+ 1102 07cc 1360     		str	r3, [r2]
+ 1103 07ce DB17     		asr	r3, r3, #31
+ 1104 07d0 8C22     		mov	r2, #140
+ 1105 07d2 BA18     		add	r2, r7, r2
+ 1106 07d4 1360     		str	r3, [r2]
+ 1107 07d6 9023     		mov	r3, #144
+ 1108 07d8 FB18     		add	r3, r7, r3
+ 1109 07da 1868     		ldr	r0, [r3]
+ 1110 07dc 5968     		ldr	r1, [r3, #4]
+ 1111 07de 8823     		mov	r3, #136
+ 1112 07e0 FB18     		add	r3, r7, r3
+ 1113 07e2 1A68     		ldr	r2, [r3]
+ 1114 07e4 5B68     		ldr	r3, [r3, #4]
+ 1115 07e6 FFF7FEFF 		bl	__aeabi_lmul
+ 1116 07ea 031C     		mov	r3, r0
+ 1117 07ec 0C1C     		mov	r4, r1
+ 1118 07ee 6200     		lsl	r2, r4, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 38
+
+
+ 1119 07f0 D90F     		lsr	r1, r3, #31
+ 1120 07f2 781C     		add	r0, r7, #1
+ 1121 07f4 FF30     		add	r0, r0, #255
+ 1122 07f6 0160     		str	r1, [r0]
+ 1123 07f8 791C     		add	r1, r7, #1
+ 1124 07fa FF31     		add	r1, r1, #255
+ 1125 07fc 0968     		ldr	r1, [r1]
+ 1126 07fe 1143     		orr	r1, r2
+ 1127 0800 7A1C     		add	r2, r7, #1
+ 1128 0802 FF32     		add	r2, r2, #255
+ 1129 0804 1160     		str	r1, [r2]
+ 1130 0806 E317     		asr	r3, r4, #31
+ 1131 0808 7A1D     		add	r2, r7, #5
+ 1132 080a FF32     		add	r2, r2, #255
+ 1133 080c 1360     		str	r3, [r2]
+ 1134 080e 7B1C     		add	r3, r7, #1
+ 1135 0810 FF33     		add	r3, r3, #255
+ 1136 0812 1B68     		ldr	r3, [r3]
+ 1137 0814 B022     		mov	r2, #176
+ 1138 0816 5200     		lsl	r2, r2, #1
+ 1139 0818 BA18     		add	r2, r7, r2
+ 1140 081a 1360     		str	r3, [r2]
+ 353:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 354:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Weighting factor for the normalized version */
+ 355:Source\FilteringFunctions/arm_lms_norm_q31.c ****     w = clip_q63_to_q31(((q63_t) errorXmu * oneByEnergy) >> (31 - postShift));
+ 1141              		.loc 1 355 0
+ 1142 081c B023     		mov	r3, #176
+ 1143 081e 5B00     		lsl	r3, r3, #1
+ 1144 0820 FB18     		add	r3, r7, r3
+ 1145 0822 1B68     		ldr	r3, [r3]
+ 1146 0824 8022     		mov	r2, #128
+ 1147 0826 BA18     		add	r2, r7, r2
+ 1148 0828 1360     		str	r3, [r2]
+ 1149 082a DB17     		asr	r3, r3, #31
+ 1150 082c 8422     		mov	r2, #132
+ 1151 082e BA18     		add	r2, r7, r2
+ 1152 0830 1360     		str	r3, [r2]
+ 1153 0832 8E23     		mov	r3, #142
+ 1154 0834 5B00     		lsl	r3, r3, #1
+ 1155 0836 FB18     		add	r3, r7, r3
+ 1156 0838 1B68     		ldr	r3, [r3]
+ 1157 083a BB67     		str	r3, [r7, #120]
+ 1158 083c DB17     		asr	r3, r3, #31
+ 1159 083e FB67     		str	r3, [r7, #124]
+ 1160 0840 8023     		mov	r3, #128
+ 1161 0842 FB18     		add	r3, r7, r3
+ 1162 0844 1868     		ldr	r0, [r3]
+ 1163 0846 5968     		ldr	r1, [r3, #4]
+ 1164 0848 BA6F     		ldr	r2, [r7, #120]
+ 1165 084a FB6F     		ldr	r3, [r7, #124]
+ 1166 084c FFF7FEFF 		bl	__aeabi_lmul
+ 1167 0850 031C     		mov	r3, r0
+ 1168 0852 0C1C     		mov	r4, r1
+ 1169 0854 181C     		mov	r0, r3
+ 1170 0856 211C     		mov	r1, r4
+ 1171 0858 B223     		mov	r3, #178
+ 1172 085a 5B00     		lsl	r3, r3, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 39
+
+
+ 1173 085c FB18     		add	r3, r7, r3
+ 1174 085e 1A68     		ldr	r2, [r3]
+ 1175 0860 1F23     		mov	r3, #31
+ 1176 0862 9A1A     		sub	r2, r3, r2
+ 1177 0864 131C     		mov	r3, r2
+ 1178 0866 203B     		sub	r3, r3, #32
+ 1179 0868 002B     		cmp	r3, #0
+ 1180 086a 03DB     		blt	.L13
+ 1181 086c 0C1C     		mov	r4, r1
+ 1182 086e 1C41     		asr	r4, r4, r3
+ 1183 0870 251C     		mov	r5, r4
+ 1184 0872 08E0     		b	.L14
+ 1185              	.L13:
+ 1186 0874 2023     		mov	r3, #32
+ 1187 0876 9B1A     		sub	r3, r3, r2
+ 1188 0878 0C1C     		mov	r4, r1
+ 1189 087a 9C40     		lsl	r4, r4, r3
+ 1190 087c 231C     		mov	r3, r4
+ 1191 087e 041C     		mov	r4, r0
+ 1192 0880 D440     		lsr	r4, r4, r2
+ 1193 0882 251C     		mov	r5, r4
+ 1194 0884 1D43     		orr	r5, r3
+ 1195              	.L14:
+ 1196 0886 0B1C     		mov	r3, r1
+ 1197 0888 1341     		asr	r3, r3, r2
+ 1198 088a 1E1C     		mov	r6, r3
+ 1199 088c 9423     		mov	r3, #148
+ 1200 088e 5B00     		lsl	r3, r3, #1
+ 1201 0890 FB18     		add	r3, r7, r3
+ 1202 0892 1D60     		str	r5, [r3]
+ 1203 0894 5E60     		str	r6, [r3, #4]
+ 1204              	.LBB16:
+ 1205              	.LBB17:
+ 513:.\Include/arm_math.h ****       ((0x7FFFFFFF ^ ((q31_t) (x >> 63)))) : (q31_t) x;
+ 1206              		.loc 2 513 0
+ 1207 0896 9623     		mov	r3, #150
+ 1208 0898 5B00     		lsl	r3, r3, #1
+ 1209 089a FB18     		add	r3, r7, r3
+ 1210 089c 1B68     		ldr	r3, [r3]
+ 1211 089e 1B00     		asr	r3, r3, #0
+ 1212 08a0 BB61     		str	r3, [r7, #24]
+ 1213 08a2 9623     		mov	r3, #150
+ 1214 08a4 5B00     		lsl	r3, r3, #1
+ 1215 08a6 FB18     		add	r3, r7, r3
+ 1216 08a8 1B68     		ldr	r3, [r3]
+ 1217 08aa DB17     		asr	r3, r3, #31
+ 1218 08ac FB61     		str	r3, [r7, #28]
+ 1219 08ae BA69     		ldr	r2, [r7, #24]
+ 1220 08b0 9423     		mov	r3, #148
+ 1221 08b2 5B00     		lsl	r3, r3, #1
+ 1222 08b4 FB18     		add	r3, r7, r3
+ 1223 08b6 1B68     		ldr	r3, [r3]
+ 1224 08b8 DB17     		asr	r3, r3, #31
+ 514:.\Include/arm_math.h ****   }
+ 1225              		.loc 2 514 0
+ 1226 08ba 9A42     		cmp	r2, r3
+ 1227 08bc 0FD0     		beq	.L15
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 40
+
+
+ 1228 08be 9623     		mov	r3, #150
+ 1229 08c0 5B00     		lsl	r3, r3, #1
+ 1230 08c2 FB18     		add	r3, r7, r3
+ 1231 08c4 1B68     		ldr	r3, [r3]
+ 1232 08c6 DB17     		asr	r3, r3, #31
+ 1233 08c8 3B61     		str	r3, [r7, #16]
+ 1234 08ca 9623     		mov	r3, #150
+ 1235 08cc 5B00     		lsl	r3, r3, #1
+ 1236 08ce FB18     		add	r3, r7, r3
+ 1237 08d0 1B68     		ldr	r3, [r3]
+ 1238 08d2 DB17     		asr	r3, r3, #31
+ 1239 08d4 7B61     		str	r3, [r7, #20]
+ 1240 08d6 3A69     		ldr	r2, [r7, #16]
+ 1241 08d8 514B     		ldr	r3, .L30
+ 1242 08da 5340     		eor	r3, r2
+ 1243 08dc 03E0     		b	.L17
+ 1244              	.L15:
+ 1245 08de 9423     		mov	r3, #148
+ 1246 08e0 5B00     		lsl	r3, r3, #1
+ 1247 08e2 FB18     		add	r3, r7, r3
+ 1248 08e4 1B68     		ldr	r3, [r3]
+ 1249              	.L17:
+ 1250              	.LBE17:
+ 1251              	.LBE16:
+ 1252              		.loc 1 355 0
+ 1253 08e6 BE22     		mov	r2, #190
+ 1254 08e8 5200     		lsl	r2, r2, #1
+ 1255 08ea BA18     		add	r2, r7, r2
+ 1256 08ec 1360     		str	r3, [r2]
+ 356:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 357:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Initialize pState pointer */
+ 358:Source\FilteringFunctions/arm_lms_norm_q31.c ****     px = pState;
+ 1257              		.loc 1 358 0
+ 1258 08ee B423     		mov	r3, #180
+ 1259 08f0 8422     		mov	r2, #132
+ 1260 08f2 5200     		lsl	r2, r2, #1
+ 1261 08f4 9446     		mov	ip, r2
+ 1262 08f6 BC44     		add	ip, ip, r7
+ 1263 08f8 6344     		add	r3, r3, ip
+ 1264 08fa 1B68     		ldr	r3, [r3]
+ 1265 08fc AC22     		mov	r2, #172
+ 1266 08fe 8421     		mov	r1, #132
+ 1267 0900 4900     		lsl	r1, r1, #1
+ 1268 0902 8C46     		mov	ip, r1
+ 1269 0904 BC44     		add	ip, ip, r7
+ 1270 0906 6244     		add	r2, r2, ip
+ 1271 0908 1360     		str	r3, [r2]
+ 359:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 360:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Initialize coeff pointer */
+ 361:Source\FilteringFunctions/arm_lms_norm_q31.c ****     pb = (pCoeffs);
+ 1272              		.loc 1 361 0
+ 1273 090a 8823     		mov	r3, #136
+ 1274 090c 8422     		mov	r2, #132
+ 1275 090e 5200     		lsl	r2, r2, #1
+ 1276 0910 9446     		mov	ip, r2
+ 1277 0912 BC44     		add	ip, ip, r7
+ 1278 0914 6344     		add	r3, r3, ip
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 41
+
+
+ 1279 0916 1B68     		ldr	r3, [r3]
+ 1280 0918 A822     		mov	r2, #168
+ 1281 091a 8421     		mov	r1, #132
+ 1282 091c 4900     		lsl	r1, r1, #1
+ 1283 091e 8C46     		mov	ip, r1
+ 1284 0920 BC44     		add	ip, ip, r7
+ 1285 0922 6244     		add	r2, r2, ip
+ 1286 0924 1360     		str	r3, [r2]
+ 362:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 363:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Loop over numTaps number of values */
+ 364:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt = numTaps;
+ 1287              		.loc 1 364 0
+ 1288 0926 8023     		mov	r3, #128
+ 1289 0928 8422     		mov	r2, #132
+ 1290 092a 5200     		lsl	r2, r2, #1
+ 1291 092c 9446     		mov	ip, r2
+ 1292 092e BC44     		add	ip, ip, r7
+ 1293 0930 6344     		add	r3, r3, ip
+ 1294 0932 1B68     		ldr	r3, [r3]
+ 1295 0934 A422     		mov	r2, #164
+ 1296 0936 8421     		mov	r1, #132
+ 1297 0938 4900     		lsl	r1, r1, #1
+ 1298 093a 8C46     		mov	ip, r1
+ 1299 093c BC44     		add	ip, ip, r7
+ 1300 093e 6244     		add	r2, r2, ip
+ 1301 0940 1360     		str	r3, [r2]
+ 365:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 366:Source\FilteringFunctions/arm_lms_norm_q31.c ****     while (tapCnt > 0u)
+ 1302              		.loc 1 366 0
+ 1303 0942 99E0     		b	.L18
+ 1304              	.L22:
+ 367:Source\FilteringFunctions/arm_lms_norm_q31.c ****     {
+ 368:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Perform the multiply-accumulate */
+ 369:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* coef is in 2.30 format */
+ 370:Source\FilteringFunctions/arm_lms_norm_q31.c ****       coef = (q31_t) (((q63_t) w * (*px++)) >> (32));
+ 1305              		.loc 1 370 0
+ 1306 0944 BE23     		mov	r3, #190
+ 1307 0946 5B00     		lsl	r3, r3, #1
+ 1308 0948 FB18     		add	r3, r7, r3
+ 1309 094a 1B68     		ldr	r3, [r3]
+ 1310 094c 3B67     		str	r3, [r7, #112]
+ 1311 094e DB17     		asr	r3, r3, #31
+ 1312 0950 7B67     		str	r3, [r7, #116]
+ 1313 0952 AC23     		mov	r3, #172
+ 1314 0954 8422     		mov	r2, #132
+ 1315 0956 5200     		lsl	r2, r2, #1
+ 1316 0958 9446     		mov	ip, r2
+ 1317 095a BC44     		add	ip, ip, r7
+ 1318 095c 6344     		add	r3, r3, ip
+ 1319 095e 1A68     		ldr	r2, [r3]
+ 1320 0960 131D     		add	r3, r2, #4
+ 1321 0962 AC21     		mov	r1, #172
+ 1322 0964 8420     		mov	r0, #132
+ 1323 0966 4000     		lsl	r0, r0, #1
+ 1324 0968 8446     		mov	ip, r0
+ 1325 096a BC44     		add	ip, ip, r7
+ 1326 096c 6144     		add	r1, r1, ip
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 42
+
+
+ 1327 096e 0B60     		str	r3, [r1]
+ 1328 0970 1368     		ldr	r3, [r2]
+ 1329 0972 BB66     		str	r3, [r7, #104]
+ 1330 0974 DB17     		asr	r3, r3, #31
+ 1331 0976 FB66     		str	r3, [r7, #108]
+ 1332 0978 386F     		ldr	r0, [r7, #112]
+ 1333 097a 796F     		ldr	r1, [r7, #116]
+ 1334 097c BA6E     		ldr	r2, [r7, #104]
+ 1335 097e FB6E     		ldr	r3, [r7, #108]
+ 1336 0980 FFF7FEFF 		bl	__aeabi_lmul
+ 1337 0984 031C     		mov	r3, r0
+ 1338 0986 0C1C     		mov	r4, r1
+ 1339 0988 2200     		asr	r2, r4, #0
+ 1340 098a 3A66     		str	r2, [r7, #96]
+ 1341 098c E317     		asr	r3, r4, #31
+ 1342 098e 7B66     		str	r3, [r7, #100]
+ 1343 0990 3B6E     		ldr	r3, [r7, #96]
+ 1344 0992 AE22     		mov	r2, #174
+ 1345 0994 5200     		lsl	r2, r2, #1
+ 1346 0996 BA18     		add	r2, r7, r2
+ 1347 0998 1360     		str	r3, [r2]
+ 371:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* get coef in 1.31 format by left shifting */
+ 372:Source\FilteringFunctions/arm_lms_norm_q31.c ****       *pb = clip_q63_to_q31((q63_t) * pb + (coef << 1u));
+ 1348              		.loc 1 372 0
+ 1349 099a A823     		mov	r3, #168
+ 1350 099c 8422     		mov	r2, #132
+ 1351 099e 5200     		lsl	r2, r2, #1
+ 1352 09a0 9446     		mov	ip, r2
+ 1353 09a2 BC44     		add	ip, ip, r7
+ 1354 09a4 6344     		add	r3, r3, ip
+ 1355 09a6 1B68     		ldr	r3, [r3]
+ 1356 09a8 1B68     		ldr	r3, [r3]
+ 1357 09aa BB65     		str	r3, [r7, #88]
+ 1358 09ac DB17     		asr	r3, r3, #31
+ 1359 09ae FB65     		str	r3, [r7, #92]
+ 1360 09b0 AE23     		mov	r3, #174
+ 1361 09b2 5B00     		lsl	r3, r3, #1
+ 1362 09b4 FB18     		add	r3, r7, r3
+ 1363 09b6 1B68     		ldr	r3, [r3]
+ 1364 09b8 5B00     		lsl	r3, r3, #1
+ 1365 09ba 3B65     		str	r3, [r7, #80]
+ 1366 09bc DB17     		asr	r3, r3, #31
+ 1367 09be 7B65     		str	r3, [r7, #84]
+ 1368 09c0 BB6D     		ldr	r3, [r7, #88]
+ 1369 09c2 FC6D     		ldr	r4, [r7, #92]
+ 1370 09c4 396D     		ldr	r1, [r7, #80]
+ 1371 09c6 7A6D     		ldr	r2, [r7, #84]
+ 1372 09c8 5B18     		add	r3, r3, r1
+ 1373 09ca 5441     		adc	r4, r4, r2
+ 1374 09cc 9022     		mov	r2, #144
+ 1375 09ce 5200     		lsl	r2, r2, #1
+ 1376 09d0 BA18     		add	r2, r7, r2
+ 1377 09d2 1360     		str	r3, [r2]
+ 1378 09d4 5460     		str	r4, [r2, #4]
+ 1379              	.LBB18:
+ 1380              	.LBB19:
+ 513:.\Include/arm_math.h ****       ((0x7FFFFFFF ^ ((q31_t) (x >> 63)))) : (q31_t) x;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 43
+
+
+ 1381              		.loc 2 513 0
+ 1382 09d6 9223     		mov	r3, #146
+ 1383 09d8 5B00     		lsl	r3, r3, #1
+ 1384 09da FB18     		add	r3, r7, r3
+ 1385 09dc 1B68     		ldr	r3, [r3]
+ 1386 09de 1B00     		asr	r3, r3, #0
+ 1387 09e0 BB60     		str	r3, [r7, #8]
+ 1388 09e2 9223     		mov	r3, #146
+ 1389 09e4 5B00     		lsl	r3, r3, #1
+ 1390 09e6 FB18     		add	r3, r7, r3
+ 1391 09e8 1B68     		ldr	r3, [r3]
+ 1392 09ea DB17     		asr	r3, r3, #31
+ 1393 09ec FB60     		str	r3, [r7, #12]
+ 1394 09ee BA68     		ldr	r2, [r7, #8]
+ 1395 09f0 9023     		mov	r3, #144
+ 1396 09f2 5B00     		lsl	r3, r3, #1
+ 1397 09f4 FB18     		add	r3, r7, r3
+ 1398 09f6 1B68     		ldr	r3, [r3]
+ 1399 09f8 DB17     		asr	r3, r3, #31
+ 514:.\Include/arm_math.h ****   }
+ 1400              		.loc 2 514 0
+ 1401 09fa 9A42     		cmp	r2, r3
+ 1402 09fc 12D0     		beq	.L19
+ 1403 09fe 9223     		mov	r3, #146
+ 1404 0a00 5B00     		lsl	r3, r3, #1
+ 1405 0a02 FB18     		add	r3, r7, r3
+ 1406 0a04 1B68     		ldr	r3, [r3]
+ 1407 0a06 DB17     		asr	r3, r3, #31
+ 1408 0a08 3B60     		str	r3, [r7]
+ 1409 0a0a 9223     		mov	r3, #146
+ 1410 0a0c 5B00     		lsl	r3, r3, #1
+ 1411 0a0e FB18     		add	r3, r7, r3
+ 1412 0a10 1B68     		ldr	r3, [r3]
+ 1413 0a12 DB17     		asr	r3, r3, #31
+ 1414 0a14 7B60     		str	r3, [r7, #4]
+ 1415 0a16 3A68     		ldr	r2, [r7]
+ 1416 0a18 014B     		ldr	r3, .L30
+ 1417 0a1a 5A40     		eor	r2, r3
+ 1418 0a1c 06E0     		b	.L27
+ 1419              	.L31:
+ 1420 0a1e C046     		.align	2
+ 1421              	.L30:
+ 1422 0a20 FFFFFF7F 		.word	2147483647
+ 1423              	.L19:
+ 1424 0a24 9023     		mov	r3, #144
+ 1425 0a26 5B00     		lsl	r3, r3, #1
+ 1426 0a28 FB18     		add	r3, r7, r3
+ 1427 0a2a 1A68     		ldr	r2, [r3]
+ 1428              	.L27:
+ 1429              	.LBE19:
+ 1430              	.LBE18:
+ 1431              		.loc 1 372 0
+ 1432 0a2c A823     		mov	r3, #168
+ 1433 0a2e 8421     		mov	r1, #132
+ 1434 0a30 4900     		lsl	r1, r1, #1
+ 1435 0a32 8C46     		mov	ip, r1
+ 1436 0a34 BC44     		add	ip, ip, r7
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 44
+
+
+ 1437 0a36 6344     		add	r3, r3, ip
+ 1438 0a38 1B68     		ldr	r3, [r3]
+ 1439 0a3a 1A60     		str	r2, [r3]
+ 373:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* update coefficient buffer to next coefficient */
+ 374:Source\FilteringFunctions/arm_lms_norm_q31.c ****       pb++;
+ 1440              		.loc 1 374 0
+ 1441 0a3c A823     		mov	r3, #168
+ 1442 0a3e 8422     		mov	r2, #132
+ 1443 0a40 5200     		lsl	r2, r2, #1
+ 1444 0a42 9446     		mov	ip, r2
+ 1445 0a44 BC44     		add	ip, ip, r7
+ 1446 0a46 6344     		add	r3, r3, ip
+ 1447 0a48 1B68     		ldr	r3, [r3]
+ 1448 0a4a 0433     		add	r3, r3, #4
+ 1449 0a4c A822     		mov	r2, #168
+ 1450 0a4e 8421     		mov	r1, #132
+ 1451 0a50 4900     		lsl	r1, r1, #1
+ 1452 0a52 8C46     		mov	ip, r1
+ 1453 0a54 BC44     		add	ip, ip, r7
+ 1454 0a56 6244     		add	r2, r2, ip
+ 1455 0a58 1360     		str	r3, [r2]
+ 375:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 376:Source\FilteringFunctions/arm_lms_norm_q31.c ****       /* Decrement the loop counter */
+ 377:Source\FilteringFunctions/arm_lms_norm_q31.c ****       tapCnt--;
+ 1456              		.loc 1 377 0
+ 1457 0a5a A423     		mov	r3, #164
+ 1458 0a5c 8422     		mov	r2, #132
+ 1459 0a5e 5200     		lsl	r2, r2, #1
+ 1460 0a60 9446     		mov	ip, r2
+ 1461 0a62 BC44     		add	ip, ip, r7
+ 1462 0a64 6344     		add	r3, r3, ip
+ 1463 0a66 1B68     		ldr	r3, [r3]
+ 1464 0a68 013B     		sub	r3, r3, #1
+ 1465 0a6a A422     		mov	r2, #164
+ 1466 0a6c 8421     		mov	r1, #132
+ 1467 0a6e 4900     		lsl	r1, r1, #1
+ 1468 0a70 8C46     		mov	ip, r1
+ 1469 0a72 BC44     		add	ip, ip, r7
+ 1470 0a74 6244     		add	r2, r2, ip
+ 1471 0a76 1360     		str	r3, [r2]
+ 1472              	.L18:
+ 366:Source\FilteringFunctions/arm_lms_norm_q31.c ****     {
+ 1473              		.loc 1 366 0
+ 1474 0a78 A423     		mov	r3, #164
+ 1475 0a7a 8422     		mov	r2, #132
+ 1476 0a7c 5200     		lsl	r2, r2, #1
+ 1477 0a7e 9446     		mov	ip, r2
+ 1478 0a80 BC44     		add	ip, ip, r7
+ 1479 0a82 6344     		add	r3, r3, ip
+ 1480 0a84 1B68     		ldr	r3, [r3]
+ 1481 0a86 002B     		cmp	r3, #0
+ 1482 0a88 00D0     		beq	.LCB1380
+ 1483 0a8a 5BE7     		b	.L22	@long jump
+ 1484              	.LCB1380:
+ 378:Source\FilteringFunctions/arm_lms_norm_q31.c ****     }
+ 379:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 380:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Read the sample from state buffer */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 45
+
+
+ 381:Source\FilteringFunctions/arm_lms_norm_q31.c ****     x0 = *pState;
+ 1485              		.loc 1 381 0
+ 1486 0a8c B423     		mov	r3, #180
+ 1487 0a8e 8422     		mov	r2, #132
+ 1488 0a90 5200     		lsl	r2, r2, #1
+ 1489 0a92 9446     		mov	ip, r2
+ 1490 0a94 BC44     		add	ip, ip, r7
+ 1491 0a96 6344     		add	r3, r3, ip
+ 1492 0a98 1B68     		ldr	r3, [r3]
+ 1493 0a9a 1B68     		ldr	r3, [r3]
+ 1494 0a9c 8C22     		mov	r2, #140
+ 1495 0a9e 8421     		mov	r1, #132
+ 1496 0aa0 4900     		lsl	r1, r1, #1
+ 1497 0aa2 8C46     		mov	ip, r1
+ 1498 0aa4 BC44     		add	ip, ip, r7
+ 1499 0aa6 6244     		add	r2, r2, ip
+ 1500 0aa8 1360     		str	r3, [r2]
+ 382:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 383:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Advance state pointer by 1 for the next sample */
+ 384:Source\FilteringFunctions/arm_lms_norm_q31.c ****     pState = pState + 1;
+ 1501              		.loc 1 384 0
+ 1502 0aaa B423     		mov	r3, #180
+ 1503 0aac 8422     		mov	r2, #132
+ 1504 0aae 5200     		lsl	r2, r2, #1
+ 1505 0ab0 9446     		mov	ip, r2
+ 1506 0ab2 BC44     		add	ip, ip, r7
+ 1507 0ab4 6344     		add	r3, r3, ip
+ 1508 0ab6 1B68     		ldr	r3, [r3]
+ 1509 0ab8 0433     		add	r3, r3, #4
+ 1510 0aba B422     		mov	r2, #180
+ 1511 0abc 8421     		mov	r1, #132
+ 1512 0abe 4900     		lsl	r1, r1, #1
+ 1513 0ac0 8C46     		mov	ip, r1
+ 1514 0ac2 BC44     		add	ip, ip, r7
+ 1515 0ac4 6244     		add	r2, r2, ip
+ 1516 0ac6 1360     		str	r3, [r2]
+ 385:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 386:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Decrement the loop counter */
+ 387:Source\FilteringFunctions/arm_lms_norm_q31.c ****     blkCnt--;
+ 1517              		.loc 1 387 0
+ 1518 0ac8 A023     		mov	r3, #160
+ 1519 0aca 8422     		mov	r2, #132
+ 1520 0acc 5200     		lsl	r2, r2, #1
+ 1521 0ace 9446     		mov	ip, r2
+ 1522 0ad0 BC44     		add	ip, ip, r7
+ 1523 0ad2 6344     		add	r3, r3, ip
+ 1524 0ad4 1B68     		ldr	r3, [r3]
+ 1525 0ad6 013B     		sub	r3, r3, #1
+ 1526 0ad8 A022     		mov	r2, #160
+ 1527 0ada 8421     		mov	r1, #132
+ 1528 0adc 4900     		lsl	r1, r1, #1
+ 1529 0ade 8C46     		mov	ip, r1
+ 1530 0ae0 BC44     		add	ip, ip, r7
+ 1531 0ae2 6244     		add	r2, r2, ip
+ 1532 0ae4 1360     		str	r3, [r2]
+ 1533              	.L2:
+ 291:Source\FilteringFunctions/arm_lms_norm_q31.c ****   {
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 46
+
+
+ 1534              		.loc 1 291 0
+ 1535 0ae6 A023     		mov	r3, #160
+ 1536 0ae8 8422     		mov	r2, #132
+ 1537 0aea 5200     		lsl	r2, r2, #1
+ 1538 0aec 9446     		mov	ip, r2
+ 1539 0aee BC44     		add	ip, ip, r7
+ 1540 0af0 6344     		add	r3, r3, ip
+ 1541 0af2 1B68     		ldr	r3, [r3]
+ 1542 0af4 002B     		cmp	r3, #0
+ 1543 0af6 01D0     		beq	.LCB1436
+ 1544 0af8 FFF730FB 		bl	.L23	@far jump
+ 1545              	.LCB1436:
+ 388:Source\FilteringFunctions/arm_lms_norm_q31.c ****   }
+ 389:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 390:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Save energy and x0 values for the next frame */
+ 391:Source\FilteringFunctions/arm_lms_norm_q31.c ****   S->energy = (q31_t) energy;
+ 1546              		.loc 1 391 0
+ 1547 0afc 9823     		mov	r3, #152
+ 1548 0afe 8422     		mov	r2, #132
+ 1549 0b00 5200     		lsl	r2, r2, #1
+ 1550 0b02 9446     		mov	ip, r2
+ 1551 0b04 BC44     		add	ip, ip, r7
+ 1552 0b06 6344     		add	r3, r3, ip
+ 1553 0b08 1A68     		ldr	r2, [r3]
+ 1554 0b0a 8A23     		mov	r3, #138
+ 1555 0b0c 5B00     		lsl	r3, r3, #1
+ 1556 0b0e FB18     		add	r3, r7, r3
+ 1557 0b10 1B68     		ldr	r3, [r3]
+ 1558 0b12 9A61     		str	r2, [r3, #24]
+ 392:Source\FilteringFunctions/arm_lms_norm_q31.c ****   S->x0 = x0;
+ 1559              		.loc 1 392 0
+ 1560 0b14 8A23     		mov	r3, #138
+ 1561 0b16 5B00     		lsl	r3, r3, #1
+ 1562 0b18 FB18     		add	r3, r7, r3
+ 1563 0b1a 1B68     		ldr	r3, [r3]
+ 1564 0b1c 8C22     		mov	r2, #140
+ 1565 0b1e 8421     		mov	r1, #132
+ 1566 0b20 4900     		lsl	r1, r1, #1
+ 1567 0b22 8C46     		mov	ip, r1
+ 1568 0b24 BC44     		add	ip, ip, r7
+ 1569 0b26 6244     		add	r2, r2, ip
+ 1570 0b28 1268     		ldr	r2, [r2]
+ 1571 0b2a DA61     		str	r2, [r3, #28]
+ 393:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 394:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Processing is complete. Now copy the last numTaps - 1 samples to the
+ 395:Source\FilteringFunctions/arm_lms_norm_q31.c ****      start of the state buffer. This prepares the state buffer for the
+ 396:Source\FilteringFunctions/arm_lms_norm_q31.c ****      next function call. */
+ 397:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 398:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Points to the start of the pState buffer */
+ 399:Source\FilteringFunctions/arm_lms_norm_q31.c ****   pStateCurnt = S->pState;
+ 1572              		.loc 1 399 0
+ 1573 0b2c 8A23     		mov	r3, #138
+ 1574 0b2e 5B00     		lsl	r3, r3, #1
+ 1575 0b30 FB18     		add	r3, r7, r3
+ 1576 0b32 1B68     		ldr	r3, [r3]
+ 1577 0b34 5B68     		ldr	r3, [r3, #4]
+ 1578 0b36 B022     		mov	r2, #176
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 47
+
+
+ 1579 0b38 8421     		mov	r1, #132
+ 1580 0b3a 4900     		lsl	r1, r1, #1
+ 1581 0b3c 8C46     		mov	ip, r1
+ 1582 0b3e BC44     		add	ip, ip, r7
+ 1583 0b40 6244     		add	r2, r2, ip
+ 1584 0b42 1360     		str	r3, [r2]
+ 400:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 401:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Loop for (numTaps - 1u) samples copy */
+ 402:Source\FilteringFunctions/arm_lms_norm_q31.c ****   tapCnt = (numTaps - 1u);
+ 1585              		.loc 1 402 0
+ 1586 0b44 8023     		mov	r3, #128
+ 1587 0b46 8422     		mov	r2, #132
+ 1588 0b48 5200     		lsl	r2, r2, #1
+ 1589 0b4a 9446     		mov	ip, r2
+ 1590 0b4c BC44     		add	ip, ip, r7
+ 1591 0b4e 6344     		add	r3, r3, ip
+ 1592 0b50 1B68     		ldr	r3, [r3]
+ 1593 0b52 013B     		sub	r3, r3, #1
+ 1594 0b54 A422     		mov	r2, #164
+ 1595 0b56 8421     		mov	r1, #132
+ 1596 0b58 4900     		lsl	r1, r1, #1
+ 1597 0b5a 8C46     		mov	ip, r1
+ 1598 0b5c BC44     		add	ip, ip, r7
+ 1599 0b5e 6244     		add	r2, r2, ip
+ 1600 0b60 1360     		str	r3, [r2]
+ 403:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 404:Source\FilteringFunctions/arm_lms_norm_q31.c ****   /* Copy the remaining q31_t data */
+ 405:Source\FilteringFunctions/arm_lms_norm_q31.c ****   while (tapCnt > 0u)
+ 1601              		.loc 1 405 0
+ 1602 0b62 2EE0     		b	.L24
+ 1603              	.L25:
+ 406:Source\FilteringFunctions/arm_lms_norm_q31.c ****   {
+ 407:Source\FilteringFunctions/arm_lms_norm_q31.c ****     *pStateCurnt++ = *pState++;
+ 1604              		.loc 1 407 0
+ 1605 0b64 B023     		mov	r3, #176
+ 1606 0b66 8422     		mov	r2, #132
+ 1607 0b68 5200     		lsl	r2, r2, #1
+ 1608 0b6a 9446     		mov	ip, r2
+ 1609 0b6c BC44     		add	ip, ip, r7
+ 1610 0b6e 6344     		add	r3, r3, ip
+ 1611 0b70 1B68     		ldr	r3, [r3]
+ 1612 0b72 1A1D     		add	r2, r3, #4
+ 1613 0b74 B021     		mov	r1, #176
+ 1614 0b76 8420     		mov	r0, #132
+ 1615 0b78 4000     		lsl	r0, r0, #1
+ 1616 0b7a 8446     		mov	ip, r0
+ 1617 0b7c BC44     		add	ip, ip, r7
+ 1618 0b7e 6144     		add	r1, r1, ip
+ 1619 0b80 0A60     		str	r2, [r1]
+ 1620 0b82 B422     		mov	r2, #180
+ 1621 0b84 8421     		mov	r1, #132
+ 1622 0b86 4900     		lsl	r1, r1, #1
+ 1623 0b88 8C46     		mov	ip, r1
+ 1624 0b8a BC44     		add	ip, ip, r7
+ 1625 0b8c 6244     		add	r2, r2, ip
+ 1626 0b8e 1268     		ldr	r2, [r2]
+ 1627 0b90 111D     		add	r1, r2, #4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 48
+
+
+ 1628 0b92 B420     		mov	r0, #180
+ 1629 0b94 8424     		mov	r4, #132
+ 1630 0b96 6400     		lsl	r4, r4, #1
+ 1631 0b98 A446     		mov	ip, r4
+ 1632 0b9a BC44     		add	ip, ip, r7
+ 1633 0b9c 6044     		add	r0, r0, ip
+ 1634 0b9e 0160     		str	r1, [r0]
+ 1635 0ba0 1268     		ldr	r2, [r2]
+ 1636 0ba2 1A60     		str	r2, [r3]
+ 408:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 409:Source\FilteringFunctions/arm_lms_norm_q31.c ****     /* Decrement the loop counter */
+ 410:Source\FilteringFunctions/arm_lms_norm_q31.c ****     tapCnt--;
+ 1637              		.loc 1 410 0
+ 1638 0ba4 A423     		mov	r3, #164
+ 1639 0ba6 8422     		mov	r2, #132
+ 1640 0ba8 5200     		lsl	r2, r2, #1
+ 1641 0baa 9446     		mov	ip, r2
+ 1642 0bac BC44     		add	ip, ip, r7
+ 1643 0bae 6344     		add	r3, r3, ip
+ 1644 0bb0 1B68     		ldr	r3, [r3]
+ 1645 0bb2 013B     		sub	r3, r3, #1
+ 1646 0bb4 A422     		mov	r2, #164
+ 1647 0bb6 8421     		mov	r1, #132
+ 1648 0bb8 4900     		lsl	r1, r1, #1
+ 1649 0bba 8C46     		mov	ip, r1
+ 1650 0bbc BC44     		add	ip, ip, r7
+ 1651 0bbe 6244     		add	r2, r2, ip
+ 1652 0bc0 1360     		str	r3, [r2]
+ 1653              	.L24:
+ 405:Source\FilteringFunctions/arm_lms_norm_q31.c ****   {
+ 1654              		.loc 1 405 0
+ 1655 0bc2 A423     		mov	r3, #164
+ 1656 0bc4 8422     		mov	r2, #132
+ 1657 0bc6 5200     		lsl	r2, r2, #1
+ 1658 0bc8 9446     		mov	ip, r2
+ 1659 0bca BC44     		add	ip, ip, r7
+ 1660 0bcc 6344     		add	r3, r3, ip
+ 1661 0bce 1B68     		ldr	r3, [r3]
+ 1662 0bd0 002B     		cmp	r3, #0
+ 1663 0bd2 C7D1     		bne	.L25
+ 411:Source\FilteringFunctions/arm_lms_norm_q31.c ****   }
+ 412:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 413:Source\FilteringFunctions/arm_lms_norm_q31.c **** #endif /*   #if defined (ARM_MATH_DSP) */
+ 414:Source\FilteringFunctions/arm_lms_norm_q31.c **** 
+ 415:Source\FilteringFunctions/arm_lms_norm_q31.c **** }
+ 1664              		.loc 1 415 0
+ 1665 0bd4 BD46     		mov	sp, r7
+ 1666 0bd6 71B0     		add	sp, sp, #452
+ 1667              		@ sp needed
+ 1668 0bd8 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1669              		.cfi_endproc
+ 1670              	.LFE82:
+ 1671              		.size	arm_lms_norm_q31, .-arm_lms_norm_q31
+ 1672 0bda C046     		.text
+ 1673              	.Letext0:
+ 1674              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 1675              		.file 4 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 49
+
+
+ 1676              		.section	.debug_info,"",%progbits
+ 1677              	.Ldebug_info0:
+ 1678 0000 9E040000 		.4byte	0x49e
+ 1679 0004 0400     		.2byte	0x4
+ 1680 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 1681 000a 04       		.byte	0x4
+ 1682 000b 01       		.uleb128 0x1
+ 1683 000c 11010000 		.4byte	.LASF54
+ 1684 0010 01       		.byte	0x1
+ 1685 0011 92000000 		.4byte	.LASF55
+ 1686 0015 32020000 		.4byte	.LASF56
+ 1687 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 1688 001d 00000000 		.4byte	0
+ 1689 0021 00000000 		.4byte	.Ldebug_line0
+ 1690 0025 02       		.uleb128 0x2
+ 1691 0026 01       		.byte	0x1
+ 1692 0027 06       		.byte	0x6
+ 1693 0028 68000000 		.4byte	.LASF0
+ 1694 002c 03       		.uleb128 0x3
+ 1695 002d 06000000 		.4byte	.LASF3
+ 1696 0031 03       		.byte	0x3
+ 1697 0032 1D       		.byte	0x1d
+ 1698 0033 37000000 		.4byte	0x37
+ 1699 0037 02       		.uleb128 0x2
+ 1700 0038 01       		.byte	0x1
+ 1701 0039 08       		.byte	0x8
+ 1702 003a 13020000 		.4byte	.LASF1
+ 1703 003e 02       		.uleb128 0x2
+ 1704 003f 02       		.byte	0x2
+ 1705 0040 05       		.byte	0x5
+ 1706 0041 28020000 		.4byte	.LASF2
+ 1707 0045 03       		.uleb128 0x3
+ 1708 0046 9E020000 		.4byte	.LASF4
+ 1709 004a 03       		.byte	0x3
+ 1710 004b 2B       		.byte	0x2b
+ 1711 004c 50000000 		.4byte	0x50
+ 1712 0050 02       		.uleb128 0x2
+ 1713 0051 02       		.byte	0x2
+ 1714 0052 07       		.byte	0x7
+ 1715 0053 AF010000 		.4byte	.LASF5
+ 1716 0057 03       		.uleb128 0x3
+ 1717 0058 AF020000 		.4byte	.LASF6
+ 1718 005c 03       		.byte	0x3
+ 1719 005d 3F       		.byte	0x3f
+ 1720 005e 62000000 		.4byte	0x62
+ 1721 0062 02       		.uleb128 0x2
+ 1722 0063 04       		.byte	0x4
+ 1723 0064 05       		.byte	0x5
+ 1724 0065 80000000 		.4byte	.LASF7
+ 1725 0069 03       		.uleb128 0x3
+ 1726 006a BF000000 		.4byte	.LASF8
+ 1727 006e 03       		.byte	0x3
+ 1728 006f 41       		.byte	0x41
+ 1729 0070 74000000 		.4byte	0x74
+ 1730 0074 02       		.uleb128 0x2
+ 1731 0075 04       		.byte	0x4
+ 1732 0076 07       		.byte	0x7
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 50
+
+
+ 1733 0077 FF000000 		.4byte	.LASF9
+ 1734 007b 03       		.uleb128 0x3
+ 1735 007c 2E000000 		.4byte	.LASF10
+ 1736 0080 03       		.byte	0x3
+ 1737 0081 59       		.byte	0x59
+ 1738 0082 86000000 		.4byte	0x86
+ 1739 0086 02       		.uleb128 0x2
+ 1740 0087 08       		.byte	0x8
+ 1741 0088 05       		.byte	0x5
+ 1742 0089 5A000000 		.4byte	.LASF11
+ 1743 008d 02       		.uleb128 0x2
+ 1744 008e 08       		.byte	0x8
+ 1745 008f 07       		.byte	0x7
+ 1746 0090 10000000 		.4byte	.LASF12
+ 1747 0094 04       		.uleb128 0x4
+ 1748 0095 04       		.byte	0x4
+ 1749 0096 05       		.byte	0x5
+ 1750 0097 696E7400 		.ascii	"int\000"
+ 1751 009b 02       		.uleb128 0x2
+ 1752 009c 04       		.byte	0x4
+ 1753 009d 07       		.byte	0x7
+ 1754 009e E0000000 		.4byte	.LASF13
+ 1755 00a2 03       		.uleb128 0x3
+ 1756 00a3 E8020000 		.4byte	.LASF14
+ 1757 00a7 04       		.byte	0x4
+ 1758 00a8 15       		.byte	0x15
+ 1759 00a9 2C000000 		.4byte	0x2c
+ 1760 00ad 03       		.uleb128 0x3
+ 1761 00ae 89000000 		.4byte	.LASF15
+ 1762 00b2 04       		.byte	0x4
+ 1763 00b3 21       		.byte	0x21
+ 1764 00b4 45000000 		.4byte	0x45
+ 1765 00b8 03       		.uleb128 0x3
+ 1766 00b9 0B020000 		.4byte	.LASF16
+ 1767 00bd 04       		.byte	0x4
+ 1768 00be 2C       		.byte	0x2c
+ 1769 00bf 57000000 		.4byte	0x57
+ 1770 00c3 03       		.uleb128 0x3
+ 1771 00c4 90020000 		.4byte	.LASF17
+ 1772 00c8 04       		.byte	0x4
+ 1773 00c9 2D       		.byte	0x2d
+ 1774 00ca 69000000 		.4byte	0x69
+ 1775 00ce 03       		.uleb128 0x3
+ 1776 00cf FE020000 		.4byte	.LASF18
+ 1777 00d3 04       		.byte	0x4
+ 1778 00d4 38       		.byte	0x38
+ 1779 00d5 7B000000 		.4byte	0x7b
+ 1780 00d9 02       		.uleb128 0x2
+ 1781 00da 04       		.byte	0x4
+ 1782 00db 07       		.byte	0x7
+ 1783 00dc C7010000 		.4byte	.LASF19
+ 1784 00e0 02       		.uleb128 0x2
+ 1785 00e1 01       		.byte	0x1
+ 1786 00e2 08       		.byte	0x8
+ 1787 00e3 99020000 		.4byte	.LASF20
+ 1788 00e7 02       		.uleb128 0x2
+ 1789 00e8 08       		.byte	0x8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 51
+
+
+ 1790 00e9 04       		.byte	0x4
+ 1791 00ea 0F030000 		.4byte	.LASF21
+ 1792 00ee 02       		.uleb128 0x2
+ 1793 00ef 04       		.byte	0x4
+ 1794 00f0 04       		.byte	0x4
+ 1795 00f1 05020000 		.4byte	.LASF22
+ 1796 00f5 02       		.uleb128 0x2
+ 1797 00f6 08       		.byte	0x8
+ 1798 00f7 04       		.byte	0x4
+ 1799 00f8 D0010000 		.4byte	.LASF23
+ 1800 00fc 05       		.uleb128 0x5
+ 1801 00fd 80020000 		.4byte	.LASF24
+ 1802 0101 02       		.byte	0x2
+ 1803 0102 9B01     		.2byte	0x19b
+ 1804 0104 B8000000 		.4byte	0xb8
+ 1805 0108 05       		.uleb128 0x5
+ 1806 0109 00000000 		.4byte	.LASF25
+ 1807 010d 02       		.byte	0x2
+ 1808 010e A001     		.2byte	0x1a0
+ 1809 0110 CE000000 		.4byte	0xce
+ 1810 0114 06       		.uleb128 0x6
+ 1811 0115 04       		.byte	0x4
+ 1812 0116 FC000000 		.4byte	0xfc
+ 1813 011a 07       		.uleb128 0x7
+ 1814 011b 20       		.byte	0x20
+ 1815 011c 02       		.byte	0x2
+ 1816 011d 8910     		.2byte	0x1089
+ 1817 011f 8A010000 		.4byte	0x18a
+ 1818 0123 08       		.uleb128 0x8
+ 1819 0124 78020000 		.4byte	.LASF26
+ 1820 0128 02       		.byte	0x2
+ 1821 0129 8B10     		.2byte	0x108b
+ 1822 012b AD000000 		.4byte	0xad
+ 1823 012f 00       		.byte	0
+ 1824 0130 08       		.uleb128 0x8
+ 1825 0131 21020000 		.4byte	.LASF27
+ 1826 0135 02       		.byte	0x2
+ 1827 0136 8C10     		.2byte	0x108c
+ 1828 0138 14010000 		.4byte	0x114
+ 1829 013c 04       		.byte	0x4
+ 1830 013d 08       		.uleb128 0x8
+ 1831 013e 38000000 		.4byte	.LASF28
+ 1832 0142 02       		.byte	0x2
+ 1833 0143 8D10     		.2byte	0x108d
+ 1834 0145 14010000 		.4byte	0x114
+ 1835 0149 08       		.byte	0x8
+ 1836 014a 09       		.uleb128 0x9
+ 1837 014b 6D7500   		.ascii	"mu\000"
+ 1838 014e 02       		.byte	0x2
+ 1839 014f 8E10     		.2byte	0x108e
+ 1840 0151 FC000000 		.4byte	0xfc
+ 1841 0155 0C       		.byte	0xc
+ 1842 0156 08       		.uleb128 0x8
+ 1843 0157 16030000 		.4byte	.LASF29
+ 1844 015b 02       		.byte	0x2
+ 1845 015c 8F10     		.2byte	0x108f
+ 1846 015e A2000000 		.4byte	0xa2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 52
+
+
+ 1847 0162 10       		.byte	0x10
+ 1848 0163 08       		.uleb128 0x8
+ 1849 0164 BE020000 		.4byte	.LASF30
+ 1850 0168 02       		.byte	0x2
+ 1851 0169 9010     		.2byte	0x1090
+ 1852 016b 14010000 		.4byte	0x114
+ 1853 016f 14       		.byte	0x14
+ 1854 0170 08       		.uleb128 0x8
+ 1855 0171 CA000000 		.4byte	.LASF31
+ 1856 0175 02       		.byte	0x2
+ 1857 0176 9110     		.2byte	0x1091
+ 1858 0178 FC000000 		.4byte	0xfc
+ 1859 017c 18       		.byte	0x18
+ 1860 017d 09       		.uleb128 0x9
+ 1861 017e 783000   		.ascii	"x0\000"
+ 1862 0181 02       		.byte	0x2
+ 1863 0182 9210     		.2byte	0x1092
+ 1864 0184 FC000000 		.4byte	0xfc
+ 1865 0188 1C       		.byte	0x1c
+ 1866 0189 00       		.byte	0
+ 1867 018a 05       		.uleb128 0x5
+ 1868 018b 40000000 		.4byte	.LASF32
+ 1869 018f 02       		.byte	0x2
+ 1870 0190 9310     		.2byte	0x1093
+ 1871 0192 1A010000 		.4byte	0x11a
+ 1872 0196 0A       		.uleb128 0xa
+ 1873 0197 DC010000 		.4byte	.LASF33
+ 1874 019b 02       		.byte	0x2
+ 1875 019c FE01     		.2byte	0x1fe
+ 1876 019e FC000000 		.4byte	0xfc
+ 1877 01a2 03       		.byte	0x3
+ 1878 01a3 B2010000 		.4byte	0x1b2
+ 1879 01a7 0B       		.uleb128 0xb
+ 1880 01a8 7800     		.ascii	"x\000"
+ 1881 01aa 02       		.byte	0x2
+ 1882 01ab FF01     		.2byte	0x1ff
+ 1883 01ad 08010000 		.4byte	0x108
+ 1884 01b1 00       		.byte	0
+ 1885 01b2 0A       		.uleb128 0xa
+ 1886 01b3 C9020000 		.4byte	.LASF34
+ 1887 01b7 02       		.byte	0x2
+ 1888 01b8 4D02     		.2byte	0x24d
+ 1889 01ba C3000000 		.4byte	0xc3
+ 1890 01be 03       		.byte	0x3
+ 1891 01bf 21020000 		.4byte	0x221
+ 1892 01c3 0B       		.uleb128 0xb
+ 1893 01c4 696E00   		.ascii	"in\000"
+ 1894 01c7 02       		.byte	0x2
+ 1895 01c8 4E02     		.2byte	0x24e
+ 1896 01ca FC000000 		.4byte	0xfc
+ 1897 01ce 0B       		.uleb128 0xb
+ 1898 01cf 64737400 		.ascii	"dst\000"
+ 1899 01d3 02       		.byte	0x2
+ 1900 01d4 4F02     		.2byte	0x24f
+ 1901 01d6 14010000 		.4byte	0x114
+ 1902 01da 0C       		.uleb128 0xc
+ 1903 01db D7020000 		.4byte	.LASF35
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 53
+
+
+ 1904 01df 02       		.byte	0x2
+ 1905 01e0 5002     		.2byte	0x250
+ 1906 01e2 14010000 		.4byte	0x114
+ 1907 01e6 0D       		.uleb128 0xd
+ 1908 01e7 6F757400 		.ascii	"out\000"
+ 1909 01eb 02       		.byte	0x2
+ 1910 01ec 5202     		.2byte	0x252
+ 1911 01ee FC000000 		.4byte	0xfc
+ 1912 01f2 0E       		.uleb128 0xe
+ 1913 01f3 EC010000 		.4byte	.LASF36
+ 1914 01f7 02       		.byte	0x2
+ 1915 01f8 5302     		.2byte	0x253
+ 1916 01fa C3000000 		.4byte	0xc3
+ 1917 01fe 0E       		.uleb128 0xe
+ 1918 01ff A9020000 		.4byte	.LASF37
+ 1919 0203 02       		.byte	0x2
+ 1920 0204 5402     		.2byte	0x254
+ 1921 0206 C3000000 		.4byte	0xc3
+ 1922 020a 0D       		.uleb128 0xd
+ 1923 020b 6900     		.ascii	"i\000"
+ 1924 020d 02       		.byte	0x2
+ 1925 020e 5402     		.2byte	0x254
+ 1926 0210 C3000000 		.4byte	0xc3
+ 1927 0214 0E       		.uleb128 0xe
+ 1928 0215 06030000 		.4byte	.LASF38
+ 1929 0219 02       		.byte	0x2
+ 1930 021a 5502     		.2byte	0x255
+ 1931 021c C3000000 		.4byte	0xc3
+ 1932 0220 00       		.byte	0
+ 1933 0221 0F       		.uleb128 0xf
+ 1934 0222 F4010000 		.4byte	.LASF57
+ 1935 0226 01       		.byte	0x1
+ 1936 0227 44       		.byte	0x44
+ 1937 0228 00000000 		.4byte	.LFB82
+ 1938 022c DA0B0000 		.4byte	.LFE82-.LFB82
+ 1939 0230 01       		.uleb128 0x1
+ 1940 0231 9C       		.byte	0x9c
+ 1941 0232 9B040000 		.4byte	0x49b
+ 1942 0236 10       		.uleb128 0x10
+ 1943 0237 5300     		.ascii	"S\000"
+ 1944 0239 01       		.byte	0x1
+ 1945 023a 45       		.byte	0x45
+ 1946 023b 9B040000 		.4byte	0x49b
+ 1947 023f 03       		.uleb128 0x3
+ 1948 0240 91       		.byte	0x91
+ 1949 0241 BC7E     		.sleb128 -196
+ 1950 0243 11       		.uleb128 0x11
+ 1951 0244 F3000000 		.4byte	.LASF39
+ 1952 0248 01       		.byte	0x1
+ 1953 0249 46       		.byte	0x46
+ 1954 024a 14010000 		.4byte	0x114
+ 1955 024e 03       		.uleb128 0x3
+ 1956 024f 91       		.byte	0x91
+ 1957 0250 B87E     		.sleb128 -200
+ 1958 0252 11       		.uleb128 0x11
+ 1959 0253 B9020000 		.4byte	.LASF40
+ 1960 0257 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 54
+
+
+ 1961 0258 47       		.byte	0x47
+ 1962 0259 14010000 		.4byte	0x114
+ 1963 025d 03       		.uleb128 0x3
+ 1964 025e 91       		.byte	0x91
+ 1965 025f B47E     		.sleb128 -204
+ 1966 0261 11       		.uleb128 0x11
+ 1967 0262 C2010000 		.4byte	.LASF41
+ 1968 0266 01       		.byte	0x1
+ 1969 0267 48       		.byte	0x48
+ 1970 0268 14010000 		.4byte	0x114
+ 1971 026c 03       		.uleb128 0x3
+ 1972 026d 91       		.byte	0x91
+ 1973 026e B07E     		.sleb128 -208
+ 1974 0270 11       		.uleb128 0x11
+ 1975 0271 E3020000 		.4byte	.LASF42
+ 1976 0275 01       		.byte	0x1
+ 1977 0276 49       		.byte	0x49
+ 1978 0277 14010000 		.4byte	0x114
+ 1979 027b 02       		.uleb128 0x2
+ 1980 027c 91       		.byte	0x91
+ 1981 027d 00       		.sleb128 0
+ 1982 027e 11       		.uleb128 0x11
+ 1983 027f 86020000 		.4byte	.LASF43
+ 1984 0283 01       		.byte	0x1
+ 1985 0284 4A       		.byte	0x4a
+ 1986 0285 C3000000 		.4byte	0xc3
+ 1987 0289 02       		.uleb128 0x2
+ 1988 028a 91       		.byte	0x91
+ 1989 028b 04       		.sleb128 4
+ 1990 028c 12       		.uleb128 0x12
+ 1991 028d 21020000 		.4byte	.LASF27
+ 1992 0291 01       		.byte	0x1
+ 1993 0292 4C       		.byte	0x4c
+ 1994 0293 14010000 		.4byte	0x114
+ 1995 0297 02       		.uleb128 0x2
+ 1996 0298 91       		.byte	0x91
+ 1997 0299 64       		.sleb128 -28
+ 1998 029a 12       		.uleb128 0x12
+ 1999 029b 38000000 		.4byte	.LASF28
+ 2000 029f 01       		.byte	0x1
+ 2001 02a0 4D       		.byte	0x4d
+ 2002 02a1 14010000 		.4byte	0x114
+ 2003 02a5 03       		.uleb128 0x3
+ 2004 02a6 91       		.byte	0x91
+ 2005 02a7 B87F     		.sleb128 -72
+ 2006 02a9 12       		.uleb128 0x12
+ 2007 02aa A3010000 		.4byte	.LASF44
+ 2008 02ae 01       		.byte	0x1
+ 2009 02af 4E       		.byte	0x4e
+ 2010 02b0 14010000 		.4byte	0x114
+ 2011 02b4 02       		.uleb128 0x2
+ 2012 02b5 91       		.byte	0x91
+ 2013 02b6 60       		.sleb128 -32
+ 2014 02b7 13       		.uleb128 0x13
+ 2015 02b8 707800   		.ascii	"px\000"
+ 2016 02bb 01       		.byte	0x1
+ 2017 02bc 4F       		.byte	0x4f
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 55
+
+
+ 2018 02bd 14010000 		.4byte	0x114
+ 2019 02c1 02       		.uleb128 0x2
+ 2020 02c2 91       		.byte	0x91
+ 2021 02c3 5C       		.sleb128 -36
+ 2022 02c4 13       		.uleb128 0x13
+ 2023 02c5 706200   		.ascii	"pb\000"
+ 2024 02c8 01       		.byte	0x1
+ 2025 02c9 4F       		.byte	0x4f
+ 2026 02ca 14010000 		.4byte	0x114
+ 2027 02ce 02       		.uleb128 0x2
+ 2028 02cf 91       		.byte	0x91
+ 2029 02d0 58       		.sleb128 -40
+ 2030 02d1 13       		.uleb128 0x13
+ 2031 02d2 6D7500   		.ascii	"mu\000"
+ 2032 02d5 01       		.byte	0x1
+ 2033 02d6 50       		.byte	0x50
+ 2034 02d7 FC000000 		.4byte	0xfc
+ 2035 02db 03       		.uleb128 0x3
+ 2036 02dc 91       		.byte	0x91
+ 2037 02dd B47F     		.sleb128 -76
+ 2038 02df 12       		.uleb128 0x12
+ 2039 02e0 78020000 		.4byte	.LASF26
+ 2040 02e4 01       		.byte	0x1
+ 2041 02e5 51       		.byte	0x51
+ 2042 02e6 C3000000 		.4byte	0xc3
+ 2043 02ea 03       		.uleb128 0x3
+ 2044 02eb 91       		.byte	0x91
+ 2045 02ec B07F     		.sleb128 -80
+ 2046 02ee 12       		.uleb128 0x12
+ 2047 02ef F8000000 		.4byte	.LASF45
+ 2048 02f3 01       		.byte	0x1
+ 2049 02f4 52       		.byte	0x52
+ 2050 02f5 C3000000 		.4byte	0xc3
+ 2051 02f9 02       		.uleb128 0x2
+ 2052 02fa 91       		.byte	0x91
+ 2053 02fb 54       		.sleb128 -44
+ 2054 02fc 12       		.uleb128 0x12
+ 2055 02fd 27000000 		.4byte	.LASF46
+ 2056 0301 01       		.byte	0x1
+ 2057 0302 52       		.byte	0x52
+ 2058 0303 C3000000 		.4byte	0xc3
+ 2059 0307 02       		.uleb128 0x2
+ 2060 0308 91       		.byte	0x91
+ 2061 0309 50       		.sleb128 -48
+ 2062 030a 12       		.uleb128 0x12
+ 2063 030b CA000000 		.4byte	.LASF31
+ 2064 030f 01       		.byte	0x1
+ 2065 0310 53       		.byte	0x53
+ 2066 0311 08010000 		.4byte	0x108
+ 2067 0315 02       		.uleb128 0x2
+ 2068 0316 91       		.byte	0x91
+ 2069 0317 48       		.sleb128 -56
+ 2070 0318 13       		.uleb128 0x13
+ 2071 0319 61636300 		.ascii	"acc\000"
+ 2072 031d 01       		.byte	0x1
+ 2073 031e 54       		.byte	0x54
+ 2074 031f 08010000 		.4byte	0x108
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 56
+
+
+ 2075 0323 02       		.uleb128 0x2
+ 2076 0324 91       		.byte	0x91
+ 2077 0325 40       		.sleb128 -64
+ 2078 0326 13       		.uleb128 0x13
+ 2079 0327 6500     		.ascii	"e\000"
+ 2080 0329 01       		.byte	0x1
+ 2081 032a 55       		.byte	0x55
+ 2082 032b FC000000 		.4byte	0xfc
+ 2083 032f 03       		.uleb128 0x3
+ 2084 0330 91       		.byte	0x91
+ 2085 0331 AC7F     		.sleb128 -84
+ 2086 0333 13       		.uleb128 0x13
+ 2087 0334 6400     		.ascii	"d\000"
+ 2088 0336 01       		.byte	0x1
+ 2089 0337 55       		.byte	0x55
+ 2090 0338 FC000000 		.4byte	0xfc
+ 2091 033c 03       		.uleb128 0x3
+ 2092 033d 91       		.byte	0x91
+ 2093 033e A87F     		.sleb128 -88
+ 2094 0340 13       		.uleb128 0x13
+ 2095 0341 7700     		.ascii	"w\000"
+ 2096 0343 01       		.byte	0x1
+ 2097 0344 56       		.byte	0x56
+ 2098 0345 FC000000 		.4byte	0xfc
+ 2099 0349 03       		.uleb128 0x3
+ 2100 034a 91       		.byte	0x91
+ 2101 034b A47F     		.sleb128 -92
+ 2102 034d 13       		.uleb128 0x13
+ 2103 034e 696E00   		.ascii	"in\000"
+ 2104 0351 01       		.byte	0x1
+ 2105 0352 56       		.byte	0x56
+ 2106 0353 FC000000 		.4byte	0xfc
+ 2107 0357 03       		.uleb128 0x3
+ 2108 0358 91       		.byte	0x91
+ 2109 0359 987F     		.sleb128 -104
+ 2110 035b 13       		.uleb128 0x13
+ 2111 035c 783000   		.ascii	"x0\000"
+ 2112 035f 01       		.byte	0x1
+ 2113 0360 57       		.byte	0x57
+ 2114 0361 FC000000 		.4byte	0xfc
+ 2115 0365 03       		.uleb128 0x3
+ 2116 0366 91       		.byte	0x91
+ 2117 0367 BC7F     		.sleb128 -68
+ 2118 0369 12       		.uleb128 0x12
+ 2119 036a D1000000 		.4byte	.LASF47
+ 2120 036e 01       		.byte	0x1
+ 2121 036f 59       		.byte	0x59
+ 2122 0370 FC000000 		.4byte	0xfc
+ 2123 0374 03       		.uleb128 0x3
+ 2124 0375 91       		.byte	0x91
+ 2125 0376 887F     		.sleb128 -120
+ 2126 0378 12       		.uleb128 0x12
+ 2127 0379 74000000 		.4byte	.LASF48
+ 2128 037d 01       		.byte	0x1
+ 2129 037e 59       		.byte	0x59
+ 2130 037f FC000000 		.4byte	0xfc
+ 2131 0383 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 57
+
+
+ 2132 0384 91       		.byte	0x91
+ 2133 0385 C47E     		.sleb128 -188
+ 2134 0387 12       		.uleb128 0x12
+ 2135 0388 16030000 		.4byte	.LASF29
+ 2136 038c 01       		.byte	0x1
+ 2137 038d 5A       		.byte	0x5a
+ 2138 038e FC000000 		.4byte	0xfc
+ 2139 0392 03       		.uleb128 0x3
+ 2140 0393 91       		.byte	0x91
+ 2141 0394 8C7F     		.sleb128 -116
+ 2142 0396 12       		.uleb128 0x12
+ 2143 0397 20030000 		.4byte	.LASF49
+ 2144 039b 01       		.byte	0x1
+ 2145 039c 5B       		.byte	0x5b
+ 2146 039d FC000000 		.4byte	0xfc
+ 2147 03a1 03       		.uleb128 0x3
+ 2148 03a2 91       		.byte	0x91
+ 2149 03a3 847F     		.sleb128 -124
+ 2150 03a5 12       		.uleb128 0x12
+ 2151 03a6 ED000000 		.4byte	.LASF50
+ 2152 03aa 01       		.byte	0x1
+ 2153 03ab 5C       		.byte	0x5c
+ 2154 03ac FC000000 		.4byte	0xfc
+ 2155 03b0 03       		.uleb128 0x3
+ 2156 03b1 91       		.byte	0x91
+ 2157 03b2 947F     		.sleb128 -108
+ 2158 03b4 12       		.uleb128 0x12
+ 2159 03b5 DA000000 		.4byte	.LASF51
+ 2160 03b9 01       		.byte	0x1
+ 2161 03ba 5C       		.byte	0x5c
+ 2162 03bb FC000000 		.4byte	0xfc
+ 2163 03bf 03       		.uleb128 0x3
+ 2164 03c0 91       		.byte	0x91
+ 2165 03c1 907F     		.sleb128 -112
+ 2166 03c3 12       		.uleb128 0x12
+ 2167 03c4 F7020000 		.4byte	.LASF52
+ 2168 03c8 01       		.byte	0x1
+ 2169 03c9 5D       		.byte	0x5d
+ 2170 03ca C3000000 		.4byte	0xc3
+ 2171 03ce 03       		.uleb128 0x3
+ 2172 03cf 91       		.byte	0x91
+ 2173 03d0 A07F     		.sleb128 -96
+ 2174 03d2 12       		.uleb128 0x12
+ 2175 03d3 F0020000 		.4byte	.LASF53
+ 2176 03d7 01       		.byte	0x1
+ 2177 03d8 5E       		.byte	0x5e
+ 2178 03d9 C3000000 		.4byte	0xc3
+ 2179 03dd 03       		.uleb128 0x3
+ 2180 03de 91       		.byte	0x91
+ 2181 03df 9C7F     		.sleb128 -100
+ 2182 03e1 14       		.uleb128 0x14
+ 2183 03e2 B2010000 		.4byte	0x1b2
+ 2184 03e6 8E050000 		.4byte	.LBB12
+ 2185 03ea 0E020000 		.4byte	.LBE12-.LBB12
+ 2186 03ee 01       		.byte	0x1
+ 2187 03ef 5D01     		.2byte	0x15d
+ 2188 03f1 62040000 		.4byte	0x462
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 58
+
+
+ 2189 03f5 15       		.uleb128 0x15
+ 2190 03f6 DA010000 		.4byte	0x1da
+ 2191 03fa 03       		.uleb128 0x3
+ 2192 03fb 91       		.byte	0x91
+ 2193 03fc F87E     		.sleb128 -136
+ 2194 03fe 15       		.uleb128 0x15
+ 2195 03ff CE010000 		.4byte	0x1ce
+ 2196 0403 03       		.uleb128 0x3
+ 2197 0404 91       		.byte	0x91
+ 2198 0405 FC7E     		.sleb128 -132
+ 2199 0407 15       		.uleb128 0x15
+ 2200 0408 C3010000 		.4byte	0x1c3
+ 2201 040c 03       		.uleb128 0x3
+ 2202 040d 91       		.byte	0x91
+ 2203 040e 807F     		.sleb128 -128
+ 2204 0410 16       		.uleb128 0x16
+ 2205 0411 8E050000 		.4byte	.LBB13
+ 2206 0415 0E020000 		.4byte	.LBE13-.LBB13
+ 2207 0419 17       		.uleb128 0x17
+ 2208 041a E6010000 		.4byte	0x1e6
+ 2209 041e 03       		.uleb128 0x3
+ 2210 041f 91       		.byte	0x91
+ 2211 0420 EC7E     		.sleb128 -148
+ 2212 0422 17       		.uleb128 0x17
+ 2213 0423 F2010000 		.4byte	0x1f2
+ 2214 0427 03       		.uleb128 0x3
+ 2215 0428 91       		.byte	0x91
+ 2216 0429 E47E     		.sleb128 -156
+ 2217 042b 17       		.uleb128 0x17
+ 2218 042c FE010000 		.4byte	0x1fe
+ 2219 0430 03       		.uleb128 0x3
+ 2220 0431 91       		.byte	0x91
+ 2221 0432 F07E     		.sleb128 -144
+ 2222 0434 17       		.uleb128 0x17
+ 2223 0435 0A020000 		.4byte	0x20a
+ 2224 0439 03       		.uleb128 0x3
+ 2225 043a 91       		.byte	0x91
+ 2226 043b E87E     		.sleb128 -152
+ 2227 043d 17       		.uleb128 0x17
+ 2228 043e 14020000 		.4byte	0x214
+ 2229 0442 03       		.uleb128 0x3
+ 2230 0443 91       		.byte	0x91
+ 2231 0444 F47E     		.sleb128 -140
+ 2232 0446 18       		.uleb128 0x18
+ 2233 0447 96010000 		.4byte	0x196
+ 2234 044b 08070000 		.4byte	.LBB14
+ 2235 044f 50000000 		.4byte	.LBE14-.LBB14
+ 2236 0453 02       		.byte	0x2
+ 2237 0454 7202     		.2byte	0x272
+ 2238 0456 15       		.uleb128 0x15
+ 2239 0457 A7010000 		.4byte	0x1a7
+ 2240 045b 03       		.uleb128 0x3
+ 2241 045c 91       		.byte	0x91
+ 2242 045d D87E     		.sleb128 -168
+ 2243 045f 00       		.byte	0
+ 2244 0460 00       		.byte	0
+ 2245 0461 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 59
+
+
+ 2246 0462 14       		.uleb128 0x14
+ 2247 0463 96010000 		.4byte	0x196
+ 2248 0467 96080000 		.4byte	.LBB16
+ 2249 046b 50000000 		.4byte	.LBE16-.LBB16
+ 2250 046f 01       		.byte	0x1
+ 2251 0470 6301     		.2byte	0x163
+ 2252 0472 80040000 		.4byte	0x480
+ 2253 0476 15       		.uleb128 0x15
+ 2254 0477 A7010000 		.4byte	0x1a7
+ 2255 047b 03       		.uleb128 0x3
+ 2256 047c 91       		.byte	0x91
+ 2257 047d D07E     		.sleb128 -176
+ 2258 047f 00       		.byte	0
+ 2259 0480 18       		.uleb128 0x18
+ 2260 0481 96010000 		.4byte	0x196
+ 2261 0485 D6090000 		.4byte	.LBB18
+ 2262 0489 56000000 		.4byte	.LBE18-.LBB18
+ 2263 048d 01       		.byte	0x1
+ 2264 048e 7401     		.2byte	0x174
+ 2265 0490 15       		.uleb128 0x15
+ 2266 0491 A7010000 		.4byte	0x1a7
+ 2267 0495 03       		.uleb128 0x3
+ 2268 0496 91       		.byte	0x91
+ 2269 0497 C87E     		.sleb128 -184
+ 2270 0499 00       		.byte	0
+ 2271 049a 00       		.byte	0
+ 2272 049b 06       		.uleb128 0x6
+ 2273 049c 04       		.byte	0x4
+ 2274 049d 8A010000 		.4byte	0x18a
+ 2275 04a1 00       		.byte	0
+ 2276              		.section	.debug_abbrev,"",%progbits
+ 2277              	.Ldebug_abbrev0:
+ 2278 0000 01       		.uleb128 0x1
+ 2279 0001 11       		.uleb128 0x11
+ 2280 0002 01       		.byte	0x1
+ 2281 0003 25       		.uleb128 0x25
+ 2282 0004 0E       		.uleb128 0xe
+ 2283 0005 13       		.uleb128 0x13
+ 2284 0006 0B       		.uleb128 0xb
+ 2285 0007 03       		.uleb128 0x3
+ 2286 0008 0E       		.uleb128 0xe
+ 2287 0009 1B       		.uleb128 0x1b
+ 2288 000a 0E       		.uleb128 0xe
+ 2289 000b 55       		.uleb128 0x55
+ 2290 000c 17       		.uleb128 0x17
+ 2291 000d 11       		.uleb128 0x11
+ 2292 000e 01       		.uleb128 0x1
+ 2293 000f 10       		.uleb128 0x10
+ 2294 0010 17       		.uleb128 0x17
+ 2295 0011 00       		.byte	0
+ 2296 0012 00       		.byte	0
+ 2297 0013 02       		.uleb128 0x2
+ 2298 0014 24       		.uleb128 0x24
+ 2299 0015 00       		.byte	0
+ 2300 0016 0B       		.uleb128 0xb
+ 2301 0017 0B       		.uleb128 0xb
+ 2302 0018 3E       		.uleb128 0x3e
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 60
+
+
+ 2303 0019 0B       		.uleb128 0xb
+ 2304 001a 03       		.uleb128 0x3
+ 2305 001b 0E       		.uleb128 0xe
+ 2306 001c 00       		.byte	0
+ 2307 001d 00       		.byte	0
+ 2308 001e 03       		.uleb128 0x3
+ 2309 001f 16       		.uleb128 0x16
+ 2310 0020 00       		.byte	0
+ 2311 0021 03       		.uleb128 0x3
+ 2312 0022 0E       		.uleb128 0xe
+ 2313 0023 3A       		.uleb128 0x3a
+ 2314 0024 0B       		.uleb128 0xb
+ 2315 0025 3B       		.uleb128 0x3b
+ 2316 0026 0B       		.uleb128 0xb
+ 2317 0027 49       		.uleb128 0x49
+ 2318 0028 13       		.uleb128 0x13
+ 2319 0029 00       		.byte	0
+ 2320 002a 00       		.byte	0
+ 2321 002b 04       		.uleb128 0x4
+ 2322 002c 24       		.uleb128 0x24
+ 2323 002d 00       		.byte	0
+ 2324 002e 0B       		.uleb128 0xb
+ 2325 002f 0B       		.uleb128 0xb
+ 2326 0030 3E       		.uleb128 0x3e
+ 2327 0031 0B       		.uleb128 0xb
+ 2328 0032 03       		.uleb128 0x3
+ 2329 0033 08       		.uleb128 0x8
+ 2330 0034 00       		.byte	0
+ 2331 0035 00       		.byte	0
+ 2332 0036 05       		.uleb128 0x5
+ 2333 0037 16       		.uleb128 0x16
+ 2334 0038 00       		.byte	0
+ 2335 0039 03       		.uleb128 0x3
+ 2336 003a 0E       		.uleb128 0xe
+ 2337 003b 3A       		.uleb128 0x3a
+ 2338 003c 0B       		.uleb128 0xb
+ 2339 003d 3B       		.uleb128 0x3b
+ 2340 003e 05       		.uleb128 0x5
+ 2341 003f 49       		.uleb128 0x49
+ 2342 0040 13       		.uleb128 0x13
+ 2343 0041 00       		.byte	0
+ 2344 0042 00       		.byte	0
+ 2345 0043 06       		.uleb128 0x6
+ 2346 0044 0F       		.uleb128 0xf
+ 2347 0045 00       		.byte	0
+ 2348 0046 0B       		.uleb128 0xb
+ 2349 0047 0B       		.uleb128 0xb
+ 2350 0048 49       		.uleb128 0x49
+ 2351 0049 13       		.uleb128 0x13
+ 2352 004a 00       		.byte	0
+ 2353 004b 00       		.byte	0
+ 2354 004c 07       		.uleb128 0x7
+ 2355 004d 13       		.uleb128 0x13
+ 2356 004e 01       		.byte	0x1
+ 2357 004f 0B       		.uleb128 0xb
+ 2358 0050 0B       		.uleb128 0xb
+ 2359 0051 3A       		.uleb128 0x3a
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 61
+
+
+ 2360 0052 0B       		.uleb128 0xb
+ 2361 0053 3B       		.uleb128 0x3b
+ 2362 0054 05       		.uleb128 0x5
+ 2363 0055 01       		.uleb128 0x1
+ 2364 0056 13       		.uleb128 0x13
+ 2365 0057 00       		.byte	0
+ 2366 0058 00       		.byte	0
+ 2367 0059 08       		.uleb128 0x8
+ 2368 005a 0D       		.uleb128 0xd
+ 2369 005b 00       		.byte	0
+ 2370 005c 03       		.uleb128 0x3
+ 2371 005d 0E       		.uleb128 0xe
+ 2372 005e 3A       		.uleb128 0x3a
+ 2373 005f 0B       		.uleb128 0xb
+ 2374 0060 3B       		.uleb128 0x3b
+ 2375 0061 05       		.uleb128 0x5
+ 2376 0062 49       		.uleb128 0x49
+ 2377 0063 13       		.uleb128 0x13
+ 2378 0064 38       		.uleb128 0x38
+ 2379 0065 0B       		.uleb128 0xb
+ 2380 0066 00       		.byte	0
+ 2381 0067 00       		.byte	0
+ 2382 0068 09       		.uleb128 0x9
+ 2383 0069 0D       		.uleb128 0xd
+ 2384 006a 00       		.byte	0
+ 2385 006b 03       		.uleb128 0x3
+ 2386 006c 08       		.uleb128 0x8
+ 2387 006d 3A       		.uleb128 0x3a
+ 2388 006e 0B       		.uleb128 0xb
+ 2389 006f 3B       		.uleb128 0x3b
+ 2390 0070 05       		.uleb128 0x5
+ 2391 0071 49       		.uleb128 0x49
+ 2392 0072 13       		.uleb128 0x13
+ 2393 0073 38       		.uleb128 0x38
+ 2394 0074 0B       		.uleb128 0xb
+ 2395 0075 00       		.byte	0
+ 2396 0076 00       		.byte	0
+ 2397 0077 0A       		.uleb128 0xa
+ 2398 0078 2E       		.uleb128 0x2e
+ 2399 0079 01       		.byte	0x1
+ 2400 007a 03       		.uleb128 0x3
+ 2401 007b 0E       		.uleb128 0xe
+ 2402 007c 3A       		.uleb128 0x3a
+ 2403 007d 0B       		.uleb128 0xb
+ 2404 007e 3B       		.uleb128 0x3b
+ 2405 007f 05       		.uleb128 0x5
+ 2406 0080 27       		.uleb128 0x27
+ 2407 0081 19       		.uleb128 0x19
+ 2408 0082 49       		.uleb128 0x49
+ 2409 0083 13       		.uleb128 0x13
+ 2410 0084 20       		.uleb128 0x20
+ 2411 0085 0B       		.uleb128 0xb
+ 2412 0086 01       		.uleb128 0x1
+ 2413 0087 13       		.uleb128 0x13
+ 2414 0088 00       		.byte	0
+ 2415 0089 00       		.byte	0
+ 2416 008a 0B       		.uleb128 0xb
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 62
+
+
+ 2417 008b 05       		.uleb128 0x5
+ 2418 008c 00       		.byte	0
+ 2419 008d 03       		.uleb128 0x3
+ 2420 008e 08       		.uleb128 0x8
+ 2421 008f 3A       		.uleb128 0x3a
+ 2422 0090 0B       		.uleb128 0xb
+ 2423 0091 3B       		.uleb128 0x3b
+ 2424 0092 05       		.uleb128 0x5
+ 2425 0093 49       		.uleb128 0x49
+ 2426 0094 13       		.uleb128 0x13
+ 2427 0095 00       		.byte	0
+ 2428 0096 00       		.byte	0
+ 2429 0097 0C       		.uleb128 0xc
+ 2430 0098 05       		.uleb128 0x5
+ 2431 0099 00       		.byte	0
+ 2432 009a 03       		.uleb128 0x3
+ 2433 009b 0E       		.uleb128 0xe
+ 2434 009c 3A       		.uleb128 0x3a
+ 2435 009d 0B       		.uleb128 0xb
+ 2436 009e 3B       		.uleb128 0x3b
+ 2437 009f 05       		.uleb128 0x5
+ 2438 00a0 49       		.uleb128 0x49
+ 2439 00a1 13       		.uleb128 0x13
+ 2440 00a2 00       		.byte	0
+ 2441 00a3 00       		.byte	0
+ 2442 00a4 0D       		.uleb128 0xd
+ 2443 00a5 34       		.uleb128 0x34
+ 2444 00a6 00       		.byte	0
+ 2445 00a7 03       		.uleb128 0x3
+ 2446 00a8 08       		.uleb128 0x8
+ 2447 00a9 3A       		.uleb128 0x3a
+ 2448 00aa 0B       		.uleb128 0xb
+ 2449 00ab 3B       		.uleb128 0x3b
+ 2450 00ac 05       		.uleb128 0x5
+ 2451 00ad 49       		.uleb128 0x49
+ 2452 00ae 13       		.uleb128 0x13
+ 2453 00af 00       		.byte	0
+ 2454 00b0 00       		.byte	0
+ 2455 00b1 0E       		.uleb128 0xe
+ 2456 00b2 34       		.uleb128 0x34
+ 2457 00b3 00       		.byte	0
+ 2458 00b4 03       		.uleb128 0x3
+ 2459 00b5 0E       		.uleb128 0xe
+ 2460 00b6 3A       		.uleb128 0x3a
+ 2461 00b7 0B       		.uleb128 0xb
+ 2462 00b8 3B       		.uleb128 0x3b
+ 2463 00b9 05       		.uleb128 0x5
+ 2464 00ba 49       		.uleb128 0x49
+ 2465 00bb 13       		.uleb128 0x13
+ 2466 00bc 00       		.byte	0
+ 2467 00bd 00       		.byte	0
+ 2468 00be 0F       		.uleb128 0xf
+ 2469 00bf 2E       		.uleb128 0x2e
+ 2470 00c0 01       		.byte	0x1
+ 2471 00c1 3F       		.uleb128 0x3f
+ 2472 00c2 19       		.uleb128 0x19
+ 2473 00c3 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 63
+
+
+ 2474 00c4 0E       		.uleb128 0xe
+ 2475 00c5 3A       		.uleb128 0x3a
+ 2476 00c6 0B       		.uleb128 0xb
+ 2477 00c7 3B       		.uleb128 0x3b
+ 2478 00c8 0B       		.uleb128 0xb
+ 2479 00c9 27       		.uleb128 0x27
+ 2480 00ca 19       		.uleb128 0x19
+ 2481 00cb 11       		.uleb128 0x11
+ 2482 00cc 01       		.uleb128 0x1
+ 2483 00cd 12       		.uleb128 0x12
+ 2484 00ce 06       		.uleb128 0x6
+ 2485 00cf 40       		.uleb128 0x40
+ 2486 00d0 18       		.uleb128 0x18
+ 2487 00d1 9642     		.uleb128 0x2116
+ 2488 00d3 19       		.uleb128 0x19
+ 2489 00d4 01       		.uleb128 0x1
+ 2490 00d5 13       		.uleb128 0x13
+ 2491 00d6 00       		.byte	0
+ 2492 00d7 00       		.byte	0
+ 2493 00d8 10       		.uleb128 0x10
+ 2494 00d9 05       		.uleb128 0x5
+ 2495 00da 00       		.byte	0
+ 2496 00db 03       		.uleb128 0x3
+ 2497 00dc 08       		.uleb128 0x8
+ 2498 00dd 3A       		.uleb128 0x3a
+ 2499 00de 0B       		.uleb128 0xb
+ 2500 00df 3B       		.uleb128 0x3b
+ 2501 00e0 0B       		.uleb128 0xb
+ 2502 00e1 49       		.uleb128 0x49
+ 2503 00e2 13       		.uleb128 0x13
+ 2504 00e3 02       		.uleb128 0x2
+ 2505 00e4 18       		.uleb128 0x18
+ 2506 00e5 00       		.byte	0
+ 2507 00e6 00       		.byte	0
+ 2508 00e7 11       		.uleb128 0x11
+ 2509 00e8 05       		.uleb128 0x5
+ 2510 00e9 00       		.byte	0
+ 2511 00ea 03       		.uleb128 0x3
+ 2512 00eb 0E       		.uleb128 0xe
+ 2513 00ec 3A       		.uleb128 0x3a
+ 2514 00ed 0B       		.uleb128 0xb
+ 2515 00ee 3B       		.uleb128 0x3b
+ 2516 00ef 0B       		.uleb128 0xb
+ 2517 00f0 49       		.uleb128 0x49
+ 2518 00f1 13       		.uleb128 0x13
+ 2519 00f2 02       		.uleb128 0x2
+ 2520 00f3 18       		.uleb128 0x18
+ 2521 00f4 00       		.byte	0
+ 2522 00f5 00       		.byte	0
+ 2523 00f6 12       		.uleb128 0x12
+ 2524 00f7 34       		.uleb128 0x34
+ 2525 00f8 00       		.byte	0
+ 2526 00f9 03       		.uleb128 0x3
+ 2527 00fa 0E       		.uleb128 0xe
+ 2528 00fb 3A       		.uleb128 0x3a
+ 2529 00fc 0B       		.uleb128 0xb
+ 2530 00fd 3B       		.uleb128 0x3b
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 64
+
+
+ 2531 00fe 0B       		.uleb128 0xb
+ 2532 00ff 49       		.uleb128 0x49
+ 2533 0100 13       		.uleb128 0x13
+ 2534 0101 02       		.uleb128 0x2
+ 2535 0102 18       		.uleb128 0x18
+ 2536 0103 00       		.byte	0
+ 2537 0104 00       		.byte	0
+ 2538 0105 13       		.uleb128 0x13
+ 2539 0106 34       		.uleb128 0x34
+ 2540 0107 00       		.byte	0
+ 2541 0108 03       		.uleb128 0x3
+ 2542 0109 08       		.uleb128 0x8
+ 2543 010a 3A       		.uleb128 0x3a
+ 2544 010b 0B       		.uleb128 0xb
+ 2545 010c 3B       		.uleb128 0x3b
+ 2546 010d 0B       		.uleb128 0xb
+ 2547 010e 49       		.uleb128 0x49
+ 2548 010f 13       		.uleb128 0x13
+ 2549 0110 02       		.uleb128 0x2
+ 2550 0111 18       		.uleb128 0x18
+ 2551 0112 00       		.byte	0
+ 2552 0113 00       		.byte	0
+ 2553 0114 14       		.uleb128 0x14
+ 2554 0115 1D       		.uleb128 0x1d
+ 2555 0116 01       		.byte	0x1
+ 2556 0117 31       		.uleb128 0x31
+ 2557 0118 13       		.uleb128 0x13
+ 2558 0119 11       		.uleb128 0x11
+ 2559 011a 01       		.uleb128 0x1
+ 2560 011b 12       		.uleb128 0x12
+ 2561 011c 06       		.uleb128 0x6
+ 2562 011d 58       		.uleb128 0x58
+ 2563 011e 0B       		.uleb128 0xb
+ 2564 011f 59       		.uleb128 0x59
+ 2565 0120 05       		.uleb128 0x5
+ 2566 0121 01       		.uleb128 0x1
+ 2567 0122 13       		.uleb128 0x13
+ 2568 0123 00       		.byte	0
+ 2569 0124 00       		.byte	0
+ 2570 0125 15       		.uleb128 0x15
+ 2571 0126 05       		.uleb128 0x5
+ 2572 0127 00       		.byte	0
+ 2573 0128 31       		.uleb128 0x31
+ 2574 0129 13       		.uleb128 0x13
+ 2575 012a 02       		.uleb128 0x2
+ 2576 012b 18       		.uleb128 0x18
+ 2577 012c 00       		.byte	0
+ 2578 012d 00       		.byte	0
+ 2579 012e 16       		.uleb128 0x16
+ 2580 012f 0B       		.uleb128 0xb
+ 2581 0130 01       		.byte	0x1
+ 2582 0131 11       		.uleb128 0x11
+ 2583 0132 01       		.uleb128 0x1
+ 2584 0133 12       		.uleb128 0x12
+ 2585 0134 06       		.uleb128 0x6
+ 2586 0135 00       		.byte	0
+ 2587 0136 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 65
+
+
+ 2588 0137 17       		.uleb128 0x17
+ 2589 0138 34       		.uleb128 0x34
+ 2590 0139 00       		.byte	0
+ 2591 013a 31       		.uleb128 0x31
+ 2592 013b 13       		.uleb128 0x13
+ 2593 013c 02       		.uleb128 0x2
+ 2594 013d 18       		.uleb128 0x18
+ 2595 013e 00       		.byte	0
+ 2596 013f 00       		.byte	0
+ 2597 0140 18       		.uleb128 0x18
+ 2598 0141 1D       		.uleb128 0x1d
+ 2599 0142 01       		.byte	0x1
+ 2600 0143 31       		.uleb128 0x31
+ 2601 0144 13       		.uleb128 0x13
+ 2602 0145 11       		.uleb128 0x11
+ 2603 0146 01       		.uleb128 0x1
+ 2604 0147 12       		.uleb128 0x12
+ 2605 0148 06       		.uleb128 0x6
+ 2606 0149 58       		.uleb128 0x58
+ 2607 014a 0B       		.uleb128 0xb
+ 2608 014b 59       		.uleb128 0x59
+ 2609 014c 05       		.uleb128 0x5
+ 2610 014d 00       		.byte	0
+ 2611 014e 00       		.byte	0
+ 2612 014f 00       		.byte	0
+ 2613              		.section	.debug_aranges,"",%progbits
+ 2614 0000 1C000000 		.4byte	0x1c
+ 2615 0004 0200     		.2byte	0x2
+ 2616 0006 00000000 		.4byte	.Ldebug_info0
+ 2617 000a 04       		.byte	0x4
+ 2618 000b 00       		.byte	0
+ 2619 000c 0000     		.2byte	0
+ 2620 000e 0000     		.2byte	0
+ 2621 0010 00000000 		.4byte	.LFB82
+ 2622 0014 DA0B0000 		.4byte	.LFE82-.LFB82
+ 2623 0018 00000000 		.4byte	0
+ 2624 001c 00000000 		.4byte	0
+ 2625              		.section	.debug_ranges,"",%progbits
+ 2626              	.Ldebug_ranges0:
+ 2627 0000 00000000 		.4byte	.LFB82
+ 2628 0004 DA0B0000 		.4byte	.LFE82
+ 2629 0008 00000000 		.4byte	0
+ 2630 000c 00000000 		.4byte	0
+ 2631              		.section	.debug_line,"",%progbits
+ 2632              	.Ldebug_line0:
+ 2633 0000 18020000 		.section	.debug_str,"MS",%progbits,1
+ 2633      02005301 
+ 2633      00000201 
+ 2633      FB0E0D00 
+ 2633      01010101 
+ 2634              	.LASF25:
+ 2635 0000 7136335F 		.ascii	"q63_t\000"
+ 2635      7400
+ 2636              	.LASF3:
+ 2637 0006 5F5F7569 		.ascii	"__uint8_t\000"
+ 2637      6E74385F 
+ 2637      7400
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 66
+
+
+ 2638              	.LASF12:
+ 2639 0010 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 2639      206C6F6E 
+ 2639      6720756E 
+ 2639      7369676E 
+ 2639      65642069 
+ 2640              	.LASF46:
+ 2641 0027 626C6B43 		.ascii	"blkCnt\000"
+ 2641      6E7400
+ 2642              	.LASF10:
+ 2643 002e 5F5F696E 		.ascii	"__int64_t\000"
+ 2643      7436345F 
+ 2643      7400
+ 2644              	.LASF28:
+ 2645 0038 70436F65 		.ascii	"pCoeffs\000"
+ 2645      66667300 
+ 2646              	.LASF32:
+ 2647 0040 61726D5F 		.ascii	"arm_lms_norm_instance_q31\000"
+ 2647      6C6D735F 
+ 2647      6E6F726D 
+ 2647      5F696E73 
+ 2647      74616E63 
+ 2648              	.LASF11:
+ 2649 005a 6C6F6E67 		.ascii	"long long int\000"
+ 2649      206C6F6E 
+ 2649      6720696E 
+ 2649      7400
+ 2650              	.LASF0:
+ 2651 0068 7369676E 		.ascii	"signed char\000"
+ 2651      65642063 
+ 2651      68617200 
+ 2652              	.LASF48:
+ 2653 0074 6F6E6542 		.ascii	"oneByEnergy\000"
+ 2653      79456E65 
+ 2653      72677900 
+ 2654              	.LASF7:
+ 2655 0080 6C6F6E67 		.ascii	"long int\000"
+ 2655      20696E74 
+ 2655      00
+ 2656              	.LASF15:
+ 2657 0089 75696E74 		.ascii	"uint16_t\000"
+ 2657      31365F74 
+ 2657      00
+ 2658              	.LASF55:
+ 2659 0092 536F7572 		.ascii	"Source\\FilteringFunctions\\arm_lms_norm_q31.c\000"
+ 2659      63655C46 
+ 2659      696C7465 
+ 2659      72696E67 
+ 2659      46756E63 
+ 2660              	.LASF8:
+ 2661 00bf 5F5F7569 		.ascii	"__uint32_t\000"
+ 2661      6E743332 
+ 2661      5F7400
+ 2662              	.LASF31:
+ 2663 00ca 656E6572 		.ascii	"energy\000"
+ 2663      677900
+ 2664              	.LASF47:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 67
+
+
+ 2665 00d1 6572726F 		.ascii	"errorXmu\000"
+ 2665      72586D75 
+ 2665      00
+ 2666              	.LASF51:
+ 2667 00da 6163635F 		.ascii	"acc_h\000"
+ 2667      6800
+ 2668              	.LASF13:
+ 2669 00e0 756E7369 		.ascii	"unsigned int\000"
+ 2669      676E6564 
+ 2669      20696E74 
+ 2669      00
+ 2670              	.LASF50:
+ 2671 00ed 6163635F 		.ascii	"acc_l\000"
+ 2671      6C00
+ 2672              	.LASF39:
+ 2673 00f3 70537263 		.ascii	"pSrc\000"
+ 2673      00
+ 2674              	.LASF45:
+ 2675 00f8 74617043 		.ascii	"tapCnt\000"
+ 2675      6E7400
+ 2676              	.LASF9:
+ 2677 00ff 6C6F6E67 		.ascii	"long unsigned int\000"
+ 2677      20756E73 
+ 2677      69676E65 
+ 2677      6420696E 
+ 2677      7400
+ 2678              	.LASF54:
+ 2679 0111 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 2679      4320342E 
+ 2679      392E3320 
+ 2679      32303135 
+ 2679      30333033 
+ 2680 0144 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 2680      20726576 
+ 2680      6973696F 
+ 2680      6E203232 
+ 2680      31323230 
+ 2681 0177 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 2681      30202D66 
+ 2681      66756E63 
+ 2681      74696F6E 
+ 2681      2D736563 
+ 2682              	.LASF44:
+ 2683 01a3 70537461 		.ascii	"pStateCurnt\000"
+ 2683      74654375 
+ 2683      726E7400 
+ 2684              	.LASF5:
+ 2685 01af 73686F72 		.ascii	"short unsigned int\000"
+ 2685      7420756E 
+ 2685      7369676E 
+ 2685      65642069 
+ 2685      6E7400
+ 2686              	.LASF41:
+ 2687 01c2 704F7574 		.ascii	"pOut\000"
+ 2687      00
+ 2688              	.LASF19:
+ 2689 01c7 73697A65 		.ascii	"sizetype\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 68
+
+
+ 2689      74797065 
+ 2689      00
+ 2690              	.LASF23:
+ 2691 01d0 6C6F6E67 		.ascii	"long double\000"
+ 2691      20646F75 
+ 2691      626C6500 
+ 2692              	.LASF33:
+ 2693 01dc 636C6970 		.ascii	"clip_q63_to_q31\000"
+ 2693      5F713633 
+ 2693      5F746F5F 
+ 2693      71333100 
+ 2694              	.LASF36:
+ 2695 01ec 74656D70 		.ascii	"tempVal\000"
+ 2695      56616C00 
+ 2696              	.LASF57:
+ 2697 01f4 61726D5F 		.ascii	"arm_lms_norm_q31\000"
+ 2697      6C6D735F 
+ 2697      6E6F726D 
+ 2697      5F713331 
+ 2697      00
+ 2698              	.LASF22:
+ 2699 0205 666C6F61 		.ascii	"float\000"
+ 2699      7400
+ 2700              	.LASF16:
+ 2701 020b 696E7433 		.ascii	"int32_t\000"
+ 2701      325F7400 
+ 2702              	.LASF1:
+ 2703 0213 756E7369 		.ascii	"unsigned char\000"
+ 2703      676E6564 
+ 2703      20636861 
+ 2703      7200
+ 2704              	.LASF27:
+ 2705 0221 70537461 		.ascii	"pState\000"
+ 2705      746500
+ 2706              	.LASF2:
+ 2707 0228 73686F72 		.ascii	"short int\000"
+ 2707      7420696E 
+ 2707      7400
+ 2708              	.LASF56:
+ 2709 0232 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 2709      73657273 
+ 2709      5C666E65 
+ 2709      7665735C 
+ 2709      446F6375 
+ 2710 025f 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 2710      655F7370 
+ 2710      6565645F 
+ 2710      73656E73 
+ 2710      6F722E63 
+ 2711              	.LASF26:
+ 2712 0278 6E756D54 		.ascii	"numTaps\000"
+ 2712      61707300 
+ 2713              	.LASF24:
+ 2714 0280 7133315F 		.ascii	"q31_t\000"
+ 2714      7400
+ 2715              	.LASF43:
+ 2716 0286 626C6F63 		.ascii	"blockSize\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 69
+
+
+ 2716      6B53697A 
+ 2716      6500
+ 2717              	.LASF17:
+ 2718 0290 75696E74 		.ascii	"uint32_t\000"
+ 2718      33325F74 
+ 2718      00
+ 2719              	.LASF20:
+ 2720 0299 63686172 		.ascii	"char\000"
+ 2720      00
+ 2721              	.LASF4:
+ 2722 029e 5F5F7569 		.ascii	"__uint16_t\000"
+ 2722      6E743136 
+ 2722      5F7400
+ 2723              	.LASF37:
+ 2724 02a9 696E6465 		.ascii	"index\000"
+ 2724      7800
+ 2725              	.LASF6:
+ 2726 02af 5F5F696E 		.ascii	"__int32_t\000"
+ 2726      7433325F 
+ 2726      7400
+ 2727              	.LASF40:
+ 2728 02b9 70526566 		.ascii	"pRef\000"
+ 2728      00
+ 2729              	.LASF30:
+ 2730 02be 72656369 		.ascii	"recipTable\000"
+ 2730      70546162 
+ 2730      6C6500
+ 2731              	.LASF34:
+ 2732 02c9 61726D5F 		.ascii	"arm_recip_q31\000"
+ 2732      72656369 
+ 2732      705F7133 
+ 2732      3100
+ 2733              	.LASF35:
+ 2734 02d7 70526563 		.ascii	"pRecipTable\000"
+ 2734      69705461 
+ 2734      626C6500 
+ 2735              	.LASF42:
+ 2736 02e3 70457272 		.ascii	"pErr\000"
+ 2736      00
+ 2737              	.LASF14:
+ 2738 02e8 75696E74 		.ascii	"uint8_t\000"
+ 2738      385F7400 
+ 2739              	.LASF53:
+ 2740 02f0 6C536869 		.ascii	"lShift\000"
+ 2740      667400
+ 2741              	.LASF52:
+ 2742 02f7 75536869 		.ascii	"uShift\000"
+ 2742      667400
+ 2743              	.LASF18:
+ 2744 02fe 696E7436 		.ascii	"int64_t\000"
+ 2744      345F7400 
+ 2745              	.LASF38:
+ 2746 0306 7369676E 		.ascii	"signBits\000"
+ 2746      42697473 
+ 2746      00
+ 2747              	.LASF21:
+ 2748 030f 646F7562 		.ascii	"double\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccFjPd1E.s 			page 70
+
+
+ 2748      6C6500
+ 2749              	.LASF29:
+ 2750 0316 706F7374 		.ascii	"postShift\000"
+ 2750      53686966 
+ 2750      7400
+ 2751              	.LASF49:
+ 2752 0320 636F6566 		.ascii	"coef\000"
+ 2752      00
+ 2753              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

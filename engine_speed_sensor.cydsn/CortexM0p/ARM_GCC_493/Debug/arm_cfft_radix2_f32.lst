@@ -1,0 +1,2429 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_cfft_radix2_f32.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.arm_cfft_radix2_f32,"ax",%progbits
+  18              		.align	2
+  19              		.global	arm_cfft_radix2_f32
+  20              		.code	16
+  21              		.thumb_func
+  22              		.type	arm_cfft_radix2_f32, %function
+  23              	arm_cfft_radix2_f32:
+  24              	.LFB82:
+  25              		.file 1 "Source\\TransformFunctions\\arm_cfft_radix2_f32.c"
+   1:Source\TransformFunctions/arm_cfft_radix2_f32.c **** /* ----------------------------------------------------------------------
+   2:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * Project:      CMSIS DSP Library
+   3:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * Title:        arm_cfft_radix2_f32.c
+   4:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * Description:  Radix-2 Decimation in Frequency CFFT & CIFFT Floating point processing function
+   5:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  *
+   6:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * $Date:        27. January 2017
+   7:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * $Revision:    V.1.5.1
+   8:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  *
+   9:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * Target Processor: Cortex-M cores
+  10:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * -------------------------------------------------------------------- */
+  11:Source\TransformFunctions/arm_cfft_radix2_f32.c **** /*
+  12:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  *
+  14:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  *
+  16:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * not use this file except in compliance with the License.
+  18:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * You may obtain a copy of the License at
+  19:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  *
+  20:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  *
+  22:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * See the License for the specific language governing permissions and
+  26:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  * limitations under the License.
+  27:Source\TransformFunctions/arm_cfft_radix2_f32.c ****  */
+  28:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  29:Source\TransformFunctions/arm_cfft_radix2_f32.c **** #include "arm_math.h"
+  30:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  31:Source\TransformFunctions/arm_cfft_radix2_f32.c **** void arm_radix2_butterfly_f32(
+  32:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   float32_t * pSrc,
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 2
+
+
+  33:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   uint32_t fftLen,
+  34:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   float32_t * pCoef,
+  35:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   uint16_t twidCoefModifier);
+  36:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  37:Source\TransformFunctions/arm_cfft_radix2_f32.c **** void arm_radix2_butterfly_inverse_f32(
+  38:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   float32_t * pSrc,
+  39:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   uint32_t fftLen,
+  40:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   float32_t * pCoef,
+  41:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   uint16_t twidCoefModifier,
+  42:Source\TransformFunctions/arm_cfft_radix2_f32.c ****   float32_t onebyfftLen);
+  43:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  44:Source\TransformFunctions/arm_cfft_radix2_f32.c **** extern void arm_bitreversal_f32(
+  45:Source\TransformFunctions/arm_cfft_radix2_f32.c ****     float32_t * pSrc,
+  46:Source\TransformFunctions/arm_cfft_radix2_f32.c ****     uint16_t fftSize,
+  47:Source\TransformFunctions/arm_cfft_radix2_f32.c ****     uint16_t bitRevFactor,
+  48:Source\TransformFunctions/arm_cfft_radix2_f32.c ****     uint16_t * pBitRevTab);
+  49:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  50:Source\TransformFunctions/arm_cfft_radix2_f32.c **** /**
+  51:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @ingroup groupTransforms
+  52:Source\TransformFunctions/arm_cfft_radix2_f32.c **** */
+  53:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  54:Source\TransformFunctions/arm_cfft_radix2_f32.c **** /**
+  55:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @addtogroup ComplexFFT
+  56:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @{
+  57:Source\TransformFunctions/arm_cfft_radix2_f32.c **** */
+  58:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  59:Source\TransformFunctions/arm_cfft_radix2_f32.c **** /**
+  60:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @details
+  61:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @brief Radix-2 CFFT/CIFFT.
+  62:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @deprecated Do not use this function.  It has been superseded by \ref arm_cfft_f32 and will be re
+  63:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * in the future.
+  64:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @param[in]      *S    points to an instance of the floating-point Radix-2 CFFT/CIFFT structure.
+  65:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @param[in, out] *pSrc points to the complex data buffer of size <code>2*fftLen</code>. Processing
+  66:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @return none.
+  67:Source\TransformFunctions/arm_cfft_radix2_f32.c **** */
+  68:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  69:Source\TransformFunctions/arm_cfft_radix2_f32.c **** void arm_cfft_radix2_f32(
+  70:Source\TransformFunctions/arm_cfft_radix2_f32.c **** const arm_cfft_radix2_instance_f32 * S,
+  71:Source\TransformFunctions/arm_cfft_radix2_f32.c **** float32_t * pSrc)
+  72:Source\TransformFunctions/arm_cfft_radix2_f32.c **** {
+  26              		.loc 1 72 0
+  27              		.cfi_startproc
+  28 0000 B0B5     		push	{r4, r5, r7, lr}
+  29              		.cfi_def_cfa_offset 16
+  30              		.cfi_offset 4, -16
+  31              		.cfi_offset 5, -12
+  32              		.cfi_offset 7, -8
+  33              		.cfi_offset 14, -4
+  34 0002 84B0     		sub	sp, sp, #16
+  35              		.cfi_def_cfa_offset 32
+  36 0004 02AF     		add	r7, sp, #8
+  37              		.cfi_def_cfa 7, 24
+  38 0006 7860     		str	r0, [r7, #4]
+  39 0008 3960     		str	r1, [r7]
+  73:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  74:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    if (S->ifftFlag == 1u)
+  40              		.loc 1 74 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 3
+
+
+  41 000a 7B68     		ldr	r3, [r7, #4]
+  42 000c 9B78     		ldrb	r3, [r3, #2]
+  43 000e 012B     		cmp	r3, #1
+  44 0010 10D1     		bne	.L2
+  75:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+  76:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       /*  Complex IFFT radix-2  */
+  77:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       arm_radix2_butterfly_inverse_f32(pSrc, S->fftLen, S->pTwiddle,
+  45              		.loc 1 77 0
+  46 0012 7B68     		ldr	r3, [r7, #4]
+  47 0014 1B88     		ldrh	r3, [r3]
+  48 0016 1D1C     		mov	r5, r3
+  49 0018 7B68     		ldr	r3, [r7, #4]
+  50 001a 5A68     		ldr	r2, [r3, #4]
+  51 001c 7B68     		ldr	r3, [r7, #4]
+  52 001e 9C89     		ldrh	r4, [r3, #12]
+  53 0020 7B68     		ldr	r3, [r7, #4]
+  54 0022 1B69     		ldr	r3, [r3, #16]
+  55 0024 3968     		ldr	r1, [r7]
+  56 0026 0093     		str	r3, [sp]
+  57 0028 081C     		mov	r0, r1
+  58 002a 291C     		mov	r1, r5
+  59 002c 231C     		mov	r3, r4
+  60 002e FFF7FEFF 		bl	arm_radix2_butterfly_inverse_f32
+  61 0032 0BE0     		b	.L3
+  62              	.L2:
+  78:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       S->twidCoefModifier, S->onebyfftLen);
+  79:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }
+  80:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    else
+  81:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+  82:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       /*  Complex FFT radix-2  */
+  83:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       arm_radix2_butterfly_f32(pSrc, S->fftLen, S->pTwiddle,
+  63              		.loc 1 83 0
+  64 0034 7B68     		ldr	r3, [r7, #4]
+  65 0036 1B88     		ldrh	r3, [r3]
+  66 0038 1C1C     		mov	r4, r3
+  67 003a 7B68     		ldr	r3, [r7, #4]
+  68 003c 5A68     		ldr	r2, [r3, #4]
+  69 003e 7B68     		ldr	r3, [r7, #4]
+  70 0040 9B89     		ldrh	r3, [r3, #12]
+  71 0042 3968     		ldr	r1, [r7]
+  72 0044 081C     		mov	r0, r1
+  73 0046 211C     		mov	r1, r4
+  74 0048 FFF7FEFF 		bl	arm_radix2_butterfly_f32
+  75              	.L3:
+  84:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       S->twidCoefModifier);
+  85:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }
+  86:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  87:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    if (S->bitReverseFlag == 1u)
+  76              		.loc 1 87 0
+  77 004c 7B68     		ldr	r3, [r7, #4]
+  78 004e DB78     		ldrb	r3, [r3, #3]
+  79 0050 012B     		cmp	r3, #1
+  80 0052 08D1     		bne	.L1
+  88:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+  89:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       /*  Bit Reversal */
+  90:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       arm_bitreversal_f32(pSrc, S->fftLen, S->bitRevFactor, S->pBitRevTable);
+  81              		.loc 1 90 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 4
+
+
+  82 0054 7B68     		ldr	r3, [r7, #4]
+  83 0056 1988     		ldrh	r1, [r3]
+  84 0058 7B68     		ldr	r3, [r7, #4]
+  85 005a DA89     		ldrh	r2, [r3, #14]
+  86 005c 7B68     		ldr	r3, [r7, #4]
+  87 005e 9B68     		ldr	r3, [r3, #8]
+  88 0060 3868     		ldr	r0, [r7]
+  89 0062 FFF7FEFF 		bl	arm_bitreversal_f32
+  90              	.L1:
+  91:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }
+  92:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  93:Source\TransformFunctions/arm_cfft_radix2_f32.c **** }
+  91              		.loc 1 93 0
+  92 0066 BD46     		mov	sp, r7
+  93 0068 02B0     		add	sp, sp, #8
+  94              		@ sp needed
+  95 006a B0BD     		pop	{r4, r5, r7, pc}
+  96              		.cfi_endproc
+  97              	.LFE82:
+  98              		.size	arm_cfft_radix2_f32, .-arm_cfft_radix2_f32
+  99              		.global	__aeabi_fadd
+ 100              		.global	__aeabi_fsub
+ 101              		.global	__aeabi_fmul
+ 102              		.section	.text.arm_radix2_butterfly_f32,"ax",%progbits
+ 103              		.align	2
+ 104              		.global	arm_radix2_butterfly_f32
+ 105              		.code	16
+ 106              		.thumb_func
+ 107              		.type	arm_radix2_butterfly_f32, %function
+ 108              	arm_radix2_butterfly_f32:
+ 109              	.LFB83:
+  94:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  95:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+  96:Source\TransformFunctions/arm_cfft_radix2_f32.c **** /**
+  97:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @} end of ComplexFFT group
+  98:Source\TransformFunctions/arm_cfft_radix2_f32.c **** */
+  99:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 100:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 101:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 102:Source\TransformFunctions/arm_cfft_radix2_f32.c **** /* ----------------------------------------------------------------------
+ 103:Source\TransformFunctions/arm_cfft_radix2_f32.c **** ** Internal helper function used by the FFTs
+ 104:Source\TransformFunctions/arm_cfft_radix2_f32.c **** ** ------------------------------------------------------------------- */
+ 105:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 106:Source\TransformFunctions/arm_cfft_radix2_f32.c **** /*
+ 107:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @brief  Core function for the floating-point CFFT butterfly process.
+ 108:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @param[in, out] *pSrc            points to the in-place buffer of floating-point data type.
+ 109:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @param[in]      fftLen           length of the FFT.
+ 110:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @param[in]      *pCoef           points to the twiddle coefficient buffer.
+ 111:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @param[in]      twidCoefModifier twiddle coefficient modifier that supports different size FFTs w
+ 112:Source\TransformFunctions/arm_cfft_radix2_f32.c **** * @return none.
+ 113:Source\TransformFunctions/arm_cfft_radix2_f32.c **** */
+ 114:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 115:Source\TransformFunctions/arm_cfft_radix2_f32.c **** void arm_radix2_butterfly_f32(
+ 116:Source\TransformFunctions/arm_cfft_radix2_f32.c **** float32_t * pSrc,
+ 117:Source\TransformFunctions/arm_cfft_radix2_f32.c **** uint32_t fftLen,
+ 118:Source\TransformFunctions/arm_cfft_radix2_f32.c **** float32_t * pCoef,
+ 119:Source\TransformFunctions/arm_cfft_radix2_f32.c **** uint16_t twidCoefModifier)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 5
+
+
+ 120:Source\TransformFunctions/arm_cfft_radix2_f32.c **** {
+ 110              		.loc 1 120 0
+ 111              		.cfi_startproc
+ 112 0000 90B5     		push	{r4, r7, lr}
+ 113              		.cfi_def_cfa_offset 12
+ 114              		.cfi_offset 4, -12
+ 115              		.cfi_offset 7, -8
+ 116              		.cfi_offset 14, -4
+ 117 0002 97B0     		sub	sp, sp, #92
+ 118              		.cfi_def_cfa_offset 104
+ 119 0004 00AF     		add	r7, sp, #0
+ 120              		.cfi_def_cfa_register 7
+ 121 0006 F860     		str	r0, [r7, #12]
+ 122 0008 B960     		str	r1, [r7, #8]
+ 123 000a 7A60     		str	r2, [r7, #4]
+ 124 000c 1A1C     		mov	r2, r3
+ 125 000e BB1C     		add	r3, r7, #2
+ 126 0010 1A80     		strh	r2, [r3]
+ 121:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 122:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    uint32_t i, j, k, l;
+ 123:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    uint32_t n1, n2, ia;
+ 124:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    float32_t xt, yt, cosVal, sinVal;
+ 125:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    float32_t p0, p1, p2, p3;
+ 126:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    float32_t a0, a1;
+ 127:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 128:Source\TransformFunctions/arm_cfft_radix2_f32.c **** #if defined (ARM_MATH_DSP)
+ 129:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 130:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    /*  Initializations for the first stage */
+ 131:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    n2 = fftLen >> 1;
+ 132:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    ia = 0;
+ 133:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    i = 0;
+ 134:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 135:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for groups
+ 136:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (k = n2; k > 0; k--)
+ 137:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 138:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       cosVal = pCoef[ia * 2];
+ 139:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       sinVal = pCoef[(ia * 2) + 1];
+ 140:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 141:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       /*  Twiddle coefficients index modifier */
+ 142:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       ia += twidCoefModifier;
+ 143:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 144:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       /*  index calculation for the input as, */
+ 145:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       /*  pSrc[i + 0], pSrc[i + fftLen/1] */
+ 146:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       l = i + n2;
+ 147:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 148:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       /*  Butterfly implementation */
+ 149:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a0 = pSrc[2 * i] + pSrc[2 * l];
+ 150:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       xt = pSrc[2 * i] - pSrc[2 * l];
+ 151:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 152:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       yt = pSrc[2 * i + 1] - pSrc[2 * l + 1];
+ 153:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a1 = pSrc[2 * l + 1] + pSrc[2 * i + 1];
+ 154:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 155:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p0 = xt * cosVal;
+ 156:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p1 = yt * sinVal;
+ 157:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p2 = yt * cosVal;
+ 158:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p3 = xt * sinVal;
+ 159:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 6
+
+
+ 160:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i]     = a0;
+ 161:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 1] = a1;
+ 162:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 163:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * l]     = p0 + p1;
+ 164:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * l + 1] = p2 - p3;
+ 165:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 166:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       i++;
+ 167:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }                             // groups loop end
+ 168:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 169:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    twidCoefModifier <<= 1u;
+ 170:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 171:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for stage
+ 172:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (k = n2; k > 2; k = k >> 1)
+ 173:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 174:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       n1 = n2;
+ 175:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       n2 = n2 >> 1;
+ 176:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       ia = 0;
+ 177:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 178:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       // loop for groups
+ 179:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       j = 0;
+ 180:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       do
+ 181:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       {
+ 182:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          cosVal = pCoef[ia * 2];
+ 183:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          sinVal = pCoef[(ia * 2) + 1];
+ 184:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          ia += twidCoefModifier;
+ 185:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 186:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          // loop for butterfly
+ 187:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          i = j;
+ 188:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          do
+ 189:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          {
+ 190:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             l = i + n2;
+ 191:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             a0 = pSrc[2 * i] + pSrc[2 * l];
+ 192:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             xt = pSrc[2 * i] - pSrc[2 * l];
+ 193:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 194:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             yt = pSrc[2 * i + 1] - pSrc[2 * l + 1];
+ 195:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             a1 = pSrc[2 * l + 1] + pSrc[2 * i + 1];
+ 196:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 197:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p0 = xt * cosVal;
+ 198:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p1 = yt * sinVal;
+ 199:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p2 = yt * cosVal;
+ 200:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p3 = xt * sinVal;
+ 201:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 202:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * i] = a0;
+ 203:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * i + 1] = a1;
+ 204:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 205:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * l]     = p0 + p1;
+ 206:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * l + 1] = p2 - p3;
+ 207:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 208:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             i += n1;
+ 209:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          } while ( i < fftLen );                        // butterfly loop end
+ 210:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          j++;
+ 211:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       } while ( j < n2);                          // groups loop end
+ 212:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       twidCoefModifier <<= 1u;
+ 213:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }                             // stages loop end
+ 214:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 215:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for butterfly
+ 216:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (i = 0; i < fftLen; i += 2)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 7
+
+
+ 217:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 218:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a0 = pSrc[2 * i] + pSrc[2 * i + 2];
+ 219:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       xt = pSrc[2 * i] - pSrc[2 * i + 2];
+ 220:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 221:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       yt = pSrc[2 * i + 1] - pSrc[2 * i + 3];
+ 222:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a1 = pSrc[2 * i + 3] + pSrc[2 * i + 1];
+ 223:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 224:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i] = a0;
+ 225:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 1] = a1;
+ 226:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 2] = xt;
+ 227:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 3] = yt;
+ 228:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }                             // groups loop end
+ 229:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 230:Source\TransformFunctions/arm_cfft_radix2_f32.c **** #else
+ 231:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 232:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    n2 = fftLen;
+ 127              		.loc 1 232 0
+ 128 0012 BB68     		ldr	r3, [r7, #8]
+ 129 0014 BB64     		str	r3, [r7, #72]
+ 233:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 234:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for stage
+ 235:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (k = fftLen; k > 1; k = k >> 1)
+ 130              		.loc 1 235 0
+ 131 0016 BB68     		ldr	r3, [r7, #8]
+ 132 0018 FB64     		str	r3, [r7, #76]
+ 133 001a B7E0     		b	.L6
+ 134              	.L9:
+ 236:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 237:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       n1 = n2;
+ 135              		.loc 1 237 0
+ 136 001c BB6C     		ldr	r3, [r7, #72]
+ 137 001e 3B64     		str	r3, [r7, #64]
+ 238:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       n2 = n2 >> 1;
+ 138              		.loc 1 238 0
+ 139 0020 BB6C     		ldr	r3, [r7, #72]
+ 140 0022 5B08     		lsr	r3, r3, #1
+ 141 0024 BB64     		str	r3, [r7, #72]
+ 239:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       ia = 0;
+ 142              		.loc 1 239 0
+ 143 0026 0023     		mov	r3, #0
+ 144 0028 7B64     		str	r3, [r7, #68]
+ 240:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 241:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       // loop for groups
+ 242:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       j = 0;
+ 145              		.loc 1 242 0
+ 146 002a 0023     		mov	r3, #0
+ 147 002c 3B65     		str	r3, [r7, #80]
+ 148              	.L8:
+ 243:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       do
+ 244:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       {
+ 245:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          cosVal = pCoef[ia * 2];
+ 149              		.loc 1 245 0
+ 150 002e 7B6C     		ldr	r3, [r7, #68]
+ 151 0030 DB00     		lsl	r3, r3, #3
+ 152 0032 7A68     		ldr	r2, [r7, #4]
+ 153 0034 D318     		add	r3, r2, r3
+ 154 0036 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 8
+
+
+ 155 0038 FB63     		str	r3, [r7, #60]
+ 246:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          sinVal = pCoef[(ia * 2) + 1];
+ 156              		.loc 1 246 0
+ 157 003a 7B6C     		ldr	r3, [r7, #68]
+ 158 003c DB00     		lsl	r3, r3, #3
+ 159 003e 0433     		add	r3, r3, #4
+ 160 0040 7A68     		ldr	r2, [r7, #4]
+ 161 0042 D318     		add	r3, r2, r3
+ 162 0044 1B68     		ldr	r3, [r3]
+ 163 0046 BB63     		str	r3, [r7, #56]
+ 247:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          ia += twidCoefModifier;
+ 164              		.loc 1 247 0
+ 165 0048 BB1C     		add	r3, r7, #2
+ 166 004a 1B88     		ldrh	r3, [r3]
+ 167 004c 7A6C     		ldr	r2, [r7, #68]
+ 168 004e D318     		add	r3, r2, r3
+ 169 0050 7B64     		str	r3, [r7, #68]
+ 248:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 249:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          // loop for butterfly
+ 250:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          i = j;
+ 170              		.loc 1 250 0
+ 171 0052 3B6D     		ldr	r3, [r7, #80]
+ 172 0054 7B65     		str	r3, [r7, #84]
+ 173              	.L7:
+ 251:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          do
+ 252:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          {
+ 253:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             l = i + n2;
+ 174              		.loc 1 253 0 discriminator 1
+ 175 0056 7A6D     		ldr	r2, [r7, #84]
+ 176 0058 BB6C     		ldr	r3, [r7, #72]
+ 177 005a D318     		add	r3, r2, r3
+ 178 005c 7B63     		str	r3, [r7, #52]
+ 254:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             a0 = pSrc[2 * i] + pSrc[2 * l];
+ 179              		.loc 1 254 0 discriminator 1
+ 180 005e 7B6D     		ldr	r3, [r7, #84]
+ 181 0060 DB00     		lsl	r3, r3, #3
+ 182 0062 FA68     		ldr	r2, [r7, #12]
+ 183 0064 D318     		add	r3, r2, r3
+ 184 0066 1968     		ldr	r1, [r3]
+ 185 0068 7B6B     		ldr	r3, [r7, #52]
+ 186 006a DB00     		lsl	r3, r3, #3
+ 187 006c FA68     		ldr	r2, [r7, #12]
+ 188 006e D318     		add	r3, r2, r3
+ 189 0070 1B68     		ldr	r3, [r3]
+ 190 0072 081C     		add	r0, r1, #0
+ 191 0074 191C     		add	r1, r3, #0
+ 192 0076 FFF7FEFF 		bl	__aeabi_fadd
+ 193 007a 031C     		add	r3, r0, #0
+ 194 007c 3B63     		str	r3, [r7, #48]
+ 255:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             xt = pSrc[2 * i] - pSrc[2 * l];
+ 195              		.loc 1 255 0 discriminator 1
+ 196 007e 7B6D     		ldr	r3, [r7, #84]
+ 197 0080 DB00     		lsl	r3, r3, #3
+ 198 0082 FA68     		ldr	r2, [r7, #12]
+ 199 0084 D318     		add	r3, r2, r3
+ 200 0086 1968     		ldr	r1, [r3]
+ 201 0088 7B6B     		ldr	r3, [r7, #52]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 9
+
+
+ 202 008a DB00     		lsl	r3, r3, #3
+ 203 008c FA68     		ldr	r2, [r7, #12]
+ 204 008e D318     		add	r3, r2, r3
+ 205 0090 1B68     		ldr	r3, [r3]
+ 206 0092 081C     		add	r0, r1, #0
+ 207 0094 191C     		add	r1, r3, #0
+ 208 0096 FFF7FEFF 		bl	__aeabi_fsub
+ 209 009a 031C     		add	r3, r0, #0
+ 210 009c FB62     		str	r3, [r7, #44]
+ 256:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 257:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             yt = pSrc[2 * i + 1] - pSrc[2 * l + 1];
+ 211              		.loc 1 257 0 discriminator 1
+ 212 009e 7B6D     		ldr	r3, [r7, #84]
+ 213 00a0 DB00     		lsl	r3, r3, #3
+ 214 00a2 0433     		add	r3, r3, #4
+ 215 00a4 FA68     		ldr	r2, [r7, #12]
+ 216 00a6 D318     		add	r3, r2, r3
+ 217 00a8 1968     		ldr	r1, [r3]
+ 218 00aa 7B6B     		ldr	r3, [r7, #52]
+ 219 00ac DB00     		lsl	r3, r3, #3
+ 220 00ae 0433     		add	r3, r3, #4
+ 221 00b0 FA68     		ldr	r2, [r7, #12]
+ 222 00b2 D318     		add	r3, r2, r3
+ 223 00b4 1B68     		ldr	r3, [r3]
+ 224 00b6 081C     		add	r0, r1, #0
+ 225 00b8 191C     		add	r1, r3, #0
+ 226 00ba FFF7FEFF 		bl	__aeabi_fsub
+ 227 00be 031C     		add	r3, r0, #0
+ 228 00c0 BB62     		str	r3, [r7, #40]
+ 258:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             a1 = pSrc[2 * l + 1] + pSrc[2 * i + 1];
+ 229              		.loc 1 258 0 discriminator 1
+ 230 00c2 7B6B     		ldr	r3, [r7, #52]
+ 231 00c4 DB00     		lsl	r3, r3, #3
+ 232 00c6 0433     		add	r3, r3, #4
+ 233 00c8 FA68     		ldr	r2, [r7, #12]
+ 234 00ca D318     		add	r3, r2, r3
+ 235 00cc 1968     		ldr	r1, [r3]
+ 236 00ce 7B6D     		ldr	r3, [r7, #84]
+ 237 00d0 DB00     		lsl	r3, r3, #3
+ 238 00d2 0433     		add	r3, r3, #4
+ 239 00d4 FA68     		ldr	r2, [r7, #12]
+ 240 00d6 D318     		add	r3, r2, r3
+ 241 00d8 1B68     		ldr	r3, [r3]
+ 242 00da 081C     		add	r0, r1, #0
+ 243 00dc 191C     		add	r1, r3, #0
+ 244 00de FFF7FEFF 		bl	__aeabi_fadd
+ 245 00e2 031C     		add	r3, r0, #0
+ 246 00e4 7B62     		str	r3, [r7, #36]
+ 259:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 260:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p0 = xt * cosVal;
+ 247              		.loc 1 260 0 discriminator 1
+ 248 00e6 F86A     		ldr	r0, [r7, #44]
+ 249 00e8 F96B     		ldr	r1, [r7, #60]
+ 250 00ea FFF7FEFF 		bl	__aeabi_fmul
+ 251 00ee 031C     		add	r3, r0, #0
+ 252 00f0 3B62     		str	r3, [r7, #32]
+ 261:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p1 = yt * sinVal;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 10
+
+
+ 253              		.loc 1 261 0 discriminator 1
+ 254 00f2 B86A     		ldr	r0, [r7, #40]
+ 255 00f4 B96B     		ldr	r1, [r7, #56]
+ 256 00f6 FFF7FEFF 		bl	__aeabi_fmul
+ 257 00fa 031C     		add	r3, r0, #0
+ 258 00fc FB61     		str	r3, [r7, #28]
+ 262:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p2 = yt * cosVal;
+ 259              		.loc 1 262 0 discriminator 1
+ 260 00fe B86A     		ldr	r0, [r7, #40]
+ 261 0100 F96B     		ldr	r1, [r7, #60]
+ 262 0102 FFF7FEFF 		bl	__aeabi_fmul
+ 263 0106 031C     		add	r3, r0, #0
+ 264 0108 BB61     		str	r3, [r7, #24]
+ 263:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p3 = xt * sinVal;
+ 265              		.loc 1 263 0 discriminator 1
+ 266 010a F86A     		ldr	r0, [r7, #44]
+ 267 010c B96B     		ldr	r1, [r7, #56]
+ 268 010e FFF7FEFF 		bl	__aeabi_fmul
+ 269 0112 031C     		add	r3, r0, #0
+ 270 0114 7B61     		str	r3, [r7, #20]
+ 264:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 265:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * i] = a0;
+ 271              		.loc 1 265 0 discriminator 1
+ 272 0116 7B6D     		ldr	r3, [r7, #84]
+ 273 0118 DB00     		lsl	r3, r3, #3
+ 274 011a FA68     		ldr	r2, [r7, #12]
+ 275 011c D318     		add	r3, r2, r3
+ 276 011e 3A6B     		ldr	r2, [r7, #48]
+ 277 0120 1A60     		str	r2, [r3]
+ 266:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * i + 1] = a1;
+ 278              		.loc 1 266 0 discriminator 1
+ 279 0122 7B6D     		ldr	r3, [r7, #84]
+ 280 0124 DB00     		lsl	r3, r3, #3
+ 281 0126 0433     		add	r3, r3, #4
+ 282 0128 FA68     		ldr	r2, [r7, #12]
+ 283 012a D318     		add	r3, r2, r3
+ 284 012c 7A6A     		ldr	r2, [r7, #36]
+ 285 012e 1A60     		str	r2, [r3]
+ 267:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 268:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * l]     = p0 + p1;
+ 286              		.loc 1 268 0 discriminator 1
+ 287 0130 7B6B     		ldr	r3, [r7, #52]
+ 288 0132 DB00     		lsl	r3, r3, #3
+ 289 0134 FA68     		ldr	r2, [r7, #12]
+ 290 0136 D418     		add	r4, r2, r3
+ 291 0138 386A     		ldr	r0, [r7, #32]
+ 292 013a F969     		ldr	r1, [r7, #28]
+ 293 013c FFF7FEFF 		bl	__aeabi_fadd
+ 294 0140 031C     		add	r3, r0, #0
+ 295 0142 2360     		str	r3, [r4]
+ 269:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * l + 1] = p2 - p3;
+ 296              		.loc 1 269 0 discriminator 1
+ 297 0144 7B6B     		ldr	r3, [r7, #52]
+ 298 0146 DB00     		lsl	r3, r3, #3
+ 299 0148 0433     		add	r3, r3, #4
+ 300 014a FA68     		ldr	r2, [r7, #12]
+ 301 014c D418     		add	r4, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 11
+
+
+ 302 014e B869     		ldr	r0, [r7, #24]
+ 303 0150 7969     		ldr	r1, [r7, #20]
+ 304 0152 FFF7FEFF 		bl	__aeabi_fsub
+ 305 0156 031C     		add	r3, r0, #0
+ 306 0158 2360     		str	r3, [r4]
+ 270:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 271:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             i += n1;
+ 307              		.loc 1 271 0 discriminator 1
+ 308 015a 7A6D     		ldr	r2, [r7, #84]
+ 309 015c 3B6C     		ldr	r3, [r7, #64]
+ 310 015e D318     		add	r3, r2, r3
+ 311 0160 7B65     		str	r3, [r7, #84]
+ 272:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          } while (i < fftLen);
+ 312              		.loc 1 272 0 discriminator 1
+ 313 0162 7A6D     		ldr	r2, [r7, #84]
+ 314 0164 BB68     		ldr	r3, [r7, #8]
+ 315 0166 9A42     		cmp	r2, r3
+ 316 0168 00D2     		bcs	.LCB264
+ 317 016a 74E7     		b	.L7	@long jump
+ 318              	.LCB264:
+ 273:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          j++;
+ 319              		.loc 1 273 0
+ 320 016c 3B6D     		ldr	r3, [r7, #80]
+ 321 016e 0133     		add	r3, r3, #1
+ 322 0170 3B65     		str	r3, [r7, #80]
+ 274:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       } while (j < n2);
+ 323              		.loc 1 274 0
+ 324 0172 3A6D     		ldr	r2, [r7, #80]
+ 325 0174 BB6C     		ldr	r3, [r7, #72]
+ 326 0176 9A42     		cmp	r2, r3
+ 327 0178 00D2     		bcs	.LCB271
+ 328 017a 58E7     		b	.L8	@long jump
+ 329              	.LCB271:
+ 275:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       twidCoefModifier <<= 1u;
+ 330              		.loc 1 275 0 discriminator 2
+ 331 017c BA1C     		add	r2, r7, #2
+ 332 017e BB1C     		add	r3, r7, #2
+ 333 0180 1B88     		ldrh	r3, [r3]
+ 334 0182 DB18     		add	r3, r3, r3
+ 335 0184 1380     		strh	r3, [r2]
+ 235:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 336              		.loc 1 235 0 discriminator 2
+ 337 0186 FB6C     		ldr	r3, [r7, #76]
+ 338 0188 5B08     		lsr	r3, r3, #1
+ 339 018a FB64     		str	r3, [r7, #76]
+ 340              	.L6:
+ 235:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 341              		.loc 1 235 0 is_stmt 0 discriminator 1
+ 342 018c FB6C     		ldr	r3, [r7, #76]
+ 343 018e 012B     		cmp	r3, #1
+ 344 0190 00D9     		bls	.LCB284
+ 345 0192 43E7     		b	.L9	@long jump
+ 346              	.LCB284:
+ 276:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }
+ 277:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 278:Source\TransformFunctions/arm_cfft_radix2_f32.c **** #endif //    #if defined (ARM_MATH_DSP)
+ 279:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 12
+
+
+ 280:Source\TransformFunctions/arm_cfft_radix2_f32.c **** }
+ 347              		.loc 1 280 0 is_stmt 1
+ 348 0194 BD46     		mov	sp, r7
+ 349 0196 17B0     		add	sp, sp, #92
+ 350              		@ sp needed
+ 351 0198 90BD     		pop	{r4, r7, pc}
+ 352              		.cfi_endproc
+ 353              	.LFE83:
+ 354              		.size	arm_radix2_butterfly_f32, .-arm_radix2_butterfly_f32
+ 355 019a C046     		.section	.text.arm_radix2_butterfly_inverse_f32,"ax",%progbits
+ 356              		.align	2
+ 357              		.global	arm_radix2_butterfly_inverse_f32
+ 358              		.code	16
+ 359              		.thumb_func
+ 360              		.type	arm_radix2_butterfly_inverse_f32, %function
+ 361              	arm_radix2_butterfly_inverse_f32:
+ 362              	.LFB84:
+ 281:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 282:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 283:Source\TransformFunctions/arm_cfft_radix2_f32.c **** void arm_radix2_butterfly_inverse_f32(
+ 284:Source\TransformFunctions/arm_cfft_radix2_f32.c **** float32_t * pSrc,
+ 285:Source\TransformFunctions/arm_cfft_radix2_f32.c **** uint32_t fftLen,
+ 286:Source\TransformFunctions/arm_cfft_radix2_f32.c **** float32_t * pCoef,
+ 287:Source\TransformFunctions/arm_cfft_radix2_f32.c **** uint16_t twidCoefModifier,
+ 288:Source\TransformFunctions/arm_cfft_radix2_f32.c **** float32_t onebyfftLen)
+ 289:Source\TransformFunctions/arm_cfft_radix2_f32.c **** {
+ 363              		.loc 1 289 0
+ 364              		.cfi_startproc
+ 365 0000 90B5     		push	{r4, r7, lr}
+ 366              		.cfi_def_cfa_offset 12
+ 367              		.cfi_offset 4, -12
+ 368              		.cfi_offset 7, -8
+ 369              		.cfi_offset 14, -4
+ 370 0002 97B0     		sub	sp, sp, #92
+ 371              		.cfi_def_cfa_offset 104
+ 372 0004 00AF     		add	r7, sp, #0
+ 373              		.cfi_def_cfa_register 7
+ 374 0006 F860     		str	r0, [r7, #12]
+ 375 0008 B960     		str	r1, [r7, #8]
+ 376 000a 7A60     		str	r2, [r7, #4]
+ 377 000c 1A1C     		mov	r2, r3
+ 378 000e BB1C     		add	r3, r7, #2
+ 379 0010 1A80     		strh	r2, [r3]
+ 290:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 291:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    uint32_t i, j, k, l;
+ 292:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    uint32_t n1, n2, ia;
+ 293:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    float32_t xt, yt, cosVal, sinVal;
+ 294:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    float32_t p0, p1, p2, p3;
+ 295:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    float32_t a0, a1;
+ 296:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 297:Source\TransformFunctions/arm_cfft_radix2_f32.c **** #if defined (ARM_MATH_DSP)
+ 298:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 299:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    n2 = fftLen >> 1;
+ 300:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    ia = 0;
+ 301:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 302:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for groups
+ 303:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (i = 0; i < n2; i++)
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 13
+
+
+ 304:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 305:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       cosVal = pCoef[ia * 2];
+ 306:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       sinVal = pCoef[(ia * 2) + 1];
+ 307:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       ia += twidCoefModifier;
+ 308:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 309:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       l = i + n2;
+ 310:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a0 = pSrc[2 * i] + pSrc[2 * l];
+ 311:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       xt = pSrc[2 * i] - pSrc[2 * l];
+ 312:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 313:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       yt = pSrc[2 * i + 1] - pSrc[2 * l + 1];
+ 314:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a1 = pSrc[2 * l + 1] + pSrc[2 * i + 1];
+ 315:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 316:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p0 = xt * cosVal;
+ 317:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p1 = yt * sinVal;
+ 318:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p2 = yt * cosVal;
+ 319:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p3 = xt * sinVal;
+ 320:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 321:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i] = a0;
+ 322:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 1] = a1;
+ 323:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 324:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * l]     = p0 - p1;
+ 325:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * l + 1] = p2 + p3;
+ 326:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }                             // groups loop end
+ 327:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 328:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    twidCoefModifier <<= 1u;
+ 329:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 330:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for stage
+ 331:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (k = fftLen / 2; k > 2; k = k >> 1)
+ 332:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 333:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       n1 = n2;
+ 334:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       n2 = n2 >> 1;
+ 335:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       ia = 0;
+ 336:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 337:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       // loop for groups
+ 338:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       j = 0;
+ 339:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       do
+ 340:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       {
+ 341:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          cosVal = pCoef[ia * 2];
+ 342:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          sinVal = pCoef[(ia * 2) + 1];
+ 343:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          ia += twidCoefModifier;
+ 344:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 345:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          // loop for butterfly
+ 346:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          i = j;
+ 347:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          do
+ 348:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          {
+ 349:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             l = i + n2;
+ 350:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             a0 = pSrc[2 * i] + pSrc[2 * l];
+ 351:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             xt = pSrc[2 * i] - pSrc[2 * l];
+ 352:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 353:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             yt = pSrc[2 * i + 1] - pSrc[2 * l + 1];
+ 354:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             a1 = pSrc[2 * l + 1] + pSrc[2 * i + 1];
+ 355:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 356:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p0 = xt * cosVal;
+ 357:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p1 = yt * sinVal;
+ 358:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p2 = yt * cosVal;
+ 359:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p3 = xt * sinVal;
+ 360:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 14
+
+
+ 361:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * i] = a0;
+ 362:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * i + 1] = a1;
+ 363:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 364:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * l]     = p0 - p1;
+ 365:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * l + 1] = p2 + p3;
+ 366:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 367:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             i += n1;
+ 368:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          } while ( i < fftLen );                 // butterfly loop end
+ 369:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          j++;
+ 370:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       } while (j < n2);                      // groups loop end
+ 371:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 372:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       twidCoefModifier <<= 1u;
+ 373:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }                             // stages loop end
+ 374:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 375:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for butterfly
+ 376:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (i = 0; i < fftLen; i += 2)
+ 377:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 378:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a0 = pSrc[2 * i] + pSrc[2 * i + 2];
+ 379:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       xt = pSrc[2 * i] - pSrc[2 * i + 2];
+ 380:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 381:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a1 = pSrc[2 * i + 3] + pSrc[2 * i + 1];
+ 382:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       yt = pSrc[2 * i + 1] - pSrc[2 * i + 3];
+ 383:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 384:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p0 = a0 * onebyfftLen;
+ 385:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p2 = xt * onebyfftLen;
+ 386:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p1 = a1 * onebyfftLen;
+ 387:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p3 = yt * onebyfftLen;
+ 388:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 389:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i] = p0;
+ 390:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 1] = p1;
+ 391:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 2] = p2;
+ 392:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 3] = p3;
+ 393:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }                             // butterfly loop end
+ 394:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 395:Source\TransformFunctions/arm_cfft_radix2_f32.c **** #else
+ 396:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 397:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    n2 = fftLen;
+ 380              		.loc 1 397 0
+ 381 0012 BB68     		ldr	r3, [r7, #8]
+ 382 0014 BB64     		str	r3, [r7, #72]
+ 398:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 399:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for stage
+ 400:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (k = fftLen; k > 2; k = k >> 1)
+ 383              		.loc 1 400 0
+ 384 0016 BB68     		ldr	r3, [r7, #8]
+ 385 0018 FB64     		str	r3, [r7, #76]
+ 386 001a B7E0     		b	.L11
+ 387              	.L14:
+ 401:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 402:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       n1 = n2;
+ 388              		.loc 1 402 0
+ 389 001c BB6C     		ldr	r3, [r7, #72]
+ 390 001e 3B64     		str	r3, [r7, #64]
+ 403:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       n2 = n2 >> 1;
+ 391              		.loc 1 403 0
+ 392 0020 BB6C     		ldr	r3, [r7, #72]
+ 393 0022 5B08     		lsr	r3, r3, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 15
+
+
+ 394 0024 BB64     		str	r3, [r7, #72]
+ 404:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       ia = 0;
+ 395              		.loc 1 404 0
+ 396 0026 0023     		mov	r3, #0
+ 397 0028 7B64     		str	r3, [r7, #68]
+ 405:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 406:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       // loop for groups
+ 407:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       j = 0;
+ 398              		.loc 1 407 0
+ 399 002a 0023     		mov	r3, #0
+ 400 002c 3B65     		str	r3, [r7, #80]
+ 401              	.L13:
+ 408:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       do
+ 409:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       {
+ 410:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          cosVal = pCoef[ia * 2];
+ 402              		.loc 1 410 0
+ 403 002e 7B6C     		ldr	r3, [r7, #68]
+ 404 0030 DB00     		lsl	r3, r3, #3
+ 405 0032 7A68     		ldr	r2, [r7, #4]
+ 406 0034 D318     		add	r3, r2, r3
+ 407 0036 1B68     		ldr	r3, [r3]
+ 408 0038 FB63     		str	r3, [r7, #60]
+ 411:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          sinVal = pCoef[(ia * 2) + 1];
+ 409              		.loc 1 411 0
+ 410 003a 7B6C     		ldr	r3, [r7, #68]
+ 411 003c DB00     		lsl	r3, r3, #3
+ 412 003e 0433     		add	r3, r3, #4
+ 413 0040 7A68     		ldr	r2, [r7, #4]
+ 414 0042 D318     		add	r3, r2, r3
+ 415 0044 1B68     		ldr	r3, [r3]
+ 416 0046 BB63     		str	r3, [r7, #56]
+ 412:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          ia = ia + twidCoefModifier;
+ 417              		.loc 1 412 0
+ 418 0048 BB1C     		add	r3, r7, #2
+ 419 004a 1B88     		ldrh	r3, [r3]
+ 420 004c 7A6C     		ldr	r2, [r7, #68]
+ 421 004e D318     		add	r3, r2, r3
+ 422 0050 7B64     		str	r3, [r7, #68]
+ 413:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 414:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          // loop for butterfly
+ 415:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          i = j;
+ 423              		.loc 1 415 0
+ 424 0052 3B6D     		ldr	r3, [r7, #80]
+ 425 0054 7B65     		str	r3, [r7, #84]
+ 426              	.L12:
+ 416:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          do
+ 417:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          {
+ 418:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             l = i + n2;
+ 427              		.loc 1 418 0 discriminator 1
+ 428 0056 7A6D     		ldr	r2, [r7, #84]
+ 429 0058 BB6C     		ldr	r3, [r7, #72]
+ 430 005a D318     		add	r3, r2, r3
+ 431 005c 7B63     		str	r3, [r7, #52]
+ 419:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             a0 = pSrc[2 * i] + pSrc[2 * l];
+ 432              		.loc 1 419 0 discriminator 1
+ 433 005e 7B6D     		ldr	r3, [r7, #84]
+ 434 0060 DB00     		lsl	r3, r3, #3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 16
+
+
+ 435 0062 FA68     		ldr	r2, [r7, #12]
+ 436 0064 D318     		add	r3, r2, r3
+ 437 0066 1968     		ldr	r1, [r3]
+ 438 0068 7B6B     		ldr	r3, [r7, #52]
+ 439 006a DB00     		lsl	r3, r3, #3
+ 440 006c FA68     		ldr	r2, [r7, #12]
+ 441 006e D318     		add	r3, r2, r3
+ 442 0070 1B68     		ldr	r3, [r3]
+ 443 0072 081C     		add	r0, r1, #0
+ 444 0074 191C     		add	r1, r3, #0
+ 445 0076 FFF7FEFF 		bl	__aeabi_fadd
+ 446 007a 031C     		add	r3, r0, #0
+ 447 007c 3B63     		str	r3, [r7, #48]
+ 420:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             xt = pSrc[2 * i] - pSrc[2 * l];
+ 448              		.loc 1 420 0 discriminator 1
+ 449 007e 7B6D     		ldr	r3, [r7, #84]
+ 450 0080 DB00     		lsl	r3, r3, #3
+ 451 0082 FA68     		ldr	r2, [r7, #12]
+ 452 0084 D318     		add	r3, r2, r3
+ 453 0086 1968     		ldr	r1, [r3]
+ 454 0088 7B6B     		ldr	r3, [r7, #52]
+ 455 008a DB00     		lsl	r3, r3, #3
+ 456 008c FA68     		ldr	r2, [r7, #12]
+ 457 008e D318     		add	r3, r2, r3
+ 458 0090 1B68     		ldr	r3, [r3]
+ 459 0092 081C     		add	r0, r1, #0
+ 460 0094 191C     		add	r1, r3, #0
+ 461 0096 FFF7FEFF 		bl	__aeabi_fsub
+ 462 009a 031C     		add	r3, r0, #0
+ 463 009c FB62     		str	r3, [r7, #44]
+ 421:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 422:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             yt = pSrc[2 * i + 1] - pSrc[2 * l + 1];
+ 464              		.loc 1 422 0 discriminator 1
+ 465 009e 7B6D     		ldr	r3, [r7, #84]
+ 466 00a0 DB00     		lsl	r3, r3, #3
+ 467 00a2 0433     		add	r3, r3, #4
+ 468 00a4 FA68     		ldr	r2, [r7, #12]
+ 469 00a6 D318     		add	r3, r2, r3
+ 470 00a8 1968     		ldr	r1, [r3]
+ 471 00aa 7B6B     		ldr	r3, [r7, #52]
+ 472 00ac DB00     		lsl	r3, r3, #3
+ 473 00ae 0433     		add	r3, r3, #4
+ 474 00b0 FA68     		ldr	r2, [r7, #12]
+ 475 00b2 D318     		add	r3, r2, r3
+ 476 00b4 1B68     		ldr	r3, [r3]
+ 477 00b6 081C     		add	r0, r1, #0
+ 478 00b8 191C     		add	r1, r3, #0
+ 479 00ba FFF7FEFF 		bl	__aeabi_fsub
+ 480 00be 031C     		add	r3, r0, #0
+ 481 00c0 BB62     		str	r3, [r7, #40]
+ 423:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             a1 = pSrc[2 * l + 1] + pSrc[2 * i + 1];
+ 482              		.loc 1 423 0 discriminator 1
+ 483 00c2 7B6B     		ldr	r3, [r7, #52]
+ 484 00c4 DB00     		lsl	r3, r3, #3
+ 485 00c6 0433     		add	r3, r3, #4
+ 486 00c8 FA68     		ldr	r2, [r7, #12]
+ 487 00ca D318     		add	r3, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 17
+
+
+ 488 00cc 1968     		ldr	r1, [r3]
+ 489 00ce 7B6D     		ldr	r3, [r7, #84]
+ 490 00d0 DB00     		lsl	r3, r3, #3
+ 491 00d2 0433     		add	r3, r3, #4
+ 492 00d4 FA68     		ldr	r2, [r7, #12]
+ 493 00d6 D318     		add	r3, r2, r3
+ 494 00d8 1B68     		ldr	r3, [r3]
+ 495 00da 081C     		add	r0, r1, #0
+ 496 00dc 191C     		add	r1, r3, #0
+ 497 00de FFF7FEFF 		bl	__aeabi_fadd
+ 498 00e2 031C     		add	r3, r0, #0
+ 499 00e4 7B62     		str	r3, [r7, #36]
+ 424:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 425:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p0 = xt * cosVal;
+ 500              		.loc 1 425 0 discriminator 1
+ 501 00e6 F86A     		ldr	r0, [r7, #44]
+ 502 00e8 F96B     		ldr	r1, [r7, #60]
+ 503 00ea FFF7FEFF 		bl	__aeabi_fmul
+ 504 00ee 031C     		add	r3, r0, #0
+ 505 00f0 3B62     		str	r3, [r7, #32]
+ 426:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p1 = yt * sinVal;
+ 506              		.loc 1 426 0 discriminator 1
+ 507 00f2 B86A     		ldr	r0, [r7, #40]
+ 508 00f4 B96B     		ldr	r1, [r7, #56]
+ 509 00f6 FFF7FEFF 		bl	__aeabi_fmul
+ 510 00fa 031C     		add	r3, r0, #0
+ 511 00fc FB61     		str	r3, [r7, #28]
+ 427:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p2 = yt * cosVal;
+ 512              		.loc 1 427 0 discriminator 1
+ 513 00fe B86A     		ldr	r0, [r7, #40]
+ 514 0100 F96B     		ldr	r1, [r7, #60]
+ 515 0102 FFF7FEFF 		bl	__aeabi_fmul
+ 516 0106 031C     		add	r3, r0, #0
+ 517 0108 BB61     		str	r3, [r7, #24]
+ 428:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             p3 = xt * sinVal;
+ 518              		.loc 1 428 0 discriminator 1
+ 519 010a F86A     		ldr	r0, [r7, #44]
+ 520 010c B96B     		ldr	r1, [r7, #56]
+ 521 010e FFF7FEFF 		bl	__aeabi_fmul
+ 522 0112 031C     		add	r3, r0, #0
+ 523 0114 7B61     		str	r3, [r7, #20]
+ 429:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 430:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * i] = a0;
+ 524              		.loc 1 430 0 discriminator 1
+ 525 0116 7B6D     		ldr	r3, [r7, #84]
+ 526 0118 DB00     		lsl	r3, r3, #3
+ 527 011a FA68     		ldr	r2, [r7, #12]
+ 528 011c D318     		add	r3, r2, r3
+ 529 011e 3A6B     		ldr	r2, [r7, #48]
+ 530 0120 1A60     		str	r2, [r3]
+ 431:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * i + 1] = a1;
+ 531              		.loc 1 431 0 discriminator 1
+ 532 0122 7B6D     		ldr	r3, [r7, #84]
+ 533 0124 DB00     		lsl	r3, r3, #3
+ 534 0126 0433     		add	r3, r3, #4
+ 535 0128 FA68     		ldr	r2, [r7, #12]
+ 536 012a D318     		add	r3, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 18
+
+
+ 537 012c 7A6A     		ldr	r2, [r7, #36]
+ 538 012e 1A60     		str	r2, [r3]
+ 432:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 433:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * l]     = p0 - p1;
+ 539              		.loc 1 433 0 discriminator 1
+ 540 0130 7B6B     		ldr	r3, [r7, #52]
+ 541 0132 DB00     		lsl	r3, r3, #3
+ 542 0134 FA68     		ldr	r2, [r7, #12]
+ 543 0136 D418     		add	r4, r2, r3
+ 544 0138 386A     		ldr	r0, [r7, #32]
+ 545 013a F969     		ldr	r1, [r7, #28]
+ 546 013c FFF7FEFF 		bl	__aeabi_fsub
+ 547 0140 031C     		add	r3, r0, #0
+ 548 0142 2360     		str	r3, [r4]
+ 434:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             pSrc[2 * l + 1] = p2 + p3;
+ 549              		.loc 1 434 0 discriminator 1
+ 550 0144 7B6B     		ldr	r3, [r7, #52]
+ 551 0146 DB00     		lsl	r3, r3, #3
+ 552 0148 0433     		add	r3, r3, #4
+ 553 014a FA68     		ldr	r2, [r7, #12]
+ 554 014c D418     		add	r4, r2, r3
+ 555 014e B869     		ldr	r0, [r7, #24]
+ 556 0150 7969     		ldr	r1, [r7, #20]
+ 557 0152 FFF7FEFF 		bl	__aeabi_fadd
+ 558 0156 031C     		add	r3, r0, #0
+ 559 0158 2360     		str	r3, [r4]
+ 435:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 436:Source\TransformFunctions/arm_cfft_radix2_f32.c ****             i += n1;
+ 560              		.loc 1 436 0 discriminator 1
+ 561 015a 7A6D     		ldr	r2, [r7, #84]
+ 562 015c 3B6C     		ldr	r3, [r7, #64]
+ 563 015e D318     		add	r3, r2, r3
+ 564 0160 7B65     		str	r3, [r7, #84]
+ 437:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          } while ( i < fftLen );                    // butterfly loop end
+ 565              		.loc 1 437 0 discriminator 1
+ 566 0162 7A6D     		ldr	r2, [r7, #84]
+ 567 0164 BB68     		ldr	r3, [r7, #8]
+ 568 0166 9A42     		cmp	r2, r3
+ 569 0168 00D2     		bcs	.LCB482
+ 570 016a 74E7     		b	.L12	@long jump
+ 571              	.LCB482:
+ 438:Source\TransformFunctions/arm_cfft_radix2_f32.c ****          j++;
+ 572              		.loc 1 438 0
+ 573 016c 3B6D     		ldr	r3, [r7, #80]
+ 574 016e 0133     		add	r3, r3, #1
+ 575 0170 3B65     		str	r3, [r7, #80]
+ 439:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       } while ( j < n2 );                      // groups loop end
+ 576              		.loc 1 439 0
+ 577 0172 3A6D     		ldr	r2, [r7, #80]
+ 578 0174 BB6C     		ldr	r3, [r7, #72]
+ 579 0176 9A42     		cmp	r2, r3
+ 580 0178 00D2     		bcs	.LCB489
+ 581 017a 58E7     		b	.L13	@long jump
+ 582              	.LCB489:
+ 440:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 441:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       twidCoefModifier = twidCoefModifier << 1u;
+ 583              		.loc 1 441 0 discriminator 2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 19
+
+
+ 584 017c BA1C     		add	r2, r7, #2
+ 585 017e BB1C     		add	r3, r7, #2
+ 586 0180 1B88     		ldrh	r3, [r3]
+ 587 0182 DB18     		add	r3, r3, r3
+ 588 0184 1380     		strh	r3, [r2]
+ 400:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 589              		.loc 1 400 0 discriminator 2
+ 590 0186 FB6C     		ldr	r3, [r7, #76]
+ 591 0188 5B08     		lsr	r3, r3, #1
+ 592 018a FB64     		str	r3, [r7, #76]
+ 593              	.L11:
+ 400:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 594              		.loc 1 400 0 is_stmt 0 discriminator 1
+ 595 018c FB6C     		ldr	r3, [r7, #76]
+ 596 018e 022B     		cmp	r3, #2
+ 597 0190 00D9     		bls	.LCB502
+ 598 0192 43E7     		b	.L14	@long jump
+ 599              	.LCB502:
+ 442:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }                             // stages loop end
+ 443:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 444:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    n1 = n2;
+ 600              		.loc 1 444 0 is_stmt 1
+ 601 0194 BB6C     		ldr	r3, [r7, #72]
+ 602 0196 3B64     		str	r3, [r7, #64]
+ 445:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    n2 = n2 >> 1;
+ 603              		.loc 1 445 0
+ 604 0198 BB6C     		ldr	r3, [r7, #72]
+ 605 019a 5B08     		lsr	r3, r3, #1
+ 606 019c BB64     		str	r3, [r7, #72]
+ 446:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 447:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    // loop for butterfly
+ 448:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    for (i = 0; i < fftLen; i += n1)
+ 607              		.loc 1 448 0
+ 608 019e 0023     		mov	r3, #0
+ 609 01a0 7B65     		str	r3, [r7, #84]
+ 610 01a2 7DE0     		b	.L15
+ 611              	.L16:
+ 449:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 450:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       l = i + n2;
+ 612              		.loc 1 450 0 discriminator 3
+ 613 01a4 7A6D     		ldr	r2, [r7, #84]
+ 614 01a6 BB6C     		ldr	r3, [r7, #72]
+ 615 01a8 D318     		add	r3, r2, r3
+ 616 01aa 7B63     		str	r3, [r7, #52]
+ 451:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 452:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a0 = pSrc[2 * i] + pSrc[2 * l];
+ 617              		.loc 1 452 0 discriminator 3
+ 618 01ac 7B6D     		ldr	r3, [r7, #84]
+ 619 01ae DB00     		lsl	r3, r3, #3
+ 620 01b0 FA68     		ldr	r2, [r7, #12]
+ 621 01b2 D318     		add	r3, r2, r3
+ 622 01b4 1968     		ldr	r1, [r3]
+ 623 01b6 7B6B     		ldr	r3, [r7, #52]
+ 624 01b8 DB00     		lsl	r3, r3, #3
+ 625 01ba FA68     		ldr	r2, [r7, #12]
+ 626 01bc D318     		add	r3, r2, r3
+ 627 01be 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 20
+
+
+ 628 01c0 081C     		add	r0, r1, #0
+ 629 01c2 191C     		add	r1, r3, #0
+ 630 01c4 FFF7FEFF 		bl	__aeabi_fadd
+ 631 01c8 031C     		add	r3, r0, #0
+ 632 01ca 3B63     		str	r3, [r7, #48]
+ 453:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       xt = pSrc[2 * i] - pSrc[2 * l];
+ 633              		.loc 1 453 0 discriminator 3
+ 634 01cc 7B6D     		ldr	r3, [r7, #84]
+ 635 01ce DB00     		lsl	r3, r3, #3
+ 636 01d0 FA68     		ldr	r2, [r7, #12]
+ 637 01d2 D318     		add	r3, r2, r3
+ 638 01d4 1968     		ldr	r1, [r3]
+ 639 01d6 7B6B     		ldr	r3, [r7, #52]
+ 640 01d8 DB00     		lsl	r3, r3, #3
+ 641 01da FA68     		ldr	r2, [r7, #12]
+ 642 01dc D318     		add	r3, r2, r3
+ 643 01de 1B68     		ldr	r3, [r3]
+ 644 01e0 081C     		add	r0, r1, #0
+ 645 01e2 191C     		add	r1, r3, #0
+ 646 01e4 FFF7FEFF 		bl	__aeabi_fsub
+ 647 01e8 031C     		add	r3, r0, #0
+ 648 01ea FB62     		str	r3, [r7, #44]
+ 454:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 455:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       a1 = pSrc[2 * l + 1] + pSrc[2 * i + 1];
+ 649              		.loc 1 455 0 discriminator 3
+ 650 01ec 7B6B     		ldr	r3, [r7, #52]
+ 651 01ee DB00     		lsl	r3, r3, #3
+ 652 01f0 0433     		add	r3, r3, #4
+ 653 01f2 FA68     		ldr	r2, [r7, #12]
+ 654 01f4 D318     		add	r3, r2, r3
+ 655 01f6 1968     		ldr	r1, [r3]
+ 656 01f8 7B6D     		ldr	r3, [r7, #84]
+ 657 01fa DB00     		lsl	r3, r3, #3
+ 658 01fc 0433     		add	r3, r3, #4
+ 659 01fe FA68     		ldr	r2, [r7, #12]
+ 660 0200 D318     		add	r3, r2, r3
+ 661 0202 1B68     		ldr	r3, [r3]
+ 662 0204 081C     		add	r0, r1, #0
+ 663 0206 191C     		add	r1, r3, #0
+ 664 0208 FFF7FEFF 		bl	__aeabi_fadd
+ 665 020c 031C     		add	r3, r0, #0
+ 666 020e 7B62     		str	r3, [r7, #36]
+ 456:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       yt = pSrc[2 * i + 1] - pSrc[2 * l + 1];
+ 667              		.loc 1 456 0 discriminator 3
+ 668 0210 7B6D     		ldr	r3, [r7, #84]
+ 669 0212 DB00     		lsl	r3, r3, #3
+ 670 0214 0433     		add	r3, r3, #4
+ 671 0216 FA68     		ldr	r2, [r7, #12]
+ 672 0218 D318     		add	r3, r2, r3
+ 673 021a 1968     		ldr	r1, [r3]
+ 674 021c 7B6B     		ldr	r3, [r7, #52]
+ 675 021e DB00     		lsl	r3, r3, #3
+ 676 0220 0433     		add	r3, r3, #4
+ 677 0222 FA68     		ldr	r2, [r7, #12]
+ 678 0224 D318     		add	r3, r2, r3
+ 679 0226 1B68     		ldr	r3, [r3]
+ 680 0228 081C     		add	r0, r1, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 21
+
+
+ 681 022a 191C     		add	r1, r3, #0
+ 682 022c FFF7FEFF 		bl	__aeabi_fsub
+ 683 0230 031C     		add	r3, r0, #0
+ 684 0232 BB62     		str	r3, [r7, #40]
+ 457:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 458:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p0 = a0 * onebyfftLen;
+ 685              		.loc 1 458 0 discriminator 3
+ 686 0234 386B     		ldr	r0, [r7, #48]
+ 687 0236 B96E     		ldr	r1, [r7, #104]
+ 688 0238 FFF7FEFF 		bl	__aeabi_fmul
+ 689 023c 031C     		add	r3, r0, #0
+ 690 023e 3B62     		str	r3, [r7, #32]
+ 459:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p2 = xt * onebyfftLen;
+ 691              		.loc 1 459 0 discriminator 3
+ 692 0240 F86A     		ldr	r0, [r7, #44]
+ 693 0242 B96E     		ldr	r1, [r7, #104]
+ 694 0244 FFF7FEFF 		bl	__aeabi_fmul
+ 695 0248 031C     		add	r3, r0, #0
+ 696 024a BB61     		str	r3, [r7, #24]
+ 460:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p1 = a1 * onebyfftLen;
+ 697              		.loc 1 460 0 discriminator 3
+ 698 024c 786A     		ldr	r0, [r7, #36]
+ 699 024e B96E     		ldr	r1, [r7, #104]
+ 700 0250 FFF7FEFF 		bl	__aeabi_fmul
+ 701 0254 031C     		add	r3, r0, #0
+ 702 0256 FB61     		str	r3, [r7, #28]
+ 461:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       p3 = yt * onebyfftLen;
+ 703              		.loc 1 461 0 discriminator 3
+ 704 0258 B86A     		ldr	r0, [r7, #40]
+ 705 025a B96E     		ldr	r1, [r7, #104]
+ 706 025c FFF7FEFF 		bl	__aeabi_fmul
+ 707 0260 031C     		add	r3, r0, #0
+ 708 0262 7B61     		str	r3, [r7, #20]
+ 462:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 463:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i] = p0;
+ 709              		.loc 1 463 0 discriminator 3
+ 710 0264 7B6D     		ldr	r3, [r7, #84]
+ 711 0266 DB00     		lsl	r3, r3, #3
+ 712 0268 FA68     		ldr	r2, [r7, #12]
+ 713 026a D318     		add	r3, r2, r3
+ 714 026c 3A6A     		ldr	r2, [r7, #32]
+ 715 026e 1A60     		str	r2, [r3]
+ 464:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2u * l] = p2;
+ 716              		.loc 1 464 0 discriminator 3
+ 717 0270 7B6B     		ldr	r3, [r7, #52]
+ 718 0272 DB00     		lsl	r3, r3, #3
+ 719 0274 FA68     		ldr	r2, [r7, #12]
+ 720 0276 D318     		add	r3, r2, r3
+ 721 0278 BA69     		ldr	r2, [r7, #24]
+ 722 027a 1A60     		str	r2, [r3]
+ 465:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 466:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2 * i + 1] = p1;
+ 723              		.loc 1 466 0 discriminator 3
+ 724 027c 7B6D     		ldr	r3, [r7, #84]
+ 725 027e DB00     		lsl	r3, r3, #3
+ 726 0280 0433     		add	r3, r3, #4
+ 727 0282 FA68     		ldr	r2, [r7, #12]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 22
+
+
+ 728 0284 D318     		add	r3, r2, r3
+ 729 0286 FA69     		ldr	r2, [r7, #28]
+ 730 0288 1A60     		str	r2, [r3]
+ 467:Source\TransformFunctions/arm_cfft_radix2_f32.c ****       pSrc[2u * l + 1u] = p3;
+ 731              		.loc 1 467 0 discriminator 3
+ 732 028a 7B6B     		ldr	r3, [r7, #52]
+ 733 028c DB00     		lsl	r3, r3, #3
+ 734 028e 0433     		add	r3, r3, #4
+ 735 0290 FA68     		ldr	r2, [r7, #12]
+ 736 0292 D318     		add	r3, r2, r3
+ 737 0294 7A69     		ldr	r2, [r7, #20]
+ 738 0296 1A60     		str	r2, [r3]
+ 448:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 739              		.loc 1 448 0 discriminator 3
+ 740 0298 7A6D     		ldr	r2, [r7, #84]
+ 741 029a 3B6C     		ldr	r3, [r7, #64]
+ 742 029c D318     		add	r3, r2, r3
+ 743 029e 7B65     		str	r3, [r7, #84]
+ 744              	.L15:
+ 448:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    {
+ 745              		.loc 1 448 0 is_stmt 0 discriminator 1
+ 746 02a0 7A6D     		ldr	r2, [r7, #84]
+ 747 02a2 BB68     		ldr	r3, [r7, #8]
+ 748 02a4 9A42     		cmp	r2, r3
+ 749 02a6 00D2     		bcs	.LCB637
+ 750 02a8 7CE7     		b	.L16	@long jump
+ 751              	.LCB637:
+ 468:Source\TransformFunctions/arm_cfft_radix2_f32.c ****    }                             // butterfly loop end
+ 469:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 470:Source\TransformFunctions/arm_cfft_radix2_f32.c **** #endif //      #if defined (ARM_MATH_DSP)
+ 471:Source\TransformFunctions/arm_cfft_radix2_f32.c **** 
+ 472:Source\TransformFunctions/arm_cfft_radix2_f32.c **** }
+ 752              		.loc 1 472 0 is_stmt 1
+ 753 02aa BD46     		mov	sp, r7
+ 754 02ac 17B0     		add	sp, sp, #92
+ 755              		@ sp needed
+ 756 02ae 90BD     		pop	{r4, r7, pc}
+ 757              		.cfi_endproc
+ 758              	.LFE84:
+ 759              		.size	arm_radix2_butterfly_inverse_f32, .-arm_radix2_butterfly_inverse_f32
+ 760              		.text
+ 761              	.Letext0:
+ 762              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 763              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 764              		.file 4 ".\\Include/arm_math.h"
+ 765              		.section	.debug_info,"",%progbits
+ 766              	.Ldebug_info0:
+ 767 0000 23040000 		.4byte	0x423
+ 768 0004 0400     		.2byte	0x4
+ 769 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 770 000a 04       		.byte	0x4
+ 771 000b 01       		.uleb128 0x1
+ 772 000c 91010000 		.4byte	.LASF36
+ 773 0010 01       		.byte	0x1
+ 774 0011 10010000 		.4byte	.LASF37
+ 775 0015 51000000 		.4byte	.LASF38
+ 776 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 23
+
+
+ 777 001d 00000000 		.4byte	0
+ 778 0021 00000000 		.4byte	.Ldebug_line0
+ 779 0025 02       		.uleb128 0x2
+ 780 0026 01       		.byte	0x1
+ 781 0027 06       		.byte	0x6
+ 782 0028 B5020000 		.4byte	.LASF0
+ 783 002c 03       		.uleb128 0x3
+ 784 002d 09000000 		.4byte	.LASF3
+ 785 0031 02       		.byte	0x2
+ 786 0032 1D       		.byte	0x1d
+ 787 0033 37000000 		.4byte	0x37
+ 788 0037 02       		.uleb128 0x2
+ 789 0038 01       		.byte	0x1
+ 790 0039 08       		.byte	0x8
+ 791 003a CA000000 		.4byte	.LASF1
+ 792 003e 02       		.uleb128 0x2
+ 793 003f 02       		.byte	0x2
+ 794 0040 05       		.byte	0x5
+ 795 0041 6B020000 		.4byte	.LASF2
+ 796 0045 03       		.uleb128 0x3
+ 797 0046 40010000 		.4byte	.LASF4
+ 798 004a 02       		.byte	0x2
+ 799 004b 2B       		.byte	0x2b
+ 800 004c 50000000 		.4byte	0x50
+ 801 0050 02       		.uleb128 0x2
+ 802 0051 02       		.byte	0x2
+ 803 0052 07       		.byte	0x7
+ 804 0053 F6000000 		.4byte	.LASF5
+ 805 0057 02       		.uleb128 0x2
+ 806 0058 04       		.byte	0x4
+ 807 0059 05       		.byte	0x5
+ 808 005a A0020000 		.4byte	.LASF6
+ 809 005e 03       		.uleb128 0x3
+ 810 005f 5C010000 		.4byte	.LASF7
+ 811 0063 02       		.byte	0x2
+ 812 0064 41       		.byte	0x41
+ 813 0065 69000000 		.4byte	0x69
+ 814 0069 02       		.uleb128 0x2
+ 815 006a 04       		.byte	0x4
+ 816 006b 07       		.byte	0x7
+ 817 006c E4000000 		.4byte	.LASF8
+ 818 0070 02       		.uleb128 0x2
+ 819 0071 08       		.byte	0x8
+ 820 0072 05       		.byte	0x5
+ 821 0073 3B020000 		.4byte	.LASF9
+ 822 0077 02       		.uleb128 0x2
+ 823 0078 08       		.byte	0x8
+ 824 0079 07       		.byte	0x7
+ 825 007a 7A010000 		.4byte	.LASF10
+ 826 007e 04       		.uleb128 0x4
+ 827 007f 04       		.byte	0x4
+ 828 0080 05       		.byte	0x5
+ 829 0081 696E7400 		.ascii	"int\000"
+ 830 0085 02       		.uleb128 0x2
+ 831 0086 04       		.byte	0x4
+ 832 0087 07       		.byte	0x7
+ 833 0088 6D010000 		.4byte	.LASF11
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 24
+
+
+ 834 008c 03       		.uleb128 0x3
+ 835 008d 97000000 		.4byte	.LASF12
+ 836 0091 03       		.byte	0x3
+ 837 0092 15       		.byte	0x15
+ 838 0093 2C000000 		.4byte	0x2c
+ 839 0097 03       		.uleb128 0x3
+ 840 0098 8E020000 		.4byte	.LASF13
+ 841 009c 03       		.byte	0x3
+ 842 009d 21       		.byte	0x21
+ 843 009e 45000000 		.4byte	0x45
+ 844 00a2 03       		.uleb128 0x3
+ 845 00a3 97020000 		.4byte	.LASF14
+ 846 00a7 03       		.byte	0x3
+ 847 00a8 2D       		.byte	0x2d
+ 848 00a9 5E000000 		.4byte	0x5e
+ 849 00ad 02       		.uleb128 0x2
+ 850 00ae 04       		.byte	0x4
+ 851 00af 07       		.byte	0x7
+ 852 00b0 32020000 		.4byte	.LASF15
+ 853 00b4 02       		.uleb128 0x2
+ 854 00b5 01       		.byte	0x1
+ 855 00b6 08       		.byte	0x8
+ 856 00b7 52020000 		.4byte	.LASF16
+ 857 00bb 02       		.uleb128 0x2
+ 858 00bc 08       		.byte	0x8
+ 859 00bd 04       		.byte	0x4
+ 860 00be 4B010000 		.4byte	.LASF17
+ 861 00c2 02       		.uleb128 0x2
+ 862 00c3 04       		.byte	0x4
+ 863 00c4 04       		.byte	0x4
+ 864 00c5 BD000000 		.4byte	.LASF18
+ 865 00c9 02       		.uleb128 0x2
+ 866 00ca 08       		.byte	0x8
+ 867 00cb 04       		.byte	0x4
+ 868 00cc A9020000 		.4byte	.LASF19
+ 869 00d0 05       		.uleb128 0x5
+ 870 00d1 52010000 		.4byte	.LASF20
+ 871 00d5 04       		.byte	0x4
+ 872 00d6 A501     		.2byte	0x1a5
+ 873 00d8 C2000000 		.4byte	0xc2
+ 874 00dc 06       		.uleb128 0x6
+ 875 00dd 04       		.byte	0x4
+ 876 00de D0000000 		.4byte	0xd0
+ 877 00e2 06       		.uleb128 0x6
+ 878 00e3 04       		.byte	0x4
+ 879 00e4 97000000 		.4byte	0x97
+ 880 00e8 07       		.uleb128 0x7
+ 881 00e9 14       		.byte	0x14
+ 882 00ea 04       		.byte	0x4
+ 883 00eb 4608     		.2byte	0x846
+ 884 00ed 5A010000 		.4byte	0x15a
+ 885 00f1 08       		.uleb128 0x8
+ 886 00f2 09010000 		.4byte	.LASF21
+ 887 00f6 04       		.byte	0x4
+ 888 00f7 4808     		.2byte	0x848
+ 889 00f9 97000000 		.4byte	0x97
+ 890 00fd 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 25
+
+
+ 891 00fe 08       		.uleb128 0x8
+ 892 00ff 00000000 		.4byte	.LASF22
+ 893 0103 04       		.byte	0x4
+ 894 0104 4908     		.2byte	0x849
+ 895 0106 8C000000 		.4byte	0x8c
+ 896 010a 02       		.byte	0x2
+ 897 010b 08       		.uleb128 0x8
+ 898 010c 23020000 		.4byte	.LASF23
+ 899 0110 04       		.byte	0x4
+ 900 0111 4A08     		.2byte	0x84a
+ 901 0113 8C000000 		.4byte	0x8c
+ 902 0117 03       		.byte	0x3
+ 903 0118 08       		.uleb128 0x8
+ 904 0119 49020000 		.4byte	.LASF24
+ 905 011d 04       		.byte	0x4
+ 906 011e 4B08     		.2byte	0x84b
+ 907 0120 DC000000 		.4byte	0xdc
+ 908 0124 04       		.byte	0x4
+ 909 0125 08       		.uleb128 0x8
+ 910 0126 B0000000 		.4byte	.LASF25
+ 911 012a 04       		.byte	0x4
+ 912 012b 4C08     		.2byte	0x84c
+ 913 012d E2000000 		.4byte	0xe2
+ 914 0131 08       		.byte	0x8
+ 915 0132 08       		.uleb128 0x8
+ 916 0133 9F000000 		.4byte	.LASF26
+ 917 0137 04       		.byte	0x4
+ 918 0138 4D08     		.2byte	0x84d
+ 919 013a 97000000 		.4byte	0x97
+ 920 013e 0C       		.byte	0xc
+ 921 013f 08       		.uleb128 0x8
+ 922 0140 5E020000 		.4byte	.LASF27
+ 923 0144 04       		.byte	0x4
+ 924 0145 4E08     		.2byte	0x84e
+ 925 0147 97000000 		.4byte	0x97
+ 926 014b 0E       		.byte	0xe
+ 927 014c 08       		.uleb128 0x8
+ 928 014d D8000000 		.4byte	.LASF28
+ 929 0151 04       		.byte	0x4
+ 930 0152 4F08     		.2byte	0x84f
+ 931 0154 D0000000 		.4byte	0xd0
+ 932 0158 10       		.byte	0x10
+ 933 0159 00       		.byte	0
+ 934 015a 05       		.uleb128 0x5
+ 935 015b 34000000 		.4byte	.LASF29
+ 936 015f 04       		.byte	0x4
+ 937 0160 5008     		.2byte	0x850
+ 938 0162 E8000000 		.4byte	0xe8
+ 939 0166 09       		.uleb128 0x9
+ 940 0167 C6020000 		.4byte	.LASF31
+ 941 016b 01       		.byte	0x1
+ 942 016c 45       		.byte	0x45
+ 943 016d 00000000 		.4byte	.LFB82
+ 944 0171 6C000000 		.4byte	.LFE82-.LFB82
+ 945 0175 01       		.uleb128 0x1
+ 946 0176 9C       		.byte	0x9c
+ 947 0177 96010000 		.4byte	0x196
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 26
+
+
+ 948 017b 0A       		.uleb128 0xa
+ 949 017c 5300     		.ascii	"S\000"
+ 950 017e 01       		.byte	0x1
+ 951 017f 46       		.byte	0x46
+ 952 0180 96010000 		.4byte	0x196
+ 953 0184 02       		.uleb128 0x2
+ 954 0185 91       		.byte	0x91
+ 955 0186 6C       		.sleb128 -20
+ 956 0187 0B       		.uleb128 0xb
+ 957 0188 C1020000 		.4byte	.LASF30
+ 958 018c 01       		.byte	0x1
+ 959 018d 47       		.byte	0x47
+ 960 018e DC000000 		.4byte	0xdc
+ 961 0192 02       		.uleb128 0x2
+ 962 0193 91       		.byte	0x91
+ 963 0194 68       		.sleb128 -24
+ 964 0195 00       		.byte	0
+ 965 0196 06       		.uleb128 0x6
+ 966 0197 04       		.byte	0x4
+ 967 0198 9C010000 		.4byte	0x19c
+ 968 019c 0C       		.uleb128 0xc
+ 969 019d 5A010000 		.4byte	0x15a
+ 970 01a1 09       		.uleb128 0x9
+ 971 01a2 75020000 		.4byte	.LASF32
+ 972 01a6 01       		.byte	0x1
+ 973 01a7 73       		.byte	0x73
+ 974 01a8 00000000 		.4byte	.LFB83
+ 975 01ac 9A010000 		.4byte	.LFE83-.LFB83
+ 976 01b0 01       		.uleb128 0x1
+ 977 01b1 9C       		.byte	0x9c
+ 978 01b2 D3020000 		.4byte	0x2d3
+ 979 01b6 0B       		.uleb128 0xb
+ 980 01b7 C1020000 		.4byte	.LASF30
+ 981 01bb 01       		.byte	0x1
+ 982 01bc 74       		.byte	0x74
+ 983 01bd DC000000 		.4byte	0xdc
+ 984 01c1 03       		.uleb128 0x3
+ 985 01c2 91       		.byte	0x91
+ 986 01c3 A47F     		.sleb128 -92
+ 987 01c5 0B       		.uleb128 0xb
+ 988 01c6 09010000 		.4byte	.LASF21
+ 989 01ca 01       		.byte	0x1
+ 990 01cb 75       		.byte	0x75
+ 991 01cc A2000000 		.4byte	0xa2
+ 992 01d0 03       		.uleb128 0x3
+ 993 01d1 91       		.byte	0x91
+ 994 01d2 A07F     		.sleb128 -96
+ 995 01d4 0B       		.uleb128 0xb
+ 996 01d5 67010000 		.4byte	.LASF33
+ 997 01d9 01       		.byte	0x1
+ 998 01da 76       		.byte	0x76
+ 999 01db DC000000 		.4byte	0xdc
+ 1000 01df 03       		.uleb128 0x3
+ 1001 01e0 91       		.byte	0x91
+ 1002 01e1 9C7F     		.sleb128 -100
+ 1003 01e3 0B       		.uleb128 0xb
+ 1004 01e4 9F000000 		.4byte	.LASF26
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 27
+
+
+ 1005 01e8 01       		.byte	0x1
+ 1006 01e9 77       		.byte	0x77
+ 1007 01ea 97000000 		.4byte	0x97
+ 1008 01ee 03       		.uleb128 0x3
+ 1009 01ef 91       		.byte	0x91
+ 1010 01f0 9A7F     		.sleb128 -102
+ 1011 01f2 0D       		.uleb128 0xd
+ 1012 01f3 6900     		.ascii	"i\000"
+ 1013 01f5 01       		.byte	0x1
+ 1014 01f6 7A       		.byte	0x7a
+ 1015 01f7 A2000000 		.4byte	0xa2
+ 1016 01fb 02       		.uleb128 0x2
+ 1017 01fc 91       		.byte	0x91
+ 1018 01fd 6C       		.sleb128 -20
+ 1019 01fe 0D       		.uleb128 0xd
+ 1020 01ff 6A00     		.ascii	"j\000"
+ 1021 0201 01       		.byte	0x1
+ 1022 0202 7A       		.byte	0x7a
+ 1023 0203 A2000000 		.4byte	0xa2
+ 1024 0207 02       		.uleb128 0x2
+ 1025 0208 91       		.byte	0x91
+ 1026 0209 68       		.sleb128 -24
+ 1027 020a 0D       		.uleb128 0xd
+ 1028 020b 6B00     		.ascii	"k\000"
+ 1029 020d 01       		.byte	0x1
+ 1030 020e 7A       		.byte	0x7a
+ 1031 020f A2000000 		.4byte	0xa2
+ 1032 0213 02       		.uleb128 0x2
+ 1033 0214 91       		.byte	0x91
+ 1034 0215 64       		.sleb128 -28
+ 1035 0216 0D       		.uleb128 0xd
+ 1036 0217 6C00     		.ascii	"l\000"
+ 1037 0219 01       		.byte	0x1
+ 1038 021a 7A       		.byte	0x7a
+ 1039 021b A2000000 		.4byte	0xa2
+ 1040 021f 02       		.uleb128 0x2
+ 1041 0220 91       		.byte	0x91
+ 1042 0221 4C       		.sleb128 -52
+ 1043 0222 0D       		.uleb128 0xd
+ 1044 0223 6E3100   		.ascii	"n1\000"
+ 1045 0226 01       		.byte	0x1
+ 1046 0227 7B       		.byte	0x7b
+ 1047 0228 A2000000 		.4byte	0xa2
+ 1048 022c 02       		.uleb128 0x2
+ 1049 022d 91       		.byte	0x91
+ 1050 022e 58       		.sleb128 -40
+ 1051 022f 0D       		.uleb128 0xd
+ 1052 0230 6E3200   		.ascii	"n2\000"
+ 1053 0233 01       		.byte	0x1
+ 1054 0234 7B       		.byte	0x7b
+ 1055 0235 A2000000 		.4byte	0xa2
+ 1056 0239 02       		.uleb128 0x2
+ 1057 023a 91       		.byte	0x91
+ 1058 023b 60       		.sleb128 -32
+ 1059 023c 0D       		.uleb128 0xd
+ 1060 023d 696100   		.ascii	"ia\000"
+ 1061 0240 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 28
+
+
+ 1062 0241 7B       		.byte	0x7b
+ 1063 0242 A2000000 		.4byte	0xa2
+ 1064 0246 02       		.uleb128 0x2
+ 1065 0247 91       		.byte	0x91
+ 1066 0248 5C       		.sleb128 -36
+ 1067 0249 0D       		.uleb128 0xd
+ 1068 024a 787400   		.ascii	"xt\000"
+ 1069 024d 01       		.byte	0x1
+ 1070 024e 7C       		.byte	0x7c
+ 1071 024f D0000000 		.4byte	0xd0
+ 1072 0253 02       		.uleb128 0x2
+ 1073 0254 91       		.byte	0x91
+ 1074 0255 44       		.sleb128 -60
+ 1075 0256 0D       		.uleb128 0xd
+ 1076 0257 797400   		.ascii	"yt\000"
+ 1077 025a 01       		.byte	0x1
+ 1078 025b 7C       		.byte	0x7c
+ 1079 025c D0000000 		.4byte	0xd0
+ 1080 0260 02       		.uleb128 0x2
+ 1081 0261 91       		.byte	0x91
+ 1082 0262 40       		.sleb128 -64
+ 1083 0263 0E       		.uleb128 0xe
+ 1084 0264 57020000 		.4byte	.LASF34
+ 1085 0268 01       		.byte	0x1
+ 1086 0269 7C       		.byte	0x7c
+ 1087 026a D0000000 		.4byte	0xd0
+ 1088 026e 02       		.uleb128 0x2
+ 1089 026f 91       		.byte	0x91
+ 1090 0270 54       		.sleb128 -44
+ 1091 0271 0E       		.uleb128 0xe
+ 1092 0272 C3000000 		.4byte	.LASF35
+ 1093 0276 01       		.byte	0x1
+ 1094 0277 7C       		.byte	0x7c
+ 1095 0278 D0000000 		.4byte	0xd0
+ 1096 027c 02       		.uleb128 0x2
+ 1097 027d 91       		.byte	0x91
+ 1098 027e 50       		.sleb128 -48
+ 1099 027f 0D       		.uleb128 0xd
+ 1100 0280 703000   		.ascii	"p0\000"
+ 1101 0283 01       		.byte	0x1
+ 1102 0284 7D       		.byte	0x7d
+ 1103 0285 D0000000 		.4byte	0xd0
+ 1104 0289 03       		.uleb128 0x3
+ 1105 028a 91       		.byte	0x91
+ 1106 028b B87F     		.sleb128 -72
+ 1107 028d 0D       		.uleb128 0xd
+ 1108 028e 703100   		.ascii	"p1\000"
+ 1109 0291 01       		.byte	0x1
+ 1110 0292 7D       		.byte	0x7d
+ 1111 0293 D0000000 		.4byte	0xd0
+ 1112 0297 03       		.uleb128 0x3
+ 1113 0298 91       		.byte	0x91
+ 1114 0299 B47F     		.sleb128 -76
+ 1115 029b 0D       		.uleb128 0xd
+ 1116 029c 703200   		.ascii	"p2\000"
+ 1117 029f 01       		.byte	0x1
+ 1118 02a0 7D       		.byte	0x7d
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 29
+
+
+ 1119 02a1 D0000000 		.4byte	0xd0
+ 1120 02a5 03       		.uleb128 0x3
+ 1121 02a6 91       		.byte	0x91
+ 1122 02a7 B07F     		.sleb128 -80
+ 1123 02a9 0D       		.uleb128 0xd
+ 1124 02aa 703300   		.ascii	"p3\000"
+ 1125 02ad 01       		.byte	0x1
+ 1126 02ae 7D       		.byte	0x7d
+ 1127 02af D0000000 		.4byte	0xd0
+ 1128 02b3 03       		.uleb128 0x3
+ 1129 02b4 91       		.byte	0x91
+ 1130 02b5 AC7F     		.sleb128 -84
+ 1131 02b7 0D       		.uleb128 0xd
+ 1132 02b8 613000   		.ascii	"a0\000"
+ 1133 02bb 01       		.byte	0x1
+ 1134 02bc 7E       		.byte	0x7e
+ 1135 02bd D0000000 		.4byte	0xd0
+ 1136 02c1 02       		.uleb128 0x2
+ 1137 02c2 91       		.byte	0x91
+ 1138 02c3 48       		.sleb128 -56
+ 1139 02c4 0D       		.uleb128 0xd
+ 1140 02c5 613100   		.ascii	"a1\000"
+ 1141 02c8 01       		.byte	0x1
+ 1142 02c9 7E       		.byte	0x7e
+ 1143 02ca D0000000 		.4byte	0xd0
+ 1144 02ce 03       		.uleb128 0x3
+ 1145 02cf 91       		.byte	0x91
+ 1146 02d0 BC7F     		.sleb128 -68
+ 1147 02d2 00       		.byte	0
+ 1148 02d3 0F       		.uleb128 0xf
+ 1149 02d4 13000000 		.4byte	.LASF39
+ 1150 02d8 01       		.byte	0x1
+ 1151 02d9 1B01     		.2byte	0x11b
+ 1152 02db 00000000 		.4byte	.LFB84
+ 1153 02df B0020000 		.4byte	.LFE84-.LFB84
+ 1154 02e3 01       		.uleb128 0x1
+ 1155 02e4 9C       		.byte	0x9c
+ 1156 02e5 10       		.uleb128 0x10
+ 1157 02e6 C1020000 		.4byte	.LASF30
+ 1158 02ea 01       		.byte	0x1
+ 1159 02eb 1C01     		.2byte	0x11c
+ 1160 02ed DC000000 		.4byte	0xdc
+ 1161 02f1 03       		.uleb128 0x3
+ 1162 02f2 91       		.byte	0x91
+ 1163 02f3 A47F     		.sleb128 -92
+ 1164 02f5 10       		.uleb128 0x10
+ 1165 02f6 09010000 		.4byte	.LASF21
+ 1166 02fa 01       		.byte	0x1
+ 1167 02fb 1D01     		.2byte	0x11d
+ 1168 02fd A2000000 		.4byte	0xa2
+ 1169 0301 03       		.uleb128 0x3
+ 1170 0302 91       		.byte	0x91
+ 1171 0303 A07F     		.sleb128 -96
+ 1172 0305 10       		.uleb128 0x10
+ 1173 0306 67010000 		.4byte	.LASF33
+ 1174 030a 01       		.byte	0x1
+ 1175 030b 1E01     		.2byte	0x11e
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 30
+
+
+ 1176 030d DC000000 		.4byte	0xdc
+ 1177 0311 03       		.uleb128 0x3
+ 1178 0312 91       		.byte	0x91
+ 1179 0313 9C7F     		.sleb128 -100
+ 1180 0315 10       		.uleb128 0x10
+ 1181 0316 9F000000 		.4byte	.LASF26
+ 1182 031a 01       		.byte	0x1
+ 1183 031b 1F01     		.2byte	0x11f
+ 1184 031d 97000000 		.4byte	0x97
+ 1185 0321 03       		.uleb128 0x3
+ 1186 0322 91       		.byte	0x91
+ 1187 0323 9A7F     		.sleb128 -102
+ 1188 0325 10       		.uleb128 0x10
+ 1189 0326 D8000000 		.4byte	.LASF28
+ 1190 032a 01       		.byte	0x1
+ 1191 032b 2001     		.2byte	0x120
+ 1192 032d D0000000 		.4byte	0xd0
+ 1193 0331 02       		.uleb128 0x2
+ 1194 0332 91       		.byte	0x91
+ 1195 0333 00       		.sleb128 0
+ 1196 0334 11       		.uleb128 0x11
+ 1197 0335 6900     		.ascii	"i\000"
+ 1198 0337 01       		.byte	0x1
+ 1199 0338 2301     		.2byte	0x123
+ 1200 033a A2000000 		.4byte	0xa2
+ 1201 033e 02       		.uleb128 0x2
+ 1202 033f 91       		.byte	0x91
+ 1203 0340 6C       		.sleb128 -20
+ 1204 0341 11       		.uleb128 0x11
+ 1205 0342 6A00     		.ascii	"j\000"
+ 1206 0344 01       		.byte	0x1
+ 1207 0345 2301     		.2byte	0x123
+ 1208 0347 A2000000 		.4byte	0xa2
+ 1209 034b 02       		.uleb128 0x2
+ 1210 034c 91       		.byte	0x91
+ 1211 034d 68       		.sleb128 -24
+ 1212 034e 11       		.uleb128 0x11
+ 1213 034f 6B00     		.ascii	"k\000"
+ 1214 0351 01       		.byte	0x1
+ 1215 0352 2301     		.2byte	0x123
+ 1216 0354 A2000000 		.4byte	0xa2
+ 1217 0358 02       		.uleb128 0x2
+ 1218 0359 91       		.byte	0x91
+ 1219 035a 64       		.sleb128 -28
+ 1220 035b 11       		.uleb128 0x11
+ 1221 035c 6C00     		.ascii	"l\000"
+ 1222 035e 01       		.byte	0x1
+ 1223 035f 2301     		.2byte	0x123
+ 1224 0361 A2000000 		.4byte	0xa2
+ 1225 0365 02       		.uleb128 0x2
+ 1226 0366 91       		.byte	0x91
+ 1227 0367 4C       		.sleb128 -52
+ 1228 0368 11       		.uleb128 0x11
+ 1229 0369 6E3100   		.ascii	"n1\000"
+ 1230 036c 01       		.byte	0x1
+ 1231 036d 2401     		.2byte	0x124
+ 1232 036f A2000000 		.4byte	0xa2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 31
+
+
+ 1233 0373 02       		.uleb128 0x2
+ 1234 0374 91       		.byte	0x91
+ 1235 0375 58       		.sleb128 -40
+ 1236 0376 11       		.uleb128 0x11
+ 1237 0377 6E3200   		.ascii	"n2\000"
+ 1238 037a 01       		.byte	0x1
+ 1239 037b 2401     		.2byte	0x124
+ 1240 037d A2000000 		.4byte	0xa2
+ 1241 0381 02       		.uleb128 0x2
+ 1242 0382 91       		.byte	0x91
+ 1243 0383 60       		.sleb128 -32
+ 1244 0384 11       		.uleb128 0x11
+ 1245 0385 696100   		.ascii	"ia\000"
+ 1246 0388 01       		.byte	0x1
+ 1247 0389 2401     		.2byte	0x124
+ 1248 038b A2000000 		.4byte	0xa2
+ 1249 038f 02       		.uleb128 0x2
+ 1250 0390 91       		.byte	0x91
+ 1251 0391 5C       		.sleb128 -36
+ 1252 0392 11       		.uleb128 0x11
+ 1253 0393 787400   		.ascii	"xt\000"
+ 1254 0396 01       		.byte	0x1
+ 1255 0397 2501     		.2byte	0x125
+ 1256 0399 D0000000 		.4byte	0xd0
+ 1257 039d 02       		.uleb128 0x2
+ 1258 039e 91       		.byte	0x91
+ 1259 039f 44       		.sleb128 -60
+ 1260 03a0 11       		.uleb128 0x11
+ 1261 03a1 797400   		.ascii	"yt\000"
+ 1262 03a4 01       		.byte	0x1
+ 1263 03a5 2501     		.2byte	0x125
+ 1264 03a7 D0000000 		.4byte	0xd0
+ 1265 03ab 02       		.uleb128 0x2
+ 1266 03ac 91       		.byte	0x91
+ 1267 03ad 40       		.sleb128 -64
+ 1268 03ae 12       		.uleb128 0x12
+ 1269 03af 57020000 		.4byte	.LASF34
+ 1270 03b3 01       		.byte	0x1
+ 1271 03b4 2501     		.2byte	0x125
+ 1272 03b6 D0000000 		.4byte	0xd0
+ 1273 03ba 02       		.uleb128 0x2
+ 1274 03bb 91       		.byte	0x91
+ 1275 03bc 54       		.sleb128 -44
+ 1276 03bd 12       		.uleb128 0x12
+ 1277 03be C3000000 		.4byte	.LASF35
+ 1278 03c2 01       		.byte	0x1
+ 1279 03c3 2501     		.2byte	0x125
+ 1280 03c5 D0000000 		.4byte	0xd0
+ 1281 03c9 02       		.uleb128 0x2
+ 1282 03ca 91       		.byte	0x91
+ 1283 03cb 50       		.sleb128 -48
+ 1284 03cc 11       		.uleb128 0x11
+ 1285 03cd 703000   		.ascii	"p0\000"
+ 1286 03d0 01       		.byte	0x1
+ 1287 03d1 2601     		.2byte	0x126
+ 1288 03d3 D0000000 		.4byte	0xd0
+ 1289 03d7 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 32
+
+
+ 1290 03d8 91       		.byte	0x91
+ 1291 03d9 B87F     		.sleb128 -72
+ 1292 03db 11       		.uleb128 0x11
+ 1293 03dc 703100   		.ascii	"p1\000"
+ 1294 03df 01       		.byte	0x1
+ 1295 03e0 2601     		.2byte	0x126
+ 1296 03e2 D0000000 		.4byte	0xd0
+ 1297 03e6 03       		.uleb128 0x3
+ 1298 03e7 91       		.byte	0x91
+ 1299 03e8 B47F     		.sleb128 -76
+ 1300 03ea 11       		.uleb128 0x11
+ 1301 03eb 703200   		.ascii	"p2\000"
+ 1302 03ee 01       		.byte	0x1
+ 1303 03ef 2601     		.2byte	0x126
+ 1304 03f1 D0000000 		.4byte	0xd0
+ 1305 03f5 03       		.uleb128 0x3
+ 1306 03f6 91       		.byte	0x91
+ 1307 03f7 B07F     		.sleb128 -80
+ 1308 03f9 11       		.uleb128 0x11
+ 1309 03fa 703300   		.ascii	"p3\000"
+ 1310 03fd 01       		.byte	0x1
+ 1311 03fe 2601     		.2byte	0x126
+ 1312 0400 D0000000 		.4byte	0xd0
+ 1313 0404 03       		.uleb128 0x3
+ 1314 0405 91       		.byte	0x91
+ 1315 0406 AC7F     		.sleb128 -84
+ 1316 0408 11       		.uleb128 0x11
+ 1317 0409 613000   		.ascii	"a0\000"
+ 1318 040c 01       		.byte	0x1
+ 1319 040d 2701     		.2byte	0x127
+ 1320 040f D0000000 		.4byte	0xd0
+ 1321 0413 02       		.uleb128 0x2
+ 1322 0414 91       		.byte	0x91
+ 1323 0415 48       		.sleb128 -56
+ 1324 0416 11       		.uleb128 0x11
+ 1325 0417 613100   		.ascii	"a1\000"
+ 1326 041a 01       		.byte	0x1
+ 1327 041b 2701     		.2byte	0x127
+ 1328 041d D0000000 		.4byte	0xd0
+ 1329 0421 03       		.uleb128 0x3
+ 1330 0422 91       		.byte	0x91
+ 1331 0423 BC7F     		.sleb128 -68
+ 1332 0425 00       		.byte	0
+ 1333 0426 00       		.byte	0
+ 1334              		.section	.debug_abbrev,"",%progbits
+ 1335              	.Ldebug_abbrev0:
+ 1336 0000 01       		.uleb128 0x1
+ 1337 0001 11       		.uleb128 0x11
+ 1338 0002 01       		.byte	0x1
+ 1339 0003 25       		.uleb128 0x25
+ 1340 0004 0E       		.uleb128 0xe
+ 1341 0005 13       		.uleb128 0x13
+ 1342 0006 0B       		.uleb128 0xb
+ 1343 0007 03       		.uleb128 0x3
+ 1344 0008 0E       		.uleb128 0xe
+ 1345 0009 1B       		.uleb128 0x1b
+ 1346 000a 0E       		.uleb128 0xe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 33
+
+
+ 1347 000b 55       		.uleb128 0x55
+ 1348 000c 17       		.uleb128 0x17
+ 1349 000d 11       		.uleb128 0x11
+ 1350 000e 01       		.uleb128 0x1
+ 1351 000f 10       		.uleb128 0x10
+ 1352 0010 17       		.uleb128 0x17
+ 1353 0011 00       		.byte	0
+ 1354 0012 00       		.byte	0
+ 1355 0013 02       		.uleb128 0x2
+ 1356 0014 24       		.uleb128 0x24
+ 1357 0015 00       		.byte	0
+ 1358 0016 0B       		.uleb128 0xb
+ 1359 0017 0B       		.uleb128 0xb
+ 1360 0018 3E       		.uleb128 0x3e
+ 1361 0019 0B       		.uleb128 0xb
+ 1362 001a 03       		.uleb128 0x3
+ 1363 001b 0E       		.uleb128 0xe
+ 1364 001c 00       		.byte	0
+ 1365 001d 00       		.byte	0
+ 1366 001e 03       		.uleb128 0x3
+ 1367 001f 16       		.uleb128 0x16
+ 1368 0020 00       		.byte	0
+ 1369 0021 03       		.uleb128 0x3
+ 1370 0022 0E       		.uleb128 0xe
+ 1371 0023 3A       		.uleb128 0x3a
+ 1372 0024 0B       		.uleb128 0xb
+ 1373 0025 3B       		.uleb128 0x3b
+ 1374 0026 0B       		.uleb128 0xb
+ 1375 0027 49       		.uleb128 0x49
+ 1376 0028 13       		.uleb128 0x13
+ 1377 0029 00       		.byte	0
+ 1378 002a 00       		.byte	0
+ 1379 002b 04       		.uleb128 0x4
+ 1380 002c 24       		.uleb128 0x24
+ 1381 002d 00       		.byte	0
+ 1382 002e 0B       		.uleb128 0xb
+ 1383 002f 0B       		.uleb128 0xb
+ 1384 0030 3E       		.uleb128 0x3e
+ 1385 0031 0B       		.uleb128 0xb
+ 1386 0032 03       		.uleb128 0x3
+ 1387 0033 08       		.uleb128 0x8
+ 1388 0034 00       		.byte	0
+ 1389 0035 00       		.byte	0
+ 1390 0036 05       		.uleb128 0x5
+ 1391 0037 16       		.uleb128 0x16
+ 1392 0038 00       		.byte	0
+ 1393 0039 03       		.uleb128 0x3
+ 1394 003a 0E       		.uleb128 0xe
+ 1395 003b 3A       		.uleb128 0x3a
+ 1396 003c 0B       		.uleb128 0xb
+ 1397 003d 3B       		.uleb128 0x3b
+ 1398 003e 05       		.uleb128 0x5
+ 1399 003f 49       		.uleb128 0x49
+ 1400 0040 13       		.uleb128 0x13
+ 1401 0041 00       		.byte	0
+ 1402 0042 00       		.byte	0
+ 1403 0043 06       		.uleb128 0x6
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 34
+
+
+ 1404 0044 0F       		.uleb128 0xf
+ 1405 0045 00       		.byte	0
+ 1406 0046 0B       		.uleb128 0xb
+ 1407 0047 0B       		.uleb128 0xb
+ 1408 0048 49       		.uleb128 0x49
+ 1409 0049 13       		.uleb128 0x13
+ 1410 004a 00       		.byte	0
+ 1411 004b 00       		.byte	0
+ 1412 004c 07       		.uleb128 0x7
+ 1413 004d 13       		.uleb128 0x13
+ 1414 004e 01       		.byte	0x1
+ 1415 004f 0B       		.uleb128 0xb
+ 1416 0050 0B       		.uleb128 0xb
+ 1417 0051 3A       		.uleb128 0x3a
+ 1418 0052 0B       		.uleb128 0xb
+ 1419 0053 3B       		.uleb128 0x3b
+ 1420 0054 05       		.uleb128 0x5
+ 1421 0055 01       		.uleb128 0x1
+ 1422 0056 13       		.uleb128 0x13
+ 1423 0057 00       		.byte	0
+ 1424 0058 00       		.byte	0
+ 1425 0059 08       		.uleb128 0x8
+ 1426 005a 0D       		.uleb128 0xd
+ 1427 005b 00       		.byte	0
+ 1428 005c 03       		.uleb128 0x3
+ 1429 005d 0E       		.uleb128 0xe
+ 1430 005e 3A       		.uleb128 0x3a
+ 1431 005f 0B       		.uleb128 0xb
+ 1432 0060 3B       		.uleb128 0x3b
+ 1433 0061 05       		.uleb128 0x5
+ 1434 0062 49       		.uleb128 0x49
+ 1435 0063 13       		.uleb128 0x13
+ 1436 0064 38       		.uleb128 0x38
+ 1437 0065 0B       		.uleb128 0xb
+ 1438 0066 00       		.byte	0
+ 1439 0067 00       		.byte	0
+ 1440 0068 09       		.uleb128 0x9
+ 1441 0069 2E       		.uleb128 0x2e
+ 1442 006a 01       		.byte	0x1
+ 1443 006b 3F       		.uleb128 0x3f
+ 1444 006c 19       		.uleb128 0x19
+ 1445 006d 03       		.uleb128 0x3
+ 1446 006e 0E       		.uleb128 0xe
+ 1447 006f 3A       		.uleb128 0x3a
+ 1448 0070 0B       		.uleb128 0xb
+ 1449 0071 3B       		.uleb128 0x3b
+ 1450 0072 0B       		.uleb128 0xb
+ 1451 0073 27       		.uleb128 0x27
+ 1452 0074 19       		.uleb128 0x19
+ 1453 0075 11       		.uleb128 0x11
+ 1454 0076 01       		.uleb128 0x1
+ 1455 0077 12       		.uleb128 0x12
+ 1456 0078 06       		.uleb128 0x6
+ 1457 0079 40       		.uleb128 0x40
+ 1458 007a 18       		.uleb128 0x18
+ 1459 007b 9642     		.uleb128 0x2116
+ 1460 007d 19       		.uleb128 0x19
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 35
+
+
+ 1461 007e 01       		.uleb128 0x1
+ 1462 007f 13       		.uleb128 0x13
+ 1463 0080 00       		.byte	0
+ 1464 0081 00       		.byte	0
+ 1465 0082 0A       		.uleb128 0xa
+ 1466 0083 05       		.uleb128 0x5
+ 1467 0084 00       		.byte	0
+ 1468 0085 03       		.uleb128 0x3
+ 1469 0086 08       		.uleb128 0x8
+ 1470 0087 3A       		.uleb128 0x3a
+ 1471 0088 0B       		.uleb128 0xb
+ 1472 0089 3B       		.uleb128 0x3b
+ 1473 008a 0B       		.uleb128 0xb
+ 1474 008b 49       		.uleb128 0x49
+ 1475 008c 13       		.uleb128 0x13
+ 1476 008d 02       		.uleb128 0x2
+ 1477 008e 18       		.uleb128 0x18
+ 1478 008f 00       		.byte	0
+ 1479 0090 00       		.byte	0
+ 1480 0091 0B       		.uleb128 0xb
+ 1481 0092 05       		.uleb128 0x5
+ 1482 0093 00       		.byte	0
+ 1483 0094 03       		.uleb128 0x3
+ 1484 0095 0E       		.uleb128 0xe
+ 1485 0096 3A       		.uleb128 0x3a
+ 1486 0097 0B       		.uleb128 0xb
+ 1487 0098 3B       		.uleb128 0x3b
+ 1488 0099 0B       		.uleb128 0xb
+ 1489 009a 49       		.uleb128 0x49
+ 1490 009b 13       		.uleb128 0x13
+ 1491 009c 02       		.uleb128 0x2
+ 1492 009d 18       		.uleb128 0x18
+ 1493 009e 00       		.byte	0
+ 1494 009f 00       		.byte	0
+ 1495 00a0 0C       		.uleb128 0xc
+ 1496 00a1 26       		.uleb128 0x26
+ 1497 00a2 00       		.byte	0
+ 1498 00a3 49       		.uleb128 0x49
+ 1499 00a4 13       		.uleb128 0x13
+ 1500 00a5 00       		.byte	0
+ 1501 00a6 00       		.byte	0
+ 1502 00a7 0D       		.uleb128 0xd
+ 1503 00a8 34       		.uleb128 0x34
+ 1504 00a9 00       		.byte	0
+ 1505 00aa 03       		.uleb128 0x3
+ 1506 00ab 08       		.uleb128 0x8
+ 1507 00ac 3A       		.uleb128 0x3a
+ 1508 00ad 0B       		.uleb128 0xb
+ 1509 00ae 3B       		.uleb128 0x3b
+ 1510 00af 0B       		.uleb128 0xb
+ 1511 00b0 49       		.uleb128 0x49
+ 1512 00b1 13       		.uleb128 0x13
+ 1513 00b2 02       		.uleb128 0x2
+ 1514 00b3 18       		.uleb128 0x18
+ 1515 00b4 00       		.byte	0
+ 1516 00b5 00       		.byte	0
+ 1517 00b6 0E       		.uleb128 0xe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 36
+
+
+ 1518 00b7 34       		.uleb128 0x34
+ 1519 00b8 00       		.byte	0
+ 1520 00b9 03       		.uleb128 0x3
+ 1521 00ba 0E       		.uleb128 0xe
+ 1522 00bb 3A       		.uleb128 0x3a
+ 1523 00bc 0B       		.uleb128 0xb
+ 1524 00bd 3B       		.uleb128 0x3b
+ 1525 00be 0B       		.uleb128 0xb
+ 1526 00bf 49       		.uleb128 0x49
+ 1527 00c0 13       		.uleb128 0x13
+ 1528 00c1 02       		.uleb128 0x2
+ 1529 00c2 18       		.uleb128 0x18
+ 1530 00c3 00       		.byte	0
+ 1531 00c4 00       		.byte	0
+ 1532 00c5 0F       		.uleb128 0xf
+ 1533 00c6 2E       		.uleb128 0x2e
+ 1534 00c7 01       		.byte	0x1
+ 1535 00c8 3F       		.uleb128 0x3f
+ 1536 00c9 19       		.uleb128 0x19
+ 1537 00ca 03       		.uleb128 0x3
+ 1538 00cb 0E       		.uleb128 0xe
+ 1539 00cc 3A       		.uleb128 0x3a
+ 1540 00cd 0B       		.uleb128 0xb
+ 1541 00ce 3B       		.uleb128 0x3b
+ 1542 00cf 05       		.uleb128 0x5
+ 1543 00d0 27       		.uleb128 0x27
+ 1544 00d1 19       		.uleb128 0x19
+ 1545 00d2 11       		.uleb128 0x11
+ 1546 00d3 01       		.uleb128 0x1
+ 1547 00d4 12       		.uleb128 0x12
+ 1548 00d5 06       		.uleb128 0x6
+ 1549 00d6 40       		.uleb128 0x40
+ 1550 00d7 18       		.uleb128 0x18
+ 1551 00d8 9642     		.uleb128 0x2116
+ 1552 00da 19       		.uleb128 0x19
+ 1553 00db 00       		.byte	0
+ 1554 00dc 00       		.byte	0
+ 1555 00dd 10       		.uleb128 0x10
+ 1556 00de 05       		.uleb128 0x5
+ 1557 00df 00       		.byte	0
+ 1558 00e0 03       		.uleb128 0x3
+ 1559 00e1 0E       		.uleb128 0xe
+ 1560 00e2 3A       		.uleb128 0x3a
+ 1561 00e3 0B       		.uleb128 0xb
+ 1562 00e4 3B       		.uleb128 0x3b
+ 1563 00e5 05       		.uleb128 0x5
+ 1564 00e6 49       		.uleb128 0x49
+ 1565 00e7 13       		.uleb128 0x13
+ 1566 00e8 02       		.uleb128 0x2
+ 1567 00e9 18       		.uleb128 0x18
+ 1568 00ea 00       		.byte	0
+ 1569 00eb 00       		.byte	0
+ 1570 00ec 11       		.uleb128 0x11
+ 1571 00ed 34       		.uleb128 0x34
+ 1572 00ee 00       		.byte	0
+ 1573 00ef 03       		.uleb128 0x3
+ 1574 00f0 08       		.uleb128 0x8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 37
+
+
+ 1575 00f1 3A       		.uleb128 0x3a
+ 1576 00f2 0B       		.uleb128 0xb
+ 1577 00f3 3B       		.uleb128 0x3b
+ 1578 00f4 05       		.uleb128 0x5
+ 1579 00f5 49       		.uleb128 0x49
+ 1580 00f6 13       		.uleb128 0x13
+ 1581 00f7 02       		.uleb128 0x2
+ 1582 00f8 18       		.uleb128 0x18
+ 1583 00f9 00       		.byte	0
+ 1584 00fa 00       		.byte	0
+ 1585 00fb 12       		.uleb128 0x12
+ 1586 00fc 34       		.uleb128 0x34
+ 1587 00fd 00       		.byte	0
+ 1588 00fe 03       		.uleb128 0x3
+ 1589 00ff 0E       		.uleb128 0xe
+ 1590 0100 3A       		.uleb128 0x3a
+ 1591 0101 0B       		.uleb128 0xb
+ 1592 0102 3B       		.uleb128 0x3b
+ 1593 0103 05       		.uleb128 0x5
+ 1594 0104 49       		.uleb128 0x49
+ 1595 0105 13       		.uleb128 0x13
+ 1596 0106 02       		.uleb128 0x2
+ 1597 0107 18       		.uleb128 0x18
+ 1598 0108 00       		.byte	0
+ 1599 0109 00       		.byte	0
+ 1600 010a 00       		.byte	0
+ 1601              		.section	.debug_aranges,"",%progbits
+ 1602 0000 2C000000 		.4byte	0x2c
+ 1603 0004 0200     		.2byte	0x2
+ 1604 0006 00000000 		.4byte	.Ldebug_info0
+ 1605 000a 04       		.byte	0x4
+ 1606 000b 00       		.byte	0
+ 1607 000c 0000     		.2byte	0
+ 1608 000e 0000     		.2byte	0
+ 1609 0010 00000000 		.4byte	.LFB82
+ 1610 0014 6C000000 		.4byte	.LFE82-.LFB82
+ 1611 0018 00000000 		.4byte	.LFB83
+ 1612 001c 9A010000 		.4byte	.LFE83-.LFB83
+ 1613 0020 00000000 		.4byte	.LFB84
+ 1614 0024 B0020000 		.4byte	.LFE84-.LFB84
+ 1615 0028 00000000 		.4byte	0
+ 1616 002c 00000000 		.4byte	0
+ 1617              		.section	.debug_ranges,"",%progbits
+ 1618              	.Ldebug_ranges0:
+ 1619 0000 00000000 		.4byte	.LFB82
+ 1620 0004 6C000000 		.4byte	.LFE82
+ 1621 0008 00000000 		.4byte	.LFB83
+ 1622 000c 9A010000 		.4byte	.LFE83
+ 1623 0010 00000000 		.4byte	.LFB84
+ 1624 0014 B0020000 		.4byte	.LFE84
+ 1625 0018 00000000 		.4byte	0
+ 1626 001c 00000000 		.4byte	0
+ 1627              		.section	.debug_line,"",%progbits
+ 1628              	.Ldebug_line0:
+ 1629 0000 CD020000 		.section	.debug_str,"MS",%progbits,1
+ 1629      02005601 
+ 1629      00000201 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 38
+
+
+ 1629      FB0E0D00 
+ 1629      01010101 
+ 1630              	.LASF22:
+ 1631 0000 69666674 		.ascii	"ifftFlag\000"
+ 1631      466C6167 
+ 1631      00
+ 1632              	.LASF3:
+ 1633 0009 5F5F7569 		.ascii	"__uint8_t\000"
+ 1633      6E74385F 
+ 1633      7400
+ 1634              	.LASF39:
+ 1635 0013 61726D5F 		.ascii	"arm_radix2_butterfly_inverse_f32\000"
+ 1635      72616469 
+ 1635      78325F62 
+ 1635      75747465 
+ 1635      72666C79 
+ 1636              	.LASF29:
+ 1637 0034 61726D5F 		.ascii	"arm_cfft_radix2_instance_f32\000"
+ 1637      63666674 
+ 1637      5F726164 
+ 1637      6978325F 
+ 1637      696E7374 
+ 1638              	.LASF38:
+ 1639 0051 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 1639      73657273 
+ 1639      5C666E65 
+ 1639      7665735C 
+ 1639      446F6375 
+ 1640 007e 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 1640      655F7370 
+ 1640      6565645F 
+ 1640      73656E73 
+ 1640      6F722E63 
+ 1641              	.LASF12:
+ 1642 0097 75696E74 		.ascii	"uint8_t\000"
+ 1642      385F7400 
+ 1643              	.LASF26:
+ 1644 009f 74776964 		.ascii	"twidCoefModifier\000"
+ 1644      436F6566 
+ 1644      4D6F6469 
+ 1644      66696572 
+ 1644      00
+ 1645              	.LASF25:
+ 1646 00b0 70426974 		.ascii	"pBitRevTable\000"
+ 1646      52657654 
+ 1646      61626C65 
+ 1646      00
+ 1647              	.LASF18:
+ 1648 00bd 666C6F61 		.ascii	"float\000"
+ 1648      7400
+ 1649              	.LASF35:
+ 1650 00c3 73696E56 		.ascii	"sinVal\000"
+ 1650      616C00
+ 1651              	.LASF1:
+ 1652 00ca 756E7369 		.ascii	"unsigned char\000"
+ 1652      676E6564 
+ 1652      20636861 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 39
+
+
+ 1652      7200
+ 1653              	.LASF28:
+ 1654 00d8 6F6E6562 		.ascii	"onebyfftLen\000"
+ 1654      79666674 
+ 1654      4C656E00 
+ 1655              	.LASF8:
+ 1656 00e4 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1656      20756E73 
+ 1656      69676E65 
+ 1656      6420696E 
+ 1656      7400
+ 1657              	.LASF5:
+ 1658 00f6 73686F72 		.ascii	"short unsigned int\000"
+ 1658      7420756E 
+ 1658      7369676E 
+ 1658      65642069 
+ 1658      6E7400
+ 1659              	.LASF21:
+ 1660 0109 6666744C 		.ascii	"fftLen\000"
+ 1660      656E00
+ 1661              	.LASF37:
+ 1662 0110 536F7572 		.ascii	"Source\\TransformFunctions\\arm_cfft_radix2_f32.c\000"
+ 1662      63655C54 
+ 1662      72616E73 
+ 1662      666F726D 
+ 1662      46756E63 
+ 1663              	.LASF4:
+ 1664 0140 5F5F7569 		.ascii	"__uint16_t\000"
+ 1664      6E743136 
+ 1664      5F7400
+ 1665              	.LASF17:
+ 1666 014b 646F7562 		.ascii	"double\000"
+ 1666      6C6500
+ 1667              	.LASF20:
+ 1668 0152 666C6F61 		.ascii	"float32_t\000"
+ 1668      7433325F 
+ 1668      7400
+ 1669              	.LASF7:
+ 1670 015c 5F5F7569 		.ascii	"__uint32_t\000"
+ 1670      6E743332 
+ 1670      5F7400
+ 1671              	.LASF33:
+ 1672 0167 70436F65 		.ascii	"pCoef\000"
+ 1672      6600
+ 1673              	.LASF11:
+ 1674 016d 756E7369 		.ascii	"unsigned int\000"
+ 1674      676E6564 
+ 1674      20696E74 
+ 1674      00
+ 1675              	.LASF10:
+ 1676 017a 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1676      206C6F6E 
+ 1676      6720756E 
+ 1676      7369676E 
+ 1676      65642069 
+ 1677              	.LASF36:
+ 1678 0191 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 40
+
+
+ 1678      4320342E 
+ 1678      392E3320 
+ 1678      32303135 
+ 1678      30333033 
+ 1679 01c4 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 1679      20726576 
+ 1679      6973696F 
+ 1679      6E203232 
+ 1679      31323230 
+ 1680 01f7 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 1680      30202D66 
+ 1680      66756E63 
+ 1680      74696F6E 
+ 1680      2D736563 
+ 1681              	.LASF23:
+ 1682 0223 62697452 		.ascii	"bitReverseFlag\000"
+ 1682      65766572 
+ 1682      7365466C 
+ 1682      616700
+ 1683              	.LASF15:
+ 1684 0232 73697A65 		.ascii	"sizetype\000"
+ 1684      74797065 
+ 1684      00
+ 1685              	.LASF9:
+ 1686 023b 6C6F6E67 		.ascii	"long long int\000"
+ 1686      206C6F6E 
+ 1686      6720696E 
+ 1686      7400
+ 1687              	.LASF24:
+ 1688 0249 70547769 		.ascii	"pTwiddle\000"
+ 1688      64646C65 
+ 1688      00
+ 1689              	.LASF16:
+ 1690 0252 63686172 		.ascii	"char\000"
+ 1690      00
+ 1691              	.LASF34:
+ 1692 0257 636F7356 		.ascii	"cosVal\000"
+ 1692      616C00
+ 1693              	.LASF27:
+ 1694 025e 62697452 		.ascii	"bitRevFactor\000"
+ 1694      65764661 
+ 1694      63746F72 
+ 1694      00
+ 1695              	.LASF2:
+ 1696 026b 73686F72 		.ascii	"short int\000"
+ 1696      7420696E 
+ 1696      7400
+ 1697              	.LASF32:
+ 1698 0275 61726D5F 		.ascii	"arm_radix2_butterfly_f32\000"
+ 1698      72616469 
+ 1698      78325F62 
+ 1698      75747465 
+ 1698      72666C79 
+ 1699              	.LASF13:
+ 1700 028e 75696E74 		.ascii	"uint16_t\000"
+ 1700      31365F74 
+ 1700      00
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccZeqh7g.s 			page 41
+
+
+ 1701              	.LASF14:
+ 1702 0297 75696E74 		.ascii	"uint32_t\000"
+ 1702      33325F74 
+ 1702      00
+ 1703              	.LASF6:
+ 1704 02a0 6C6F6E67 		.ascii	"long int\000"
+ 1704      20696E74 
+ 1704      00
+ 1705              	.LASF19:
+ 1706 02a9 6C6F6E67 		.ascii	"long double\000"
+ 1706      20646F75 
+ 1706      626C6500 
+ 1707              	.LASF0:
+ 1708 02b5 7369676E 		.ascii	"signed char\000"
+ 1708      65642063 
+ 1708      68617200 
+ 1709              	.LASF30:
+ 1710 02c1 70537263 		.ascii	"pSrc\000"
+ 1710      00
+ 1711              	.LASF31:
+ 1712 02c6 61726D5F 		.ascii	"arm_cfft_radix2_f32\000"
+ 1712      63666674 
+ 1712      5F726164 
+ 1712      6978325F 
+ 1712      66333200 
+ 1713              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

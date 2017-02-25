@@ -1,0 +1,2410 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_mat_inverse_f64.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_dcmpeq
+  18              		.global	__aeabi_ddiv
+  19              		.global	__aeabi_dmul
+  20              		.global	__aeabi_dsub
+  21              		.section	.text.arm_mat_inverse_f64,"ax",%progbits
+  22              		.align	2
+  23              		.global	arm_mat_inverse_f64
+  24              		.code	16
+  25              		.thumb_func
+  26              		.type	arm_mat_inverse_f64, %function
+  27              	arm_mat_inverse_f64:
+  28              	.LFB82:
+  29              		.file 1 "Source\\MatrixFunctions\\arm_mat_inverse_f64.c"
+   1:Source\MatrixFunctions/arm_mat_inverse_f64.c **** /* ----------------------------------------------------------------------
+   2:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Project:      CMSIS DSP Library
+   3:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Title:        arm_mat_inverse_f64.c
+   4:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Description:  Floating-point matrix inverse
+   5:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+   6:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * $Date:        27. January 2017
+   7:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * $Revision:    V.1.5.1
+   8:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+   9:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Target Processor: Cortex-M cores
+  10:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * -------------------------------------------------------------------- */
+  11:Source\MatrixFunctions/arm_mat_inverse_f64.c **** /*
+  12:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+  14:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+  16:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * not use this file except in compliance with the License.
+  18:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * You may obtain a copy of the License at
+  19:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+  20:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+  22:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * See the License for the specific language governing permissions and
+  26:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * limitations under the License.
+  27:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  */
+  28:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 2
+
+
+  29:Source\MatrixFunctions/arm_mat_inverse_f64.c **** #include "arm_math.h"
+  30:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  31:Source\MatrixFunctions/arm_mat_inverse_f64.c **** /**
+  32:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * @ingroup groupMatrix
+  33:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  */
+  34:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  35:Source\MatrixFunctions/arm_mat_inverse_f64.c **** /**
+  36:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * @defgroup MatrixInv Matrix Inverse
+  37:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+  38:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Computes the inverse of a matrix.
+  39:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+  40:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * The inverse is defined only if the input matrix is square and non-singular (the determinant
+  41:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * is non-zero). The function checks that the input and output matrices are square and of the
+  42:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * same size.
+  43:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+  44:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * Matrix inversion is numerically sensitive and the CMSIS DSP library only supports matrix
+  45:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * inversion of floating-point matrices.
+  46:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  *
+  47:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * \par Algorithm
+  48:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * The Gauss-Jordan method is used to find the inverse.
+  49:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * The algorithm performs a sequence of elementary row-operations until it
+  50:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * reduces the input matrix to an identity matrix. Applying the same sequence
+  51:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * of elementary row-operations to an identity matrix yields the inverse matrix.
+  52:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * If the input matrix is singular, then the algorithm terminates and returns error status
+  53:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * <code>ARM_MATH_SINGULAR</code>.
+  54:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * \image html MatrixInverse.gif "Matrix Inverse of a 3 x 3 matrix using Gauss-Jordan Method"
+  55:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  */
+  56:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  57:Source\MatrixFunctions/arm_mat_inverse_f64.c **** /**
+  58:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * @addtogroup MatrixInv
+  59:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * @{
+  60:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  */
+  61:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  62:Source\MatrixFunctions/arm_mat_inverse_f64.c **** /**
+  63:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * @brief Floating-point matrix inverse.
+  64:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * @param[in]       *pSrc points to input matrix structure
+  65:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * @param[out]      *pDst points to output matrix structure
+  66:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * @return     		The function returns
+  67:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * <code>ARM_MATH_SIZE_MISMATCH</code> if the input matrix is not square or if the size
+  68:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * of the output matrix does not match the size of the input matrix.
+  69:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * If the input matrix is found to be singular (non-invertible), then the function returns
+  70:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  * <code>ARM_MATH_SINGULAR</code>.  Otherwise, the function returns <code>ARM_MATH_SUCCESS</code>.
+  71:Source\MatrixFunctions/arm_mat_inverse_f64.c ****  */
+  72:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  73:Source\MatrixFunctions/arm_mat_inverse_f64.c **** arm_status arm_mat_inverse_f64(
+  74:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   const arm_matrix_instance_f64 * pSrc,
+  75:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   arm_matrix_instance_f64 * pDst)
+  76:Source\MatrixFunctions/arm_mat_inverse_f64.c **** {
+  30              		.loc 1 76 0
+  31              		.cfi_startproc
+  32 0000 B0B5     		push	{r4, r5, r7, lr}
+  33              		.cfi_def_cfa_offset 16
+  34              		.cfi_offset 4, -16
+  35              		.cfi_offset 5, -12
+  36              		.cfi_offset 7, -8
+  37              		.cfi_offset 14, -4
+  38 0002 9CB0     		sub	sp, sp, #112
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 3
+
+
+  39              		.cfi_def_cfa_offset 128
+  40 0004 00AF     		add	r7, sp, #0
+  41              		.cfi_def_cfa_register 7
+  42 0006 7860     		str	r0, [r7, #4]
+  43 0008 3960     		str	r1, [r7]
+  77:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   float64_t *pIn = pSrc->pData;                  /* input data matrix pointer */
+  44              		.loc 1 77 0
+  45 000a 7B68     		ldr	r3, [r7, #4]
+  46 000c 5B68     		ldr	r3, [r3, #4]
+  47 000e FB66     		str	r3, [r7, #108]
+  78:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   float64_t *pOut = pDst->pData;                 /* output data matrix pointer */
+  48              		.loc 1 78 0
+  49 0010 3B68     		ldr	r3, [r7]
+  50 0012 5B68     		ldr	r3, [r3, #4]
+  51 0014 7B62     		str	r3, [r7, #36]
+  79:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   float64_t *pInT1, *pInT2;                      /* Temporary input data matrix pointer */
+  80:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   float64_t *pOutT1, *pOutT2;                    /* Temporary output data matrix pointer */
+  81:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   float64_t *pPivotRowIn, *pPRT_in, *pPivotRowDst, *pPRT_pDst;  /* Temporary input and output data 
+  82:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   uint32_t numRows = pSrc->numRows;              /* Number of rows in the matrix  */
+  52              		.loc 1 82 0
+  53 0016 7B68     		ldr	r3, [r7, #4]
+  54 0018 1B88     		ldrh	r3, [r3]
+  55 001a 3B62     		str	r3, [r7, #32]
+  83:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   uint32_t numCols = pSrc->numCols;              /* Number of Cols in the matrix  */
+  56              		.loc 1 83 0
+  57 001c 7B68     		ldr	r3, [r7, #4]
+  58 001e 5B88     		ldrh	r3, [r3, #2]
+  59 0020 FB61     		str	r3, [r7, #28]
+  84:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  85:Source\MatrixFunctions/arm_mat_inverse_f64.c **** #if defined (ARM_MATH_DSP)
+  86:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   float64_t maxC;                                /* maximum value in the column */
+  87:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  88:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   /* Run the below code for Cortex-M4 and Cortex-M3 */
+  89:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  90:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   float64_t Xchg, in = 0.0f, in1;                /* Temporary input values  */
+  91:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   uint32_t i, rowCnt, flag = 0u, j, loopCnt, k, l;      /* loop counters */
+  92:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   arm_status status;                             /* status of matrix inverse */
+  93:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  94:Source\MatrixFunctions/arm_mat_inverse_f64.c **** #ifdef ARM_MATH_MATRIX_CHECK
+  95:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  96:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+  97:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   /* Check for matrix mismatch condition */
+  98:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   if ((pSrc->numRows != pSrc->numCols) || (pDst->numRows != pDst->numCols)
+  99:Source\MatrixFunctions/arm_mat_inverse_f64.c ****      || (pSrc->numRows != pDst->numRows))
+ 100:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   {
+ 101:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Set status as ARM_MATH_SIZE_MISMATCH */
+ 102:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     status = ARM_MATH_SIZE_MISMATCH;
+ 103:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   }
+ 104:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   else
+ 105:Source\MatrixFunctions/arm_mat_inverse_f64.c **** #endif /*    #ifdef ARM_MATH_MATRIX_CHECK    */
+ 106:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 107:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   {
+ 108:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 109:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /*---------------------------------------------------------------------------------------------
+ 110:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 * Matrix Inverse can be solved using elementary row operations.
+ 111:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 112:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	Gauss-Jordan Method:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 4
+
+
+ 113:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 114:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	   1. First combine the identity matrix and the input matrix separated by a bar to form an
+ 115:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *        augmented matrix as follows:
+ 116:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *				        _ 	      	       _         _	       _
+ 117:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *					   |  a11  a12 | 1   0  |       |  X11 X12  |
+ 118:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *					   |           |        |   =   |           |
+ 119:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *					   |_ a21  a22 | 0   1 _|       |_ X21 X21 _|
+ 120:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 121:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		2. In our implementation, pDst Matrix is used as identity matrix.
+ 122:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 123:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		3. Begin with the first row. Let i = 1.
+ 124:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 125:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	    4. Check to see if the pivot for column i is the greatest of the column.
+ 126:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   The pivot is the element of the main diagonal that is on the current row.
+ 127:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   For instance, if working with row i, then the pivot element is aii.
+ 128:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   If the pivot is not the most significant of the columns, exchange that row with a row
+ 129:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   below it that does contain the most significant value in column i. If the most
+ 130:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *         significant value of the column is zero, then an inverse to that matrix does not exist.
+ 131:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   The most significant value of the column is the absolute maximum.
+ 132:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 133:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	    5. Divide every element of row i by the pivot.
+ 134:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 135:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	    6. For every row below and  row i, replace that row with the sum of that row and
+ 136:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   a multiple of row i so that each new element in column i below row i is zero.
+ 137:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 138:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	    7. Move to the next row and column and repeat steps 2 through 5 until you have zeros
+ 139:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   for every element below and above the main diagonal.
+ 140:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 141:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		8. Now an identical matrix is formed to the left of the bar(input matrix, pSrc).
+ 142:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   Therefore, the matrix to the right of the bar is our solution(pDst matrix, pDst).
+ 143:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *------------------------------------------------------------------------------------------------
+ 144:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 145:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Working pointer for destination matrix */
+ 146:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     pOutT1 = pOut;
+ 147:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 148:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Loop over the number of rows */
+ 149:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     rowCnt = numRows;
+ 150:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 151:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Making the destination matrix as identity matrix */
+ 152:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     while (rowCnt > 0u)
+ 153:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     {
+ 154:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Writing all zeroes in lower triangle of the destination matrix */
+ 155:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       j = numRows - rowCnt;
+ 156:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (j > 0u)
+ 157:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 158:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         *pOutT1++ = 0.0f;
+ 159:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         j--;
+ 160:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 161:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 162:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Writing all ones in the diagonal of the destination matrix */
+ 163:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       *pOutT1++ = 1.0f;
+ 164:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 165:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Writing all zeroes in upper triangle of the destination matrix */
+ 166:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       j = rowCnt - 1u;
+ 167:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (j > 0u)
+ 168:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 169:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         *pOutT1++ = 0.0f;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 5
+
+
+ 170:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         j--;
+ 171:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 172:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 173:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Decrement the loop counter */
+ 174:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       rowCnt--;
+ 175:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     }
+ 176:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 177:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Loop over the number of columns of the input matrix.
+ 178:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        All the elements in each column are processed by the row operations */
+ 179:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     loopCnt = numCols;
+ 180:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 181:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Index modifier to navigate through the columns */
+ 182:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     l = 0u;
+ 183:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 184:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     while (loopCnt > 0u)
+ 185:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     {
+ 186:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Check if the pivot element is zero..
+ 187:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * If it is zero then interchange the row with non zero row below.
+ 188:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * If there is no non zero element to replace in the rows below,
+ 189:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * then the matrix is Singular. */
+ 190:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 191:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Working pointer for the input matrix that points
+ 192:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * to the pivot element of the particular row  */
+ 193:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT1 = pIn + (l * numCols);
+ 194:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 195:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Working pointer for the destination matrix that points
+ 196:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * to the pivot element of the particular row  */
+ 197:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pOutT1 = pOut + (l * numCols);
+ 198:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 199:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Temporary variable to hold the pivot value */
+ 200:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       in = *pInT1;
+ 201:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 202:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Grab the most significant value from column l */
+ 203:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       maxC = 0;
+ 204:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       for (i = l; i < numRows; i++)
+ 205:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 206:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         maxC = *pInT1 > 0 ? (*pInT1 > maxC ? *pInT1 : maxC) : (-*pInT1 > maxC ? -*pInT1 : maxC);
+ 207:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         pInT1 += numCols;
+ 208:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 209:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 210:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Update the status if the matrix is singular */
+ 211:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       if (maxC == 0.0f)
+ 212:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 213:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         return ARM_MATH_SINGULAR;
+ 214:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 215:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 216:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Restore pInT1  */
+ 217:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT1 = pIn;
+ 218:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 219:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Destination pointer modifier */
+ 220:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       k = 1u;
+ 221:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 222:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Check if the pivot element is the most significant of the column */
+ 223:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       if ( (in > 0.0f ? in : -in) != maxC)
+ 224:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 225:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Loop over the number rows present below */
+ 226:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         i = numRows - (l + 1u);
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 6
+
+
+ 227:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 228:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         while (i > 0u)
+ 229:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         {
+ 230:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Update the input and destination pointers */
+ 231:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pInT2 = pInT1 + (numCols * l);
+ 232:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pOutT2 = pOutT1 + (numCols * k);
+ 233:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 234:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Look for the most significant element to
+ 235:Source\MatrixFunctions/arm_mat_inverse_f64.c ****            * replace in the rows below */
+ 236:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           if ((*pInT2 > 0.0f ? *pInT2: -*pInT2) == maxC)
+ 237:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 238:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Loop over number of columns
+ 239:Source\MatrixFunctions/arm_mat_inverse_f64.c ****              * to the right of the pilot element */
+ 240:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             j = numCols - l;
+ 241:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 242:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             while (j > 0u)
+ 243:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             {
+ 244:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               /* Exchange the row elements of the input matrix */
+ 245:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               Xchg = *pInT2;
+ 246:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               *pInT2++ = *pInT1;
+ 247:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               *pInT1++ = Xchg;
+ 248:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 249:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               /* Decrement the loop counter */
+ 250:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               j--;
+ 251:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             }
+ 252:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 253:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Loop over number of columns of the destination matrix */
+ 254:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             j = numCols;
+ 255:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 256:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             while (j > 0u)
+ 257:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             {
+ 258:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               /* Exchange the row elements of the destination matrix */
+ 259:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               Xchg = *pOutT2;
+ 260:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               *pOutT2++ = *pOutT1;
+ 261:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               *pOutT1++ = Xchg;
+ 262:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 263:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               /* Decrement the loop counter */
+ 264:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               j--;
+ 265:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             }
+ 266:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 267:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Flag to indicate whether exchange is done or not */
+ 268:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             flag = 1u;
+ 269:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 270:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Break after exchange is done */
+ 271:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             break;
+ 272:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           }
+ 273:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 274:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Update the destination pointer modifier */
+ 275:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           k++;
+ 276:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 277:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Decrement the loop counter */
+ 278:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           i--;
+ 279:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         }
+ 280:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 281:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 282:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Update the status if the matrix is singular */
+ 283:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       if ((flag != 1u) && (in == 0.0f))
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 7
+
+
+ 284:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 285:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         return ARM_MATH_SINGULAR;
+ 286:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 287:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 288:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Points to the pivot row of input and destination matrices */
+ 289:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pPivotRowIn = pIn + (l * numCols);
+ 290:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pPivotRowDst = pOut + (l * numCols);
+ 291:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 292:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Temporary pointers to the pivot row pointers */
+ 293:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT1 = pPivotRowIn;
+ 294:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT2 = pPivotRowDst;
+ 295:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 296:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Pivot element of the row */
+ 297:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       in = *pPivotRowIn;
+ 298:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 299:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Loop over number of columns
+ 300:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * to the right of the pilot element */
+ 301:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       j = (numCols - l);
+ 302:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 303:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (j > 0u)
+ 304:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 305:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Divide each element of the row of the input matrix
+ 306:Source\MatrixFunctions/arm_mat_inverse_f64.c ****          * by the pivot element */
+ 307:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         in1 = *pInT1;
+ 308:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         *pInT1++ = in1 / in;
+ 309:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 310:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Decrement the loop counter */
+ 311:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         j--;
+ 312:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 313:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 314:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Loop over number of columns of the destination matrix */
+ 315:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       j = numCols;
+ 316:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 317:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (j > 0u)
+ 318:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 319:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Divide each element of the row of the destination matrix
+ 320:Source\MatrixFunctions/arm_mat_inverse_f64.c ****          * by the pivot element */
+ 321:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         in1 = *pInT2;
+ 322:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         *pInT2++ = in1 / in;
+ 323:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 324:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Decrement the loop counter */
+ 325:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         j--;
+ 326:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 327:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 328:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Replace the rows with the sum of that row and a multiple of row i
+ 329:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * so that each new element in column i above row i is zero.*/
+ 330:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 331:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Temporary pointers for input and destination matrices */
+ 332:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT1 = pIn;
+ 333:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT2 = pOut;
+ 334:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 335:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* index used to check for pivot element */
+ 336:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       i = 0u;
+ 337:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 338:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Loop over number of rows */
+ 339:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /*  to be replaced by the sum of that row and a multiple of row i */
+ 340:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       k = numRows;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 8
+
+
+ 341:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 342:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (k > 0u)
+ 343:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 344:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Check for the pivot element */
+ 345:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         if (i == l)
+ 346:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         {
+ 347:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* If the processing element is the pivot element,
+ 348:Source\MatrixFunctions/arm_mat_inverse_f64.c ****              only the columns to the right are to be processed */
+ 349:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pInT1 += numCols - l;
+ 350:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 351:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pInT2 += numCols;
+ 352:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         }
+ 353:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         else
+ 354:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         {
+ 355:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Element of the reference row */
+ 356:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           in = *pInT1;
+ 357:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 358:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Working pointers for input and destination pivot rows */
+ 359:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pPRT_in = pPivotRowIn;
+ 360:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pPRT_pDst = pPivotRowDst;
+ 361:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 362:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Loop over the number of columns to the right of the pivot element,
+ 363:Source\MatrixFunctions/arm_mat_inverse_f64.c ****              to replace the elements in the input matrix */
+ 364:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           j = (numCols - l);
+ 365:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 366:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           while (j > 0u)
+ 367:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 368:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Replace the element by the sum of that row
+ 369:Source\MatrixFunctions/arm_mat_inverse_f64.c ****                and a multiple of the reference row  */
+ 370:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             in1 = *pInT1;
+ 371:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             *pInT1++ = in1 - (in * *pPRT_in++);
+ 372:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 373:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Decrement the loop counter */
+ 374:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             j--;
+ 375:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           }
+ 376:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 377:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Loop over the number of columns to
+ 378:Source\MatrixFunctions/arm_mat_inverse_f64.c ****              replace the elements in the destination matrix */
+ 379:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           j = numCols;
+ 380:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 381:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           while (j > 0u)
+ 382:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 383:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Replace the element by the sum of that row
+ 384:Source\MatrixFunctions/arm_mat_inverse_f64.c ****                and a multiple of the reference row  */
+ 385:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             in1 = *pInT2;
+ 386:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             *pInT2++ = in1 - (in * *pPRT_pDst++);
+ 387:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 388:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Decrement the loop counter */
+ 389:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             j--;
+ 390:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           }
+ 391:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 392:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         }
+ 393:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 394:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Increment the temporary input pointer */
+ 395:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         pInT1 = pInT1 + l;
+ 396:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 397:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Decrement the loop counter */
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 9
+
+
+ 398:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         k--;
+ 399:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 400:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Increment the pivot index */
+ 401:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         i++;
+ 402:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 403:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 404:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Increment the input pointer */
+ 405:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pIn++;
+ 406:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 407:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Decrement the loop counter */
+ 408:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       loopCnt--;
+ 409:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 410:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Increment the index modifier */
+ 411:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       l++;
+ 412:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     }
+ 413:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 414:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 415:Source\MatrixFunctions/arm_mat_inverse_f64.c **** #else
+ 416:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 417:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   /* Run the below code for Cortex-M0 */
+ 418:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 419:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   float64_t Xchg, in = 0.0f;                     /* Temporary input values  */
+  60              		.loc 1 419 0
+  61 0022 0023     		mov	r3, #0
+  62 0024 0024     		mov	r4, #0
+  63 0026 BB64     		str	r3, [r7, #72]
+  64 0028 FC64     		str	r4, [r7, #76]
+ 420:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   uint32_t i, rowCnt, flag = 0u, j, loopCnt, k, l;      /* loop counters */
+  65              		.loc 1 420 0
+  66 002a 0023     		mov	r3, #0
+  67 002c FB63     		str	r3, [r7, #60]
+ 421:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   arm_status status;                             /* status of matrix inverse */
+ 422:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 423:Source\MatrixFunctions/arm_mat_inverse_f64.c **** #ifdef ARM_MATH_MATRIX_CHECK
+ 424:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 425:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   /* Check for matrix mismatch condition */
+ 426:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   if ((pSrc->numRows != pSrc->numCols) || (pDst->numRows != pDst->numCols)
+ 427:Source\MatrixFunctions/arm_mat_inverse_f64.c ****      || (pSrc->numRows != pDst->numRows))
+ 428:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   {
+ 429:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Set status as ARM_MATH_SIZE_MISMATCH */
+ 430:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     status = ARM_MATH_SIZE_MISMATCH;
+ 431:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   }
+ 432:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   else
+ 433:Source\MatrixFunctions/arm_mat_inverse_f64.c **** #endif /*      #ifdef ARM_MATH_MATRIX_CHECK    */
+ 434:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   {
+ 435:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 436:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /*---------------------------------------------------------------------------------------------
+ 437:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 * Matrix Inverse can be solved using elementary row operations.
+ 438:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 439:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	Gauss-Jordan Method:
+ 440:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 441:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	   1. First combine the identity matrix and the input matrix separated by a bar to form an
+ 442:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *        augmented matrix as follows:
+ 443:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *				        _  _	      _	    _	   _   _         _	       _
+ 444:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *					   |  |  a11  a12  | | | 1   0  |   |       |  X11 X12  |
+ 445:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *					   |  |            | | |        |   |   =   |           |
+ 446:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *					   |_ |_ a21  a22 _| | |_0   1 _|  _|       |_ X21 X21 _|
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 10
+
+
+ 447:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 448:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		2. In our implementation, pDst Matrix is used as identity matrix.
+ 449:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 450:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		3. Begin with the first row. Let i = 1.
+ 451:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 452:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	    4. Check to see if the pivot for row i is zero.
+ 453:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   The pivot is the element of the main diagonal that is on the current row.
+ 454:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   For instance, if working with row i, then the pivot element is aii.
+ 455:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   If the pivot is zero, exchange that row with a row below it that does not
+ 456:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   contain a zero in column i. If this is not possible, then an inverse
+ 457:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   to that matrix does not exist.
+ 458:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 459:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	    5. Divide every element of row i by the pivot.
+ 460:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 461:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	    6. For every row below and  row i, replace that row with the sum of that row and
+ 462:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   a multiple of row i so that each new element in column i below row i is zero.
+ 463:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 464:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *	    7. Move to the next row and column and repeat steps 2 through 5 until you have zeros
+ 465:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   for every element below and above the main diagonal.
+ 466:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *
+ 467:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		8. Now an identical matrix is formed to the left of the bar(input matrix, src).
+ 468:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *		   Therefore, the matrix to the right of the bar is our solution(dst matrix, dst).
+ 469:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 	 *------------------------------------------------------------------------------------------------
+ 470:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 471:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Working pointer for destination matrix */
+ 472:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     pOutT1 = pOut;
+  68              		.loc 1 472 0
+  69 002e 7B6A     		ldr	r3, [r7, #36]
+  70 0030 3B66     		str	r3, [r7, #96]
+ 473:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 474:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Loop over the number of rows */
+ 475:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     rowCnt = numRows;
+  71              		.loc 1 475 0
+  72 0032 3B6A     		ldr	r3, [r7, #32]
+  73 0034 3B64     		str	r3, [r7, #64]
+ 476:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 477:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Making the destination matrix as identity matrix */
+ 478:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     while (rowCnt > 0u)
+  74              		.loc 1 478 0
+  75 0036 2FE0     		b	.L2
+  76              	.L7:
+ 479:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     {
+ 480:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Writing all zeroes in lower triangle of the destination matrix */
+ 481:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       j = numRows - rowCnt;
+  77              		.loc 1 481 0
+  78 0038 3A6A     		ldr	r2, [r7, #32]
+  79 003a 3B6C     		ldr	r3, [r7, #64]
+  80 003c D31A     		sub	r3, r2, r3
+  81 003e BB63     		str	r3, [r7, #56]
+ 482:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (j > 0u)
+  82              		.loc 1 482 0
+  83 0040 0AE0     		b	.L3
+  84              	.L4:
+ 483:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 484:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         *pOutT1++ = 0.0f;
+  85              		.loc 1 484 0
+  86 0042 3A6E     		ldr	r2, [r7, #96]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 11
+
+
+  87 0044 131C     		mov	r3, r2
+  88 0046 0833     		add	r3, r3, #8
+  89 0048 3B66     		str	r3, [r7, #96]
+  90 004a 0023     		mov	r3, #0
+  91 004c 0024     		mov	r4, #0
+  92 004e 1360     		str	r3, [r2]
+  93 0050 5460     		str	r4, [r2, #4]
+ 485:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         j--;
+  94              		.loc 1 485 0
+  95 0052 BB6B     		ldr	r3, [r7, #56]
+  96 0054 013B     		sub	r3, r3, #1
+  97 0056 BB63     		str	r3, [r7, #56]
+  98              	.L3:
+ 482:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (j > 0u)
+  99              		.loc 1 482 0
+ 100 0058 BB6B     		ldr	r3, [r7, #56]
+ 101 005a 002B     		cmp	r3, #0
+ 102 005c F1D1     		bne	.L4
+ 486:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 487:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 488:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Writing all ones in the diagonal of the destination matrix */
+ 489:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       *pOutT1++ = 1.0f;
+ 103              		.loc 1 489 0
+ 104 005e 3A6E     		ldr	r2, [r7, #96]
+ 105 0060 131C     		mov	r3, r2
+ 106 0062 0833     		add	r3, r3, #8
+ 107 0064 3B66     		str	r3, [r7, #96]
+ 108 0066 0023     		mov	r3, #0
+ 109 0068 D54C     		ldr	r4, .L49
+ 110 006a 1360     		str	r3, [r2]
+ 111 006c 5460     		str	r4, [r2, #4]
+ 490:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 491:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Writing all zeroes in upper triangle of the destination matrix */
+ 492:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       j = rowCnt - 1u;
+ 112              		.loc 1 492 0
+ 113 006e 3B6C     		ldr	r3, [r7, #64]
+ 114 0070 013B     		sub	r3, r3, #1
+ 115 0072 BB63     		str	r3, [r7, #56]
+ 493:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (j > 0u)
+ 116              		.loc 1 493 0
+ 117 0074 0AE0     		b	.L5
+ 118              	.L6:
+ 494:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 495:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         *pOutT1++ = 0.0f;
+ 119              		.loc 1 495 0
+ 120 0076 3A6E     		ldr	r2, [r7, #96]
+ 121 0078 131C     		mov	r3, r2
+ 122 007a 0833     		add	r3, r3, #8
+ 123 007c 3B66     		str	r3, [r7, #96]
+ 124 007e 0023     		mov	r3, #0
+ 125 0080 0024     		mov	r4, #0
+ 126 0082 1360     		str	r3, [r2]
+ 127 0084 5460     		str	r4, [r2, #4]
+ 496:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         j--;
+ 128              		.loc 1 496 0
+ 129 0086 BB6B     		ldr	r3, [r7, #56]
+ 130 0088 013B     		sub	r3, r3, #1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 12
+
+
+ 131 008a BB63     		str	r3, [r7, #56]
+ 132              	.L5:
+ 493:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       while (j > 0u)
+ 133              		.loc 1 493 0
+ 134 008c BB6B     		ldr	r3, [r7, #56]
+ 135 008e 002B     		cmp	r3, #0
+ 136 0090 F1D1     		bne	.L6
+ 497:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 498:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 499:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Decrement the loop counter */
+ 500:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       rowCnt--;
+ 137              		.loc 1 500 0
+ 138 0092 3B6C     		ldr	r3, [r7, #64]
+ 139 0094 013B     		sub	r3, r3, #1
+ 140 0096 3B64     		str	r3, [r7, #64]
+ 141              	.L2:
+ 478:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     {
+ 142              		.loc 1 478 0
+ 143 0098 3B6C     		ldr	r3, [r7, #64]
+ 144 009a 002B     		cmp	r3, #0
+ 145 009c CCD1     		bne	.L7
+ 501:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     }
+ 502:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 503:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Loop over the number of columns of the input matrix.
+ 504:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        All the elements in each column are processed by the row operations */
+ 505:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     loopCnt = numCols;
+ 146              		.loc 1 505 0
+ 147 009e FB69     		ldr	r3, [r7, #28]
+ 148 00a0 7B63     		str	r3, [r7, #52]
+ 506:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 507:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Index modifier to navigate through the columns */
+ 508:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     l = 0u;
+ 149              		.loc 1 508 0
+ 150 00a2 0023     		mov	r3, #0
+ 151 00a4 FB62     		str	r3, [r7, #44]
+ 509:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     //for(loopCnt = 0u; loopCnt < numCols; loopCnt++)
+ 510:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     while (loopCnt > 0u)
+ 152              		.loc 1 510 0
+ 153 00a6 72E1     		b	.L8
+ 154              	.L34:
+ 511:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     {
+ 512:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Check if the pivot element is zero..
+ 513:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * If it is zero then interchange the row with non zero row below.
+ 514:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * If there is no non zero element to replace in the rows below,
+ 515:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * then the matrix is Singular. */
+ 516:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 517:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Working pointer for the input matrix that points
+ 518:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * to the pivot element of the particular row  */
+ 519:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT1 = pIn + (l * numCols);
+ 155              		.loc 1 519 0
+ 156 00a8 FB6A     		ldr	r3, [r7, #44]
+ 157 00aa FA69     		ldr	r2, [r7, #28]
+ 158 00ac 5343     		mul	r3, r2
+ 159 00ae DB00     		lsl	r3, r3, #3
+ 160 00b0 FA6E     		ldr	r2, [r7, #108]
+ 161 00b2 D318     		add	r3, r2, r3
+ 162 00b4 BB66     		str	r3, [r7, #104]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 13
+
+
+ 520:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 521:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Working pointer for the destination matrix that points
+ 522:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * to the pivot element of the particular row  */
+ 523:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pOutT1 = pOut + (l * numCols);
+ 163              		.loc 1 523 0
+ 164 00b6 FB6A     		ldr	r3, [r7, #44]
+ 165 00b8 FA69     		ldr	r2, [r7, #28]
+ 166 00ba 5343     		mul	r3, r2
+ 167 00bc DB00     		lsl	r3, r3, #3
+ 168 00be 7A6A     		ldr	r2, [r7, #36]
+ 169 00c0 D318     		add	r3, r2, r3
+ 170 00c2 3B66     		str	r3, [r7, #96]
+ 524:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 525:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Temporary variable to hold the pivot value */
+ 526:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       in = *pInT1;
+ 171              		.loc 1 526 0
+ 172 00c4 BB6E     		ldr	r3, [r7, #104]
+ 173 00c6 5C68     		ldr	r4, [r3, #4]
+ 174 00c8 1B68     		ldr	r3, [r3]
+ 175 00ca BB64     		str	r3, [r7, #72]
+ 176 00cc FC64     		str	r4, [r7, #76]
+ 527:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 528:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Destination pointer modifier */
+ 529:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       k = 1u;
+ 177              		.loc 1 529 0
+ 178 00ce 0123     		mov	r3, #1
+ 179 00d0 3B63     		str	r3, [r7, #48]
+ 530:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 531:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Check if the pivot element is zero */
+ 532:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       if (*pInT1 == 0.0f)
+ 180              		.loc 1 532 0
+ 181 00d2 BB6E     		ldr	r3, [r7, #104]
+ 182 00d4 5C68     		ldr	r4, [r3, #4]
+ 183 00d6 1B68     		ldr	r3, [r3]
+ 184 00d8 181C     		mov	r0, r3
+ 185 00da 211C     		mov	r1, r4
+ 186 00dc 0022     		mov	r2, #0
+ 187 00de 0023     		mov	r3, #0
+ 188 00e0 FFF7FEFF 		bl	__aeabi_dcmpeq
+ 189 00e4 031E     		sub	r3, r0, #0
+ 190 00e6 6BD0     		beq	.L9
+ 533:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 534:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Loop over the number rows present below */
+ 535:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         for (i = (l + 1u); i < numRows; i++)
+ 191              		.loc 1 535 0
+ 192 00e8 FB6A     		ldr	r3, [r7, #44]
+ 193 00ea 0133     		add	r3, r3, #1
+ 194 00ec 7B64     		str	r3, [r7, #68]
+ 195 00ee 63E0     		b	.L11
+ 196              	.L18:
+ 536:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         {
+ 537:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Update the input and destination pointers */
+ 538:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pInT2 = pInT1 + (numCols * l);
+ 197              		.loc 1 538 0
+ 198 00f0 FB69     		ldr	r3, [r7, #28]
+ 199 00f2 FA6A     		ldr	r2, [r7, #44]
+ 200 00f4 5343     		mul	r3, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 14
+
+
+ 201 00f6 DB00     		lsl	r3, r3, #3
+ 202 00f8 BA6E     		ldr	r2, [r7, #104]
+ 203 00fa D318     		add	r3, r2, r3
+ 204 00fc 7B66     		str	r3, [r7, #100]
+ 539:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pOutT2 = pOutT1 + (numCols * k);
+ 205              		.loc 1 539 0
+ 206 00fe FB69     		ldr	r3, [r7, #28]
+ 207 0100 3A6B     		ldr	r2, [r7, #48]
+ 208 0102 5343     		mul	r3, r2
+ 209 0104 DB00     		lsl	r3, r3, #3
+ 210 0106 3A6E     		ldr	r2, [r7, #96]
+ 211 0108 D318     		add	r3, r2, r3
+ 212 010a FB65     		str	r3, [r7, #92]
+ 540:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 541:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Check if there is a non zero pivot element to
+ 542:Source\MatrixFunctions/arm_mat_inverse_f64.c ****            * replace in the rows below */
+ 543:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           if (*pInT2 != 0.0f)
+ 213              		.loc 1 543 0
+ 214 010c 7B6E     		ldr	r3, [r7, #100]
+ 215 010e 5C68     		ldr	r4, [r3, #4]
+ 216 0110 1B68     		ldr	r3, [r3]
+ 217 0112 181C     		mov	r0, r3
+ 218 0114 211C     		mov	r1, r4
+ 219 0116 0022     		mov	r2, #0
+ 220 0118 0023     		mov	r3, #0
+ 221 011a FFF7FEFF 		bl	__aeabi_dcmpeq
+ 222 011e 031E     		sub	r3, r0, #0
+ 223 0120 44D1     		bne	.L47
+ 544:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 545:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Loop over number of columns
+ 546:Source\MatrixFunctions/arm_mat_inverse_f64.c ****              * to the right of the pilot element */
+ 547:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             for (j = 0u; j < (numCols - l); j++)
+ 224              		.loc 1 547 0
+ 225 0122 0023     		mov	r3, #0
+ 226 0124 BB63     		str	r3, [r7, #56]
+ 227 0126 18E0     		b	.L14
+ 228              	.L15:
+ 548:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             {
+ 549:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               /* Exchange the row elements of the input matrix */
+ 550:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               Xchg = *pInT2;
+ 229              		.loc 1 550 0 discriminator 3
+ 230 0128 7B6E     		ldr	r3, [r7, #100]
+ 231 012a 5C68     		ldr	r4, [r3, #4]
+ 232 012c 1B68     		ldr	r3, [r3]
+ 233 012e 3B61     		str	r3, [r7, #16]
+ 234 0130 7C61     		str	r4, [r7, #20]
+ 551:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               *pInT2++ = *pInT1;
+ 235              		.loc 1 551 0 discriminator 3
+ 236 0132 7A6E     		ldr	r2, [r7, #100]
+ 237 0134 131C     		mov	r3, r2
+ 238 0136 0833     		add	r3, r3, #8
+ 239 0138 7B66     		str	r3, [r7, #100]
+ 240 013a BB6E     		ldr	r3, [r7, #104]
+ 241 013c 5C68     		ldr	r4, [r3, #4]
+ 242 013e 1B68     		ldr	r3, [r3]
+ 243 0140 1360     		str	r3, [r2]
+ 244 0142 5460     		str	r4, [r2, #4]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 15
+
+
+ 552:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               *pInT1++ = Xchg;
+ 245              		.loc 1 552 0 discriminator 3
+ 246 0144 BA6E     		ldr	r2, [r7, #104]
+ 247 0146 131C     		mov	r3, r2
+ 248 0148 0833     		add	r3, r3, #8
+ 249 014a BB66     		str	r3, [r7, #104]
+ 250 014c 3B69     		ldr	r3, [r7, #16]
+ 251 014e 7C69     		ldr	r4, [r7, #20]
+ 252 0150 1360     		str	r3, [r2]
+ 253 0152 5460     		str	r4, [r2, #4]
+ 547:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             {
+ 254              		.loc 1 547 0 discriminator 3
+ 255 0154 BB6B     		ldr	r3, [r7, #56]
+ 256 0156 0133     		add	r3, r3, #1
+ 257 0158 BB63     		str	r3, [r7, #56]
+ 258              	.L14:
+ 547:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             {
+ 259              		.loc 1 547 0 is_stmt 0 discriminator 1
+ 260 015a FA69     		ldr	r2, [r7, #28]
+ 261 015c FB6A     		ldr	r3, [r7, #44]
+ 262 015e D21A     		sub	r2, r2, r3
+ 263 0160 BB6B     		ldr	r3, [r7, #56]
+ 264 0162 9A42     		cmp	r2, r3
+ 265 0164 E0D8     		bhi	.L15
+ 553:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             }
+ 554:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 555:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             for (j = 0u; j < numCols; j++)
+ 266              		.loc 1 555 0 is_stmt 1
+ 267 0166 0023     		mov	r3, #0
+ 268 0168 BB63     		str	r3, [r7, #56]
+ 269 016a 18E0     		b	.L16
+ 270              	.L17:
+ 556:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             {
+ 557:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               Xchg = *pOutT2;
+ 271              		.loc 1 557 0 discriminator 3
+ 272 016c FB6D     		ldr	r3, [r7, #92]
+ 273 016e 5C68     		ldr	r4, [r3, #4]
+ 274 0170 1B68     		ldr	r3, [r3]
+ 275 0172 3B61     		str	r3, [r7, #16]
+ 276 0174 7C61     		str	r4, [r7, #20]
+ 558:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               *pOutT2++ = *pOutT1;
+ 277              		.loc 1 558 0 discriminator 3
+ 278 0176 FA6D     		ldr	r2, [r7, #92]
+ 279 0178 131C     		mov	r3, r2
+ 280 017a 0833     		add	r3, r3, #8
+ 281 017c FB65     		str	r3, [r7, #92]
+ 282 017e 3B6E     		ldr	r3, [r7, #96]
+ 283 0180 5C68     		ldr	r4, [r3, #4]
+ 284 0182 1B68     		ldr	r3, [r3]
+ 285 0184 1360     		str	r3, [r2]
+ 286 0186 5460     		str	r4, [r2, #4]
+ 559:Source\MatrixFunctions/arm_mat_inverse_f64.c ****               *pOutT1++ = Xchg;
+ 287              		.loc 1 559 0 discriminator 3
+ 288 0188 3A6E     		ldr	r2, [r7, #96]
+ 289 018a 131C     		mov	r3, r2
+ 290 018c 0833     		add	r3, r3, #8
+ 291 018e 3B66     		str	r3, [r7, #96]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 16
+
+
+ 292 0190 3B69     		ldr	r3, [r7, #16]
+ 293 0192 7C69     		ldr	r4, [r7, #20]
+ 294 0194 1360     		str	r3, [r2]
+ 295 0196 5460     		str	r4, [r2, #4]
+ 555:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             {
+ 296              		.loc 1 555 0 discriminator 3
+ 297 0198 BB6B     		ldr	r3, [r7, #56]
+ 298 019a 0133     		add	r3, r3, #1
+ 299 019c BB63     		str	r3, [r7, #56]
+ 300              	.L16:
+ 555:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             {
+ 301              		.loc 1 555 0 is_stmt 0 discriminator 1
+ 302 019e BA6B     		ldr	r2, [r7, #56]
+ 303 01a0 FB69     		ldr	r3, [r7, #28]
+ 304 01a2 9A42     		cmp	r2, r3
+ 305 01a4 E2D3     		bcc	.L17
+ 560:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             }
+ 561:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 562:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Flag to indicate whether exchange is done or not */
+ 563:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             flag = 1u;
+ 306              		.loc 1 563 0 is_stmt 1
+ 307 01a6 0123     		mov	r3, #1
+ 308 01a8 FB63     		str	r3, [r7, #60]
+ 564:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 565:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Break after exchange is done */
+ 566:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             break;
+ 309              		.loc 1 566 0
+ 310 01aa 09E0     		b	.L9
+ 311              	.L47:
+ 567:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           }
+ 568:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 569:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Update the destination pointer modifier */
+ 570:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           k++;
+ 312              		.loc 1 570 0 discriminator 2
+ 313 01ac 3B6B     		ldr	r3, [r7, #48]
+ 314 01ae 0133     		add	r3, r3, #1
+ 315 01b0 3B63     		str	r3, [r7, #48]
+ 535:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         {
+ 316              		.loc 1 535 0 discriminator 2
+ 317 01b2 7B6C     		ldr	r3, [r7, #68]
+ 318 01b4 0133     		add	r3, r3, #1
+ 319 01b6 7B64     		str	r3, [r7, #68]
+ 320              	.L11:
+ 535:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         {
+ 321              		.loc 1 535 0 is_stmt 0 discriminator 1
+ 322 01b8 7A6C     		ldr	r2, [r7, #68]
+ 323 01ba 3B6A     		ldr	r3, [r7, #32]
+ 324 01bc 9A42     		cmp	r2, r3
+ 325 01be 97D3     		bcc	.L18
+ 326              	.L9:
+ 571:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         }
+ 572:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 573:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 574:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Update the status if the matrix is singular */
+ 575:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       if ((flag != 1u) && (in == 0.0f))
+ 327              		.loc 1 575 0 is_stmt 1
+ 328 01c0 FB6B     		ldr	r3, [r7, #60]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 17
+
+
+ 329 01c2 012B     		cmp	r3, #1
+ 330 01c4 09D0     		beq	.L19
+ 331              		.loc 1 575 0 is_stmt 0 discriminator 1
+ 332 01c6 B86C     		ldr	r0, [r7, #72]
+ 333 01c8 F96C     		ldr	r1, [r7, #76]
+ 334 01ca 0022     		mov	r2, #0
+ 335 01cc 0023     		mov	r3, #0
+ 336 01ce FFF7FEFF 		bl	__aeabi_dcmpeq
+ 337 01d2 031E     		sub	r3, r0, #0
+ 338 01d4 01D0     		beq	.L19
+ 576:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 577:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         return ARM_MATH_SINGULAR;
+ 339              		.loc 1 577 0 is_stmt 1
+ 340 01d6 FB23     		mov	r3, #251
+ 341 01d8 19E1     		b	.L21
+ 342              	.L19:
+ 578:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 579:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 580:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Points to the pivot row of input and destination matrices */
+ 581:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pPivotRowIn = pIn + (l * numCols);
+ 343              		.loc 1 581 0
+ 344 01da FB6A     		ldr	r3, [r7, #44]
+ 345 01dc FA69     		ldr	r2, [r7, #28]
+ 346 01de 5343     		mul	r3, r2
+ 347 01e0 DB00     		lsl	r3, r3, #3
+ 348 01e2 FA6E     		ldr	r2, [r7, #108]
+ 349 01e4 D318     		add	r3, r2, r3
+ 350 01e6 FB60     		str	r3, [r7, #12]
+ 582:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pPivotRowDst = pOut + (l * numCols);
+ 351              		.loc 1 582 0
+ 352 01e8 FB6A     		ldr	r3, [r7, #44]
+ 353 01ea FA69     		ldr	r2, [r7, #28]
+ 354 01ec 5343     		mul	r3, r2
+ 355 01ee DB00     		lsl	r3, r3, #3
+ 356 01f0 7A6A     		ldr	r2, [r7, #36]
+ 357 01f2 D318     		add	r3, r2, r3
+ 358 01f4 BB60     		str	r3, [r7, #8]
+ 583:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 584:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Temporary pointers to the pivot row pointers */
+ 585:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT1 = pPivotRowIn;
+ 359              		.loc 1 585 0
+ 360 01f6 FB68     		ldr	r3, [r7, #12]
+ 361 01f8 BB66     		str	r3, [r7, #104]
+ 586:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pOutT1 = pPivotRowDst;
+ 362              		.loc 1 586 0
+ 363 01fa BB68     		ldr	r3, [r7, #8]
+ 364 01fc 3B66     		str	r3, [r7, #96]
+ 587:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 588:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Pivot element of the row */
+ 589:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       in = *(pIn + (l * numCols));
+ 365              		.loc 1 589 0
+ 366 01fe FB6A     		ldr	r3, [r7, #44]
+ 367 0200 FA69     		ldr	r2, [r7, #28]
+ 368 0202 5343     		mul	r3, r2
+ 369 0204 DB00     		lsl	r3, r3, #3
+ 370 0206 FA6E     		ldr	r2, [r7, #108]
+ 371 0208 D318     		add	r3, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 18
+
+
+ 372 020a 5C68     		ldr	r4, [r3, #4]
+ 373 020c 1B68     		ldr	r3, [r3]
+ 374 020e BB64     		str	r3, [r7, #72]
+ 375 0210 FC64     		str	r4, [r7, #76]
+ 590:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 591:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Loop over number of columns
+ 592:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * to the right of the pilot element */
+ 593:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       for (j = 0u; j < (numCols - l); j++)
+ 376              		.loc 1 593 0
+ 377 0212 0023     		mov	r3, #0
+ 378 0214 BB63     		str	r3, [r7, #56]
+ 379 0216 13E0     		b	.L22
+ 380              	.L23:
+ 594:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 595:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Divide each element of the row of the input matrix
+ 596:Source\MatrixFunctions/arm_mat_inverse_f64.c ****          * by the pivot element */
+ 597:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         *pInT1 = *pInT1 / in;
+ 381              		.loc 1 597 0 discriminator 3
+ 382 0218 BB6E     		ldr	r3, [r7, #104]
+ 383 021a 5C68     		ldr	r4, [r3, #4]
+ 384 021c 1B68     		ldr	r3, [r3]
+ 385 021e 181C     		mov	r0, r3
+ 386 0220 211C     		mov	r1, r4
+ 387 0222 BA6C     		ldr	r2, [r7, #72]
+ 388 0224 FB6C     		ldr	r3, [r7, #76]
+ 389 0226 FFF7FEFF 		bl	__aeabi_ddiv
+ 390 022a 031C     		mov	r3, r0
+ 391 022c 0C1C     		mov	r4, r1
+ 392 022e BA6E     		ldr	r2, [r7, #104]
+ 393 0230 1360     		str	r3, [r2]
+ 394 0232 5460     		str	r4, [r2, #4]
+ 598:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         pInT1++;
+ 395              		.loc 1 598 0 discriminator 3
+ 396 0234 BB6E     		ldr	r3, [r7, #104]
+ 397 0236 0833     		add	r3, r3, #8
+ 398 0238 BB66     		str	r3, [r7, #104]
+ 593:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 399              		.loc 1 593 0 discriminator 3
+ 400 023a BB6B     		ldr	r3, [r7, #56]
+ 401 023c 0133     		add	r3, r3, #1
+ 402 023e BB63     		str	r3, [r7, #56]
+ 403              	.L22:
+ 593:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 404              		.loc 1 593 0 is_stmt 0 discriminator 1
+ 405 0240 FA69     		ldr	r2, [r7, #28]
+ 406 0242 FB6A     		ldr	r3, [r7, #44]
+ 407 0244 D21A     		sub	r2, r2, r3
+ 408 0246 BB6B     		ldr	r3, [r7, #56]
+ 409 0248 9A42     		cmp	r2, r3
+ 410 024a E5D8     		bhi	.L23
+ 599:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 600:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       for (j = 0u; j < numCols; j++)
+ 411              		.loc 1 600 0 is_stmt 1
+ 412 024c 0023     		mov	r3, #0
+ 413 024e BB63     		str	r3, [r7, #56]
+ 414 0250 13E0     		b	.L24
+ 415              	.L25:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 19
+
+
+ 601:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 602:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Divide each element of the row of the destination matrix
+ 603:Source\MatrixFunctions/arm_mat_inverse_f64.c ****          * by the pivot element */
+ 604:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         *pOutT1 = *pOutT1 / in;
+ 416              		.loc 1 604 0 discriminator 3
+ 417 0252 3B6E     		ldr	r3, [r7, #96]
+ 418 0254 5C68     		ldr	r4, [r3, #4]
+ 419 0256 1B68     		ldr	r3, [r3]
+ 420 0258 181C     		mov	r0, r3
+ 421 025a 211C     		mov	r1, r4
+ 422 025c BA6C     		ldr	r2, [r7, #72]
+ 423 025e FB6C     		ldr	r3, [r7, #76]
+ 424 0260 FFF7FEFF 		bl	__aeabi_ddiv
+ 425 0264 031C     		mov	r3, r0
+ 426 0266 0C1C     		mov	r4, r1
+ 427 0268 3A6E     		ldr	r2, [r7, #96]
+ 428 026a 1360     		str	r3, [r2]
+ 429 026c 5460     		str	r4, [r2, #4]
+ 605:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         pOutT1++;
+ 430              		.loc 1 605 0 discriminator 3
+ 431 026e 3B6E     		ldr	r3, [r7, #96]
+ 432 0270 0833     		add	r3, r3, #8
+ 433 0272 3B66     		str	r3, [r7, #96]
+ 600:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 434              		.loc 1 600 0 discriminator 3
+ 435 0274 BB6B     		ldr	r3, [r7, #56]
+ 436 0276 0133     		add	r3, r3, #1
+ 437 0278 BB63     		str	r3, [r7, #56]
+ 438              	.L24:
+ 600:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 439              		.loc 1 600 0 is_stmt 0 discriminator 1
+ 440 027a BA6B     		ldr	r2, [r7, #56]
+ 441 027c FB69     		ldr	r3, [r7, #28]
+ 442 027e 9A42     		cmp	r2, r3
+ 443 0280 E7D3     		bcc	.L25
+ 606:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 607:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 608:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Replace the rows with the sum of that row and a multiple of row i
+ 609:Source\MatrixFunctions/arm_mat_inverse_f64.c ****        * so that each new element in column i above row i is zero.*/
+ 610:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 611:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Temporary pointers for input and destination matrices */
+ 612:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pInT1 = pIn;
+ 444              		.loc 1 612 0 is_stmt 1
+ 445 0282 FB6E     		ldr	r3, [r7, #108]
+ 446 0284 BB66     		str	r3, [r7, #104]
+ 613:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pOutT1 = pOut;
+ 447              		.loc 1 613 0
+ 448 0286 7B6A     		ldr	r3, [r7, #36]
+ 449 0288 3B66     		str	r3, [r7, #96]
+ 614:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 615:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       for (i = 0u; i < numRows; i++)
+ 450              		.loc 1 615 0
+ 451 028a 0023     		mov	r3, #0
+ 452 028c 7B64     		str	r3, [r7, #68]
+ 453 028e 71E0     		b	.L26
+ 454              	.L33:
+ 616:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 20
+
+
+ 617:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Check for the pivot element */
+ 618:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         if (i == l)
+ 455              		.loc 1 618 0
+ 456 0290 7A6C     		ldr	r2, [r7, #68]
+ 457 0292 FB6A     		ldr	r3, [r7, #44]
+ 458 0294 9A42     		cmp	r2, r3
+ 459 0296 0CD1     		bne	.L27
+ 619:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         {
+ 620:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* If the processing element is the pivot element,
+ 621:Source\MatrixFunctions/arm_mat_inverse_f64.c ****              only the columns to the right are to be processed */
+ 622:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pInT1 += numCols - l;
+ 460              		.loc 1 622 0
+ 461 0298 FA69     		ldr	r2, [r7, #28]
+ 462 029a FB6A     		ldr	r3, [r7, #44]
+ 463 029c D31A     		sub	r3, r2, r3
+ 464 029e DB00     		lsl	r3, r3, #3
+ 465 02a0 BA6E     		ldr	r2, [r7, #104]
+ 466 02a2 D318     		add	r3, r2, r3
+ 467 02a4 BB66     		str	r3, [r7, #104]
+ 623:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pOutT1 += numCols;
+ 468              		.loc 1 623 0
+ 469 02a6 FB69     		ldr	r3, [r7, #28]
+ 470 02a8 DB00     		lsl	r3, r3, #3
+ 471 02aa 3A6E     		ldr	r2, [r7, #96]
+ 472 02ac D318     		add	r3, r2, r3
+ 473 02ae 3B66     		str	r3, [r7, #96]
+ 474 02b0 58E0     		b	.L28
+ 475              	.L27:
+ 624:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         }
+ 625:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         else
+ 626:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         {
+ 627:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Element of the reference row */
+ 628:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           in = *pInT1;
+ 476              		.loc 1 628 0
+ 477 02b2 BB6E     		ldr	r3, [r7, #104]
+ 478 02b4 5C68     		ldr	r4, [r3, #4]
+ 479 02b6 1B68     		ldr	r3, [r3]
+ 480 02b8 BB64     		str	r3, [r7, #72]
+ 481 02ba FC64     		str	r4, [r7, #76]
+ 629:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 630:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Working pointers for input and destination pivot rows */
+ 631:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pPRT_in = pPivotRowIn;
+ 482              		.loc 1 631 0
+ 483 02bc FB68     		ldr	r3, [r7, #12]
+ 484 02be BB65     		str	r3, [r7, #88]
+ 632:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           pPRT_pDst = pPivotRowDst;
+ 485              		.loc 1 632 0
+ 486 02c0 BB68     		ldr	r3, [r7, #8]
+ 487 02c2 7B65     		str	r3, [r7, #84]
+ 633:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 634:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Loop over the number of columns to the right of the pivot element,
+ 635:Source\MatrixFunctions/arm_mat_inverse_f64.c ****              to replace the elements in the input matrix */
+ 636:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           for (j = 0u; j < (numCols - l); j++)
+ 488              		.loc 1 636 0
+ 489 02c4 0023     		mov	r3, #0
+ 490 02c6 BB63     		str	r3, [r7, #56]
+ 491 02c8 1FE0     		b	.L29
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 21
+
+
+ 492              	.L30:
+ 637:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 638:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Replace the element by the sum of that row
+ 639:Source\MatrixFunctions/arm_mat_inverse_f64.c ****                and a multiple of the reference row  */
+ 640:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             *pInT1 = *pInT1 - (in * *pPRT_in++);
+ 493              		.loc 1 640 0 discriminator 3
+ 494 02ca BB6E     		ldr	r3, [r7, #104]
+ 495 02cc 1C68     		ldr	r4, [r3]
+ 496 02ce 5D68     		ldr	r5, [r3, #4]
+ 497 02d0 BB6D     		ldr	r3, [r7, #88]
+ 498 02d2 1A1C     		mov	r2, r3
+ 499 02d4 0832     		add	r2, r2, #8
+ 500 02d6 BA65     		str	r2, [r7, #88]
+ 501 02d8 1A68     		ldr	r2, [r3]
+ 502 02da 5B68     		ldr	r3, [r3, #4]
+ 503 02dc 101C     		mov	r0, r2
+ 504 02de 191C     		mov	r1, r3
+ 505 02e0 BA6C     		ldr	r2, [r7, #72]
+ 506 02e2 FB6C     		ldr	r3, [r7, #76]
+ 507 02e4 FFF7FEFF 		bl	__aeabi_dmul
+ 508 02e8 021C     		mov	r2, r0
+ 509 02ea 0B1C     		mov	r3, r1
+ 510 02ec 201C     		mov	r0, r4
+ 511 02ee 291C     		mov	r1, r5
+ 512 02f0 FFF7FEFF 		bl	__aeabi_dsub
+ 513 02f4 031C     		mov	r3, r0
+ 514 02f6 0C1C     		mov	r4, r1
+ 515 02f8 BA6E     		ldr	r2, [r7, #104]
+ 516 02fa 1360     		str	r3, [r2]
+ 517 02fc 5460     		str	r4, [r2, #4]
+ 641:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             pInT1++;
+ 518              		.loc 1 641 0 discriminator 3
+ 519 02fe BB6E     		ldr	r3, [r7, #104]
+ 520 0300 0833     		add	r3, r3, #8
+ 521 0302 BB66     		str	r3, [r7, #104]
+ 636:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 522              		.loc 1 636 0 discriminator 3
+ 523 0304 BB6B     		ldr	r3, [r7, #56]
+ 524 0306 0133     		add	r3, r3, #1
+ 525 0308 BB63     		str	r3, [r7, #56]
+ 526              	.L29:
+ 636:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 527              		.loc 1 636 0 is_stmt 0 discriminator 1
+ 528 030a FA69     		ldr	r2, [r7, #28]
+ 529 030c FB6A     		ldr	r3, [r7, #44]
+ 530 030e D21A     		sub	r2, r2, r3
+ 531 0310 BB6B     		ldr	r3, [r7, #56]
+ 532 0312 9A42     		cmp	r2, r3
+ 533 0314 D9D8     		bhi	.L30
+ 642:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           }
+ 643:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           /* Loop over the number of columns to
+ 644:Source\MatrixFunctions/arm_mat_inverse_f64.c ****              replace the elements in the destination matrix */
+ 645:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           for (j = 0u; j < numCols; j++)
+ 534              		.loc 1 645 0 is_stmt 1
+ 535 0316 0023     		mov	r3, #0
+ 536 0318 BB63     		str	r3, [r7, #56]
+ 537 031a 1FE0     		b	.L31
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 22
+
+
+ 538              	.L32:
+ 646:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 647:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             /* Replace the element by the sum of that row
+ 648:Source\MatrixFunctions/arm_mat_inverse_f64.c ****                and a multiple of the reference row  */
+ 649:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             *pOutT1 = *pOutT1 - (in * *pPRT_pDst++);
+ 539              		.loc 1 649 0 discriminator 3
+ 540 031c 3B6E     		ldr	r3, [r7, #96]
+ 541 031e 1C68     		ldr	r4, [r3]
+ 542 0320 5D68     		ldr	r5, [r3, #4]
+ 543 0322 7B6D     		ldr	r3, [r7, #84]
+ 544 0324 1A1C     		mov	r2, r3
+ 545 0326 0832     		add	r2, r2, #8
+ 546 0328 7A65     		str	r2, [r7, #84]
+ 547 032a 1A68     		ldr	r2, [r3]
+ 548 032c 5B68     		ldr	r3, [r3, #4]
+ 549 032e 101C     		mov	r0, r2
+ 550 0330 191C     		mov	r1, r3
+ 551 0332 BA6C     		ldr	r2, [r7, #72]
+ 552 0334 FB6C     		ldr	r3, [r7, #76]
+ 553 0336 FFF7FEFF 		bl	__aeabi_dmul
+ 554 033a 021C     		mov	r2, r0
+ 555 033c 0B1C     		mov	r3, r1
+ 556 033e 201C     		mov	r0, r4
+ 557 0340 291C     		mov	r1, r5
+ 558 0342 FFF7FEFF 		bl	__aeabi_dsub
+ 559 0346 031C     		mov	r3, r0
+ 560 0348 0C1C     		mov	r4, r1
+ 561 034a 3A6E     		ldr	r2, [r7, #96]
+ 562 034c 1360     		str	r3, [r2]
+ 563 034e 5460     		str	r4, [r2, #4]
+ 650:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             pOutT1++;
+ 564              		.loc 1 650 0 discriminator 3
+ 565 0350 3B6E     		ldr	r3, [r7, #96]
+ 566 0352 0833     		add	r3, r3, #8
+ 567 0354 3B66     		str	r3, [r7, #96]
+ 645:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 568              		.loc 1 645 0 discriminator 3
+ 569 0356 BB6B     		ldr	r3, [r7, #56]
+ 570 0358 0133     		add	r3, r3, #1
+ 571 035a BB63     		str	r3, [r7, #56]
+ 572              	.L31:
+ 645:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           {
+ 573              		.loc 1 645 0 is_stmt 0 discriminator 1
+ 574 035c BA6B     		ldr	r2, [r7, #56]
+ 575 035e FB69     		ldr	r3, [r7, #28]
+ 576 0360 9A42     		cmp	r2, r3
+ 577 0362 DBD3     		bcc	.L32
+ 578              	.L28:
+ 651:Source\MatrixFunctions/arm_mat_inverse_f64.c ****           }
+ 652:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 653:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         }
+ 654:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         /* Increment the temporary input pointer */
+ 655:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         pInT1 = pInT1 + l;
+ 579              		.loc 1 655 0 is_stmt 1 discriminator 2
+ 580 0364 FB6A     		ldr	r3, [r7, #44]
+ 581 0366 DB00     		lsl	r3, r3, #3
+ 582 0368 BA6E     		ldr	r2, [r7, #104]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 23
+
+
+ 583 036a D318     		add	r3, r2, r3
+ 584 036c BB66     		str	r3, [r7, #104]
+ 615:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 585              		.loc 1 615 0 discriminator 2
+ 586 036e 7B6C     		ldr	r3, [r7, #68]
+ 587 0370 0133     		add	r3, r3, #1
+ 588 0372 7B64     		str	r3, [r7, #68]
+ 589              	.L26:
+ 615:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 590              		.loc 1 615 0 is_stmt 0 discriminator 1
+ 591 0374 7A6C     		ldr	r2, [r7, #68]
+ 592 0376 3B6A     		ldr	r3, [r7, #32]
+ 593 0378 9A42     		cmp	r2, r3
+ 594 037a 89D3     		bcc	.L33
+ 656:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 657:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Increment the input pointer */
+ 658:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pIn++;
+ 595              		.loc 1 658 0 is_stmt 1
+ 596 037c FB6E     		ldr	r3, [r7, #108]
+ 597 037e 0833     		add	r3, r3, #8
+ 598 0380 FB66     		str	r3, [r7, #108]
+ 659:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 660:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Decrement the loop counter */
+ 661:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       loopCnt--;
+ 599              		.loc 1 661 0
+ 600 0382 7B6B     		ldr	r3, [r7, #52]
+ 601 0384 013B     		sub	r3, r3, #1
+ 602 0386 7B63     		str	r3, [r7, #52]
+ 662:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       /* Increment the index modifier */
+ 663:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       l++;
+ 603              		.loc 1 663 0
+ 604 0388 FB6A     		ldr	r3, [r7, #44]
+ 605 038a 0133     		add	r3, r3, #1
+ 606 038c FB62     		str	r3, [r7, #44]
+ 607              	.L8:
+ 510:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     {
+ 608              		.loc 1 510 0
+ 609 038e 7B6B     		ldr	r3, [r7, #52]
+ 610 0390 002B     		cmp	r3, #0
+ 611 0392 00D0     		beq	.LCB494
+ 612 0394 88E6     		b	.L34	@long jump
+ 613              	.LCB494:
+ 664:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     }
+ 665:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 666:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 667:Source\MatrixFunctions/arm_mat_inverse_f64.c **** #endif /* #if defined (ARM_MATH_DSP) */
+ 668:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 669:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     /* Set status as ARM_MATH_SUCCESS */
+ 670:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     status = ARM_MATH_SUCCESS;
+ 614              		.loc 1 670 0
+ 615 0396 2B23     		mov	r3, #43
+ 616 0398 FB18     		add	r3, r7, r3
+ 617 039a 0022     		mov	r2, #0
+ 618 039c 1A70     		strb	r2, [r3]
+ 671:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 672:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     if ((flag != 1u) && (in == 0.0f))
+ 619              		.loc 1 672 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 24
+
+
+ 620 039e FB6B     		ldr	r3, [r7, #60]
+ 621 03a0 012B     		cmp	r3, #1
+ 622 03a2 31D0     		beq	.L35
+ 623              		.loc 1 672 0 is_stmt 0 discriminator 1
+ 624 03a4 B86C     		ldr	r0, [r7, #72]
+ 625 03a6 F96C     		ldr	r1, [r7, #76]
+ 626 03a8 0022     		mov	r2, #0
+ 627 03aa 0023     		mov	r3, #0
+ 628 03ac FFF7FEFF 		bl	__aeabi_dcmpeq
+ 629 03b0 031E     		sub	r3, r0, #0
+ 630 03b2 29D0     		beq	.L35
+ 673:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     {
+ 674:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       pIn = pSrc->pData;
+ 631              		.loc 1 674 0 is_stmt 1
+ 632 03b4 7B68     		ldr	r3, [r7, #4]
+ 633 03b6 5B68     		ldr	r3, [r3, #4]
+ 634 03b8 FB66     		str	r3, [r7, #108]
+ 675:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       for (i = 0; i < numRows * numCols; i++)
+ 635              		.loc 1 675 0
+ 636 03ba 0023     		mov	r3, #0
+ 637 03bc 7B64     		str	r3, [r7, #68]
+ 638 03be 13E0     		b	.L37
+ 639              	.L50:
+ 640              		.align	2
+ 641              	.L49:
+ 642 03c0 0000F03F 		.word	1072693248
+ 643              	.L41:
+ 676:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       {
+ 677:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         if (pIn[i] != 0.0f)
+ 644              		.loc 1 677 0
+ 645 03c4 7B6C     		ldr	r3, [r7, #68]
+ 646 03c6 DB00     		lsl	r3, r3, #3
+ 647 03c8 FA6E     		ldr	r2, [r7, #108]
+ 648 03ca D318     		add	r3, r2, r3
+ 649 03cc 5C68     		ldr	r4, [r3, #4]
+ 650 03ce 1B68     		ldr	r3, [r3]
+ 651 03d0 181C     		mov	r0, r3
+ 652 03d2 211C     		mov	r1, r4
+ 653 03d4 0022     		mov	r2, #0
+ 654 03d6 0023     		mov	r3, #0
+ 655 03d8 FFF7FEFF 		bl	__aeabi_dcmpeq
+ 656 03dc 031E     		sub	r3, r0, #0
+ 657 03de 00D1     		bne	.L48
+ 678:Source\MatrixFunctions/arm_mat_inverse_f64.c ****             break;
+ 658              		.loc 1 678 0
+ 659 03e0 08E0     		b	.L40
+ 660              	.L48:
+ 675:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       for (i = 0; i < numRows * numCols; i++)
+ 661              		.loc 1 675 0 discriminator 2
+ 662 03e2 7B6C     		ldr	r3, [r7, #68]
+ 663 03e4 0133     		add	r3, r3, #1
+ 664 03e6 7B64     		str	r3, [r7, #68]
+ 665              	.L37:
+ 675:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       for (i = 0; i < numRows * numCols; i++)
+ 666              		.loc 1 675 0 is_stmt 0 discriminator 1
+ 667 03e8 3B6A     		ldr	r3, [r7, #32]
+ 668 03ea FA69     		ldr	r2, [r7, #28]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 25
+
+
+ 669 03ec 5A43     		mul	r2, r3
+ 670 03ee 7B6C     		ldr	r3, [r7, #68]
+ 671 03f0 9A42     		cmp	r2, r3
+ 672 03f2 E7D8     		bhi	.L41
+ 673              	.L40:
+ 679:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       }
+ 680:Source\MatrixFunctions/arm_mat_inverse_f64.c **** 
+ 681:Source\MatrixFunctions/arm_mat_inverse_f64.c ****       if (i == numRows * numCols)
+ 674              		.loc 1 681 0 is_stmt 1
+ 675 03f4 3B6A     		ldr	r3, [r7, #32]
+ 676 03f6 FA69     		ldr	r2, [r7, #28]
+ 677 03f8 5A43     		mul	r2, r3
+ 678 03fa 7B6C     		ldr	r3, [r7, #68]
+ 679 03fc 9A42     		cmp	r2, r3
+ 680 03fe 03D1     		bne	.L35
+ 682:Source\MatrixFunctions/arm_mat_inverse_f64.c ****         status = ARM_MATH_SINGULAR;
+ 681              		.loc 1 682 0
+ 682 0400 2B23     		mov	r3, #43
+ 683 0402 FB18     		add	r3, r7, r3
+ 684 0404 FB22     		mov	r2, #251
+ 685 0406 1A70     		strb	r2, [r3]
+ 686              	.L35:
+ 683:Source\MatrixFunctions/arm_mat_inverse_f64.c ****     }
+ 684:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   }
+ 685:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   /* Return to application */
+ 686:Source\MatrixFunctions/arm_mat_inverse_f64.c ****   return (status);
+ 687              		.loc 1 686 0
+ 688 0408 2B23     		mov	r3, #43
+ 689 040a FB18     		add	r3, r7, r3
+ 690 040c 1B78     		ldrb	r3, [r3]
+ 691              	.L21:
+ 692 040e 5BB2     		sxtb	r3, r3
+ 687:Source\MatrixFunctions/arm_mat_inverse_f64.c **** }
+ 693              		.loc 1 687 0
+ 694 0410 181C     		mov	r0, r3
+ 695 0412 BD46     		mov	sp, r7
+ 696 0414 1CB0     		add	sp, sp, #112
+ 697              		@ sp needed
+ 698 0416 B0BD     		pop	{r4, r5, r7, pc}
+ 699              		.cfi_endproc
+ 700              	.LFE82:
+ 701              		.size	arm_mat_inverse_f64, .-arm_mat_inverse_f64
+ 702              		.text
+ 703              	.Letext0:
+ 704              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 705              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 706              		.file 4 ".\\Include/arm_math.h"
+ 707              		.section	.debug_info,"",%progbits
+ 708              	.Ldebug_info0:
+ 709 0000 D0020000 		.4byte	0x2d0
+ 710 0004 0400     		.2byte	0x4
+ 711 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 712 000a 04       		.byte	0x4
+ 713 000b 01       		.uleb128 0x1
+ 714 000c 8F010000 		.4byte	.LASF47
+ 715 0010 01       		.byte	0x1
+ 716 0011 38020000 		.4byte	.LASF48
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 26
+
+
+ 717 0015 3D000000 		.4byte	.LASF49
+ 718 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 719 001d 00000000 		.4byte	0
+ 720 0021 00000000 		.4byte	.Ldebug_line0
+ 721 0025 02       		.uleb128 0x2
+ 722 0026 01       		.byte	0x1
+ 723 0027 06       		.byte	0x6
+ 724 0028 EE020000 		.4byte	.LASF0
+ 725 002c 02       		.uleb128 0x2
+ 726 002d 01       		.byte	0x1
+ 727 002e 08       		.byte	0x8
+ 728 002f B6000000 		.4byte	.LASF1
+ 729 0033 02       		.uleb128 0x2
+ 730 0034 02       		.byte	0x2
+ 731 0035 05       		.byte	0x5
+ 732 0036 BD020000 		.4byte	.LASF2
+ 733 003a 03       		.uleb128 0x3
+ 734 003b 0C010000 		.4byte	.LASF5
+ 735 003f 02       		.byte	0x2
+ 736 0040 2B       		.byte	0x2b
+ 737 0041 45000000 		.4byte	0x45
+ 738 0045 02       		.uleb128 0x2
+ 739 0046 02       		.byte	0x2
+ 740 0047 07       		.byte	0x7
+ 741 0048 EC000000 		.4byte	.LASF3
+ 742 004c 02       		.uleb128 0x2
+ 743 004d 04       		.byte	0x4
+ 744 004e 05       		.byte	0x5
+ 745 004f D9020000 		.4byte	.LASF4
+ 746 0053 03       		.uleb128 0x3
+ 747 0054 1E010000 		.4byte	.LASF6
+ 748 0058 02       		.byte	0x2
+ 749 0059 41       		.byte	0x41
+ 750 005a 5E000000 		.4byte	0x5e
+ 751 005e 02       		.uleb128 0x2
+ 752 005f 04       		.byte	0x4
+ 753 0060 07       		.byte	0x7
+ 754 0061 DA000000 		.4byte	.LASF7
+ 755 0065 02       		.uleb128 0x2
+ 756 0066 08       		.byte	0x8
+ 757 0067 05       		.byte	0x5
+ 758 0068 89020000 		.4byte	.LASF8
+ 759 006c 02       		.uleb128 0x2
+ 760 006d 08       		.byte	0x8
+ 761 006e 07       		.byte	0x7
+ 762 006f 78010000 		.4byte	.LASF9
+ 763 0073 04       		.uleb128 0x4
+ 764 0074 04       		.byte	0x4
+ 765 0075 05       		.byte	0x5
+ 766 0076 696E7400 		.ascii	"int\000"
+ 767 007a 02       		.uleb128 0x2
+ 768 007b 04       		.byte	0x4
+ 769 007c 07       		.byte	0x7
+ 770 007d 83000000 		.4byte	.LASF10
+ 771 0081 03       		.uleb128 0x3
+ 772 0082 C7020000 		.4byte	.LASF11
+ 773 0086 03       		.byte	0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 27
+
+
+ 774 0087 21       		.byte	0x21
+ 775 0088 3A000000 		.4byte	0x3a
+ 776 008c 03       		.uleb128 0x3
+ 777 008d D0020000 		.4byte	.LASF12
+ 778 0091 03       		.byte	0x3
+ 779 0092 2D       		.byte	0x2d
+ 780 0093 53000000 		.4byte	0x53
+ 781 0097 02       		.uleb128 0x2
+ 782 0098 04       		.byte	0x4
+ 783 0099 07       		.byte	0x7
+ 784 009a 6C020000 		.4byte	.LASF13
+ 785 009e 02       		.uleb128 0x2
+ 786 009f 01       		.byte	0x1
+ 787 00a0 08       		.byte	0x8
+ 788 00a1 97020000 		.4byte	.LASF14
+ 789 00a5 02       		.uleb128 0x2
+ 790 00a6 08       		.byte	0x8
+ 791 00a7 04       		.byte	0x4
+ 792 00a8 17010000 		.4byte	.LASF15
+ 793 00ac 02       		.uleb128 0x2
+ 794 00ad 04       		.byte	0x4
+ 795 00ae 04       		.byte	0x4
+ 796 00af 28000000 		.4byte	.LASF16
+ 797 00b3 02       		.uleb128 0x2
+ 798 00b4 08       		.byte	0x8
+ 799 00b5 04       		.byte	0x4
+ 800 00b6 E2020000 		.4byte	.LASF17
+ 801 00ba 05       		.uleb128 0x5
+ 802 00bb 01       		.byte	0x1
+ 803 00bc 04       		.byte	0x4
+ 804 00bd 8401     		.2byte	0x184
+ 805 00bf EE000000 		.4byte	0xee
+ 806 00c3 06       		.uleb128 0x6
+ 807 00c4 AC020000 		.4byte	.LASF18
+ 808 00c8 00       		.sleb128 0
+ 809 00c9 06       		.uleb128 0x6
+ 810 00ca 41010000 		.4byte	.LASF19
+ 811 00ce 7F       		.sleb128 -1
+ 812 00cf 06       		.uleb128 0x6
+ 813 00d0 12000000 		.4byte	.LASF20
+ 814 00d4 7E       		.sleb128 -2
+ 815 00d5 06       		.uleb128 0x6
+ 816 00d6 21020000 		.4byte	.LASF21
+ 817 00da 7D       		.sleb128 -3
+ 818 00db 06       		.uleb128 0x6
+ 819 00dc 9C020000 		.4byte	.LASF22
+ 820 00e0 7C       		.sleb128 -4
+ 821 00e1 06       		.uleb128 0x6
+ 822 00e2 1F030000 		.4byte	.LASF23
+ 823 00e6 7B       		.sleb128 -5
+ 824 00e7 06       		.uleb128 0x6
+ 825 00e8 C4000000 		.4byte	.LASF24
+ 826 00ec 7A       		.sleb128 -6
+ 827 00ed 00       		.byte	0
+ 828 00ee 07       		.uleb128 0x7
+ 829 00ef 07030000 		.4byte	.LASF25
+ 830 00f3 04       		.byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 28
+
+
+ 831 00f4 8C01     		.2byte	0x18c
+ 832 00f6 BA000000 		.4byte	0xba
+ 833 00fa 07       		.uleb128 0x7
+ 834 00fb 2E000000 		.4byte	.LASF26
+ 835 00ff 04       		.byte	0x4
+ 836 0100 AA01     		.2byte	0x1aa
+ 837 0102 A5000000 		.4byte	0xa5
+ 838 0106 08       		.uleb128 0x8
+ 839 0107 08       		.byte	0x8
+ 840 0108 04       		.byte	0x4
+ 841 0109 A505     		.2byte	0x5a5
+ 842 010b 37010000 		.4byte	0x137
+ 843 010f 09       		.uleb128 0x9
+ 844 0110 FA020000 		.4byte	.LASF27
+ 845 0114 04       		.byte	0x4
+ 846 0115 A705     		.2byte	0x5a7
+ 847 0117 81000000 		.4byte	0x81
+ 848 011b 00       		.byte	0
+ 849 011c 09       		.uleb128 0x9
+ 850 011d 0A000000 		.4byte	.LASF28
+ 851 0121 04       		.byte	0x4
+ 852 0122 A805     		.2byte	0x5a8
+ 853 0124 81000000 		.4byte	0x81
+ 854 0128 02       		.byte	0x2
+ 855 0129 09       		.uleb128 0x9
+ 856 012a AB000000 		.4byte	.LASF29
+ 857 012e 04       		.byte	0x4
+ 858 012f A905     		.2byte	0x5a9
+ 859 0131 37010000 		.4byte	0x137
+ 860 0135 04       		.byte	0x4
+ 861 0136 00       		.byte	0
+ 862 0137 0A       		.uleb128 0xa
+ 863 0138 04       		.byte	0x4
+ 864 0139 FA000000 		.4byte	0xfa
+ 865 013d 07       		.uleb128 0x7
+ 866 013e 29010000 		.4byte	.LASF30
+ 867 0142 04       		.byte	0x4
+ 868 0143 AA05     		.2byte	0x5aa
+ 869 0145 06010000 		.4byte	0x106
+ 870 0149 0B       		.uleb128 0xb
+ 871 014a 90000000 		.4byte	.LASF50
+ 872 014e 01       		.byte	0x1
+ 873 014f 49       		.byte	0x49
+ 874 0150 EE000000 		.4byte	0xee
+ 875 0154 00000000 		.4byte	.LFB82
+ 876 0158 18040000 		.4byte	.LFE82-.LFB82
+ 877 015c 01       		.uleb128 0x1
+ 878 015d 9C       		.byte	0x9c
+ 879 015e C2020000 		.4byte	0x2c2
+ 880 0162 0C       		.uleb128 0xc
+ 881 0163 02030000 		.4byte	.LASF31
+ 882 0167 01       		.byte	0x1
+ 883 0168 4A       		.byte	0x4a
+ 884 0169 C2020000 		.4byte	0x2c2
+ 885 016d 03       		.uleb128 0x3
+ 886 016e 91       		.byte	0x91
+ 887 016f 847F     		.sleb128 -124
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 29
+
+
+ 888 0171 0C       		.uleb128 0xc
+ 889 0172 07010000 		.4byte	.LASF32
+ 890 0176 01       		.byte	0x1
+ 891 0177 4B       		.byte	0x4b
+ 892 0178 CD020000 		.4byte	0x2cd
+ 893 017c 03       		.uleb128 0x3
+ 894 017d 91       		.byte	0x91
+ 895 017e 807F     		.sleb128 -128
+ 896 0180 0D       		.uleb128 0xd
+ 897 0181 70496E00 		.ascii	"pIn\000"
+ 898 0185 01       		.byte	0x1
+ 899 0186 4D       		.byte	0x4d
+ 900 0187 37010000 		.4byte	0x137
+ 901 018b 02       		.uleb128 0x2
+ 902 018c 91       		.byte	0x91
+ 903 018d 6C       		.sleb128 -20
+ 904 018e 0E       		.uleb128 0xe
+ 905 018f B1000000 		.4byte	.LASF33
+ 906 0193 01       		.byte	0x1
+ 907 0194 4E       		.byte	0x4e
+ 908 0195 37010000 		.4byte	0x137
+ 909 0199 03       		.uleb128 0x3
+ 910 019a 91       		.byte	0x91
+ 911 019b A47F     		.sleb128 -92
+ 912 019d 0E       		.uleb128 0xe
+ 913 019e 59010000 		.4byte	.LASF34
+ 914 01a2 01       		.byte	0x1
+ 915 01a3 4F       		.byte	0x4f
+ 916 01a4 37010000 		.4byte	0x137
+ 917 01a8 02       		.uleb128 0x2
+ 918 01a9 91       		.byte	0x91
+ 919 01aa 68       		.sleb128 -24
+ 920 01ab 0E       		.uleb128 0xe
+ 921 01ac 5F010000 		.4byte	.LASF35
+ 922 01b0 01       		.byte	0x1
+ 923 01b1 4F       		.byte	0x4f
+ 924 01b2 37010000 		.4byte	0x137
+ 925 01b6 02       		.uleb128 0x2
+ 926 01b7 91       		.byte	0x91
+ 927 01b8 64       		.sleb128 -28
+ 928 01b9 0E       		.uleb128 0xe
+ 929 01ba 6A010000 		.4byte	.LASF36
+ 930 01be 01       		.byte	0x1
+ 931 01bf 50       		.byte	0x50
+ 932 01c0 37010000 		.4byte	0x137
+ 933 01c4 02       		.uleb128 0x2
+ 934 01c5 91       		.byte	0x91
+ 935 01c6 60       		.sleb128 -32
+ 936 01c7 0E       		.uleb128 0xe
+ 937 01c8 71010000 		.4byte	.LASF37
+ 938 01cc 01       		.byte	0x1
+ 939 01cd 50       		.byte	0x50
+ 940 01ce 37010000 		.4byte	0x137
+ 941 01d2 02       		.uleb128 0x2
+ 942 01d3 91       		.byte	0x91
+ 943 01d4 5C       		.sleb128 -36
+ 944 01d5 0E       		.uleb128 0xe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 30
+
+
+ 945 01d6 7D020000 		.4byte	.LASF38
+ 946 01da 01       		.byte	0x1
+ 947 01db 51       		.byte	0x51
+ 948 01dc 37010000 		.4byte	0x137
+ 949 01e0 03       		.uleb128 0x3
+ 950 01e1 91       		.byte	0x91
+ 951 01e2 8C7F     		.sleb128 -116
+ 952 01e4 0E       		.uleb128 0xe
+ 953 01e5 FF000000 		.4byte	.LASF39
+ 954 01e9 01       		.byte	0x1
+ 955 01ea 51       		.byte	0x51
+ 956 01eb 37010000 		.4byte	0x137
+ 957 01ef 02       		.uleb128 0x2
+ 958 01f0 91       		.byte	0x91
+ 959 01f1 58       		.sleb128 -40
+ 960 01f2 0E       		.uleb128 0xe
+ 961 01f3 12030000 		.4byte	.LASF40
+ 962 01f7 01       		.byte	0x1
+ 963 01f8 51       		.byte	0x51
+ 964 01f9 37010000 		.4byte	0x137
+ 965 01fd 03       		.uleb128 0x3
+ 966 01fe 91       		.byte	0x91
+ 967 01ff 887F     		.sleb128 -120
+ 968 0201 0E       		.uleb128 0xe
+ 969 0202 00000000 		.4byte	.LASF41
+ 970 0206 01       		.byte	0x1
+ 971 0207 51       		.byte	0x51
+ 972 0208 37010000 		.4byte	0x137
+ 973 020c 02       		.uleb128 0x2
+ 974 020d 91       		.byte	0x91
+ 975 020e 54       		.sleb128 -44
+ 976 020f 0E       		.uleb128 0xe
+ 977 0210 FA020000 		.4byte	.LASF27
+ 978 0214 01       		.byte	0x1
+ 979 0215 52       		.byte	0x52
+ 980 0216 8C000000 		.4byte	0x8c
+ 981 021a 03       		.uleb128 0x3
+ 982 021b 91       		.byte	0x91
+ 983 021c A07F     		.sleb128 -96
+ 984 021e 0E       		.uleb128 0xe
+ 985 021f 0A000000 		.4byte	.LASF28
+ 986 0223 01       		.byte	0x1
+ 987 0224 53       		.byte	0x53
+ 988 0225 8C000000 		.4byte	0x8c
+ 989 0229 03       		.uleb128 0x3
+ 990 022a 91       		.byte	0x91
+ 991 022b 9C7F     		.sleb128 -100
+ 992 022d 0F       		.uleb128 0xf
+ 993 022e 38000000 		.4byte	.LASF42
+ 994 0232 01       		.byte	0x1
+ 995 0233 A301     		.2byte	0x1a3
+ 996 0235 FA000000 		.4byte	0xfa
+ 997 0239 03       		.uleb128 0x3
+ 998 023a 91       		.byte	0x91
+ 999 023b 907F     		.sleb128 -112
+ 1000 023d 10       		.uleb128 0x10
+ 1001 023e 696E00   		.ascii	"in\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 31
+
+
+ 1002 0241 01       		.byte	0x1
+ 1003 0242 A301     		.2byte	0x1a3
+ 1004 0244 FA000000 		.4byte	0xfa
+ 1005 0248 02       		.uleb128 0x2
+ 1006 0249 91       		.byte	0x91
+ 1007 024a 48       		.sleb128 -56
+ 1008 024b 10       		.uleb128 0x10
+ 1009 024c 6900     		.ascii	"i\000"
+ 1010 024e 01       		.byte	0x1
+ 1011 024f A401     		.2byte	0x1a4
+ 1012 0251 8C000000 		.4byte	0x8c
+ 1013 0255 02       		.uleb128 0x2
+ 1014 0256 91       		.byte	0x91
+ 1015 0257 44       		.sleb128 -60
+ 1016 0258 0F       		.uleb128 0xf
+ 1017 0259 65020000 		.4byte	.LASF43
+ 1018 025d 01       		.byte	0x1
+ 1019 025e A401     		.2byte	0x1a4
+ 1020 0260 8C000000 		.4byte	0x8c
+ 1021 0264 02       		.uleb128 0x2
+ 1022 0265 91       		.byte	0x91
+ 1023 0266 40       		.sleb128 -64
+ 1024 0267 0F       		.uleb128 0xf
+ 1025 0268 65010000 		.4byte	.LASF44
+ 1026 026c 01       		.byte	0x1
+ 1027 026d A401     		.2byte	0x1a4
+ 1028 026f 8C000000 		.4byte	0x8c
+ 1029 0273 03       		.uleb128 0x3
+ 1030 0274 91       		.byte	0x91
+ 1031 0275 BC7F     		.sleb128 -68
+ 1032 0277 10       		.uleb128 0x10
+ 1033 0278 6A00     		.ascii	"j\000"
+ 1034 027a 01       		.byte	0x1
+ 1035 027b A401     		.2byte	0x1a4
+ 1036 027d 8C000000 		.4byte	0x8c
+ 1037 0281 03       		.uleb128 0x3
+ 1038 0282 91       		.byte	0x91
+ 1039 0283 B87F     		.sleb128 -72
+ 1040 0285 0F       		.uleb128 0xf
+ 1041 0286 75020000 		.4byte	.LASF45
+ 1042 028a 01       		.byte	0x1
+ 1043 028b A401     		.2byte	0x1a4
+ 1044 028d 8C000000 		.4byte	0x8c
+ 1045 0291 03       		.uleb128 0x3
+ 1046 0292 91       		.byte	0x91
+ 1047 0293 B47F     		.sleb128 -76
+ 1048 0295 10       		.uleb128 0x10
+ 1049 0296 6B00     		.ascii	"k\000"
+ 1050 0298 01       		.byte	0x1
+ 1051 0299 A401     		.2byte	0x1a4
+ 1052 029b 8C000000 		.4byte	0x8c
+ 1053 029f 03       		.uleb128 0x3
+ 1054 02a0 91       		.byte	0x91
+ 1055 02a1 B07F     		.sleb128 -80
+ 1056 02a3 10       		.uleb128 0x10
+ 1057 02a4 6C00     		.ascii	"l\000"
+ 1058 02a6 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 32
+
+
+ 1059 02a7 A401     		.2byte	0x1a4
+ 1060 02a9 8C000000 		.4byte	0x8c
+ 1061 02ad 03       		.uleb128 0x3
+ 1062 02ae 91       		.byte	0x91
+ 1063 02af AC7F     		.sleb128 -84
+ 1064 02b1 0F       		.uleb128 0xf
+ 1065 02b2 A4000000 		.4byte	.LASF46
+ 1066 02b6 01       		.byte	0x1
+ 1067 02b7 A501     		.2byte	0x1a5
+ 1068 02b9 EE000000 		.4byte	0xee
+ 1069 02bd 03       		.uleb128 0x3
+ 1070 02be 91       		.byte	0x91
+ 1071 02bf AB7F     		.sleb128 -85
+ 1072 02c1 00       		.byte	0
+ 1073 02c2 0A       		.uleb128 0xa
+ 1074 02c3 04       		.byte	0x4
+ 1075 02c4 C8020000 		.4byte	0x2c8
+ 1076 02c8 11       		.uleb128 0x11
+ 1077 02c9 3D010000 		.4byte	0x13d
+ 1078 02cd 0A       		.uleb128 0xa
+ 1079 02ce 04       		.byte	0x4
+ 1080 02cf 3D010000 		.4byte	0x13d
+ 1081 02d3 00       		.byte	0
+ 1082              		.section	.debug_abbrev,"",%progbits
+ 1083              	.Ldebug_abbrev0:
+ 1084 0000 01       		.uleb128 0x1
+ 1085 0001 11       		.uleb128 0x11
+ 1086 0002 01       		.byte	0x1
+ 1087 0003 25       		.uleb128 0x25
+ 1088 0004 0E       		.uleb128 0xe
+ 1089 0005 13       		.uleb128 0x13
+ 1090 0006 0B       		.uleb128 0xb
+ 1091 0007 03       		.uleb128 0x3
+ 1092 0008 0E       		.uleb128 0xe
+ 1093 0009 1B       		.uleb128 0x1b
+ 1094 000a 0E       		.uleb128 0xe
+ 1095 000b 55       		.uleb128 0x55
+ 1096 000c 17       		.uleb128 0x17
+ 1097 000d 11       		.uleb128 0x11
+ 1098 000e 01       		.uleb128 0x1
+ 1099 000f 10       		.uleb128 0x10
+ 1100 0010 17       		.uleb128 0x17
+ 1101 0011 00       		.byte	0
+ 1102 0012 00       		.byte	0
+ 1103 0013 02       		.uleb128 0x2
+ 1104 0014 24       		.uleb128 0x24
+ 1105 0015 00       		.byte	0
+ 1106 0016 0B       		.uleb128 0xb
+ 1107 0017 0B       		.uleb128 0xb
+ 1108 0018 3E       		.uleb128 0x3e
+ 1109 0019 0B       		.uleb128 0xb
+ 1110 001a 03       		.uleb128 0x3
+ 1111 001b 0E       		.uleb128 0xe
+ 1112 001c 00       		.byte	0
+ 1113 001d 00       		.byte	0
+ 1114 001e 03       		.uleb128 0x3
+ 1115 001f 16       		.uleb128 0x16
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 33
+
+
+ 1116 0020 00       		.byte	0
+ 1117 0021 03       		.uleb128 0x3
+ 1118 0022 0E       		.uleb128 0xe
+ 1119 0023 3A       		.uleb128 0x3a
+ 1120 0024 0B       		.uleb128 0xb
+ 1121 0025 3B       		.uleb128 0x3b
+ 1122 0026 0B       		.uleb128 0xb
+ 1123 0027 49       		.uleb128 0x49
+ 1124 0028 13       		.uleb128 0x13
+ 1125 0029 00       		.byte	0
+ 1126 002a 00       		.byte	0
+ 1127 002b 04       		.uleb128 0x4
+ 1128 002c 24       		.uleb128 0x24
+ 1129 002d 00       		.byte	0
+ 1130 002e 0B       		.uleb128 0xb
+ 1131 002f 0B       		.uleb128 0xb
+ 1132 0030 3E       		.uleb128 0x3e
+ 1133 0031 0B       		.uleb128 0xb
+ 1134 0032 03       		.uleb128 0x3
+ 1135 0033 08       		.uleb128 0x8
+ 1136 0034 00       		.byte	0
+ 1137 0035 00       		.byte	0
+ 1138 0036 05       		.uleb128 0x5
+ 1139 0037 04       		.uleb128 0x4
+ 1140 0038 01       		.byte	0x1
+ 1141 0039 0B       		.uleb128 0xb
+ 1142 003a 0B       		.uleb128 0xb
+ 1143 003b 3A       		.uleb128 0x3a
+ 1144 003c 0B       		.uleb128 0xb
+ 1145 003d 3B       		.uleb128 0x3b
+ 1146 003e 05       		.uleb128 0x5
+ 1147 003f 01       		.uleb128 0x1
+ 1148 0040 13       		.uleb128 0x13
+ 1149 0041 00       		.byte	0
+ 1150 0042 00       		.byte	0
+ 1151 0043 06       		.uleb128 0x6
+ 1152 0044 28       		.uleb128 0x28
+ 1153 0045 00       		.byte	0
+ 1154 0046 03       		.uleb128 0x3
+ 1155 0047 0E       		.uleb128 0xe
+ 1156 0048 1C       		.uleb128 0x1c
+ 1157 0049 0D       		.uleb128 0xd
+ 1158 004a 00       		.byte	0
+ 1159 004b 00       		.byte	0
+ 1160 004c 07       		.uleb128 0x7
+ 1161 004d 16       		.uleb128 0x16
+ 1162 004e 00       		.byte	0
+ 1163 004f 03       		.uleb128 0x3
+ 1164 0050 0E       		.uleb128 0xe
+ 1165 0051 3A       		.uleb128 0x3a
+ 1166 0052 0B       		.uleb128 0xb
+ 1167 0053 3B       		.uleb128 0x3b
+ 1168 0054 05       		.uleb128 0x5
+ 1169 0055 49       		.uleb128 0x49
+ 1170 0056 13       		.uleb128 0x13
+ 1171 0057 00       		.byte	0
+ 1172 0058 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 34
+
+
+ 1173 0059 08       		.uleb128 0x8
+ 1174 005a 13       		.uleb128 0x13
+ 1175 005b 01       		.byte	0x1
+ 1176 005c 0B       		.uleb128 0xb
+ 1177 005d 0B       		.uleb128 0xb
+ 1178 005e 3A       		.uleb128 0x3a
+ 1179 005f 0B       		.uleb128 0xb
+ 1180 0060 3B       		.uleb128 0x3b
+ 1181 0061 05       		.uleb128 0x5
+ 1182 0062 01       		.uleb128 0x1
+ 1183 0063 13       		.uleb128 0x13
+ 1184 0064 00       		.byte	0
+ 1185 0065 00       		.byte	0
+ 1186 0066 09       		.uleb128 0x9
+ 1187 0067 0D       		.uleb128 0xd
+ 1188 0068 00       		.byte	0
+ 1189 0069 03       		.uleb128 0x3
+ 1190 006a 0E       		.uleb128 0xe
+ 1191 006b 3A       		.uleb128 0x3a
+ 1192 006c 0B       		.uleb128 0xb
+ 1193 006d 3B       		.uleb128 0x3b
+ 1194 006e 05       		.uleb128 0x5
+ 1195 006f 49       		.uleb128 0x49
+ 1196 0070 13       		.uleb128 0x13
+ 1197 0071 38       		.uleb128 0x38
+ 1198 0072 0B       		.uleb128 0xb
+ 1199 0073 00       		.byte	0
+ 1200 0074 00       		.byte	0
+ 1201 0075 0A       		.uleb128 0xa
+ 1202 0076 0F       		.uleb128 0xf
+ 1203 0077 00       		.byte	0
+ 1204 0078 0B       		.uleb128 0xb
+ 1205 0079 0B       		.uleb128 0xb
+ 1206 007a 49       		.uleb128 0x49
+ 1207 007b 13       		.uleb128 0x13
+ 1208 007c 00       		.byte	0
+ 1209 007d 00       		.byte	0
+ 1210 007e 0B       		.uleb128 0xb
+ 1211 007f 2E       		.uleb128 0x2e
+ 1212 0080 01       		.byte	0x1
+ 1213 0081 3F       		.uleb128 0x3f
+ 1214 0082 19       		.uleb128 0x19
+ 1215 0083 03       		.uleb128 0x3
+ 1216 0084 0E       		.uleb128 0xe
+ 1217 0085 3A       		.uleb128 0x3a
+ 1218 0086 0B       		.uleb128 0xb
+ 1219 0087 3B       		.uleb128 0x3b
+ 1220 0088 0B       		.uleb128 0xb
+ 1221 0089 27       		.uleb128 0x27
+ 1222 008a 19       		.uleb128 0x19
+ 1223 008b 49       		.uleb128 0x49
+ 1224 008c 13       		.uleb128 0x13
+ 1225 008d 11       		.uleb128 0x11
+ 1226 008e 01       		.uleb128 0x1
+ 1227 008f 12       		.uleb128 0x12
+ 1228 0090 06       		.uleb128 0x6
+ 1229 0091 40       		.uleb128 0x40
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 35
+
+
+ 1230 0092 18       		.uleb128 0x18
+ 1231 0093 9642     		.uleb128 0x2116
+ 1232 0095 19       		.uleb128 0x19
+ 1233 0096 01       		.uleb128 0x1
+ 1234 0097 13       		.uleb128 0x13
+ 1235 0098 00       		.byte	0
+ 1236 0099 00       		.byte	0
+ 1237 009a 0C       		.uleb128 0xc
+ 1238 009b 05       		.uleb128 0x5
+ 1239 009c 00       		.byte	0
+ 1240 009d 03       		.uleb128 0x3
+ 1241 009e 0E       		.uleb128 0xe
+ 1242 009f 3A       		.uleb128 0x3a
+ 1243 00a0 0B       		.uleb128 0xb
+ 1244 00a1 3B       		.uleb128 0x3b
+ 1245 00a2 0B       		.uleb128 0xb
+ 1246 00a3 49       		.uleb128 0x49
+ 1247 00a4 13       		.uleb128 0x13
+ 1248 00a5 02       		.uleb128 0x2
+ 1249 00a6 18       		.uleb128 0x18
+ 1250 00a7 00       		.byte	0
+ 1251 00a8 00       		.byte	0
+ 1252 00a9 0D       		.uleb128 0xd
+ 1253 00aa 34       		.uleb128 0x34
+ 1254 00ab 00       		.byte	0
+ 1255 00ac 03       		.uleb128 0x3
+ 1256 00ad 08       		.uleb128 0x8
+ 1257 00ae 3A       		.uleb128 0x3a
+ 1258 00af 0B       		.uleb128 0xb
+ 1259 00b0 3B       		.uleb128 0x3b
+ 1260 00b1 0B       		.uleb128 0xb
+ 1261 00b2 49       		.uleb128 0x49
+ 1262 00b3 13       		.uleb128 0x13
+ 1263 00b4 02       		.uleb128 0x2
+ 1264 00b5 18       		.uleb128 0x18
+ 1265 00b6 00       		.byte	0
+ 1266 00b7 00       		.byte	0
+ 1267 00b8 0E       		.uleb128 0xe
+ 1268 00b9 34       		.uleb128 0x34
+ 1269 00ba 00       		.byte	0
+ 1270 00bb 03       		.uleb128 0x3
+ 1271 00bc 0E       		.uleb128 0xe
+ 1272 00bd 3A       		.uleb128 0x3a
+ 1273 00be 0B       		.uleb128 0xb
+ 1274 00bf 3B       		.uleb128 0x3b
+ 1275 00c0 0B       		.uleb128 0xb
+ 1276 00c1 49       		.uleb128 0x49
+ 1277 00c2 13       		.uleb128 0x13
+ 1278 00c3 02       		.uleb128 0x2
+ 1279 00c4 18       		.uleb128 0x18
+ 1280 00c5 00       		.byte	0
+ 1281 00c6 00       		.byte	0
+ 1282 00c7 0F       		.uleb128 0xf
+ 1283 00c8 34       		.uleb128 0x34
+ 1284 00c9 00       		.byte	0
+ 1285 00ca 03       		.uleb128 0x3
+ 1286 00cb 0E       		.uleb128 0xe
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 36
+
+
+ 1287 00cc 3A       		.uleb128 0x3a
+ 1288 00cd 0B       		.uleb128 0xb
+ 1289 00ce 3B       		.uleb128 0x3b
+ 1290 00cf 05       		.uleb128 0x5
+ 1291 00d0 49       		.uleb128 0x49
+ 1292 00d1 13       		.uleb128 0x13
+ 1293 00d2 02       		.uleb128 0x2
+ 1294 00d3 18       		.uleb128 0x18
+ 1295 00d4 00       		.byte	0
+ 1296 00d5 00       		.byte	0
+ 1297 00d6 10       		.uleb128 0x10
+ 1298 00d7 34       		.uleb128 0x34
+ 1299 00d8 00       		.byte	0
+ 1300 00d9 03       		.uleb128 0x3
+ 1301 00da 08       		.uleb128 0x8
+ 1302 00db 3A       		.uleb128 0x3a
+ 1303 00dc 0B       		.uleb128 0xb
+ 1304 00dd 3B       		.uleb128 0x3b
+ 1305 00de 05       		.uleb128 0x5
+ 1306 00df 49       		.uleb128 0x49
+ 1307 00e0 13       		.uleb128 0x13
+ 1308 00e1 02       		.uleb128 0x2
+ 1309 00e2 18       		.uleb128 0x18
+ 1310 00e3 00       		.byte	0
+ 1311 00e4 00       		.byte	0
+ 1312 00e5 11       		.uleb128 0x11
+ 1313 00e6 26       		.uleb128 0x26
+ 1314 00e7 00       		.byte	0
+ 1315 00e8 49       		.uleb128 0x49
+ 1316 00e9 13       		.uleb128 0x13
+ 1317 00ea 00       		.byte	0
+ 1318 00eb 00       		.byte	0
+ 1319 00ec 00       		.byte	0
+ 1320              		.section	.debug_aranges,"",%progbits
+ 1321 0000 1C000000 		.4byte	0x1c
+ 1322 0004 0200     		.2byte	0x2
+ 1323 0006 00000000 		.4byte	.Ldebug_info0
+ 1324 000a 04       		.byte	0x4
+ 1325 000b 00       		.byte	0
+ 1326 000c 0000     		.2byte	0
+ 1327 000e 0000     		.2byte	0
+ 1328 0010 00000000 		.4byte	.LFB82
+ 1329 0014 18040000 		.4byte	.LFE82-.LFB82
+ 1330 0018 00000000 		.4byte	0
+ 1331 001c 00000000 		.4byte	0
+ 1332              		.section	.debug_ranges,"",%progbits
+ 1333              	.Ldebug_ranges0:
+ 1334 0000 00000000 		.4byte	.LFB82
+ 1335 0004 18040000 		.4byte	.LFE82
+ 1336 0008 00000000 		.4byte	0
+ 1337 000c 00000000 		.4byte	0
+ 1338              		.section	.debug_line,"",%progbits
+ 1339              	.Ldebug_line0:
+ 1340 0000 9C020000 		.section	.debug_str,"MS",%progbits,1
+ 1340      02005301 
+ 1340      00000201 
+ 1340      FB0E0D00 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 37
+
+
+ 1340      01010101 
+ 1341              	.LASF41:
+ 1342 0000 70505254 		.ascii	"pPRT_pDst\000"
+ 1342      5F704473 
+ 1342      7400
+ 1343              	.LASF28:
+ 1344 000a 6E756D43 		.ascii	"numCols\000"
+ 1344      6F6C7300 
+ 1345              	.LASF20:
+ 1346 0012 41524D5F 		.ascii	"ARM_MATH_LENGTH_ERROR\000"
+ 1346      4D415448 
+ 1346      5F4C454E 
+ 1346      4754485F 
+ 1346      4552524F 
+ 1347              	.LASF16:
+ 1348 0028 666C6F61 		.ascii	"float\000"
+ 1348      7400
+ 1349              	.LASF26:
+ 1350 002e 666C6F61 		.ascii	"float64_t\000"
+ 1350      7436345F 
+ 1350      7400
+ 1351              	.LASF42:
+ 1352 0038 58636867 		.ascii	"Xchg\000"
+ 1352      00
+ 1353              	.LASF49:
+ 1354 003d 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 1354      73657273 
+ 1354      5C666E65 
+ 1354      7665735C 
+ 1354      446F6375 
+ 1355 006a 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 1355      655F7370 
+ 1355      6565645F 
+ 1355      73656E73 
+ 1355      6F722E63 
+ 1356              	.LASF10:
+ 1357 0083 756E7369 		.ascii	"unsigned int\000"
+ 1357      676E6564 
+ 1357      20696E74 
+ 1357      00
+ 1358              	.LASF50:
+ 1359 0090 61726D5F 		.ascii	"arm_mat_inverse_f64\000"
+ 1359      6D61745F 
+ 1359      696E7665 
+ 1359      7273655F 
+ 1359      66363400 
+ 1360              	.LASF46:
+ 1361 00a4 73746174 		.ascii	"status\000"
+ 1361      757300
+ 1362              	.LASF29:
+ 1363 00ab 70446174 		.ascii	"pData\000"
+ 1363      6100
+ 1364              	.LASF33:
+ 1365 00b1 704F7574 		.ascii	"pOut\000"
+ 1365      00
+ 1366              	.LASF1:
+ 1367 00b6 756E7369 		.ascii	"unsigned char\000"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 38
+
+
+ 1367      676E6564 
+ 1367      20636861 
+ 1367      7200
+ 1368              	.LASF24:
+ 1369 00c4 41524D5F 		.ascii	"ARM_MATH_TEST_FAILURE\000"
+ 1369      4D415448 
+ 1369      5F544553 
+ 1369      545F4641 
+ 1369      494C5552 
+ 1370              	.LASF7:
+ 1371 00da 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1371      20756E73 
+ 1371      69676E65 
+ 1371      6420696E 
+ 1371      7400
+ 1372              	.LASF3:
+ 1373 00ec 73686F72 		.ascii	"short unsigned int\000"
+ 1373      7420756E 
+ 1373      7369676E 
+ 1373      65642069 
+ 1373      6E7400
+ 1374              	.LASF39:
+ 1375 00ff 70505254 		.ascii	"pPRT_in\000"
+ 1375      5F696E00 
+ 1376              	.LASF32:
+ 1377 0107 70447374 		.ascii	"pDst\000"
+ 1377      00
+ 1378              	.LASF5:
+ 1379 010c 5F5F7569 		.ascii	"__uint16_t\000"
+ 1379      6E743136 
+ 1379      5F7400
+ 1380              	.LASF15:
+ 1381 0117 646F7562 		.ascii	"double\000"
+ 1381      6C6500
+ 1382              	.LASF6:
+ 1383 011e 5F5F7569 		.ascii	"__uint32_t\000"
+ 1383      6E743332 
+ 1383      5F7400
+ 1384              	.LASF30:
+ 1385 0129 61726D5F 		.ascii	"arm_matrix_instance_f64\000"
+ 1385      6D617472 
+ 1385      69785F69 
+ 1385      6E737461 
+ 1385      6E63655F 
+ 1386              	.LASF19:
+ 1387 0141 41524D5F 		.ascii	"ARM_MATH_ARGUMENT_ERROR\000"
+ 1387      4D415448 
+ 1387      5F415247 
+ 1387      554D454E 
+ 1387      545F4552 
+ 1388              	.LASF34:
+ 1389 0159 70496E54 		.ascii	"pInT1\000"
+ 1389      3100
+ 1390              	.LASF35:
+ 1391 015f 70496E54 		.ascii	"pInT2\000"
+ 1391      3200
+ 1392              	.LASF44:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 39
+
+
+ 1393 0165 666C6167 		.ascii	"flag\000"
+ 1393      00
+ 1394              	.LASF36:
+ 1395 016a 704F7574 		.ascii	"pOutT1\000"
+ 1395      543100
+ 1396              	.LASF37:
+ 1397 0171 704F7574 		.ascii	"pOutT2\000"
+ 1397      543200
+ 1398              	.LASF9:
+ 1399 0178 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1399      206C6F6E 
+ 1399      6720756E 
+ 1399      7369676E 
+ 1399      65642069 
+ 1400              	.LASF47:
+ 1401 018f 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 1401      4320342E 
+ 1401      392E3320 
+ 1401      32303135 
+ 1401      30333033 
+ 1402 01c2 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 1402      20726576 
+ 1402      6973696F 
+ 1402      6E203232 
+ 1402      31323230 
+ 1403 01f5 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 1403      30202D66 
+ 1403      66756E63 
+ 1403      74696F6E 
+ 1403      2D736563 
+ 1404              	.LASF21:
+ 1405 0221 41524D5F 		.ascii	"ARM_MATH_SIZE_MISMATCH\000"
+ 1405      4D415448 
+ 1405      5F53495A 
+ 1405      455F4D49 
+ 1405      534D4154 
+ 1406              	.LASF48:
+ 1407 0238 536F7572 		.ascii	"Source\\MatrixFunctions\\arm_mat_inverse_f64.c\000"
+ 1407      63655C4D 
+ 1407      61747269 
+ 1407      7846756E 
+ 1407      6374696F 
+ 1408              	.LASF43:
+ 1409 0265 726F7743 		.ascii	"rowCnt\000"
+ 1409      6E7400
+ 1410              	.LASF13:
+ 1411 026c 73697A65 		.ascii	"sizetype\000"
+ 1411      74797065 
+ 1411      00
+ 1412              	.LASF45:
+ 1413 0275 6C6F6F70 		.ascii	"loopCnt\000"
+ 1413      436E7400 
+ 1414              	.LASF38:
+ 1415 027d 70506976 		.ascii	"pPivotRowIn\000"
+ 1415      6F74526F 
+ 1415      77496E00 
+ 1416              	.LASF8:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 40
+
+
+ 1417 0289 6C6F6E67 		.ascii	"long long int\000"
+ 1417      206C6F6E 
+ 1417      6720696E 
+ 1417      7400
+ 1418              	.LASF14:
+ 1419 0297 63686172 		.ascii	"char\000"
+ 1419      00
+ 1420              	.LASF22:
+ 1421 029c 41524D5F 		.ascii	"ARM_MATH_NANINF\000"
+ 1421      4D415448 
+ 1421      5F4E414E 
+ 1421      494E4600 
+ 1422              	.LASF18:
+ 1423 02ac 41524D5F 		.ascii	"ARM_MATH_SUCCESS\000"
+ 1423      4D415448 
+ 1423      5F535543 
+ 1423      43455353 
+ 1423      00
+ 1424              	.LASF2:
+ 1425 02bd 73686F72 		.ascii	"short int\000"
+ 1425      7420696E 
+ 1425      7400
+ 1426              	.LASF11:
+ 1427 02c7 75696E74 		.ascii	"uint16_t\000"
+ 1427      31365F74 
+ 1427      00
+ 1428              	.LASF12:
+ 1429 02d0 75696E74 		.ascii	"uint32_t\000"
+ 1429      33325F74 
+ 1429      00
+ 1430              	.LASF4:
+ 1431 02d9 6C6F6E67 		.ascii	"long int\000"
+ 1431      20696E74 
+ 1431      00
+ 1432              	.LASF17:
+ 1433 02e2 6C6F6E67 		.ascii	"long double\000"
+ 1433      20646F75 
+ 1433      626C6500 
+ 1434              	.LASF0:
+ 1435 02ee 7369676E 		.ascii	"signed char\000"
+ 1435      65642063 
+ 1435      68617200 
+ 1436              	.LASF27:
+ 1437 02fa 6E756D52 		.ascii	"numRows\000"
+ 1437      6F777300 
+ 1438              	.LASF31:
+ 1439 0302 70537263 		.ascii	"pSrc\000"
+ 1439      00
+ 1440              	.LASF25:
+ 1441 0307 61726D5F 		.ascii	"arm_status\000"
+ 1441      73746174 
+ 1441      757300
+ 1442              	.LASF40:
+ 1443 0312 70506976 		.ascii	"pPivotRowDst\000"
+ 1443      6F74526F 
+ 1443      77447374 
+ 1443      00
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccy6Cdbg.s 			page 41
+
+
+ 1444              	.LASF23:
+ 1445 031f 41524D5F 		.ascii	"ARM_MATH_SINGULAR\000"
+ 1445      4D415448 
+ 1445      5F53494E 
+ 1445      47554C41 
+ 1445      5200
+ 1446              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br

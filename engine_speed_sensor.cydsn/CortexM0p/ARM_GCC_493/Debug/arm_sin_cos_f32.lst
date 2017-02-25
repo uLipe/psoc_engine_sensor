@@ -1,0 +1,1263 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_sin_cos_f32.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_fmul
+  18              		.global	__aeabi_fcmplt
+  19              		.global	__aeabi_f2iz
+  20              		.global	__aeabi_i2f
+  21              		.global	__aeabi_fsub
+  22              		.global	__aeabi_f2uiz
+  23              		.global	__aeabi_ui2f
+  24              		.global	__aeabi_fadd
+  25              		.section	.text.arm_sin_cos_f32,"ax",%progbits
+  26              		.align	2
+  27              		.global	arm_sin_cos_f32
+  28              		.code	16
+  29              		.thumb_func
+  30              		.type	arm_sin_cos_f32, %function
+  31              	arm_sin_cos_f32:
+  32              	.LFB82:
+  33              		.file 1 "Source\\ControllerFunctions\\arm_sin_cos_f32.c"
+   1:Source\ControllerFunctions/arm_sin_cos_f32.c **** /* ----------------------------------------------------------------------
+   2:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * Project:      CMSIS DSP Library
+   3:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * Title:        arm_sin_cos_f32.c
+   4:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * Description:  Sine and Cosine calculation for floating-point values
+   5:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+   6:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * $Date:        27. January 2017
+   7:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * $Revision:    V.1.5.1
+   8:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+   9:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * Target Processor: Cortex-M cores
+  10:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * -------------------------------------------------------------------- */
+  11:Source\ControllerFunctions/arm_sin_cos_f32.c **** /*
+  12:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+  14:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+  16:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * not use this file except in compliance with the License.
+  18:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * You may obtain a copy of the License at
+  19:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+  20:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+  22:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 2
+
+
+  25:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * See the License for the specific language governing permissions and
+  26:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * limitations under the License.
+  27:Source\ControllerFunctions/arm_sin_cos_f32.c ****  */
+  28:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  29:Source\ControllerFunctions/arm_sin_cos_f32.c **** #include "arm_math.h"
+  30:Source\ControllerFunctions/arm_sin_cos_f32.c **** #include "arm_common_tables.h"
+  31:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  32:Source\ControllerFunctions/arm_sin_cos_f32.c **** /**
+  33:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @ingroup groupController
+  34:Source\ControllerFunctions/arm_sin_cos_f32.c ****  */
+  35:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  36:Source\ControllerFunctions/arm_sin_cos_f32.c **** /**
+  37:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @defgroup SinCos Sine Cosine
+  38:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+  39:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * Computes the trigonometric sine and cosine values using a combination of table lookup
+  40:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * and linear interpolation.
+  41:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * There are separate functions for Q31 and floating-point data types.
+  42:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * The input to the floating-point version is in degrees while the
+  43:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * fixed-point Q31 have a scaled input with the range
+  44:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * [-1 0.9999] mapping to [-180 +180] degrees.
+  45:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+  46:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * The floating point function also allows values that are out of the usual range. When this happen
+  47:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * take extra time to adjust the input value to the range of [-180 180].
+  48:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+  49:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * The result is accurate to 5 digits after the decimal point.
+  50:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *
+  51:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * The implementation is based on table lookup using 360 values together with linear interpolation.
+  52:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * The steps used are:
+  53:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *  -# Calculation of the nearest integer table index.
+  54:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *  -# Compute the fractional portion (fract) of the input.
+  55:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *  -# Fetch the value corresponding to \c index from sine table to \c y0 and also value from \c in
+  56:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *  -# Sine value is computed as <code> *psinVal = y0 + (fract * (y1 - y0))</code>.
+  57:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *  -# Fetch the value corresponding to \c index from cosine table to \c y0 and also value from \c 
+  58:Source\ControllerFunctions/arm_sin_cos_f32.c ****  *  -# Cosine value is computed as <code> *pcosVal = y0 + (fract * (y1 - y0))</code>.
+  59:Source\ControllerFunctions/arm_sin_cos_f32.c ****  */
+  60:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  61:Source\ControllerFunctions/arm_sin_cos_f32.c ****  /**
+  62:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @addtogroup SinCos
+  63:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @{
+  64:Source\ControllerFunctions/arm_sin_cos_f32.c ****  */
+  65:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  66:Source\ControllerFunctions/arm_sin_cos_f32.c **** /**
+  67:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @brief  Floating-point sin_cos function.
+  68:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @param[in]  theta    input value in degrees
+  69:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @param[out] *pSinVal points to the processed sine output.
+  70:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @param[out] *pCosVal points to the processed cos output.
+  71:Source\ControllerFunctions/arm_sin_cos_f32.c ****  * @return none.
+  72:Source\ControllerFunctions/arm_sin_cos_f32.c ****  */
+  73:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  74:Source\ControllerFunctions/arm_sin_cos_f32.c **** void arm_sin_cos_f32(
+  75:Source\ControllerFunctions/arm_sin_cos_f32.c ****                       float32_t theta,
+  76:Source\ControllerFunctions/arm_sin_cos_f32.c ****                       float32_t * pSinVal,
+  77:Source\ControllerFunctions/arm_sin_cos_f32.c ****                       float32_t * pCosVal)
+  78:Source\ControllerFunctions/arm_sin_cos_f32.c **** {
+  34              		.loc 1 78 0
+  35              		.cfi_startproc
+  36 0000 B0B5     		push	{r4, r5, r7, lr}
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 3
+
+
+  37              		.cfi_def_cfa_offset 16
+  38              		.cfi_offset 4, -16
+  39              		.cfi_offset 5, -12
+  40              		.cfi_offset 7, -8
+  41              		.cfi_offset 14, -4
+  42 0002 90B0     		sub	sp, sp, #64
+  43              		.cfi_def_cfa_offset 80
+  44 0004 00AF     		add	r7, sp, #0
+  45              		.cfi_def_cfa_register 7
+  46 0006 F860     		str	r0, [r7, #12]
+  47 0008 B960     		str	r1, [r7, #8]
+  48 000a 7A60     		str	r2, [r7, #4]
+  79:Source\ControllerFunctions/arm_sin_cos_f32.c ****     float32_t fract, in;                             /* Temporary variables for input, output */
+  80:Source\ControllerFunctions/arm_sin_cos_f32.c ****     uint16_t indexS, indexC;                         /* Index variable */
+  81:Source\ControllerFunctions/arm_sin_cos_f32.c ****     float32_t f1, f2, d1, d2;                        /* Two nearest output values */
+  82:Source\ControllerFunctions/arm_sin_cos_f32.c ****     float32_t findex, Dn, Df, temp;
+  83:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  84:Source\ControllerFunctions/arm_sin_cos_f32.c ****     /* input x is in degrees */
+  85:Source\ControllerFunctions/arm_sin_cos_f32.c ****     /* Scale the input, divide input by 360, for cosine add 0.25 (pi/2) to read sine table */
+  86:Source\ControllerFunctions/arm_sin_cos_f32.c ****     in = theta * 0.00277777777778f;
+  49              		.loc 1 86 0
+  50 000c F868     		ldr	r0, [r7, #12]
+  51 000e C649     		ldr	r1, .L8
+  52 0010 FFF7FEFF 		bl	__aeabi_fmul
+  53 0014 031C     		add	r3, r0, #0
+  54 0016 FB63     		str	r3, [r7, #60]
+  87:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  88:Source\ControllerFunctions/arm_sin_cos_f32.c ****     if (in < 0.0f)
+  55              		.loc 1 88 0
+  56 0018 F86B     		ldr	r0, [r7, #60]
+  57 001a 0021     		mov	r1, #0
+  58 001c FFF7FEFF 		bl	__aeabi_fcmplt
+  59 0020 031E     		sub	r3, r0, #0
+  60 0022 04D0     		beq	.L2
+  89:Source\ControllerFunctions/arm_sin_cos_f32.c ****     {
+  90:Source\ControllerFunctions/arm_sin_cos_f32.c ****         in = -in;
+  61              		.loc 1 90 0
+  62 0024 FB6B     		ldr	r3, [r7, #60]
+  63 0026 8022     		mov	r2, #128
+  64 0028 1206     		lsl	r2, r2, #24
+  65 002a 5340     		eor	r3, r2
+  66 002c FB63     		str	r3, [r7, #60]
+  67              	.L2:
+  91:Source\ControllerFunctions/arm_sin_cos_f32.c ****     }
+  92:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  93:Source\ControllerFunctions/arm_sin_cos_f32.c ****     in = in - (int32_t)in;
+  68              		.loc 1 93 0
+  69 002e F86B     		ldr	r0, [r7, #60]
+  70 0030 FFF7FEFF 		bl	__aeabi_f2iz
+  71 0034 031C     		mov	r3, r0
+  72 0036 181C     		mov	r0, r3
+  73 0038 FFF7FEFF 		bl	__aeabi_i2f
+  74 003c 031C     		add	r3, r0, #0
+  75 003e F86B     		ldr	r0, [r7, #60]
+  76 0040 191C     		add	r1, r3, #0
+  77 0042 FFF7FEFF 		bl	__aeabi_fsub
+  78 0046 031C     		add	r3, r0, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 4
+
+
+  79 0048 FB63     		str	r3, [r7, #60]
+  94:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+  95:Source\ControllerFunctions/arm_sin_cos_f32.c ****     /* Calculation of index of the table */
+  96:Source\ControllerFunctions/arm_sin_cos_f32.c ****     findex = (float32_t) FAST_MATH_TABLE_SIZE * in;
+  80              		.loc 1 96 0
+  81 004a F86B     		ldr	r0, [r7, #60]
+  82 004c 8821     		mov	r1, #136
+  83 004e C905     		lsl	r1, r1, #23
+  84 0050 FFF7FEFF 		bl	__aeabi_fmul
+  85 0054 031C     		add	r3, r0, #0
+  86 0056 BB63     		str	r3, [r7, #56]
+  97:Source\ControllerFunctions/arm_sin_cos_f32.c ****     indexS = ((uint16_t)findex) & 0x1ff;
+  87              		.loc 1 97 0
+  88 0058 B86B     		ldr	r0, [r7, #56]
+  89 005a FFF7FEFF 		bl	__aeabi_f2uiz
+  90 005e 031C     		mov	r3, r0
+  91 0060 9AB2     		uxth	r2, r3
+  92 0062 3623     		mov	r3, #54
+  93 0064 FB18     		add	r3, r7, r3
+  94 0066 D205     		lsl	r2, r2, #23
+  95 0068 D20D     		lsr	r2, r2, #23
+  96 006a 1A80     		strh	r2, [r3]
+  98:Source\ControllerFunctions/arm_sin_cos_f32.c ****     indexC = (indexS + (FAST_MATH_TABLE_SIZE / 4)) & 0x1ff;
+  97              		.loc 1 98 0
+  98 006c 3623     		mov	r3, #54
+  99 006e FB18     		add	r3, r7, r3
+ 100 0070 1B88     		ldrh	r3, [r3]
+ 101 0072 8033     		add	r3, r3, #128
+ 102 0074 9AB2     		uxth	r2, r3
+ 103 0076 3423     		mov	r3, #52
+ 104 0078 FB18     		add	r3, r7, r3
+ 105 007a D205     		lsl	r2, r2, #23
+ 106 007c D20D     		lsr	r2, r2, #23
+ 107 007e 1A80     		strh	r2, [r3]
+  99:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 100:Source\ControllerFunctions/arm_sin_cos_f32.c ****     /* fractional value calculation */
+ 101:Source\ControllerFunctions/arm_sin_cos_f32.c ****     fract = findex - (float32_t) indexS;
+ 108              		.loc 1 101 0
+ 109 0080 3623     		mov	r3, #54
+ 110 0082 FB18     		add	r3, r7, r3
+ 111 0084 1B88     		ldrh	r3, [r3]
+ 112 0086 181C     		mov	r0, r3
+ 113 0088 FFF7FEFF 		bl	__aeabi_ui2f
+ 114 008c 031C     		add	r3, r0, #0
+ 115 008e B86B     		ldr	r0, [r7, #56]
+ 116 0090 191C     		add	r1, r3, #0
+ 117 0092 FFF7FEFF 		bl	__aeabi_fsub
+ 118 0096 031C     		add	r3, r0, #0
+ 119 0098 3B63     		str	r3, [r7, #48]
+ 102:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 103:Source\ControllerFunctions/arm_sin_cos_f32.c ****     /* Read two nearest values of input value from the cos & sin tables */
+ 104:Source\ControllerFunctions/arm_sin_cos_f32.c ****     f1 = sinTable_f32[indexC+0];
+ 120              		.loc 1 104 0
+ 121 009a 3423     		mov	r3, #52
+ 122 009c FB18     		add	r3, r7, r3
+ 123 009e 1A88     		ldrh	r2, [r3]
+ 124 00a0 A24B     		ldr	r3, .L8+4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 5
+
+
+ 125 00a2 9200     		lsl	r2, r2, #2
+ 126 00a4 D358     		ldr	r3, [r2, r3]
+ 127 00a6 FB62     		str	r3, [r7, #44]
+ 105:Source\ControllerFunctions/arm_sin_cos_f32.c ****     f2 = sinTable_f32[indexC+1];
+ 128              		.loc 1 105 0
+ 129 00a8 3423     		mov	r3, #52
+ 130 00aa FB18     		add	r3, r7, r3
+ 131 00ac 1B88     		ldrh	r3, [r3]
+ 132 00ae 5A1C     		add	r2, r3, #1
+ 133 00b0 9E4B     		ldr	r3, .L8+4
+ 134 00b2 9200     		lsl	r2, r2, #2
+ 135 00b4 D358     		ldr	r3, [r2, r3]
+ 136 00b6 BB62     		str	r3, [r7, #40]
+ 106:Source\ControllerFunctions/arm_sin_cos_f32.c ****     d1 = -sinTable_f32[indexS+0];
+ 137              		.loc 1 106 0
+ 138 00b8 3623     		mov	r3, #54
+ 139 00ba FB18     		add	r3, r7, r3
+ 140 00bc 1A88     		ldrh	r2, [r3]
+ 141 00be 9B4B     		ldr	r3, .L8+4
+ 142 00c0 9200     		lsl	r2, r2, #2
+ 143 00c2 D358     		ldr	r3, [r2, r3]
+ 144 00c4 8022     		mov	r2, #128
+ 145 00c6 1206     		lsl	r2, r2, #24
+ 146 00c8 5340     		eor	r3, r2
+ 147 00ca 7B62     		str	r3, [r7, #36]
+ 107:Source\ControllerFunctions/arm_sin_cos_f32.c ****     d2 = -sinTable_f32[indexS+1];
+ 148              		.loc 1 107 0
+ 149 00cc 3623     		mov	r3, #54
+ 150 00ce FB18     		add	r3, r7, r3
+ 151 00d0 1B88     		ldrh	r3, [r3]
+ 152 00d2 5A1C     		add	r2, r3, #1
+ 153 00d4 954B     		ldr	r3, .L8+4
+ 154 00d6 9200     		lsl	r2, r2, #2
+ 155 00d8 D358     		ldr	r3, [r2, r3]
+ 156 00da 8022     		mov	r2, #128
+ 157 00dc 1206     		lsl	r2, r2, #24
+ 158 00de 5340     		eor	r3, r2
+ 159 00e0 3B62     		str	r3, [r7, #32]
+ 108:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 109:Source\ControllerFunctions/arm_sin_cos_f32.c ****     temp = (1.0f - fract) * f1 + fract * f2;
+ 160              		.loc 1 109 0
+ 161 00e2 FE20     		mov	r0, #254
+ 162 00e4 8005     		lsl	r0, r0, #22
+ 163 00e6 396B     		ldr	r1, [r7, #48]
+ 164 00e8 FFF7FEFF 		bl	__aeabi_fsub
+ 165 00ec 031C     		add	r3, r0, #0
+ 166 00ee 181C     		add	r0, r3, #0
+ 167 00f0 F96A     		ldr	r1, [r7, #44]
+ 168 00f2 FFF7FEFF 		bl	__aeabi_fmul
+ 169 00f6 031C     		add	r3, r0, #0
+ 170 00f8 1C1C     		add	r4, r3, #0
+ 171 00fa 386B     		ldr	r0, [r7, #48]
+ 172 00fc B96A     		ldr	r1, [r7, #40]
+ 173 00fe FFF7FEFF 		bl	__aeabi_fmul
+ 174 0102 031C     		add	r3, r0, #0
+ 175 0104 201C     		add	r0, r4, #0
+ 176 0106 191C     		add	r1, r3, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 6
+
+
+ 177 0108 FFF7FEFF 		bl	__aeabi_fadd
+ 178 010c 031C     		add	r3, r0, #0
+ 179 010e FB61     		str	r3, [r7, #28]
+ 110:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 111:Source\ControllerFunctions/arm_sin_cos_f32.c ****     Dn = 0.0122718463030f; // delta between the two points (fixed), in this case 2*pi/FAST_MATH_TAB
+ 180              		.loc 1 111 0
+ 181 0110 874B     		ldr	r3, .L8+8
+ 182 0112 BB61     		str	r3, [r7, #24]
+ 112:Source\ControllerFunctions/arm_sin_cos_f32.c ****     Df = f2 - f1;          // delta between the values of the functions
+ 183              		.loc 1 112 0
+ 184 0114 B86A     		ldr	r0, [r7, #40]
+ 185 0116 F96A     		ldr	r1, [r7, #44]
+ 186 0118 FFF7FEFF 		bl	__aeabi_fsub
+ 187 011c 031C     		add	r3, r0, #0
+ 188 011e 7B61     		str	r3, [r7, #20]
+ 113:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 114:Source\ControllerFunctions/arm_sin_cos_f32.c ****     temp = Dn *(d1 + d2) - 2 * Df;
+ 189              		.loc 1 114 0
+ 190 0120 786A     		ldr	r0, [r7, #36]
+ 191 0122 396A     		ldr	r1, [r7, #32]
+ 192 0124 FFF7FEFF 		bl	__aeabi_fadd
+ 193 0128 031C     		add	r3, r0, #0
+ 194 012a 181C     		add	r0, r3, #0
+ 195 012c B969     		ldr	r1, [r7, #24]
+ 196 012e FFF7FEFF 		bl	__aeabi_fmul
+ 197 0132 031C     		add	r3, r0, #0
+ 198 0134 1C1C     		add	r4, r3, #0
+ 199 0136 7B69     		ldr	r3, [r7, #20]
+ 200 0138 181C     		add	r0, r3, #0
+ 201 013a 191C     		add	r1, r3, #0
+ 202 013c FFF7FEFF 		bl	__aeabi_fadd
+ 203 0140 031C     		add	r3, r0, #0
+ 204 0142 201C     		add	r0, r4, #0
+ 205 0144 191C     		add	r1, r3, #0
+ 206 0146 FFF7FEFF 		bl	__aeabi_fsub
+ 207 014a 031C     		add	r3, r0, #0
+ 208 014c FB61     		str	r3, [r7, #28]
+ 115:Source\ControllerFunctions/arm_sin_cos_f32.c ****     temp = fract * temp + (3 * Df - (d2 + 2 * d1) * Dn);
+ 209              		.loc 1 115 0
+ 210 014e 386B     		ldr	r0, [r7, #48]
+ 211 0150 F969     		ldr	r1, [r7, #28]
+ 212 0152 FFF7FEFF 		bl	__aeabi_fmul
+ 213 0156 031C     		add	r3, r0, #0
+ 214 0158 1C1C     		add	r4, r3, #0
+ 215 015a 7869     		ldr	r0, [r7, #20]
+ 216 015c 7549     		ldr	r1, .L8+12
+ 217 015e FFF7FEFF 		bl	__aeabi_fmul
+ 218 0162 031C     		add	r3, r0, #0
+ 219 0164 1D1C     		add	r5, r3, #0
+ 220 0166 7B6A     		ldr	r3, [r7, #36]
+ 221 0168 181C     		add	r0, r3, #0
+ 222 016a 191C     		add	r1, r3, #0
+ 223 016c FFF7FEFF 		bl	__aeabi_fadd
+ 224 0170 031C     		add	r3, r0, #0
+ 225 0172 181C     		add	r0, r3, #0
+ 226 0174 396A     		ldr	r1, [r7, #32]
+ 227 0176 FFF7FEFF 		bl	__aeabi_fadd
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 7
+
+
+ 228 017a 031C     		add	r3, r0, #0
+ 229 017c 181C     		add	r0, r3, #0
+ 230 017e B969     		ldr	r1, [r7, #24]
+ 231 0180 FFF7FEFF 		bl	__aeabi_fmul
+ 232 0184 031C     		add	r3, r0, #0
+ 233 0186 281C     		add	r0, r5, #0
+ 234 0188 191C     		add	r1, r3, #0
+ 235 018a FFF7FEFF 		bl	__aeabi_fsub
+ 236 018e 031C     		add	r3, r0, #0
+ 237 0190 201C     		add	r0, r4, #0
+ 238 0192 191C     		add	r1, r3, #0
+ 239 0194 FFF7FEFF 		bl	__aeabi_fadd
+ 240 0198 031C     		add	r3, r0, #0
+ 241 019a FB61     		str	r3, [r7, #28]
+ 116:Source\ControllerFunctions/arm_sin_cos_f32.c ****     temp = fract * temp + d1 * Dn;
+ 242              		.loc 1 116 0
+ 243 019c 386B     		ldr	r0, [r7, #48]
+ 244 019e F969     		ldr	r1, [r7, #28]
+ 245 01a0 FFF7FEFF 		bl	__aeabi_fmul
+ 246 01a4 031C     		add	r3, r0, #0
+ 247 01a6 1C1C     		add	r4, r3, #0
+ 248 01a8 786A     		ldr	r0, [r7, #36]
+ 249 01aa B969     		ldr	r1, [r7, #24]
+ 250 01ac FFF7FEFF 		bl	__aeabi_fmul
+ 251 01b0 031C     		add	r3, r0, #0
+ 252 01b2 201C     		add	r0, r4, #0
+ 253 01b4 191C     		add	r1, r3, #0
+ 254 01b6 FFF7FEFF 		bl	__aeabi_fadd
+ 255 01ba 031C     		add	r3, r0, #0
+ 256 01bc FB61     		str	r3, [r7, #28]
+ 117:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 118:Source\ControllerFunctions/arm_sin_cos_f32.c ****     /* Calculation of cosine value */
+ 119:Source\ControllerFunctions/arm_sin_cos_f32.c ****     *pCosVal = fract * temp + f1;
+ 257              		.loc 1 119 0
+ 258 01be 386B     		ldr	r0, [r7, #48]
+ 259 01c0 F969     		ldr	r1, [r7, #28]
+ 260 01c2 FFF7FEFF 		bl	__aeabi_fmul
+ 261 01c6 031C     		add	r3, r0, #0
+ 262 01c8 181C     		add	r0, r3, #0
+ 263 01ca F96A     		ldr	r1, [r7, #44]
+ 264 01cc FFF7FEFF 		bl	__aeabi_fadd
+ 265 01d0 031C     		add	r3, r0, #0
+ 266 01d2 1A1C     		add	r2, r3, #0
+ 267 01d4 7B68     		ldr	r3, [r7, #4]
+ 268 01d6 1A60     		str	r2, [r3]
+ 120:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 121:Source\ControllerFunctions/arm_sin_cos_f32.c ****     /* Read two nearest values of input value from the cos & sin tables */
+ 122:Source\ControllerFunctions/arm_sin_cos_f32.c ****     f1 = sinTable_f32[indexS+0];
+ 269              		.loc 1 122 0
+ 270 01d8 3623     		mov	r3, #54
+ 271 01da FB18     		add	r3, r7, r3
+ 272 01dc 1A88     		ldrh	r2, [r3]
+ 273 01de 534B     		ldr	r3, .L8+4
+ 274 01e0 9200     		lsl	r2, r2, #2
+ 275 01e2 D358     		ldr	r3, [r2, r3]
+ 276 01e4 FB62     		str	r3, [r7, #44]
+ 123:Source\ControllerFunctions/arm_sin_cos_f32.c ****     f2 = sinTable_f32[indexS+1];
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 8
+
+
+ 277              		.loc 1 123 0
+ 278 01e6 3623     		mov	r3, #54
+ 279 01e8 FB18     		add	r3, r7, r3
+ 280 01ea 1B88     		ldrh	r3, [r3]
+ 281 01ec 5A1C     		add	r2, r3, #1
+ 282 01ee 4F4B     		ldr	r3, .L8+4
+ 283 01f0 9200     		lsl	r2, r2, #2
+ 284 01f2 D358     		ldr	r3, [r2, r3]
+ 285 01f4 BB62     		str	r3, [r7, #40]
+ 124:Source\ControllerFunctions/arm_sin_cos_f32.c ****     d1 = sinTable_f32[indexC+0];
+ 286              		.loc 1 124 0
+ 287 01f6 3423     		mov	r3, #52
+ 288 01f8 FB18     		add	r3, r7, r3
+ 289 01fa 1A88     		ldrh	r2, [r3]
+ 290 01fc 4B4B     		ldr	r3, .L8+4
+ 291 01fe 9200     		lsl	r2, r2, #2
+ 292 0200 D358     		ldr	r3, [r2, r3]
+ 293 0202 7B62     		str	r3, [r7, #36]
+ 125:Source\ControllerFunctions/arm_sin_cos_f32.c ****     d2 = sinTable_f32[indexC+1];
+ 294              		.loc 1 125 0
+ 295 0204 3423     		mov	r3, #52
+ 296 0206 FB18     		add	r3, r7, r3
+ 297 0208 1B88     		ldrh	r3, [r3]
+ 298 020a 5A1C     		add	r2, r3, #1
+ 299 020c 474B     		ldr	r3, .L8+4
+ 300 020e 9200     		lsl	r2, r2, #2
+ 301 0210 D358     		ldr	r3, [r2, r3]
+ 302 0212 3B62     		str	r3, [r7, #32]
+ 126:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 127:Source\ControllerFunctions/arm_sin_cos_f32.c ****     temp = (1.0f - fract) * f1 + fract * f2;
+ 303              		.loc 1 127 0
+ 304 0214 FE20     		mov	r0, #254
+ 305 0216 8005     		lsl	r0, r0, #22
+ 306 0218 396B     		ldr	r1, [r7, #48]
+ 307 021a FFF7FEFF 		bl	__aeabi_fsub
+ 308 021e 031C     		add	r3, r0, #0
+ 309 0220 181C     		add	r0, r3, #0
+ 310 0222 F96A     		ldr	r1, [r7, #44]
+ 311 0224 FFF7FEFF 		bl	__aeabi_fmul
+ 312 0228 031C     		add	r3, r0, #0
+ 313 022a 1C1C     		add	r4, r3, #0
+ 314 022c 386B     		ldr	r0, [r7, #48]
+ 315 022e B96A     		ldr	r1, [r7, #40]
+ 316 0230 FFF7FEFF 		bl	__aeabi_fmul
+ 317 0234 031C     		add	r3, r0, #0
+ 318 0236 201C     		add	r0, r4, #0
+ 319 0238 191C     		add	r1, r3, #0
+ 320 023a FFF7FEFF 		bl	__aeabi_fadd
+ 321 023e 031C     		add	r3, r0, #0
+ 322 0240 FB61     		str	r3, [r7, #28]
+ 128:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 129:Source\ControllerFunctions/arm_sin_cos_f32.c ****     Df = f2 - f1; // delta between the values of the functions
+ 323              		.loc 1 129 0
+ 324 0242 B86A     		ldr	r0, [r7, #40]
+ 325 0244 F96A     		ldr	r1, [r7, #44]
+ 326 0246 FFF7FEFF 		bl	__aeabi_fsub
+ 327 024a 031C     		add	r3, r0, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 9
+
+
+ 328 024c 7B61     		str	r3, [r7, #20]
+ 130:Source\ControllerFunctions/arm_sin_cos_f32.c ****     temp = Dn*(d1 + d2) - 2*Df;
+ 329              		.loc 1 130 0
+ 330 024e 786A     		ldr	r0, [r7, #36]
+ 331 0250 396A     		ldr	r1, [r7, #32]
+ 332 0252 FFF7FEFF 		bl	__aeabi_fadd
+ 333 0256 031C     		add	r3, r0, #0
+ 334 0258 181C     		add	r0, r3, #0
+ 335 025a B969     		ldr	r1, [r7, #24]
+ 336 025c FFF7FEFF 		bl	__aeabi_fmul
+ 337 0260 031C     		add	r3, r0, #0
+ 338 0262 1C1C     		add	r4, r3, #0
+ 339 0264 7B69     		ldr	r3, [r7, #20]
+ 340 0266 181C     		add	r0, r3, #0
+ 341 0268 191C     		add	r1, r3, #0
+ 342 026a FFF7FEFF 		bl	__aeabi_fadd
+ 343 026e 031C     		add	r3, r0, #0
+ 344 0270 201C     		add	r0, r4, #0
+ 345 0272 191C     		add	r1, r3, #0
+ 346 0274 FFF7FEFF 		bl	__aeabi_fsub
+ 347 0278 031C     		add	r3, r0, #0
+ 348 027a FB61     		str	r3, [r7, #28]
+ 131:Source\ControllerFunctions/arm_sin_cos_f32.c ****     temp = fract*temp + (3*Df - (d2 + 2*d1)*Dn);
+ 349              		.loc 1 131 0
+ 350 027c 386B     		ldr	r0, [r7, #48]
+ 351 027e F969     		ldr	r1, [r7, #28]
+ 352 0280 FFF7FEFF 		bl	__aeabi_fmul
+ 353 0284 031C     		add	r3, r0, #0
+ 354 0286 1C1C     		add	r4, r3, #0
+ 355 0288 7869     		ldr	r0, [r7, #20]
+ 356 028a 2A49     		ldr	r1, .L8+12
+ 357 028c FFF7FEFF 		bl	__aeabi_fmul
+ 358 0290 031C     		add	r3, r0, #0
+ 359 0292 1D1C     		add	r5, r3, #0
+ 360 0294 7B6A     		ldr	r3, [r7, #36]
+ 361 0296 181C     		add	r0, r3, #0
+ 362 0298 191C     		add	r1, r3, #0
+ 363 029a FFF7FEFF 		bl	__aeabi_fadd
+ 364 029e 031C     		add	r3, r0, #0
+ 365 02a0 181C     		add	r0, r3, #0
+ 366 02a2 396A     		ldr	r1, [r7, #32]
+ 367 02a4 FFF7FEFF 		bl	__aeabi_fadd
+ 368 02a8 031C     		add	r3, r0, #0
+ 369 02aa 181C     		add	r0, r3, #0
+ 370 02ac B969     		ldr	r1, [r7, #24]
+ 371 02ae FFF7FEFF 		bl	__aeabi_fmul
+ 372 02b2 031C     		add	r3, r0, #0
+ 373 02b4 281C     		add	r0, r5, #0
+ 374 02b6 191C     		add	r1, r3, #0
+ 375 02b8 FFF7FEFF 		bl	__aeabi_fsub
+ 376 02bc 031C     		add	r3, r0, #0
+ 377 02be 201C     		add	r0, r4, #0
+ 378 02c0 191C     		add	r1, r3, #0
+ 379 02c2 FFF7FEFF 		bl	__aeabi_fadd
+ 380 02c6 031C     		add	r3, r0, #0
+ 381 02c8 FB61     		str	r3, [r7, #28]
+ 132:Source\ControllerFunctions/arm_sin_cos_f32.c ****     temp = fract*temp + d1*Dn;
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 10
+
+
+ 382              		.loc 1 132 0
+ 383 02ca 386B     		ldr	r0, [r7, #48]
+ 384 02cc F969     		ldr	r1, [r7, #28]
+ 385 02ce FFF7FEFF 		bl	__aeabi_fmul
+ 386 02d2 031C     		add	r3, r0, #0
+ 387 02d4 1C1C     		add	r4, r3, #0
+ 388 02d6 786A     		ldr	r0, [r7, #36]
+ 389 02d8 B969     		ldr	r1, [r7, #24]
+ 390 02da FFF7FEFF 		bl	__aeabi_fmul
+ 391 02de 031C     		add	r3, r0, #0
+ 392 02e0 201C     		add	r0, r4, #0
+ 393 02e2 191C     		add	r1, r3, #0
+ 394 02e4 FFF7FEFF 		bl	__aeabi_fadd
+ 395 02e8 031C     		add	r3, r0, #0
+ 396 02ea FB61     		str	r3, [r7, #28]
+ 133:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 134:Source\ControllerFunctions/arm_sin_cos_f32.c ****     /* Calculation of sine value */
+ 135:Source\ControllerFunctions/arm_sin_cos_f32.c ****     *pSinVal = fract*temp + f1;
+ 397              		.loc 1 135 0
+ 398 02ec 386B     		ldr	r0, [r7, #48]
+ 399 02ee F969     		ldr	r1, [r7, #28]
+ 400 02f0 FFF7FEFF 		bl	__aeabi_fmul
+ 401 02f4 031C     		add	r3, r0, #0
+ 402 02f6 181C     		add	r0, r3, #0
+ 403 02f8 F96A     		ldr	r1, [r7, #44]
+ 404 02fa FFF7FEFF 		bl	__aeabi_fadd
+ 405 02fe 031C     		add	r3, r0, #0
+ 406 0300 1A1C     		add	r2, r3, #0
+ 407 0302 BB68     		ldr	r3, [r7, #8]
+ 408 0304 1A60     		str	r2, [r3]
+ 136:Source\ControllerFunctions/arm_sin_cos_f32.c **** 
+ 137:Source\ControllerFunctions/arm_sin_cos_f32.c ****     if (theta < 0.0f)
+ 409              		.loc 1 137 0
+ 410 0306 F868     		ldr	r0, [r7, #12]
+ 411 0308 0021     		mov	r1, #0
+ 412 030a FFF7FEFF 		bl	__aeabi_fcmplt
+ 413 030e 031E     		sub	r3, r0, #0
+ 414 0310 06D0     		beq	.L1
+ 138:Source\ControllerFunctions/arm_sin_cos_f32.c ****     {
+ 139:Source\ControllerFunctions/arm_sin_cos_f32.c ****         *pSinVal = -*pSinVal;
+ 415              		.loc 1 139 0
+ 416 0312 BB68     		ldr	r3, [r7, #8]
+ 417 0314 1B68     		ldr	r3, [r3]
+ 418 0316 8022     		mov	r2, #128
+ 419 0318 1206     		lsl	r2, r2, #24
+ 420 031a 5A40     		eor	r2, r3
+ 421 031c BB68     		ldr	r3, [r7, #8]
+ 422 031e 1A60     		str	r2, [r3]
+ 423              	.L1:
+ 140:Source\ControllerFunctions/arm_sin_cos_f32.c ****     }
+ 141:Source\ControllerFunctions/arm_sin_cos_f32.c **** }
+ 424              		.loc 1 141 0
+ 425 0320 BD46     		mov	sp, r7
+ 426 0322 10B0     		add	sp, sp, #64
+ 427              		@ sp needed
+ 428 0324 B0BD     		pop	{r4, r5, r7, pc}
+ 429              	.L9:
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 11
+
+
+ 430 0326 C046     		.align	2
+ 431              	.L8:
+ 432 0328 610B363B 		.word	993397601
+ 433 032c 00000000 		.word	sinTable_f32
+ 434 0330 DB0F493C 		.word	1011421147
+ 435 0334 00004040 		.word	1077936128
+ 436              		.cfi_endproc
+ 437              	.LFE82:
+ 438              		.size	arm_sin_cos_f32, .-arm_sin_cos_f32
+ 439              		.text
+ 440              	.Letext0:
+ 441              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 442              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 443              		.file 4 ".\\Include/arm_math.h"
+ 444              		.file 5 ".\\Include/arm_common_tables.h"
+ 445              		.section	.debug_info,"",%progbits
+ 446              	.Ldebug_info0:
+ 447 0000 CE010000 		.4byte	0x1ce
+ 448 0004 0400     		.2byte	0x4
+ 449 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 450 000a 04       		.byte	0x4
+ 451 000b 01       		.uleb128 0x1
+ 452 000c 16010000 		.4byte	.LASF27
+ 453 0010 01       		.byte	0x1
+ 454 0011 E5010000 		.4byte	.LASF28
+ 455 0015 0D000000 		.4byte	.LASF29
+ 456 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 457 001d 00000000 		.4byte	0
+ 458 0021 00000000 		.4byte	.Ldebug_line0
+ 459 0025 02       		.uleb128 0x2
+ 460 0026 01       		.byte	0x1
+ 461 0027 06       		.byte	0x6
+ 462 0028 27020000 		.4byte	.LASF0
+ 463 002c 02       		.uleb128 0x2
+ 464 002d 01       		.byte	0x1
+ 465 002e 08       		.byte	0x8
+ 466 002f 87000000 		.4byte	.LASF1
+ 467 0033 02       		.uleb128 0x2
+ 468 0034 02       		.byte	0x2
+ 469 0035 05       		.byte	0x5
+ 470 0036 E8000000 		.4byte	.LASF2
+ 471 003a 03       		.uleb128 0x3
+ 472 003b D6000000 		.4byte	.LASF4
+ 473 003f 02       		.byte	0x2
+ 474 0040 2B       		.byte	0x2b
+ 475 0041 45000000 		.4byte	0x45
+ 476 0045 02       		.uleb128 0x2
+ 477 0046 02       		.byte	0x2
+ 478 0047 07       		.byte	0x7
+ 479 0048 C3000000 		.4byte	.LASF3
+ 480 004c 03       		.uleb128 0x3
+ 481 004d 53000000 		.4byte	.LASF5
+ 482 0051 02       		.byte	0x2
+ 483 0052 3F       		.byte	0x3f
+ 484 0053 57000000 		.4byte	0x57
+ 485 0057 02       		.uleb128 0x2
+ 486 0058 04       		.byte	0x4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 12
+
+
+ 487 0059 05       		.byte	0x5
+ 488 005a 12020000 		.4byte	.LASF6
+ 489 005e 02       		.uleb128 0x2
+ 490 005f 04       		.byte	0x4
+ 491 0060 07       		.byte	0x7
+ 492 0061 AC000000 		.4byte	.LASF7
+ 493 0065 02       		.uleb128 0x2
+ 494 0066 08       		.byte	0x8
+ 495 0067 05       		.byte	0x5
+ 496 0068 B9010000 		.4byte	.LASF8
+ 497 006c 02       		.uleb128 0x2
+ 498 006d 08       		.byte	0x8
+ 499 006e 07       		.byte	0x7
+ 500 006f FF000000 		.4byte	.LASF9
+ 501 0073 04       		.uleb128 0x4
+ 502 0074 04       		.byte	0x4
+ 503 0075 05       		.byte	0x5
+ 504 0076 696E7400 		.ascii	"int\000"
+ 505 007a 02       		.uleb128 0x2
+ 506 007b 04       		.byte	0x4
+ 507 007c 07       		.byte	0x7
+ 508 007d F2000000 		.4byte	.LASF10
+ 509 0081 03       		.uleb128 0x3
+ 510 0082 DC010000 		.4byte	.LASF11
+ 511 0086 03       		.byte	0x3
+ 512 0087 21       		.byte	0x21
+ 513 0088 3A000000 		.4byte	0x3a
+ 514 008c 03       		.uleb128 0x3
+ 515 008d A8010000 		.4byte	.LASF12
+ 516 0091 03       		.byte	0x3
+ 517 0092 2C       		.byte	0x2c
+ 518 0093 4C000000 		.4byte	0x4c
+ 519 0097 02       		.uleb128 0x2
+ 520 0098 04       		.byte	0x4
+ 521 0099 07       		.byte	0x7
+ 522 009a B0010000 		.4byte	.LASF13
+ 523 009e 02       		.uleb128 0x2
+ 524 009f 01       		.byte	0x1
+ 525 00a0 08       		.byte	0x8
+ 526 00a1 C7010000 		.4byte	.LASF14
+ 527 00a5 02       		.uleb128 0x2
+ 528 00a6 08       		.byte	0x8
+ 529 00a7 04       		.byte	0x4
+ 530 00a8 E1000000 		.4byte	.LASF15
+ 531 00ac 02       		.uleb128 0x2
+ 532 00ad 04       		.byte	0x4
+ 533 00ae 04       		.byte	0x4
+ 534 00af 81000000 		.4byte	.LASF16
+ 535 00b3 02       		.uleb128 0x2
+ 536 00b4 08       		.byte	0x8
+ 537 00b5 04       		.byte	0x4
+ 538 00b6 1B020000 		.4byte	.LASF17
+ 539 00ba 05       		.uleb128 0x5
+ 540 00bb D2010000 		.4byte	.LASF18
+ 541 00bf 04       		.byte	0x4
+ 542 00c0 A501     		.2byte	0x1a5
+ 543 00c2 AC000000 		.4byte	0xac
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 13
+
+
+ 544 00c6 06       		.uleb128 0x6
+ 545 00c7 04       		.byte	0x4
+ 546 00c8 BA000000 		.4byte	0xba
+ 547 00cc 07       		.uleb128 0x7
+ 548 00cd 95000000 		.4byte	.LASF30
+ 549 00d1 01       		.byte	0x1
+ 550 00d2 4A       		.byte	0x4a
+ 551 00d3 00000000 		.4byte	.LFB82
+ 552 00d7 38030000 		.4byte	.LFE82-.LFB82
+ 553 00db 01       		.uleb128 0x1
+ 554 00dc 9C       		.byte	0x9c
+ 555 00dd B0010000 		.4byte	0x1b0
+ 556 00e1 08       		.uleb128 0x8
+ 557 00e2 5D000000 		.4byte	.LASF19
+ 558 00e6 01       		.byte	0x1
+ 559 00e7 4B       		.byte	0x4b
+ 560 00e8 BA000000 		.4byte	0xba
+ 561 00ec 03       		.uleb128 0x3
+ 562 00ed 91       		.byte	0x91
+ 563 00ee BC7F     		.sleb128 -68
+ 564 00f0 08       		.uleb128 0x8
+ 565 00f1 6B000000 		.4byte	.LASF20
+ 566 00f5 01       		.byte	0x1
+ 567 00f6 4C       		.byte	0x4c
+ 568 00f7 C6000000 		.4byte	0xc6
+ 569 00fb 03       		.uleb128 0x3
+ 570 00fc 91       		.byte	0x91
+ 571 00fd B87F     		.sleb128 -72
+ 572 00ff 08       		.uleb128 0x8
+ 573 0100 63000000 		.4byte	.LASF21
+ 574 0104 01       		.byte	0x1
+ 575 0105 4D       		.byte	0x4d
+ 576 0106 C6000000 		.4byte	0xc6
+ 577 010a 03       		.uleb128 0x3
+ 578 010b 91       		.byte	0x91
+ 579 010c B47F     		.sleb128 -76
+ 580 010e 09       		.uleb128 0x9
+ 581 010f CC010000 		.4byte	.LASF22
+ 582 0113 01       		.byte	0x1
+ 583 0114 4F       		.byte	0x4f
+ 584 0115 BA000000 		.4byte	0xba
+ 585 0119 02       		.uleb128 0x2
+ 586 011a 91       		.byte	0x91
+ 587 011b 60       		.sleb128 -32
+ 588 011c 0A       		.uleb128 0xa
+ 589 011d 696E00   		.ascii	"in\000"
+ 590 0120 01       		.byte	0x1
+ 591 0121 4F       		.byte	0x4f
+ 592 0122 BA000000 		.4byte	0xba
+ 593 0126 02       		.uleb128 0x2
+ 594 0127 91       		.byte	0x91
+ 595 0128 6C       		.sleb128 -20
+ 596 0129 09       		.uleb128 0x9
+ 597 012a A5000000 		.4byte	.LASF23
+ 598 012e 01       		.byte	0x1
+ 599 012f 50       		.byte	0x50
+ 600 0130 81000000 		.4byte	0x81
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 14
+
+
+ 601 0134 02       		.uleb128 0x2
+ 602 0135 91       		.byte	0x91
+ 603 0136 66       		.sleb128 -26
+ 604 0137 09       		.uleb128 0x9
+ 605 0138 73000000 		.4byte	.LASF24
+ 606 013c 01       		.byte	0x1
+ 607 013d 50       		.byte	0x50
+ 608 013e 81000000 		.4byte	0x81
+ 609 0142 02       		.uleb128 0x2
+ 610 0143 91       		.byte	0x91
+ 611 0144 64       		.sleb128 -28
+ 612 0145 0A       		.uleb128 0xa
+ 613 0146 663100   		.ascii	"f1\000"
+ 614 0149 01       		.byte	0x1
+ 615 014a 51       		.byte	0x51
+ 616 014b BA000000 		.4byte	0xba
+ 617 014f 02       		.uleb128 0x2
+ 618 0150 91       		.byte	0x91
+ 619 0151 5C       		.sleb128 -36
+ 620 0152 0A       		.uleb128 0xa
+ 621 0153 663200   		.ascii	"f2\000"
+ 622 0156 01       		.byte	0x1
+ 623 0157 51       		.byte	0x51
+ 624 0158 BA000000 		.4byte	0xba
+ 625 015c 02       		.uleb128 0x2
+ 626 015d 91       		.byte	0x91
+ 627 015e 58       		.sleb128 -40
+ 628 015f 0A       		.uleb128 0xa
+ 629 0160 643100   		.ascii	"d1\000"
+ 630 0163 01       		.byte	0x1
+ 631 0164 51       		.byte	0x51
+ 632 0165 BA000000 		.4byte	0xba
+ 633 0169 02       		.uleb128 0x2
+ 634 016a 91       		.byte	0x91
+ 635 016b 54       		.sleb128 -44
+ 636 016c 0A       		.uleb128 0xa
+ 637 016d 643200   		.ascii	"d2\000"
+ 638 0170 01       		.byte	0x1
+ 639 0171 51       		.byte	0x51
+ 640 0172 BA000000 		.4byte	0xba
+ 641 0176 02       		.uleb128 0x2
+ 642 0177 91       		.byte	0x91
+ 643 0178 50       		.sleb128 -48
+ 644 0179 09       		.uleb128 0x9
+ 645 017a 7A000000 		.4byte	.LASF25
+ 646 017e 01       		.byte	0x1
+ 647 017f 52       		.byte	0x52
+ 648 0180 BA000000 		.4byte	0xba
+ 649 0184 02       		.uleb128 0x2
+ 650 0185 91       		.byte	0x91
+ 651 0186 68       		.sleb128 -24
+ 652 0187 0A       		.uleb128 0xa
+ 653 0188 446E00   		.ascii	"Dn\000"
+ 654 018b 01       		.byte	0x1
+ 655 018c 52       		.byte	0x52
+ 656 018d BA000000 		.4byte	0xba
+ 657 0191 02       		.uleb128 0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 15
+
+
+ 658 0192 91       		.byte	0x91
+ 659 0193 48       		.sleb128 -56
+ 660 0194 0A       		.uleb128 0xa
+ 661 0195 446600   		.ascii	"Df\000"
+ 662 0198 01       		.byte	0x1
+ 663 0199 52       		.byte	0x52
+ 664 019a BA000000 		.4byte	0xba
+ 665 019e 02       		.uleb128 0x2
+ 666 019f 91       		.byte	0x91
+ 667 01a0 44       		.sleb128 -60
+ 668 01a1 09       		.uleb128 0x9
+ 669 01a2 BE000000 		.4byte	.LASF26
+ 670 01a6 01       		.byte	0x1
+ 671 01a7 52       		.byte	0x52
+ 672 01a8 BA000000 		.4byte	0xba
+ 673 01ac 02       		.uleb128 0x2
+ 674 01ad 91       		.byte	0x91
+ 675 01ae 4C       		.sleb128 -52
+ 676 01af 00       		.byte	0
+ 677 01b0 0B       		.uleb128 0xb
+ 678 01b1 BA000000 		.4byte	0xba
+ 679 01b5 C1010000 		.4byte	0x1c1
+ 680 01b9 0C       		.uleb128 0xc
+ 681 01ba 97000000 		.4byte	0x97
+ 682 01be 0002     		.2byte	0x200
+ 683 01c0 00       		.byte	0
+ 684 01c1 0D       		.uleb128 0xd
+ 685 01c2 00000000 		.4byte	.LASF31
+ 686 01c6 05       		.byte	0x5
+ 687 01c7 75       		.byte	0x75
+ 688 01c8 CC010000 		.4byte	0x1cc
+ 689 01cc 0E       		.uleb128 0xe
+ 690 01cd B0010000 		.4byte	0x1b0
+ 691 01d1 00       		.byte	0
+ 692              		.section	.debug_abbrev,"",%progbits
+ 693              	.Ldebug_abbrev0:
+ 694 0000 01       		.uleb128 0x1
+ 695 0001 11       		.uleb128 0x11
+ 696 0002 01       		.byte	0x1
+ 697 0003 25       		.uleb128 0x25
+ 698 0004 0E       		.uleb128 0xe
+ 699 0005 13       		.uleb128 0x13
+ 700 0006 0B       		.uleb128 0xb
+ 701 0007 03       		.uleb128 0x3
+ 702 0008 0E       		.uleb128 0xe
+ 703 0009 1B       		.uleb128 0x1b
+ 704 000a 0E       		.uleb128 0xe
+ 705 000b 55       		.uleb128 0x55
+ 706 000c 17       		.uleb128 0x17
+ 707 000d 11       		.uleb128 0x11
+ 708 000e 01       		.uleb128 0x1
+ 709 000f 10       		.uleb128 0x10
+ 710 0010 17       		.uleb128 0x17
+ 711 0011 00       		.byte	0
+ 712 0012 00       		.byte	0
+ 713 0013 02       		.uleb128 0x2
+ 714 0014 24       		.uleb128 0x24
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 16
+
+
+ 715 0015 00       		.byte	0
+ 716 0016 0B       		.uleb128 0xb
+ 717 0017 0B       		.uleb128 0xb
+ 718 0018 3E       		.uleb128 0x3e
+ 719 0019 0B       		.uleb128 0xb
+ 720 001a 03       		.uleb128 0x3
+ 721 001b 0E       		.uleb128 0xe
+ 722 001c 00       		.byte	0
+ 723 001d 00       		.byte	0
+ 724 001e 03       		.uleb128 0x3
+ 725 001f 16       		.uleb128 0x16
+ 726 0020 00       		.byte	0
+ 727 0021 03       		.uleb128 0x3
+ 728 0022 0E       		.uleb128 0xe
+ 729 0023 3A       		.uleb128 0x3a
+ 730 0024 0B       		.uleb128 0xb
+ 731 0025 3B       		.uleb128 0x3b
+ 732 0026 0B       		.uleb128 0xb
+ 733 0027 49       		.uleb128 0x49
+ 734 0028 13       		.uleb128 0x13
+ 735 0029 00       		.byte	0
+ 736 002a 00       		.byte	0
+ 737 002b 04       		.uleb128 0x4
+ 738 002c 24       		.uleb128 0x24
+ 739 002d 00       		.byte	0
+ 740 002e 0B       		.uleb128 0xb
+ 741 002f 0B       		.uleb128 0xb
+ 742 0030 3E       		.uleb128 0x3e
+ 743 0031 0B       		.uleb128 0xb
+ 744 0032 03       		.uleb128 0x3
+ 745 0033 08       		.uleb128 0x8
+ 746 0034 00       		.byte	0
+ 747 0035 00       		.byte	0
+ 748 0036 05       		.uleb128 0x5
+ 749 0037 16       		.uleb128 0x16
+ 750 0038 00       		.byte	0
+ 751 0039 03       		.uleb128 0x3
+ 752 003a 0E       		.uleb128 0xe
+ 753 003b 3A       		.uleb128 0x3a
+ 754 003c 0B       		.uleb128 0xb
+ 755 003d 3B       		.uleb128 0x3b
+ 756 003e 05       		.uleb128 0x5
+ 757 003f 49       		.uleb128 0x49
+ 758 0040 13       		.uleb128 0x13
+ 759 0041 00       		.byte	0
+ 760 0042 00       		.byte	0
+ 761 0043 06       		.uleb128 0x6
+ 762 0044 0F       		.uleb128 0xf
+ 763 0045 00       		.byte	0
+ 764 0046 0B       		.uleb128 0xb
+ 765 0047 0B       		.uleb128 0xb
+ 766 0048 49       		.uleb128 0x49
+ 767 0049 13       		.uleb128 0x13
+ 768 004a 00       		.byte	0
+ 769 004b 00       		.byte	0
+ 770 004c 07       		.uleb128 0x7
+ 771 004d 2E       		.uleb128 0x2e
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 17
+
+
+ 772 004e 01       		.byte	0x1
+ 773 004f 3F       		.uleb128 0x3f
+ 774 0050 19       		.uleb128 0x19
+ 775 0051 03       		.uleb128 0x3
+ 776 0052 0E       		.uleb128 0xe
+ 777 0053 3A       		.uleb128 0x3a
+ 778 0054 0B       		.uleb128 0xb
+ 779 0055 3B       		.uleb128 0x3b
+ 780 0056 0B       		.uleb128 0xb
+ 781 0057 27       		.uleb128 0x27
+ 782 0058 19       		.uleb128 0x19
+ 783 0059 11       		.uleb128 0x11
+ 784 005a 01       		.uleb128 0x1
+ 785 005b 12       		.uleb128 0x12
+ 786 005c 06       		.uleb128 0x6
+ 787 005d 40       		.uleb128 0x40
+ 788 005e 18       		.uleb128 0x18
+ 789 005f 9642     		.uleb128 0x2116
+ 790 0061 19       		.uleb128 0x19
+ 791 0062 01       		.uleb128 0x1
+ 792 0063 13       		.uleb128 0x13
+ 793 0064 00       		.byte	0
+ 794 0065 00       		.byte	0
+ 795 0066 08       		.uleb128 0x8
+ 796 0067 05       		.uleb128 0x5
+ 797 0068 00       		.byte	0
+ 798 0069 03       		.uleb128 0x3
+ 799 006a 0E       		.uleb128 0xe
+ 800 006b 3A       		.uleb128 0x3a
+ 801 006c 0B       		.uleb128 0xb
+ 802 006d 3B       		.uleb128 0x3b
+ 803 006e 0B       		.uleb128 0xb
+ 804 006f 49       		.uleb128 0x49
+ 805 0070 13       		.uleb128 0x13
+ 806 0071 02       		.uleb128 0x2
+ 807 0072 18       		.uleb128 0x18
+ 808 0073 00       		.byte	0
+ 809 0074 00       		.byte	0
+ 810 0075 09       		.uleb128 0x9
+ 811 0076 34       		.uleb128 0x34
+ 812 0077 00       		.byte	0
+ 813 0078 03       		.uleb128 0x3
+ 814 0079 0E       		.uleb128 0xe
+ 815 007a 3A       		.uleb128 0x3a
+ 816 007b 0B       		.uleb128 0xb
+ 817 007c 3B       		.uleb128 0x3b
+ 818 007d 0B       		.uleb128 0xb
+ 819 007e 49       		.uleb128 0x49
+ 820 007f 13       		.uleb128 0x13
+ 821 0080 02       		.uleb128 0x2
+ 822 0081 18       		.uleb128 0x18
+ 823 0082 00       		.byte	0
+ 824 0083 00       		.byte	0
+ 825 0084 0A       		.uleb128 0xa
+ 826 0085 34       		.uleb128 0x34
+ 827 0086 00       		.byte	0
+ 828 0087 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 18
+
+
+ 829 0088 08       		.uleb128 0x8
+ 830 0089 3A       		.uleb128 0x3a
+ 831 008a 0B       		.uleb128 0xb
+ 832 008b 3B       		.uleb128 0x3b
+ 833 008c 0B       		.uleb128 0xb
+ 834 008d 49       		.uleb128 0x49
+ 835 008e 13       		.uleb128 0x13
+ 836 008f 02       		.uleb128 0x2
+ 837 0090 18       		.uleb128 0x18
+ 838 0091 00       		.byte	0
+ 839 0092 00       		.byte	0
+ 840 0093 0B       		.uleb128 0xb
+ 841 0094 01       		.uleb128 0x1
+ 842 0095 01       		.byte	0x1
+ 843 0096 49       		.uleb128 0x49
+ 844 0097 13       		.uleb128 0x13
+ 845 0098 01       		.uleb128 0x1
+ 846 0099 13       		.uleb128 0x13
+ 847 009a 00       		.byte	0
+ 848 009b 00       		.byte	0
+ 849 009c 0C       		.uleb128 0xc
+ 850 009d 21       		.uleb128 0x21
+ 851 009e 00       		.byte	0
+ 852 009f 49       		.uleb128 0x49
+ 853 00a0 13       		.uleb128 0x13
+ 854 00a1 2F       		.uleb128 0x2f
+ 855 00a2 05       		.uleb128 0x5
+ 856 00a3 00       		.byte	0
+ 857 00a4 00       		.byte	0
+ 858 00a5 0D       		.uleb128 0xd
+ 859 00a6 34       		.uleb128 0x34
+ 860 00a7 00       		.byte	0
+ 861 00a8 03       		.uleb128 0x3
+ 862 00a9 0E       		.uleb128 0xe
+ 863 00aa 3A       		.uleb128 0x3a
+ 864 00ab 0B       		.uleb128 0xb
+ 865 00ac 3B       		.uleb128 0x3b
+ 866 00ad 0B       		.uleb128 0xb
+ 867 00ae 49       		.uleb128 0x49
+ 868 00af 13       		.uleb128 0x13
+ 869 00b0 3F       		.uleb128 0x3f
+ 870 00b1 19       		.uleb128 0x19
+ 871 00b2 3C       		.uleb128 0x3c
+ 872 00b3 19       		.uleb128 0x19
+ 873 00b4 00       		.byte	0
+ 874 00b5 00       		.byte	0
+ 875 00b6 0E       		.uleb128 0xe
+ 876 00b7 26       		.uleb128 0x26
+ 877 00b8 00       		.byte	0
+ 878 00b9 49       		.uleb128 0x49
+ 879 00ba 13       		.uleb128 0x13
+ 880 00bb 00       		.byte	0
+ 881 00bc 00       		.byte	0
+ 882 00bd 00       		.byte	0
+ 883              		.section	.debug_aranges,"",%progbits
+ 884 0000 1C000000 		.4byte	0x1c
+ 885 0004 0200     		.2byte	0x2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 19
+
+
+ 886 0006 00000000 		.4byte	.Ldebug_info0
+ 887 000a 04       		.byte	0x4
+ 888 000b 00       		.byte	0
+ 889 000c 0000     		.2byte	0
+ 890 000e 0000     		.2byte	0
+ 891 0010 00000000 		.4byte	.LFB82
+ 892 0014 38030000 		.4byte	.LFE82-.LFB82
+ 893 0018 00000000 		.4byte	0
+ 894 001c 00000000 		.4byte	0
+ 895              		.section	.debug_ranges,"",%progbits
+ 896              	.Ldebug_ranges0:
+ 897 0000 00000000 		.4byte	.LFB82
+ 898 0004 38030000 		.4byte	.LFE82
+ 899 0008 00000000 		.4byte	0
+ 900 000c 00000000 		.4byte	0
+ 901              		.section	.debug_line,"",%progbits
+ 902              	.Ldebug_line0:
+ 903 0000 AA010000 		.section	.debug_str,"MS",%progbits,1
+ 903      02006A01 
+ 903      00000201 
+ 903      FB0E0D00 
+ 903      01010101 
+ 904              	.LASF31:
+ 905 0000 73696E54 		.ascii	"sinTable_f32\000"
+ 905      61626C65 
+ 905      5F663332 
+ 905      00
+ 906              	.LASF29:
+ 907 000d 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 907      73657273 
+ 907      5C666E65 
+ 907      7665735C 
+ 907      446F6375 
+ 908 003a 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 908      655F7370 
+ 908      6565645F 
+ 908      73656E73 
+ 908      6F722E63 
+ 909              	.LASF5:
+ 910 0053 5F5F696E 		.ascii	"__int32_t\000"
+ 910      7433325F 
+ 910      7400
+ 911              	.LASF19:
+ 912 005d 74686574 		.ascii	"theta\000"
+ 912      6100
+ 913              	.LASF21:
+ 914 0063 70436F73 		.ascii	"pCosVal\000"
+ 914      56616C00 
+ 915              	.LASF20:
+ 916 006b 7053696E 		.ascii	"pSinVal\000"
+ 916      56616C00 
+ 917              	.LASF24:
+ 918 0073 696E6465 		.ascii	"indexC\000"
+ 918      784300
+ 919              	.LASF25:
+ 920 007a 66696E64 		.ascii	"findex\000"
+ 920      657800
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 20
+
+
+ 921              	.LASF16:
+ 922 0081 666C6F61 		.ascii	"float\000"
+ 922      7400
+ 923              	.LASF1:
+ 924 0087 756E7369 		.ascii	"unsigned char\000"
+ 924      676E6564 
+ 924      20636861 
+ 924      7200
+ 925              	.LASF30:
+ 926 0095 61726D5F 		.ascii	"arm_sin_cos_f32\000"
+ 926      73696E5F 
+ 926      636F735F 
+ 926      66333200 
+ 927              	.LASF23:
+ 928 00a5 696E6465 		.ascii	"indexS\000"
+ 928      785300
+ 929              	.LASF7:
+ 930 00ac 6C6F6E67 		.ascii	"long unsigned int\000"
+ 930      20756E73 
+ 930      69676E65 
+ 930      6420696E 
+ 930      7400
+ 931              	.LASF26:
+ 932 00be 74656D70 		.ascii	"temp\000"
+ 932      00
+ 933              	.LASF3:
+ 934 00c3 73686F72 		.ascii	"short unsigned int\000"
+ 934      7420756E 
+ 934      7369676E 
+ 934      65642069 
+ 934      6E7400
+ 935              	.LASF4:
+ 936 00d6 5F5F7569 		.ascii	"__uint16_t\000"
+ 936      6E743136 
+ 936      5F7400
+ 937              	.LASF15:
+ 938 00e1 646F7562 		.ascii	"double\000"
+ 938      6C6500
+ 939              	.LASF2:
+ 940 00e8 73686F72 		.ascii	"short int\000"
+ 940      7420696E 
+ 940      7400
+ 941              	.LASF10:
+ 942 00f2 756E7369 		.ascii	"unsigned int\000"
+ 942      676E6564 
+ 942      20696E74 
+ 942      00
+ 943              	.LASF9:
+ 944 00ff 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 944      206C6F6E 
+ 944      6720756E 
+ 944      7369676E 
+ 944      65642069 
+ 945              	.LASF27:
+ 946 0116 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 946      4320342E 
+ 946      392E3320 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 21
+
+
+ 946      32303135 
+ 946      30333033 
+ 947 0149 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 947      20726576 
+ 947      6973696F 
+ 947      6E203232 
+ 947      31323230 
+ 948 017c 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 948      30202D66 
+ 948      66756E63 
+ 948      74696F6E 
+ 948      2D736563 
+ 949              	.LASF12:
+ 950 01a8 696E7433 		.ascii	"int32_t\000"
+ 950      325F7400 
+ 951              	.LASF13:
+ 952 01b0 73697A65 		.ascii	"sizetype\000"
+ 952      74797065 
+ 952      00
+ 953              	.LASF8:
+ 954 01b9 6C6F6E67 		.ascii	"long long int\000"
+ 954      206C6F6E 
+ 954      6720696E 
+ 954      7400
+ 955              	.LASF14:
+ 956 01c7 63686172 		.ascii	"char\000"
+ 956      00
+ 957              	.LASF22:
+ 958 01cc 66726163 		.ascii	"fract\000"
+ 958      7400
+ 959              	.LASF18:
+ 960 01d2 666C6F61 		.ascii	"float32_t\000"
+ 960      7433325F 
+ 960      7400
+ 961              	.LASF11:
+ 962 01dc 75696E74 		.ascii	"uint16_t\000"
+ 962      31365F74 
+ 962      00
+ 963              	.LASF28:
+ 964 01e5 536F7572 		.ascii	"Source\\ControllerFunctions\\arm_sin_cos_f32.c\000"
+ 964      63655C43 
+ 964      6F6E7472 
+ 964      6F6C6C65 
+ 964      7246756E 
+ 965              	.LASF6:
+ 966 0212 6C6F6E67 		.ascii	"long int\000"
+ 966      20696E74 
+ 966      00
+ 967              	.LASF17:
+ 968 021b 6C6F6E67 		.ascii	"long double\000"
+ 968      20646F75 
+ 968      626C6500 
+ 969              	.LASF0:
+ 970 0227 7369676E 		.ascii	"signed char\000"
+ 970      65642063 
+ 970      68617200 
+ 971              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\ccCgeQ3x.s 			page 22
+
+

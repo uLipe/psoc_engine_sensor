@@ -1,0 +1,3979 @@
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 1
+
+
+   1              		.cpu cortex-m0plus
+   2              		.fpu softvfp
+   3              		.eabi_attribute 20, 1
+   4              		.eabi_attribute 21, 1
+   5              		.eabi_attribute 23, 3
+   6              		.eabi_attribute 24, 1
+   7              		.eabi_attribute 25, 1
+   8              		.eabi_attribute 26, 1
+   9              		.eabi_attribute 30, 6
+  10              		.eabi_attribute 34, 0
+  11              		.eabi_attribute 18, 4
+  12              		.code	16
+  13              		.file	"arm_cfft_radix8_f32.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.global	__aeabi_fadd
+  18              		.global	__aeabi_fsub
+  19              		.global	__aeabi_fmul
+  20              		.section	.text.arm_radix8_butterfly_f32,"ax",%progbits
+  21              		.align	2
+  22              		.global	arm_radix8_butterfly_f32
+  23              		.code	16
+  24              		.thumb_func
+  25              		.type	arm_radix8_butterfly_f32, %function
+  26              	arm_radix8_butterfly_f32:
+  27              	.LFB82:
+  28              		.file 1 "Source\\TransformFunctions\\arm_cfft_radix8_f32.c"
+   1:Source\TransformFunctions/arm_cfft_radix8_f32.c **** /* ----------------------------------------------------------------------
+   2:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * Project:      CMSIS DSP Library
+   3:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * Title:        arm_cfft_radix8_f32.c
+   4:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * Description:  Radix-8 Decimation in Frequency CFFT & CIFFT Floating point processing function
+   5:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  *
+   6:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * $Date:        27. January 2017
+   7:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * $Revision:    V.1.5.1
+   8:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  *
+   9:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * Target Processor: Cortex-M cores
+  10:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * -------------------------------------------------------------------- */
+  11:Source\TransformFunctions/arm_cfft_radix8_f32.c **** /*
+  12:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * Copyright (C) 2010-2017 ARM Limited or its affiliates. All rights reserved.
+  13:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  *
+  14:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * SPDX-License-Identifier: Apache-2.0
+  15:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  *
+  16:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  17:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * not use this file except in compliance with the License.
+  18:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * You may obtain a copy of the License at
+  19:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  *
+  20:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * www.apache.org/licenses/LICENSE-2.0
+  21:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  *
+  22:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * Unless required by applicable law or agreed to in writing, software
+  23:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  24:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  25:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * See the License for the specific language governing permissions and
+  26:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * limitations under the License.
+  27:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  */
+  28:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  29:Source\TransformFunctions/arm_cfft_radix8_f32.c **** #include "arm_math.h"
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 2
+
+
+  30:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  31:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  32:Source\TransformFunctions/arm_cfft_radix8_f32.c **** /* ----------------------------------------------------------------------
+  33:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * Internal helper function used by the FFTs
+  34:Source\TransformFunctions/arm_cfft_radix8_f32.c ****  * -------------------------------------------------------------------- */
+  35:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  36:Source\TransformFunctions/arm_cfft_radix8_f32.c **** /*
+  37:Source\TransformFunctions/arm_cfft_radix8_f32.c **** * @brief  Core function for the floating-point CFFT butterfly process.
+  38:Source\TransformFunctions/arm_cfft_radix8_f32.c **** * @param[in, out] *pSrc            points to the in-place buffer of floating-point data type.
+  39:Source\TransformFunctions/arm_cfft_radix8_f32.c **** * @param[in]      fftLen           length of the FFT.
+  40:Source\TransformFunctions/arm_cfft_radix8_f32.c **** * @param[in]      *pCoef           points to the twiddle coefficient buffer.
+  41:Source\TransformFunctions/arm_cfft_radix8_f32.c **** * @param[in]      twidCoefModifier twiddle coefficient modifier that supports different size FFTs w
+  42:Source\TransformFunctions/arm_cfft_radix8_f32.c **** * @return none.
+  43:Source\TransformFunctions/arm_cfft_radix8_f32.c **** */
+  44:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  45:Source\TransformFunctions/arm_cfft_radix8_f32.c **** void arm_radix8_butterfly_f32(
+  46:Source\TransformFunctions/arm_cfft_radix8_f32.c **** float32_t * pSrc,
+  47:Source\TransformFunctions/arm_cfft_radix8_f32.c **** uint16_t fftLen,
+  48:Source\TransformFunctions/arm_cfft_radix8_f32.c **** const float32_t * pCoef,
+  49:Source\TransformFunctions/arm_cfft_radix8_f32.c **** uint16_t twidCoefModifier)
+  50:Source\TransformFunctions/arm_cfft_radix8_f32.c **** {
+  29              		.loc 1 50 0
+  30              		.cfi_startproc
+  31 0000 90B5     		push	{r4, r7, lr}
+  32              		.cfi_def_cfa_offset 12
+  33              		.cfi_offset 4, -12
+  34              		.cfi_offset 7, -8
+  35              		.cfi_offset 14, -4
+  36 0002 BDB0     		sub	sp, sp, #244
+  37              		.cfi_def_cfa_offset 256
+  38 0004 00AF     		add	r7, sp, #0
+  39              		.cfi_def_cfa_register 7
+  40 0006 F860     		str	r0, [r7, #12]
+  41 0008 081C     		mov	r0, r1
+  42 000a 7A60     		str	r2, [r7, #4]
+  43 000c 191C     		mov	r1, r3
+  44 000e 0A23     		mov	r3, #10
+  45 0010 FB18     		add	r3, r7, r3
+  46 0012 021C     		add	r2, r0, #0
+  47 0014 1A80     		strh	r2, [r3]
+  48 0016 0823     		mov	r3, #8
+  49 0018 FB18     		add	r3, r7, r3
+  50 001a 0A1C     		add	r2, r1, #0
+  51 001c 1A80     		strh	r2, [r3]
+  51:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    uint32_t ia1, ia2, ia3, ia4, ia5, ia6, ia7;
+  52:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    uint32_t i1, i2, i3, i4, i5, i6, i7, i8;
+  53:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    uint32_t id;
+  54:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    uint32_t n1, n2, j;
+  55:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  56:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    float32_t r1, r2, r3, r4, r5, r6, r7, r8;
+  57:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    float32_t t1, t2;
+  58:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    float32_t s1, s2, s3, s4, s5, s6, s7, s8;
+  59:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    float32_t p1, p2, p3, p4;
+  60:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    float32_t co2, co3, co4, co5, co6, co7, co8;
+  61:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    float32_t si2, si3, si4, si5, si6, si7, si8;
+  62:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    const float32_t C81 = 0.70710678118f;
+  52              		.loc 1 62 0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 3
+
+
+  53 001e 0E4B     		ldr	r3, .L8
+  54 0020 DC22     		mov	r2, #220
+  55 0022 BA18     		add	r2, r7, r2
+  56 0024 1360     		str	r3, [r2]
+  63:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  64:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    n2 = fftLen;
+  57              		.loc 1 64 0
+  58 0026 0A23     		mov	r3, #10
+  59 0028 FB18     		add	r3, r7, r3
+  60 002a 1B88     		ldrh	r3, [r3]
+  61 002c E422     		mov	r2, #228
+  62 002e BA18     		add	r2, r7, r2
+  63 0030 1360     		str	r3, [r2]
+  64              	.L7:
+  65:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  66:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    do
+  67:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    {
+  68:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       n1 = n2;
+  65              		.loc 1 68 0
+  66 0032 E423     		mov	r3, #228
+  67 0034 FB18     		add	r3, r7, r3
+  68 0036 1B68     		ldr	r3, [r3]
+  69 0038 D822     		mov	r2, #216
+  70 003a BA18     		add	r2, r7, r2
+  71 003c 1360     		str	r3, [r2]
+  69:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       n2 = n2 >> 3;
+  72              		.loc 1 69 0
+  73 003e E423     		mov	r3, #228
+  74 0040 FB18     		add	r3, r7, r3
+  75 0042 1B68     		ldr	r3, [r3]
+  76 0044 DB08     		lsr	r3, r3, #3
+  77 0046 E422     		mov	r2, #228
+  78 0048 BA18     		add	r2, r7, r2
+  79 004a 1360     		str	r3, [r2]
+  70:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       i1 = 0;
+  80              		.loc 1 70 0
+  81 004c 0023     		mov	r3, #0
+  82 004e E822     		mov	r2, #232
+  83 0050 BA18     		add	r2, r7, r2
+  84 0052 1360     		str	r3, [r2]
+  85 0054 02E0     		b	.L9
+  86              	.L10:
+  87 0056 C046     		.align	2
+  88              	.L8:
+  89 0058 F304353F 		.word	1060439283
+  90              	.L9:
+  91              	.L2:
+  71:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+  72:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       do
+  73:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       {
+  74:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i2 = i1 + n2;
+  92              		.loc 1 74 0 discriminator 1
+  93 005c E823     		mov	r3, #232
+  94 005e FB18     		add	r3, r7, r3
+  95 0060 1A68     		ldr	r2, [r3]
+  96 0062 E423     		mov	r3, #228
+  97 0064 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 4
+
+
+  98 0066 1B68     		ldr	r3, [r3]
+  99 0068 D318     		add	r3, r2, r3
+ 100 006a D422     		mov	r2, #212
+ 101 006c BA18     		add	r2, r7, r2
+ 102 006e 1360     		str	r3, [r2]
+  75:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i3 = i2 + n2;
+ 103              		.loc 1 75 0 discriminator 1
+ 104 0070 D423     		mov	r3, #212
+ 105 0072 FB18     		add	r3, r7, r3
+ 106 0074 1A68     		ldr	r2, [r3]
+ 107 0076 E423     		mov	r3, #228
+ 108 0078 FB18     		add	r3, r7, r3
+ 109 007a 1B68     		ldr	r3, [r3]
+ 110 007c D318     		add	r3, r2, r3
+ 111 007e D022     		mov	r2, #208
+ 112 0080 BA18     		add	r2, r7, r2
+ 113 0082 1360     		str	r3, [r2]
+  76:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i4 = i3 + n2;
+ 114              		.loc 1 76 0 discriminator 1
+ 115 0084 D023     		mov	r3, #208
+ 116 0086 FB18     		add	r3, r7, r3
+ 117 0088 1A68     		ldr	r2, [r3]
+ 118 008a E423     		mov	r3, #228
+ 119 008c FB18     		add	r3, r7, r3
+ 120 008e 1B68     		ldr	r3, [r3]
+ 121 0090 D318     		add	r3, r2, r3
+ 122 0092 CC22     		mov	r2, #204
+ 123 0094 BA18     		add	r2, r7, r2
+ 124 0096 1360     		str	r3, [r2]
+  77:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i5 = i4 + n2;
+ 125              		.loc 1 77 0 discriminator 1
+ 126 0098 CC23     		mov	r3, #204
+ 127 009a FB18     		add	r3, r7, r3
+ 128 009c 1A68     		ldr	r2, [r3]
+ 129 009e E423     		mov	r3, #228
+ 130 00a0 FB18     		add	r3, r7, r3
+ 131 00a2 1B68     		ldr	r3, [r3]
+ 132 00a4 D318     		add	r3, r2, r3
+ 133 00a6 C822     		mov	r2, #200
+ 134 00a8 BA18     		add	r2, r7, r2
+ 135 00aa 1360     		str	r3, [r2]
+  78:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i6 = i5 + n2;
+ 136              		.loc 1 78 0 discriminator 1
+ 137 00ac C823     		mov	r3, #200
+ 138 00ae FB18     		add	r3, r7, r3
+ 139 00b0 1A68     		ldr	r2, [r3]
+ 140 00b2 E423     		mov	r3, #228
+ 141 00b4 FB18     		add	r3, r7, r3
+ 142 00b6 1B68     		ldr	r3, [r3]
+ 143 00b8 D318     		add	r3, r2, r3
+ 144 00ba C422     		mov	r2, #196
+ 145 00bc BA18     		add	r2, r7, r2
+ 146 00be 1360     		str	r3, [r2]
+  79:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i7 = i6 + n2;
+ 147              		.loc 1 79 0 discriminator 1
+ 148 00c0 C423     		mov	r3, #196
+ 149 00c2 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 5
+
+
+ 150 00c4 1A68     		ldr	r2, [r3]
+ 151 00c6 E423     		mov	r3, #228
+ 152 00c8 FB18     		add	r3, r7, r3
+ 153 00ca 1B68     		ldr	r3, [r3]
+ 154 00cc D318     		add	r3, r2, r3
+ 155 00ce C022     		mov	r2, #192
+ 156 00d0 BA18     		add	r2, r7, r2
+ 157 00d2 1360     		str	r3, [r2]
+  80:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i8 = i7 + n2;
+ 158              		.loc 1 80 0 discriminator 1
+ 159 00d4 C023     		mov	r3, #192
+ 160 00d6 FB18     		add	r3, r7, r3
+ 161 00d8 1A68     		ldr	r2, [r3]
+ 162 00da E423     		mov	r3, #228
+ 163 00dc FB18     		add	r3, r7, r3
+ 164 00de 1B68     		ldr	r3, [r3]
+ 165 00e0 D318     		add	r3, r2, r3
+ 166 00e2 BC22     		mov	r2, #188
+ 167 00e4 BA18     		add	r2, r7, r2
+ 168 00e6 1360     		str	r3, [r2]
+  81:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r1 = pSrc[2 * i1] + pSrc[2 * i5];
+ 169              		.loc 1 81 0 discriminator 1
+ 170 00e8 E823     		mov	r3, #232
+ 171 00ea FB18     		add	r3, r7, r3
+ 172 00ec 1B68     		ldr	r3, [r3]
+ 173 00ee DB00     		lsl	r3, r3, #3
+ 174 00f0 FA68     		ldr	r2, [r7, #12]
+ 175 00f2 D318     		add	r3, r2, r3
+ 176 00f4 1968     		ldr	r1, [r3]
+ 177 00f6 C823     		mov	r3, #200
+ 178 00f8 FB18     		add	r3, r7, r3
+ 179 00fa 1B68     		ldr	r3, [r3]
+ 180 00fc DB00     		lsl	r3, r3, #3
+ 181 00fe FA68     		ldr	r2, [r7, #12]
+ 182 0100 D318     		add	r3, r2, r3
+ 183 0102 1B68     		ldr	r3, [r3]
+ 184 0104 081C     		add	r0, r1, #0
+ 185 0106 191C     		add	r1, r3, #0
+ 186 0108 FFF7FEFF 		bl	__aeabi_fadd
+ 187 010c 031C     		add	r3, r0, #0
+ 188 010e B822     		mov	r2, #184
+ 189 0110 BA18     		add	r2, r7, r2
+ 190 0112 1360     		str	r3, [r2]
+  82:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r5 = pSrc[2 * i1] - pSrc[2 * i5];
+ 191              		.loc 1 82 0 discriminator 1
+ 192 0114 E823     		mov	r3, #232
+ 193 0116 FB18     		add	r3, r7, r3
+ 194 0118 1B68     		ldr	r3, [r3]
+ 195 011a DB00     		lsl	r3, r3, #3
+ 196 011c FA68     		ldr	r2, [r7, #12]
+ 197 011e D318     		add	r3, r2, r3
+ 198 0120 1968     		ldr	r1, [r3]
+ 199 0122 C823     		mov	r3, #200
+ 200 0124 FB18     		add	r3, r7, r3
+ 201 0126 1B68     		ldr	r3, [r3]
+ 202 0128 DB00     		lsl	r3, r3, #3
+ 203 012a FA68     		ldr	r2, [r7, #12]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 6
+
+
+ 204 012c D318     		add	r3, r2, r3
+ 205 012e 1B68     		ldr	r3, [r3]
+ 206 0130 081C     		add	r0, r1, #0
+ 207 0132 191C     		add	r1, r3, #0
+ 208 0134 FFF7FEFF 		bl	__aeabi_fsub
+ 209 0138 031C     		add	r3, r0, #0
+ 210 013a B422     		mov	r2, #180
+ 211 013c BA18     		add	r2, r7, r2
+ 212 013e 1360     		str	r3, [r2]
+  83:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r2 = pSrc[2 * i2] + pSrc[2 * i6];
+ 213              		.loc 1 83 0 discriminator 1
+ 214 0140 D423     		mov	r3, #212
+ 215 0142 FB18     		add	r3, r7, r3
+ 216 0144 1B68     		ldr	r3, [r3]
+ 217 0146 DB00     		lsl	r3, r3, #3
+ 218 0148 FA68     		ldr	r2, [r7, #12]
+ 219 014a D318     		add	r3, r2, r3
+ 220 014c 1968     		ldr	r1, [r3]
+ 221 014e C423     		mov	r3, #196
+ 222 0150 FB18     		add	r3, r7, r3
+ 223 0152 1B68     		ldr	r3, [r3]
+ 224 0154 DB00     		lsl	r3, r3, #3
+ 225 0156 FA68     		ldr	r2, [r7, #12]
+ 226 0158 D318     		add	r3, r2, r3
+ 227 015a 1B68     		ldr	r3, [r3]
+ 228 015c 081C     		add	r0, r1, #0
+ 229 015e 191C     		add	r1, r3, #0
+ 230 0160 FFF7FEFF 		bl	__aeabi_fadd
+ 231 0164 031C     		add	r3, r0, #0
+ 232 0166 B022     		mov	r2, #176
+ 233 0168 BA18     		add	r2, r7, r2
+ 234 016a 1360     		str	r3, [r2]
+  84:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r6 = pSrc[2 * i2] - pSrc[2 * i6];
+ 235              		.loc 1 84 0 discriminator 1
+ 236 016c D423     		mov	r3, #212
+ 237 016e FB18     		add	r3, r7, r3
+ 238 0170 1B68     		ldr	r3, [r3]
+ 239 0172 DB00     		lsl	r3, r3, #3
+ 240 0174 FA68     		ldr	r2, [r7, #12]
+ 241 0176 D318     		add	r3, r2, r3
+ 242 0178 1968     		ldr	r1, [r3]
+ 243 017a C423     		mov	r3, #196
+ 244 017c FB18     		add	r3, r7, r3
+ 245 017e 1B68     		ldr	r3, [r3]
+ 246 0180 DB00     		lsl	r3, r3, #3
+ 247 0182 FA68     		ldr	r2, [r7, #12]
+ 248 0184 D318     		add	r3, r2, r3
+ 249 0186 1B68     		ldr	r3, [r3]
+ 250 0188 081C     		add	r0, r1, #0
+ 251 018a 191C     		add	r1, r3, #0
+ 252 018c FFF7FEFF 		bl	__aeabi_fsub
+ 253 0190 031C     		add	r3, r0, #0
+ 254 0192 AC22     		mov	r2, #172
+ 255 0194 BA18     		add	r2, r7, r2
+ 256 0196 1360     		str	r3, [r2]
+  85:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r3 = pSrc[2 * i3] + pSrc[2 * i7];
+ 257              		.loc 1 85 0 discriminator 1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 7
+
+
+ 258 0198 D023     		mov	r3, #208
+ 259 019a FB18     		add	r3, r7, r3
+ 260 019c 1B68     		ldr	r3, [r3]
+ 261 019e DB00     		lsl	r3, r3, #3
+ 262 01a0 FA68     		ldr	r2, [r7, #12]
+ 263 01a2 D318     		add	r3, r2, r3
+ 264 01a4 1968     		ldr	r1, [r3]
+ 265 01a6 C023     		mov	r3, #192
+ 266 01a8 FB18     		add	r3, r7, r3
+ 267 01aa 1B68     		ldr	r3, [r3]
+ 268 01ac DB00     		lsl	r3, r3, #3
+ 269 01ae FA68     		ldr	r2, [r7, #12]
+ 270 01b0 D318     		add	r3, r2, r3
+ 271 01b2 1B68     		ldr	r3, [r3]
+ 272 01b4 081C     		add	r0, r1, #0
+ 273 01b6 191C     		add	r1, r3, #0
+ 274 01b8 FFF7FEFF 		bl	__aeabi_fadd
+ 275 01bc 031C     		add	r3, r0, #0
+ 276 01be A822     		mov	r2, #168
+ 277 01c0 BA18     		add	r2, r7, r2
+ 278 01c2 1360     		str	r3, [r2]
+  86:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r7 = pSrc[2 * i3] - pSrc[2 * i7];
+ 279              		.loc 1 86 0 discriminator 1
+ 280 01c4 D023     		mov	r3, #208
+ 281 01c6 FB18     		add	r3, r7, r3
+ 282 01c8 1B68     		ldr	r3, [r3]
+ 283 01ca DB00     		lsl	r3, r3, #3
+ 284 01cc FA68     		ldr	r2, [r7, #12]
+ 285 01ce D318     		add	r3, r2, r3
+ 286 01d0 1968     		ldr	r1, [r3]
+ 287 01d2 C023     		mov	r3, #192
+ 288 01d4 FB18     		add	r3, r7, r3
+ 289 01d6 1B68     		ldr	r3, [r3]
+ 290 01d8 DB00     		lsl	r3, r3, #3
+ 291 01da FA68     		ldr	r2, [r7, #12]
+ 292 01dc D318     		add	r3, r2, r3
+ 293 01de 1B68     		ldr	r3, [r3]
+ 294 01e0 081C     		add	r0, r1, #0
+ 295 01e2 191C     		add	r1, r3, #0
+ 296 01e4 FFF7FEFF 		bl	__aeabi_fsub
+ 297 01e8 031C     		add	r3, r0, #0
+ 298 01ea A422     		mov	r2, #164
+ 299 01ec BA18     		add	r2, r7, r2
+ 300 01ee 1360     		str	r3, [r2]
+  87:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r4 = pSrc[2 * i4] + pSrc[2 * i8];
+ 301              		.loc 1 87 0 discriminator 1
+ 302 01f0 CC23     		mov	r3, #204
+ 303 01f2 FB18     		add	r3, r7, r3
+ 304 01f4 1B68     		ldr	r3, [r3]
+ 305 01f6 DB00     		lsl	r3, r3, #3
+ 306 01f8 FA68     		ldr	r2, [r7, #12]
+ 307 01fa D318     		add	r3, r2, r3
+ 308 01fc 1968     		ldr	r1, [r3]
+ 309 01fe BC23     		mov	r3, #188
+ 310 0200 FB18     		add	r3, r7, r3
+ 311 0202 1B68     		ldr	r3, [r3]
+ 312 0204 DB00     		lsl	r3, r3, #3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 8
+
+
+ 313 0206 FA68     		ldr	r2, [r7, #12]
+ 314 0208 D318     		add	r3, r2, r3
+ 315 020a 1B68     		ldr	r3, [r3]
+ 316 020c 081C     		add	r0, r1, #0
+ 317 020e 191C     		add	r1, r3, #0
+ 318 0210 FFF7FEFF 		bl	__aeabi_fadd
+ 319 0214 031C     		add	r3, r0, #0
+ 320 0216 A022     		mov	r2, #160
+ 321 0218 BA18     		add	r2, r7, r2
+ 322 021a 1360     		str	r3, [r2]
+  88:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r8 = pSrc[2 * i4] - pSrc[2 * i8];
+ 323              		.loc 1 88 0 discriminator 1
+ 324 021c CC23     		mov	r3, #204
+ 325 021e FB18     		add	r3, r7, r3
+ 326 0220 1B68     		ldr	r3, [r3]
+ 327 0222 DB00     		lsl	r3, r3, #3
+ 328 0224 FA68     		ldr	r2, [r7, #12]
+ 329 0226 D318     		add	r3, r2, r3
+ 330 0228 1968     		ldr	r1, [r3]
+ 331 022a BC23     		mov	r3, #188
+ 332 022c FB18     		add	r3, r7, r3
+ 333 022e 1B68     		ldr	r3, [r3]
+ 334 0230 DB00     		lsl	r3, r3, #3
+ 335 0232 FA68     		ldr	r2, [r7, #12]
+ 336 0234 D318     		add	r3, r2, r3
+ 337 0236 1B68     		ldr	r3, [r3]
+ 338 0238 081C     		add	r0, r1, #0
+ 339 023a 191C     		add	r1, r3, #0
+ 340 023c FFF7FEFF 		bl	__aeabi_fsub
+ 341 0240 031C     		add	r3, r0, #0
+ 342 0242 9C22     		mov	r2, #156
+ 343 0244 BA18     		add	r2, r7, r2
+ 344 0246 1360     		str	r3, [r2]
+  89:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          t1 = r1 - r3;
+ 345              		.loc 1 89 0 discriminator 1
+ 346 0248 B823     		mov	r3, #184
+ 347 024a FB18     		add	r3, r7, r3
+ 348 024c 1868     		ldr	r0, [r3]
+ 349 024e A823     		mov	r3, #168
+ 350 0250 FB18     		add	r3, r7, r3
+ 351 0252 1968     		ldr	r1, [r3]
+ 352 0254 FFF7FEFF 		bl	__aeabi_fsub
+ 353 0258 031C     		add	r3, r0, #0
+ 354 025a 9822     		mov	r2, #152
+ 355 025c BA18     		add	r2, r7, r2
+ 356 025e 1360     		str	r3, [r2]
+  90:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r1 = r1 + r3;
+ 357              		.loc 1 90 0 discriminator 1
+ 358 0260 B823     		mov	r3, #184
+ 359 0262 FB18     		add	r3, r7, r3
+ 360 0264 1868     		ldr	r0, [r3]
+ 361 0266 A823     		mov	r3, #168
+ 362 0268 FB18     		add	r3, r7, r3
+ 363 026a 1968     		ldr	r1, [r3]
+ 364 026c FFF7FEFF 		bl	__aeabi_fadd
+ 365 0270 031C     		add	r3, r0, #0
+ 366 0272 B822     		mov	r2, #184
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 9
+
+
+ 367 0274 BA18     		add	r2, r7, r2
+ 368 0276 1360     		str	r3, [r2]
+  91:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r3 = r2 - r4;
+ 369              		.loc 1 91 0 discriminator 1
+ 370 0278 B023     		mov	r3, #176
+ 371 027a FB18     		add	r3, r7, r3
+ 372 027c 1868     		ldr	r0, [r3]
+ 373 027e A023     		mov	r3, #160
+ 374 0280 FB18     		add	r3, r7, r3
+ 375 0282 1968     		ldr	r1, [r3]
+ 376 0284 FFF7FEFF 		bl	__aeabi_fsub
+ 377 0288 031C     		add	r3, r0, #0
+ 378 028a A822     		mov	r2, #168
+ 379 028c BA18     		add	r2, r7, r2
+ 380 028e 1360     		str	r3, [r2]
+  92:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r2 = r2 + r4;
+ 381              		.loc 1 92 0 discriminator 1
+ 382 0290 B023     		mov	r3, #176
+ 383 0292 FB18     		add	r3, r7, r3
+ 384 0294 1868     		ldr	r0, [r3]
+ 385 0296 A023     		mov	r3, #160
+ 386 0298 FB18     		add	r3, r7, r3
+ 387 029a 1968     		ldr	r1, [r3]
+ 388 029c FFF7FEFF 		bl	__aeabi_fadd
+ 389 02a0 031C     		add	r3, r0, #0
+ 390 02a2 B022     		mov	r2, #176
+ 391 02a4 BA18     		add	r2, r7, r2
+ 392 02a6 1360     		str	r3, [r2]
+  93:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i1] = r1 + r2;
+ 393              		.loc 1 93 0 discriminator 1
+ 394 02a8 E823     		mov	r3, #232
+ 395 02aa FB18     		add	r3, r7, r3
+ 396 02ac 1B68     		ldr	r3, [r3]
+ 397 02ae DB00     		lsl	r3, r3, #3
+ 398 02b0 FA68     		ldr	r2, [r7, #12]
+ 399 02b2 D418     		add	r4, r2, r3
+ 400 02b4 B823     		mov	r3, #184
+ 401 02b6 FB18     		add	r3, r7, r3
+ 402 02b8 1868     		ldr	r0, [r3]
+ 403 02ba B023     		mov	r3, #176
+ 404 02bc FB18     		add	r3, r7, r3
+ 405 02be 1968     		ldr	r1, [r3]
+ 406 02c0 FFF7FEFF 		bl	__aeabi_fadd
+ 407 02c4 031C     		add	r3, r0, #0
+ 408 02c6 2360     		str	r3, [r4]
+  94:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i5] = r1 - r2;
+ 409              		.loc 1 94 0 discriminator 1
+ 410 02c8 C823     		mov	r3, #200
+ 411 02ca FB18     		add	r3, r7, r3
+ 412 02cc 1B68     		ldr	r3, [r3]
+ 413 02ce DB00     		lsl	r3, r3, #3
+ 414 02d0 FA68     		ldr	r2, [r7, #12]
+ 415 02d2 D418     		add	r4, r2, r3
+ 416 02d4 B823     		mov	r3, #184
+ 417 02d6 FB18     		add	r3, r7, r3
+ 418 02d8 1868     		ldr	r0, [r3]
+ 419 02da B023     		mov	r3, #176
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 10
+
+
+ 420 02dc FB18     		add	r3, r7, r3
+ 421 02de 1968     		ldr	r1, [r3]
+ 422 02e0 FFF7FEFF 		bl	__aeabi_fsub
+ 423 02e4 031C     		add	r3, r0, #0
+ 424 02e6 2360     		str	r3, [r4]
+  95:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r1 = pSrc[2 * i1 + 1] + pSrc[2 * i5 + 1];
+ 425              		.loc 1 95 0 discriminator 1
+ 426 02e8 E823     		mov	r3, #232
+ 427 02ea FB18     		add	r3, r7, r3
+ 428 02ec 1B68     		ldr	r3, [r3]
+ 429 02ee DB00     		lsl	r3, r3, #3
+ 430 02f0 0433     		add	r3, r3, #4
+ 431 02f2 FA68     		ldr	r2, [r7, #12]
+ 432 02f4 D318     		add	r3, r2, r3
+ 433 02f6 1968     		ldr	r1, [r3]
+ 434 02f8 C823     		mov	r3, #200
+ 435 02fa FB18     		add	r3, r7, r3
+ 436 02fc 1B68     		ldr	r3, [r3]
+ 437 02fe DB00     		lsl	r3, r3, #3
+ 438 0300 0433     		add	r3, r3, #4
+ 439 0302 FA68     		ldr	r2, [r7, #12]
+ 440 0304 D318     		add	r3, r2, r3
+ 441 0306 1B68     		ldr	r3, [r3]
+ 442 0308 081C     		add	r0, r1, #0
+ 443 030a 191C     		add	r1, r3, #0
+ 444 030c FFF7FEFF 		bl	__aeabi_fadd
+ 445 0310 031C     		add	r3, r0, #0
+ 446 0312 B822     		mov	r2, #184
+ 447 0314 BA18     		add	r2, r7, r2
+ 448 0316 1360     		str	r3, [r2]
+  96:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s5 = pSrc[2 * i1 + 1] - pSrc[2 * i5 + 1];
+ 449              		.loc 1 96 0 discriminator 1
+ 450 0318 E823     		mov	r3, #232
+ 451 031a FB18     		add	r3, r7, r3
+ 452 031c 1B68     		ldr	r3, [r3]
+ 453 031e DB00     		lsl	r3, r3, #3
+ 454 0320 0433     		add	r3, r3, #4
+ 455 0322 FA68     		ldr	r2, [r7, #12]
+ 456 0324 D318     		add	r3, r2, r3
+ 457 0326 1968     		ldr	r1, [r3]
+ 458 0328 C823     		mov	r3, #200
+ 459 032a FB18     		add	r3, r7, r3
+ 460 032c 1B68     		ldr	r3, [r3]
+ 461 032e DB00     		lsl	r3, r3, #3
+ 462 0330 0433     		add	r3, r3, #4
+ 463 0332 FA68     		ldr	r2, [r7, #12]
+ 464 0334 D318     		add	r3, r2, r3
+ 465 0336 1B68     		ldr	r3, [r3]
+ 466 0338 081C     		add	r0, r1, #0
+ 467 033a 191C     		add	r1, r3, #0
+ 468 033c FFF7FEFF 		bl	__aeabi_fsub
+ 469 0340 031C     		add	r3, r0, #0
+ 470 0342 9422     		mov	r2, #148
+ 471 0344 BA18     		add	r2, r7, r2
+ 472 0346 1360     		str	r3, [r2]
+  97:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r2 = pSrc[2 * i2 + 1] + pSrc[2 * i6 + 1];
+ 473              		.loc 1 97 0 discriminator 1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 11
+
+
+ 474 0348 D423     		mov	r3, #212
+ 475 034a FB18     		add	r3, r7, r3
+ 476 034c 1B68     		ldr	r3, [r3]
+ 477 034e DB00     		lsl	r3, r3, #3
+ 478 0350 0433     		add	r3, r3, #4
+ 479 0352 FA68     		ldr	r2, [r7, #12]
+ 480 0354 D318     		add	r3, r2, r3
+ 481 0356 1968     		ldr	r1, [r3]
+ 482 0358 C423     		mov	r3, #196
+ 483 035a FB18     		add	r3, r7, r3
+ 484 035c 1B68     		ldr	r3, [r3]
+ 485 035e DB00     		lsl	r3, r3, #3
+ 486 0360 0433     		add	r3, r3, #4
+ 487 0362 FA68     		ldr	r2, [r7, #12]
+ 488 0364 D318     		add	r3, r2, r3
+ 489 0366 1B68     		ldr	r3, [r3]
+ 490 0368 081C     		add	r0, r1, #0
+ 491 036a 191C     		add	r1, r3, #0
+ 492 036c FFF7FEFF 		bl	__aeabi_fadd
+ 493 0370 031C     		add	r3, r0, #0
+ 494 0372 B022     		mov	r2, #176
+ 495 0374 BA18     		add	r2, r7, r2
+ 496 0376 1360     		str	r3, [r2]
+  98:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s6 = pSrc[2 * i2 + 1] - pSrc[2 * i6 + 1];
+ 497              		.loc 1 98 0 discriminator 1
+ 498 0378 D423     		mov	r3, #212
+ 499 037a FB18     		add	r3, r7, r3
+ 500 037c 1B68     		ldr	r3, [r3]
+ 501 037e DB00     		lsl	r3, r3, #3
+ 502 0380 0433     		add	r3, r3, #4
+ 503 0382 FA68     		ldr	r2, [r7, #12]
+ 504 0384 D318     		add	r3, r2, r3
+ 505 0386 1968     		ldr	r1, [r3]
+ 506 0388 C423     		mov	r3, #196
+ 507 038a FB18     		add	r3, r7, r3
+ 508 038c 1B68     		ldr	r3, [r3]
+ 509 038e DB00     		lsl	r3, r3, #3
+ 510 0390 0433     		add	r3, r3, #4
+ 511 0392 FA68     		ldr	r2, [r7, #12]
+ 512 0394 D318     		add	r3, r2, r3
+ 513 0396 1B68     		ldr	r3, [r3]
+ 514 0398 081C     		add	r0, r1, #0
+ 515 039a 191C     		add	r1, r3, #0
+ 516 039c FFF7FEFF 		bl	__aeabi_fsub
+ 517 03a0 031C     		add	r3, r0, #0
+ 518 03a2 9022     		mov	r2, #144
+ 519 03a4 BA18     		add	r2, r7, r2
+ 520 03a6 1360     		str	r3, [r2]
+  99:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s3 = pSrc[2 * i3 + 1] + pSrc[2 * i7 + 1];
+ 521              		.loc 1 99 0 discriminator 1
+ 522 03a8 D023     		mov	r3, #208
+ 523 03aa FB18     		add	r3, r7, r3
+ 524 03ac 1B68     		ldr	r3, [r3]
+ 525 03ae DB00     		lsl	r3, r3, #3
+ 526 03b0 0433     		add	r3, r3, #4
+ 527 03b2 FA68     		ldr	r2, [r7, #12]
+ 528 03b4 D318     		add	r3, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 12
+
+
+ 529 03b6 1968     		ldr	r1, [r3]
+ 530 03b8 C023     		mov	r3, #192
+ 531 03ba FB18     		add	r3, r7, r3
+ 532 03bc 1B68     		ldr	r3, [r3]
+ 533 03be DB00     		lsl	r3, r3, #3
+ 534 03c0 0433     		add	r3, r3, #4
+ 535 03c2 FA68     		ldr	r2, [r7, #12]
+ 536 03c4 D318     		add	r3, r2, r3
+ 537 03c6 1B68     		ldr	r3, [r3]
+ 538 03c8 081C     		add	r0, r1, #0
+ 539 03ca 191C     		add	r1, r3, #0
+ 540 03cc FFF7FEFF 		bl	__aeabi_fadd
+ 541 03d0 031C     		add	r3, r0, #0
+ 542 03d2 8C22     		mov	r2, #140
+ 543 03d4 BA18     		add	r2, r7, r2
+ 544 03d6 1360     		str	r3, [r2]
+ 100:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s7 = pSrc[2 * i3 + 1] - pSrc[2 * i7 + 1];
+ 545              		.loc 1 100 0 discriminator 1
+ 546 03d8 D023     		mov	r3, #208
+ 547 03da FB18     		add	r3, r7, r3
+ 548 03dc 1B68     		ldr	r3, [r3]
+ 549 03de DB00     		lsl	r3, r3, #3
+ 550 03e0 0433     		add	r3, r3, #4
+ 551 03e2 FA68     		ldr	r2, [r7, #12]
+ 552 03e4 D318     		add	r3, r2, r3
+ 553 03e6 1968     		ldr	r1, [r3]
+ 554 03e8 C023     		mov	r3, #192
+ 555 03ea FB18     		add	r3, r7, r3
+ 556 03ec 1B68     		ldr	r3, [r3]
+ 557 03ee DB00     		lsl	r3, r3, #3
+ 558 03f0 0433     		add	r3, r3, #4
+ 559 03f2 FA68     		ldr	r2, [r7, #12]
+ 560 03f4 D318     		add	r3, r2, r3
+ 561 03f6 1B68     		ldr	r3, [r3]
+ 562 03f8 081C     		add	r0, r1, #0
+ 563 03fa 191C     		add	r1, r3, #0
+ 564 03fc FFF7FEFF 		bl	__aeabi_fsub
+ 565 0400 031C     		add	r3, r0, #0
+ 566 0402 8822     		mov	r2, #136
+ 567 0404 BA18     		add	r2, r7, r2
+ 568 0406 1360     		str	r3, [r2]
+ 101:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r4 = pSrc[2 * i4 + 1] + pSrc[2 * i8 + 1];
+ 569              		.loc 1 101 0 discriminator 1
+ 570 0408 CC23     		mov	r3, #204
+ 571 040a FB18     		add	r3, r7, r3
+ 572 040c 1B68     		ldr	r3, [r3]
+ 573 040e DB00     		lsl	r3, r3, #3
+ 574 0410 0433     		add	r3, r3, #4
+ 575 0412 FA68     		ldr	r2, [r7, #12]
+ 576 0414 D318     		add	r3, r2, r3
+ 577 0416 1968     		ldr	r1, [r3]
+ 578 0418 BC23     		mov	r3, #188
+ 579 041a FB18     		add	r3, r7, r3
+ 580 041c 1B68     		ldr	r3, [r3]
+ 581 041e DB00     		lsl	r3, r3, #3
+ 582 0420 0433     		add	r3, r3, #4
+ 583 0422 FA68     		ldr	r2, [r7, #12]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 13
+
+
+ 584 0424 D318     		add	r3, r2, r3
+ 585 0426 1B68     		ldr	r3, [r3]
+ 586 0428 081C     		add	r0, r1, #0
+ 587 042a 191C     		add	r1, r3, #0
+ 588 042c FFF7FEFF 		bl	__aeabi_fadd
+ 589 0430 031C     		add	r3, r0, #0
+ 590 0432 A022     		mov	r2, #160
+ 591 0434 BA18     		add	r2, r7, r2
+ 592 0436 1360     		str	r3, [r2]
+ 102:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s8 = pSrc[2 * i4 + 1] - pSrc[2 * i8 + 1];
+ 593              		.loc 1 102 0 discriminator 1
+ 594 0438 CC23     		mov	r3, #204
+ 595 043a FB18     		add	r3, r7, r3
+ 596 043c 1B68     		ldr	r3, [r3]
+ 597 043e DB00     		lsl	r3, r3, #3
+ 598 0440 0433     		add	r3, r3, #4
+ 599 0442 FA68     		ldr	r2, [r7, #12]
+ 600 0444 D318     		add	r3, r2, r3
+ 601 0446 1968     		ldr	r1, [r3]
+ 602 0448 BC23     		mov	r3, #188
+ 603 044a FB18     		add	r3, r7, r3
+ 604 044c 1B68     		ldr	r3, [r3]
+ 605 044e DB00     		lsl	r3, r3, #3
+ 606 0450 0433     		add	r3, r3, #4
+ 607 0452 FA68     		ldr	r2, [r7, #12]
+ 608 0454 D318     		add	r3, r2, r3
+ 609 0456 1B68     		ldr	r3, [r3]
+ 610 0458 081C     		add	r0, r1, #0
+ 611 045a 191C     		add	r1, r3, #0
+ 612 045c FFF7FEFF 		bl	__aeabi_fsub
+ 613 0460 031C     		add	r3, r0, #0
+ 614 0462 8422     		mov	r2, #132
+ 615 0464 BA18     		add	r2, r7, r2
+ 616 0466 1360     		str	r3, [r2]
+ 103:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          t2 = r1 - s3;
+ 617              		.loc 1 103 0 discriminator 1
+ 618 0468 B823     		mov	r3, #184
+ 619 046a FB18     		add	r3, r7, r3
+ 620 046c 1868     		ldr	r0, [r3]
+ 621 046e 8C23     		mov	r3, #140
+ 622 0470 FB18     		add	r3, r7, r3
+ 623 0472 1968     		ldr	r1, [r3]
+ 624 0474 FFF7FEFF 		bl	__aeabi_fsub
+ 625 0478 031C     		add	r3, r0, #0
+ 626 047a 8022     		mov	r2, #128
+ 627 047c BA18     		add	r2, r7, r2
+ 628 047e 1360     		str	r3, [r2]
+ 104:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r1 = r1 + s3;
+ 629              		.loc 1 104 0 discriminator 1
+ 630 0480 B823     		mov	r3, #184
+ 631 0482 FB18     		add	r3, r7, r3
+ 632 0484 1868     		ldr	r0, [r3]
+ 633 0486 8C23     		mov	r3, #140
+ 634 0488 FB18     		add	r3, r7, r3
+ 635 048a 1968     		ldr	r1, [r3]
+ 636 048c FFF7FEFF 		bl	__aeabi_fadd
+ 637 0490 031C     		add	r3, r0, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 14
+
+
+ 638 0492 B822     		mov	r2, #184
+ 639 0494 BA18     		add	r2, r7, r2
+ 640 0496 1360     		str	r3, [r2]
+ 105:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s3 = r2 - r4;
+ 641              		.loc 1 105 0 discriminator 1
+ 642 0498 B023     		mov	r3, #176
+ 643 049a FB18     		add	r3, r7, r3
+ 644 049c 1868     		ldr	r0, [r3]
+ 645 049e A023     		mov	r3, #160
+ 646 04a0 FB18     		add	r3, r7, r3
+ 647 04a2 1968     		ldr	r1, [r3]
+ 648 04a4 FFF7FEFF 		bl	__aeabi_fsub
+ 649 04a8 031C     		add	r3, r0, #0
+ 650 04aa 8C22     		mov	r2, #140
+ 651 04ac BA18     		add	r2, r7, r2
+ 652 04ae 1360     		str	r3, [r2]
+ 106:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r2 = r2 + r4;
+ 653              		.loc 1 106 0 discriminator 1
+ 654 04b0 B023     		mov	r3, #176
+ 655 04b2 FB18     		add	r3, r7, r3
+ 656 04b4 1868     		ldr	r0, [r3]
+ 657 04b6 A023     		mov	r3, #160
+ 658 04b8 FB18     		add	r3, r7, r3
+ 659 04ba 1968     		ldr	r1, [r3]
+ 660 04bc FFF7FEFF 		bl	__aeabi_fadd
+ 661 04c0 031C     		add	r3, r0, #0
+ 662 04c2 B022     		mov	r2, #176
+ 663 04c4 BA18     		add	r2, r7, r2
+ 664 04c6 1360     		str	r3, [r2]
+ 107:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i1 + 1] = r1 + r2;
+ 665              		.loc 1 107 0 discriminator 1
+ 666 04c8 E823     		mov	r3, #232
+ 667 04ca FB18     		add	r3, r7, r3
+ 668 04cc 1B68     		ldr	r3, [r3]
+ 669 04ce DB00     		lsl	r3, r3, #3
+ 670 04d0 0433     		add	r3, r3, #4
+ 671 04d2 FA68     		ldr	r2, [r7, #12]
+ 672 04d4 D418     		add	r4, r2, r3
+ 673 04d6 B823     		mov	r3, #184
+ 674 04d8 FB18     		add	r3, r7, r3
+ 675 04da 1868     		ldr	r0, [r3]
+ 676 04dc B023     		mov	r3, #176
+ 677 04de FB18     		add	r3, r7, r3
+ 678 04e0 1968     		ldr	r1, [r3]
+ 679 04e2 FFF7FEFF 		bl	__aeabi_fadd
+ 680 04e6 031C     		add	r3, r0, #0
+ 681 04e8 2360     		str	r3, [r4]
+ 108:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i5 + 1] = r1 - r2;
+ 682              		.loc 1 108 0 discriminator 1
+ 683 04ea C823     		mov	r3, #200
+ 684 04ec FB18     		add	r3, r7, r3
+ 685 04ee 1B68     		ldr	r3, [r3]
+ 686 04f0 DB00     		lsl	r3, r3, #3
+ 687 04f2 0433     		add	r3, r3, #4
+ 688 04f4 FA68     		ldr	r2, [r7, #12]
+ 689 04f6 D418     		add	r4, r2, r3
+ 690 04f8 B823     		mov	r3, #184
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 15
+
+
+ 691 04fa FB18     		add	r3, r7, r3
+ 692 04fc 1868     		ldr	r0, [r3]
+ 693 04fe B023     		mov	r3, #176
+ 694 0500 FB18     		add	r3, r7, r3
+ 695 0502 1968     		ldr	r1, [r3]
+ 696 0504 FFF7FEFF 		bl	__aeabi_fsub
+ 697 0508 031C     		add	r3, r0, #0
+ 698 050a 2360     		str	r3, [r4]
+ 109:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i3]     = t1 + s3;
+ 699              		.loc 1 109 0 discriminator 1
+ 700 050c D023     		mov	r3, #208
+ 701 050e FB18     		add	r3, r7, r3
+ 702 0510 1B68     		ldr	r3, [r3]
+ 703 0512 DB00     		lsl	r3, r3, #3
+ 704 0514 FA68     		ldr	r2, [r7, #12]
+ 705 0516 D418     		add	r4, r2, r3
+ 706 0518 9823     		mov	r3, #152
+ 707 051a FB18     		add	r3, r7, r3
+ 708 051c 1868     		ldr	r0, [r3]
+ 709 051e 8C23     		mov	r3, #140
+ 710 0520 FB18     		add	r3, r7, r3
+ 711 0522 1968     		ldr	r1, [r3]
+ 712 0524 FFF7FEFF 		bl	__aeabi_fadd
+ 713 0528 031C     		add	r3, r0, #0
+ 714 052a 2360     		str	r3, [r4]
+ 110:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i7]     = t1 - s3;
+ 715              		.loc 1 110 0 discriminator 1
+ 716 052c C023     		mov	r3, #192
+ 717 052e FB18     		add	r3, r7, r3
+ 718 0530 1B68     		ldr	r3, [r3]
+ 719 0532 DB00     		lsl	r3, r3, #3
+ 720 0534 FA68     		ldr	r2, [r7, #12]
+ 721 0536 D418     		add	r4, r2, r3
+ 722 0538 9823     		mov	r3, #152
+ 723 053a FB18     		add	r3, r7, r3
+ 724 053c 1868     		ldr	r0, [r3]
+ 725 053e 8C23     		mov	r3, #140
+ 726 0540 FB18     		add	r3, r7, r3
+ 727 0542 1968     		ldr	r1, [r3]
+ 728 0544 FFF7FEFF 		bl	__aeabi_fsub
+ 729 0548 031C     		add	r3, r0, #0
+ 730 054a 2360     		str	r3, [r4]
+ 111:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i3 + 1] = t2 - r3;
+ 731              		.loc 1 111 0 discriminator 1
+ 732 054c D023     		mov	r3, #208
+ 733 054e FB18     		add	r3, r7, r3
+ 734 0550 1B68     		ldr	r3, [r3]
+ 735 0552 DB00     		lsl	r3, r3, #3
+ 736 0554 0433     		add	r3, r3, #4
+ 737 0556 FA68     		ldr	r2, [r7, #12]
+ 738 0558 D418     		add	r4, r2, r3
+ 739 055a 8023     		mov	r3, #128
+ 740 055c FB18     		add	r3, r7, r3
+ 741 055e 1868     		ldr	r0, [r3]
+ 742 0560 A823     		mov	r3, #168
+ 743 0562 FB18     		add	r3, r7, r3
+ 744 0564 1968     		ldr	r1, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 16
+
+
+ 745 0566 FFF7FEFF 		bl	__aeabi_fsub
+ 746 056a 031C     		add	r3, r0, #0
+ 747 056c 2360     		str	r3, [r4]
+ 112:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i7 + 1] = t2 + r3;
+ 748              		.loc 1 112 0 discriminator 1
+ 749 056e C023     		mov	r3, #192
+ 750 0570 FB18     		add	r3, r7, r3
+ 751 0572 1B68     		ldr	r3, [r3]
+ 752 0574 DB00     		lsl	r3, r3, #3
+ 753 0576 0433     		add	r3, r3, #4
+ 754 0578 FA68     		ldr	r2, [r7, #12]
+ 755 057a D418     		add	r4, r2, r3
+ 756 057c 8023     		mov	r3, #128
+ 757 057e FB18     		add	r3, r7, r3
+ 758 0580 1868     		ldr	r0, [r3]
+ 759 0582 A823     		mov	r3, #168
+ 760 0584 FB18     		add	r3, r7, r3
+ 761 0586 1968     		ldr	r1, [r3]
+ 762 0588 FFF7FEFF 		bl	__aeabi_fadd
+ 763 058c 031C     		add	r3, r0, #0
+ 764 058e 2360     		str	r3, [r4]
+ 113:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r1 = (r6 - r8) * C81;
+ 765              		.loc 1 113 0 discriminator 1
+ 766 0590 AC23     		mov	r3, #172
+ 767 0592 FB18     		add	r3, r7, r3
+ 768 0594 1868     		ldr	r0, [r3]
+ 769 0596 9C23     		mov	r3, #156
+ 770 0598 FB18     		add	r3, r7, r3
+ 771 059a 1968     		ldr	r1, [r3]
+ 772 059c FFF7FEFF 		bl	__aeabi_fsub
+ 773 05a0 031C     		add	r3, r0, #0
+ 774 05a2 181C     		add	r0, r3, #0
+ 775 05a4 DC23     		mov	r3, #220
+ 776 05a6 FB18     		add	r3, r7, r3
+ 777 05a8 1968     		ldr	r1, [r3]
+ 778 05aa FFF7FEFF 		bl	__aeabi_fmul
+ 779 05ae 031C     		add	r3, r0, #0
+ 780 05b0 B822     		mov	r2, #184
+ 781 05b2 BA18     		add	r2, r7, r2
+ 782 05b4 1360     		str	r3, [r2]
+ 114:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r6 = (r6 + r8) * C81;
+ 783              		.loc 1 114 0 discriminator 1
+ 784 05b6 AC23     		mov	r3, #172
+ 785 05b8 FB18     		add	r3, r7, r3
+ 786 05ba 1868     		ldr	r0, [r3]
+ 787 05bc 9C23     		mov	r3, #156
+ 788 05be FB18     		add	r3, r7, r3
+ 789 05c0 1968     		ldr	r1, [r3]
+ 790 05c2 FFF7FEFF 		bl	__aeabi_fadd
+ 791 05c6 031C     		add	r3, r0, #0
+ 792 05c8 181C     		add	r0, r3, #0
+ 793 05ca DC23     		mov	r3, #220
+ 794 05cc FB18     		add	r3, r7, r3
+ 795 05ce 1968     		ldr	r1, [r3]
+ 796 05d0 FFF7FEFF 		bl	__aeabi_fmul
+ 797 05d4 031C     		add	r3, r0, #0
+ 798 05d6 AC22     		mov	r2, #172
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 17
+
+
+ 799 05d8 BA18     		add	r2, r7, r2
+ 800 05da 1360     		str	r3, [r2]
+ 115:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r2 = (s6 - s8) * C81;
+ 801              		.loc 1 115 0 discriminator 1
+ 802 05dc 9023     		mov	r3, #144
+ 803 05de FB18     		add	r3, r7, r3
+ 804 05e0 1868     		ldr	r0, [r3]
+ 805 05e2 8423     		mov	r3, #132
+ 806 05e4 FB18     		add	r3, r7, r3
+ 807 05e6 1968     		ldr	r1, [r3]
+ 808 05e8 FFF7FEFF 		bl	__aeabi_fsub
+ 809 05ec 031C     		add	r3, r0, #0
+ 810 05ee 181C     		add	r0, r3, #0
+ 811 05f0 DC23     		mov	r3, #220
+ 812 05f2 FB18     		add	r3, r7, r3
+ 813 05f4 1968     		ldr	r1, [r3]
+ 814 05f6 FFF7FEFF 		bl	__aeabi_fmul
+ 815 05fa 031C     		add	r3, r0, #0
+ 816 05fc B022     		mov	r2, #176
+ 817 05fe BA18     		add	r2, r7, r2
+ 818 0600 1360     		str	r3, [r2]
+ 116:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s6 = (s6 + s8) * C81;
+ 819              		.loc 1 116 0 discriminator 1
+ 820 0602 9023     		mov	r3, #144
+ 821 0604 FB18     		add	r3, r7, r3
+ 822 0606 1868     		ldr	r0, [r3]
+ 823 0608 8423     		mov	r3, #132
+ 824 060a FB18     		add	r3, r7, r3
+ 825 060c 1968     		ldr	r1, [r3]
+ 826 060e FFF7FEFF 		bl	__aeabi_fadd
+ 827 0612 031C     		add	r3, r0, #0
+ 828 0614 181C     		add	r0, r3, #0
+ 829 0616 DC23     		mov	r3, #220
+ 830 0618 FB18     		add	r3, r7, r3
+ 831 061a 1968     		ldr	r1, [r3]
+ 832 061c FFF7FEFF 		bl	__aeabi_fmul
+ 833 0620 031C     		add	r3, r0, #0
+ 834 0622 9022     		mov	r2, #144
+ 835 0624 BA18     		add	r2, r7, r2
+ 836 0626 1360     		str	r3, [r2]
+ 117:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          t1 = r5 - r1;
+ 837              		.loc 1 117 0 discriminator 1
+ 838 0628 B423     		mov	r3, #180
+ 839 062a FB18     		add	r3, r7, r3
+ 840 062c 1868     		ldr	r0, [r3]
+ 841 062e B823     		mov	r3, #184
+ 842 0630 FB18     		add	r3, r7, r3
+ 843 0632 1968     		ldr	r1, [r3]
+ 844 0634 FFF7FEFF 		bl	__aeabi_fsub
+ 845 0638 031C     		add	r3, r0, #0
+ 846 063a 9822     		mov	r2, #152
+ 847 063c BA18     		add	r2, r7, r2
+ 848 063e 1360     		str	r3, [r2]
+ 118:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r5 = r5 + r1;
+ 849              		.loc 1 118 0 discriminator 1
+ 850 0640 B423     		mov	r3, #180
+ 851 0642 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 18
+
+
+ 852 0644 1868     		ldr	r0, [r3]
+ 853 0646 B823     		mov	r3, #184
+ 854 0648 FB18     		add	r3, r7, r3
+ 855 064a 1968     		ldr	r1, [r3]
+ 856 064c FFF7FEFF 		bl	__aeabi_fadd
+ 857 0650 031C     		add	r3, r0, #0
+ 858 0652 B422     		mov	r2, #180
+ 859 0654 BA18     		add	r2, r7, r2
+ 860 0656 1360     		str	r3, [r2]
+ 119:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r8 = r7 - r6;
+ 861              		.loc 1 119 0 discriminator 1
+ 862 0658 A423     		mov	r3, #164
+ 863 065a FB18     		add	r3, r7, r3
+ 864 065c 1868     		ldr	r0, [r3]
+ 865 065e AC23     		mov	r3, #172
+ 866 0660 FB18     		add	r3, r7, r3
+ 867 0662 1968     		ldr	r1, [r3]
+ 868 0664 FFF7FEFF 		bl	__aeabi_fsub
+ 869 0668 031C     		add	r3, r0, #0
+ 870 066a 9C22     		mov	r2, #156
+ 871 066c BA18     		add	r2, r7, r2
+ 872 066e 1360     		str	r3, [r2]
+ 120:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          r7 = r7 + r6;
+ 873              		.loc 1 120 0 discriminator 1
+ 874 0670 A423     		mov	r3, #164
+ 875 0672 FB18     		add	r3, r7, r3
+ 876 0674 1868     		ldr	r0, [r3]
+ 877 0676 AC23     		mov	r3, #172
+ 878 0678 FB18     		add	r3, r7, r3
+ 879 067a 1968     		ldr	r1, [r3]
+ 880 067c FFF7FEFF 		bl	__aeabi_fadd
+ 881 0680 031C     		add	r3, r0, #0
+ 882 0682 A422     		mov	r2, #164
+ 883 0684 BA18     		add	r2, r7, r2
+ 884 0686 1360     		str	r3, [r2]
+ 121:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          t2 = s5 - r2;
+ 885              		.loc 1 121 0 discriminator 1
+ 886 0688 9423     		mov	r3, #148
+ 887 068a FB18     		add	r3, r7, r3
+ 888 068c 1868     		ldr	r0, [r3]
+ 889 068e B023     		mov	r3, #176
+ 890 0690 FB18     		add	r3, r7, r3
+ 891 0692 1968     		ldr	r1, [r3]
+ 892 0694 FFF7FEFF 		bl	__aeabi_fsub
+ 893 0698 031C     		add	r3, r0, #0
+ 894 069a 8022     		mov	r2, #128
+ 895 069c BA18     		add	r2, r7, r2
+ 896 069e 1360     		str	r3, [r2]
+ 122:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s5 = s5 + r2;
+ 897              		.loc 1 122 0 discriminator 1
+ 898 06a0 9423     		mov	r3, #148
+ 899 06a2 FB18     		add	r3, r7, r3
+ 900 06a4 1868     		ldr	r0, [r3]
+ 901 06a6 B023     		mov	r3, #176
+ 902 06a8 FB18     		add	r3, r7, r3
+ 903 06aa 1968     		ldr	r1, [r3]
+ 904 06ac FFF7FEFF 		bl	__aeabi_fadd
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 19
+
+
+ 905 06b0 031C     		add	r3, r0, #0
+ 906 06b2 9422     		mov	r2, #148
+ 907 06b4 BA18     		add	r2, r7, r2
+ 908 06b6 1360     		str	r3, [r2]
+ 123:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s8 = s7 - s6;
+ 909              		.loc 1 123 0 discriminator 1
+ 910 06b8 8823     		mov	r3, #136
+ 911 06ba FB18     		add	r3, r7, r3
+ 912 06bc 1868     		ldr	r0, [r3]
+ 913 06be 9023     		mov	r3, #144
+ 914 06c0 FB18     		add	r3, r7, r3
+ 915 06c2 1968     		ldr	r1, [r3]
+ 916 06c4 FFF7FEFF 		bl	__aeabi_fsub
+ 917 06c8 031C     		add	r3, r0, #0
+ 918 06ca 8422     		mov	r2, #132
+ 919 06cc BA18     		add	r2, r7, r2
+ 920 06ce 1360     		str	r3, [r2]
+ 124:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          s7 = s7 + s6;
+ 921              		.loc 1 124 0 discriminator 1
+ 922 06d0 8823     		mov	r3, #136
+ 923 06d2 FB18     		add	r3, r7, r3
+ 924 06d4 1868     		ldr	r0, [r3]
+ 925 06d6 9023     		mov	r3, #144
+ 926 06d8 FB18     		add	r3, r7, r3
+ 927 06da 1968     		ldr	r1, [r3]
+ 928 06dc FFF7FEFF 		bl	__aeabi_fadd
+ 929 06e0 031C     		add	r3, r0, #0
+ 930 06e2 8822     		mov	r2, #136
+ 931 06e4 BA18     		add	r2, r7, r2
+ 932 06e6 1360     		str	r3, [r2]
+ 125:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i2]     = r5 + s7;
+ 933              		.loc 1 125 0 discriminator 1
+ 934 06e8 D423     		mov	r3, #212
+ 935 06ea FB18     		add	r3, r7, r3
+ 936 06ec 1B68     		ldr	r3, [r3]
+ 937 06ee DB00     		lsl	r3, r3, #3
+ 938 06f0 FA68     		ldr	r2, [r7, #12]
+ 939 06f2 D418     		add	r4, r2, r3
+ 940 06f4 B423     		mov	r3, #180
+ 941 06f6 FB18     		add	r3, r7, r3
+ 942 06f8 1868     		ldr	r0, [r3]
+ 943 06fa 8823     		mov	r3, #136
+ 944 06fc FB18     		add	r3, r7, r3
+ 945 06fe 1968     		ldr	r1, [r3]
+ 946 0700 FFF7FEFF 		bl	__aeabi_fadd
+ 947 0704 031C     		add	r3, r0, #0
+ 948 0706 2360     		str	r3, [r4]
+ 126:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i8]     = r5 - s7;
+ 949              		.loc 1 126 0 discriminator 1
+ 950 0708 BC23     		mov	r3, #188
+ 951 070a FB18     		add	r3, r7, r3
+ 952 070c 1B68     		ldr	r3, [r3]
+ 953 070e DB00     		lsl	r3, r3, #3
+ 954 0710 FA68     		ldr	r2, [r7, #12]
+ 955 0712 D418     		add	r4, r2, r3
+ 956 0714 B423     		mov	r3, #180
+ 957 0716 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 20
+
+
+ 958 0718 1868     		ldr	r0, [r3]
+ 959 071a 8823     		mov	r3, #136
+ 960 071c FB18     		add	r3, r7, r3
+ 961 071e 1968     		ldr	r1, [r3]
+ 962 0720 FFF7FEFF 		bl	__aeabi_fsub
+ 963 0724 031C     		add	r3, r0, #0
+ 964 0726 2360     		str	r3, [r4]
+ 127:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i6]     = t1 + s8;
+ 965              		.loc 1 127 0 discriminator 1
+ 966 0728 C423     		mov	r3, #196
+ 967 072a FB18     		add	r3, r7, r3
+ 968 072c 1B68     		ldr	r3, [r3]
+ 969 072e DB00     		lsl	r3, r3, #3
+ 970 0730 FA68     		ldr	r2, [r7, #12]
+ 971 0732 D418     		add	r4, r2, r3
+ 972 0734 9823     		mov	r3, #152
+ 973 0736 FB18     		add	r3, r7, r3
+ 974 0738 1868     		ldr	r0, [r3]
+ 975 073a 8423     		mov	r3, #132
+ 976 073c FB18     		add	r3, r7, r3
+ 977 073e 1968     		ldr	r1, [r3]
+ 978 0740 FFF7FEFF 		bl	__aeabi_fadd
+ 979 0744 031C     		add	r3, r0, #0
+ 980 0746 2360     		str	r3, [r4]
+ 128:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i4]     = t1 - s8;
+ 981              		.loc 1 128 0 discriminator 1
+ 982 0748 CC23     		mov	r3, #204
+ 983 074a FB18     		add	r3, r7, r3
+ 984 074c 1B68     		ldr	r3, [r3]
+ 985 074e DB00     		lsl	r3, r3, #3
+ 986 0750 FA68     		ldr	r2, [r7, #12]
+ 987 0752 D418     		add	r4, r2, r3
+ 988 0754 9823     		mov	r3, #152
+ 989 0756 FB18     		add	r3, r7, r3
+ 990 0758 1868     		ldr	r0, [r3]
+ 991 075a 8423     		mov	r3, #132
+ 992 075c FB18     		add	r3, r7, r3
+ 993 075e 1968     		ldr	r1, [r3]
+ 994 0760 FFF7FEFF 		bl	__aeabi_fsub
+ 995 0764 031C     		add	r3, r0, #0
+ 996 0766 2360     		str	r3, [r4]
+ 129:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i2 + 1] = s5 - r7;
+ 997              		.loc 1 129 0 discriminator 1
+ 998 0768 D423     		mov	r3, #212
+ 999 076a FB18     		add	r3, r7, r3
+ 1000 076c 1B68     		ldr	r3, [r3]
+ 1001 076e DB00     		lsl	r3, r3, #3
+ 1002 0770 0433     		add	r3, r3, #4
+ 1003 0772 FA68     		ldr	r2, [r7, #12]
+ 1004 0774 D418     		add	r4, r2, r3
+ 1005 0776 9423     		mov	r3, #148
+ 1006 0778 FB18     		add	r3, r7, r3
+ 1007 077a 1868     		ldr	r0, [r3]
+ 1008 077c A423     		mov	r3, #164
+ 1009 077e FB18     		add	r3, r7, r3
+ 1010 0780 1968     		ldr	r1, [r3]
+ 1011 0782 FFF7FEFF 		bl	__aeabi_fsub
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 21
+
+
+ 1012 0786 031C     		add	r3, r0, #0
+ 1013 0788 2360     		str	r3, [r4]
+ 130:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i8 + 1] = s5 + r7;
+ 1014              		.loc 1 130 0 discriminator 1
+ 1015 078a BC23     		mov	r3, #188
+ 1016 078c FB18     		add	r3, r7, r3
+ 1017 078e 1B68     		ldr	r3, [r3]
+ 1018 0790 DB00     		lsl	r3, r3, #3
+ 1019 0792 0433     		add	r3, r3, #4
+ 1020 0794 FA68     		ldr	r2, [r7, #12]
+ 1021 0796 D418     		add	r4, r2, r3
+ 1022 0798 9423     		mov	r3, #148
+ 1023 079a FB18     		add	r3, r7, r3
+ 1024 079c 1868     		ldr	r0, [r3]
+ 1025 079e A423     		mov	r3, #164
+ 1026 07a0 FB18     		add	r3, r7, r3
+ 1027 07a2 1968     		ldr	r1, [r3]
+ 1028 07a4 FFF7FEFF 		bl	__aeabi_fadd
+ 1029 07a8 031C     		add	r3, r0, #0
+ 1030 07aa 2360     		str	r3, [r4]
+ 131:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i6 + 1] = t2 - r8;
+ 1031              		.loc 1 131 0 discriminator 1
+ 1032 07ac C423     		mov	r3, #196
+ 1033 07ae FB18     		add	r3, r7, r3
+ 1034 07b0 1B68     		ldr	r3, [r3]
+ 1035 07b2 DB00     		lsl	r3, r3, #3
+ 1036 07b4 0433     		add	r3, r3, #4
+ 1037 07b6 FA68     		ldr	r2, [r7, #12]
+ 1038 07b8 D418     		add	r4, r2, r3
+ 1039 07ba 8023     		mov	r3, #128
+ 1040 07bc FB18     		add	r3, r7, r3
+ 1041 07be 1868     		ldr	r0, [r3]
+ 1042 07c0 9C23     		mov	r3, #156
+ 1043 07c2 FB18     		add	r3, r7, r3
+ 1044 07c4 1968     		ldr	r1, [r3]
+ 1045 07c6 FFF7FEFF 		bl	__aeabi_fsub
+ 1046 07ca 031C     		add	r3, r0, #0
+ 1047 07cc 2360     		str	r3, [r4]
+ 132:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          pSrc[2 * i4 + 1] = t2 + r8;
+ 1048              		.loc 1 132 0 discriminator 1
+ 1049 07ce CC23     		mov	r3, #204
+ 1050 07d0 FB18     		add	r3, r7, r3
+ 1051 07d2 1B68     		ldr	r3, [r3]
+ 1052 07d4 DB00     		lsl	r3, r3, #3
+ 1053 07d6 0433     		add	r3, r3, #4
+ 1054 07d8 FA68     		ldr	r2, [r7, #12]
+ 1055 07da D418     		add	r4, r2, r3
+ 1056 07dc 8023     		mov	r3, #128
+ 1057 07de FB18     		add	r3, r7, r3
+ 1058 07e0 1868     		ldr	r0, [r3]
+ 1059 07e2 9C23     		mov	r3, #156
+ 1060 07e4 FB18     		add	r3, r7, r3
+ 1061 07e6 1968     		ldr	r1, [r3]
+ 1062 07e8 FFF7FEFF 		bl	__aeabi_fadd
+ 1063 07ec 031C     		add	r3, r0, #0
+ 1064 07ee 2360     		str	r3, [r4]
+ 133:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 22
+
+
+ 134:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i1 += n1;
+ 1065              		.loc 1 134 0 discriminator 1
+ 1066 07f0 E823     		mov	r3, #232
+ 1067 07f2 FB18     		add	r3, r7, r3
+ 1068 07f4 1A68     		ldr	r2, [r3]
+ 1069 07f6 D823     		mov	r3, #216
+ 1070 07f8 FB18     		add	r3, r7, r3
+ 1071 07fa 1B68     		ldr	r3, [r3]
+ 1072 07fc D318     		add	r3, r2, r3
+ 1073 07fe E822     		mov	r2, #232
+ 1074 0800 BA18     		add	r2, r7, r2
+ 1075 0802 1360     		str	r3, [r2]
+ 135:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       } while (i1 < fftLen);
+ 1076              		.loc 1 135 0 discriminator 1
+ 1077 0804 0A23     		mov	r3, #10
+ 1078 0806 FB18     		add	r3, r7, r3
+ 1079 0808 1A88     		ldrh	r2, [r3]
+ 1080 080a E823     		mov	r3, #232
+ 1081 080c FB18     		add	r3, r7, r3
+ 1082 080e 1B68     		ldr	r3, [r3]
+ 1083 0810 9A42     		cmp	r2, r3
+ 1084 0812 00D9     		bls	.LCB996
+ 1085 0814 22E4     		b	.L2	@long jump
+ 1086              	.LCB996:
+ 136:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 137:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       if (n2 < 8)
+ 1087              		.loc 1 137 0
+ 1088 0816 E423     		mov	r3, #228
+ 1089 0818 FB18     		add	r3, r7, r3
+ 1090 081a 1B68     		ldr	r3, [r3]
+ 1091 081c 072B     		cmp	r3, #7
+ 1092 081e 01D8     		bhi	.L3
+ 138:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          break;
+ 1093              		.loc 1 138 0
+ 1094 0820 00F0AAFD 		bl	.L1	@ far jump
+ 1095              	.L3:
+ 139:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 140:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       ia1 = 0;
+ 1096              		.loc 1 140 0
+ 1097 0824 0023     		mov	r3, #0
+ 1098 0826 EC22     		mov	r2, #236
+ 1099 0828 BA18     		add	r2, r7, r2
+ 1100 082a 1360     		str	r3, [r2]
+ 141:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       j = 1;
+ 1101              		.loc 1 141 0
+ 1102 082c 0123     		mov	r3, #1
+ 1103 082e E022     		mov	r2, #224
+ 1104 0830 BA18     		add	r2, r7, r2
+ 1105 0832 1360     		str	r3, [r2]
+ 1106              	.L6:
+ 142:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 143:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       do
+ 144:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       {
+ 145:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          /*  index calculation for the coefficients */
+ 146:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          id  = ia1 + twidCoefModifier;
+ 1107              		.loc 1 146 0
+ 1108 0834 0823     		mov	r3, #8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 23
+
+
+ 1109 0836 FB18     		add	r3, r7, r3
+ 1110 0838 1A88     		ldrh	r2, [r3]
+ 1111 083a EC23     		mov	r3, #236
+ 1112 083c FB18     		add	r3, r7, r3
+ 1113 083e 1B68     		ldr	r3, [r3]
+ 1114 0840 D318     		add	r3, r2, r3
+ 1115 0842 FB67     		str	r3, [r7, #124]
+ 147:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          ia1 = id;
+ 1116              		.loc 1 147 0
+ 1117 0844 FB6F     		ldr	r3, [r7, #124]
+ 1118 0846 EC22     		mov	r2, #236
+ 1119 0848 BA18     		add	r2, r7, r2
+ 1120 084a 1360     		str	r3, [r2]
+ 148:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          ia2 = ia1 + id;
+ 1121              		.loc 1 148 0
+ 1122 084c EC23     		mov	r3, #236
+ 1123 084e FB18     		add	r3, r7, r3
+ 1124 0850 1A68     		ldr	r2, [r3]
+ 1125 0852 FB6F     		ldr	r3, [r7, #124]
+ 1126 0854 D318     		add	r3, r2, r3
+ 1127 0856 BB67     		str	r3, [r7, #120]
+ 149:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          ia3 = ia2 + id;
+ 1128              		.loc 1 149 0
+ 1129 0858 BA6F     		ldr	r2, [r7, #120]
+ 1130 085a FB6F     		ldr	r3, [r7, #124]
+ 1131 085c D318     		add	r3, r2, r3
+ 1132 085e 7B67     		str	r3, [r7, #116]
+ 150:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          ia4 = ia3 + id;
+ 1133              		.loc 1 150 0
+ 1134 0860 7A6F     		ldr	r2, [r7, #116]
+ 1135 0862 FB6F     		ldr	r3, [r7, #124]
+ 1136 0864 D318     		add	r3, r2, r3
+ 1137 0866 3B67     		str	r3, [r7, #112]
+ 151:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          ia5 = ia4 + id;
+ 1138              		.loc 1 151 0
+ 1139 0868 3A6F     		ldr	r2, [r7, #112]
+ 1140 086a FB6F     		ldr	r3, [r7, #124]
+ 1141 086c D318     		add	r3, r2, r3
+ 1142 086e FB66     		str	r3, [r7, #108]
+ 152:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          ia6 = ia5 + id;
+ 1143              		.loc 1 152 0
+ 1144 0870 FA6E     		ldr	r2, [r7, #108]
+ 1145 0872 FB6F     		ldr	r3, [r7, #124]
+ 1146 0874 D318     		add	r3, r2, r3
+ 1147 0876 BB66     		str	r3, [r7, #104]
+ 153:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          ia7 = ia6 + id;
+ 1148              		.loc 1 153 0
+ 1149 0878 BA6E     		ldr	r2, [r7, #104]
+ 1150 087a FB6F     		ldr	r3, [r7, #124]
+ 1151 087c D318     		add	r3, r2, r3
+ 1152 087e 7B66     		str	r3, [r7, #100]
+ 154:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 155:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          co2 = pCoef[2 * ia1];
+ 1153              		.loc 1 155 0
+ 1154 0880 EC23     		mov	r3, #236
+ 1155 0882 FB18     		add	r3, r7, r3
+ 1156 0884 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 24
+
+
+ 1157 0886 DB00     		lsl	r3, r3, #3
+ 1158 0888 7A68     		ldr	r2, [r7, #4]
+ 1159 088a D318     		add	r3, r2, r3
+ 1160 088c 1B68     		ldr	r3, [r3]
+ 1161 088e 3B66     		str	r3, [r7, #96]
+ 156:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          co3 = pCoef[2 * ia2];
+ 1162              		.loc 1 156 0
+ 1163 0890 BB6F     		ldr	r3, [r7, #120]
+ 1164 0892 DB00     		lsl	r3, r3, #3
+ 1165 0894 7A68     		ldr	r2, [r7, #4]
+ 1166 0896 D318     		add	r3, r2, r3
+ 1167 0898 1B68     		ldr	r3, [r3]
+ 1168 089a FB65     		str	r3, [r7, #92]
+ 157:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          co4 = pCoef[2 * ia3];
+ 1169              		.loc 1 157 0
+ 1170 089c 7B6F     		ldr	r3, [r7, #116]
+ 1171 089e DB00     		lsl	r3, r3, #3
+ 1172 08a0 7A68     		ldr	r2, [r7, #4]
+ 1173 08a2 D318     		add	r3, r2, r3
+ 1174 08a4 1B68     		ldr	r3, [r3]
+ 1175 08a6 BB65     		str	r3, [r7, #88]
+ 158:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          co5 = pCoef[2 * ia4];
+ 1176              		.loc 1 158 0
+ 1177 08a8 3B6F     		ldr	r3, [r7, #112]
+ 1178 08aa DB00     		lsl	r3, r3, #3
+ 1179 08ac 7A68     		ldr	r2, [r7, #4]
+ 1180 08ae D318     		add	r3, r2, r3
+ 1181 08b0 1B68     		ldr	r3, [r3]
+ 1182 08b2 7B65     		str	r3, [r7, #84]
+ 159:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          co6 = pCoef[2 * ia5];
+ 1183              		.loc 1 159 0
+ 1184 08b4 FB6E     		ldr	r3, [r7, #108]
+ 1185 08b6 DB00     		lsl	r3, r3, #3
+ 1186 08b8 7A68     		ldr	r2, [r7, #4]
+ 1187 08ba D318     		add	r3, r2, r3
+ 1188 08bc 1B68     		ldr	r3, [r3]
+ 1189 08be 3B65     		str	r3, [r7, #80]
+ 160:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          co7 = pCoef[2 * ia6];
+ 1190              		.loc 1 160 0
+ 1191 08c0 BB6E     		ldr	r3, [r7, #104]
+ 1192 08c2 DB00     		lsl	r3, r3, #3
+ 1193 08c4 7A68     		ldr	r2, [r7, #4]
+ 1194 08c6 D318     		add	r3, r2, r3
+ 1195 08c8 1B68     		ldr	r3, [r3]
+ 1196 08ca FB64     		str	r3, [r7, #76]
+ 161:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          co8 = pCoef[2 * ia7];
+ 1197              		.loc 1 161 0
+ 1198 08cc 7B6E     		ldr	r3, [r7, #100]
+ 1199 08ce DB00     		lsl	r3, r3, #3
+ 1200 08d0 7A68     		ldr	r2, [r7, #4]
+ 1201 08d2 D318     		add	r3, r2, r3
+ 1202 08d4 1B68     		ldr	r3, [r3]
+ 1203 08d6 BB64     		str	r3, [r7, #72]
+ 162:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          si2 = pCoef[2 * ia1 + 1];
+ 1204              		.loc 1 162 0
+ 1205 08d8 EC23     		mov	r3, #236
+ 1206 08da FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 25
+
+
+ 1207 08dc 1B68     		ldr	r3, [r3]
+ 1208 08de DB00     		lsl	r3, r3, #3
+ 1209 08e0 0433     		add	r3, r3, #4
+ 1210 08e2 7A68     		ldr	r2, [r7, #4]
+ 1211 08e4 D318     		add	r3, r2, r3
+ 1212 08e6 1B68     		ldr	r3, [r3]
+ 1213 08e8 7B64     		str	r3, [r7, #68]
+ 163:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          si3 = pCoef[2 * ia2 + 1];
+ 1214              		.loc 1 163 0
+ 1215 08ea BB6F     		ldr	r3, [r7, #120]
+ 1216 08ec DB00     		lsl	r3, r3, #3
+ 1217 08ee 0433     		add	r3, r3, #4
+ 1218 08f0 7A68     		ldr	r2, [r7, #4]
+ 1219 08f2 D318     		add	r3, r2, r3
+ 1220 08f4 1B68     		ldr	r3, [r3]
+ 1221 08f6 3B64     		str	r3, [r7, #64]
+ 164:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          si4 = pCoef[2 * ia3 + 1];
+ 1222              		.loc 1 164 0
+ 1223 08f8 7B6F     		ldr	r3, [r7, #116]
+ 1224 08fa DB00     		lsl	r3, r3, #3
+ 1225 08fc 0433     		add	r3, r3, #4
+ 1226 08fe 7A68     		ldr	r2, [r7, #4]
+ 1227 0900 D318     		add	r3, r2, r3
+ 1228 0902 1B68     		ldr	r3, [r3]
+ 1229 0904 FB63     		str	r3, [r7, #60]
+ 165:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          si5 = pCoef[2 * ia4 + 1];
+ 1230              		.loc 1 165 0
+ 1231 0906 3B6F     		ldr	r3, [r7, #112]
+ 1232 0908 DB00     		lsl	r3, r3, #3
+ 1233 090a 0433     		add	r3, r3, #4
+ 1234 090c 7A68     		ldr	r2, [r7, #4]
+ 1235 090e D318     		add	r3, r2, r3
+ 1236 0910 1B68     		ldr	r3, [r3]
+ 1237 0912 BB63     		str	r3, [r7, #56]
+ 166:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          si6 = pCoef[2 * ia5 + 1];
+ 1238              		.loc 1 166 0
+ 1239 0914 FB6E     		ldr	r3, [r7, #108]
+ 1240 0916 DB00     		lsl	r3, r3, #3
+ 1241 0918 0433     		add	r3, r3, #4
+ 1242 091a 7A68     		ldr	r2, [r7, #4]
+ 1243 091c D318     		add	r3, r2, r3
+ 1244 091e 1B68     		ldr	r3, [r3]
+ 1245 0920 7B63     		str	r3, [r7, #52]
+ 167:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          si7 = pCoef[2 * ia6 + 1];
+ 1246              		.loc 1 167 0
+ 1247 0922 BB6E     		ldr	r3, [r7, #104]
+ 1248 0924 DB00     		lsl	r3, r3, #3
+ 1249 0926 0433     		add	r3, r3, #4
+ 1250 0928 7A68     		ldr	r2, [r7, #4]
+ 1251 092a D318     		add	r3, r2, r3
+ 1252 092c 1B68     		ldr	r3, [r3]
+ 1253 092e 3B63     		str	r3, [r7, #48]
+ 168:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          si8 = pCoef[2 * ia7 + 1];
+ 1254              		.loc 1 168 0
+ 1255 0930 7B6E     		ldr	r3, [r7, #100]
+ 1256 0932 DB00     		lsl	r3, r3, #3
+ 1257 0934 0433     		add	r3, r3, #4
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 26
+
+
+ 1258 0936 7A68     		ldr	r2, [r7, #4]
+ 1259 0938 D318     		add	r3, r2, r3
+ 1260 093a 1B68     		ldr	r3, [r3]
+ 1261 093c FB62     		str	r3, [r7, #44]
+ 169:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 170:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          i1 = j;
+ 1262              		.loc 1 170 0
+ 1263 093e E023     		mov	r3, #224
+ 1264 0940 FB18     		add	r3, r7, r3
+ 1265 0942 1B68     		ldr	r3, [r3]
+ 1266 0944 E822     		mov	r2, #232
+ 1267 0946 BA18     		add	r2, r7, r2
+ 1268 0948 1360     		str	r3, [r2]
+ 1269              	.L5:
+ 171:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 172:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          do
+ 173:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          {
+ 174:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             /*  index calculation for the input */
+ 175:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             i2 = i1 + n2;
+ 1270              		.loc 1 175 0 discriminator 1
+ 1271 094a E823     		mov	r3, #232
+ 1272 094c FB18     		add	r3, r7, r3
+ 1273 094e 1A68     		ldr	r2, [r3]
+ 1274 0950 E423     		mov	r3, #228
+ 1275 0952 FB18     		add	r3, r7, r3
+ 1276 0954 1B68     		ldr	r3, [r3]
+ 1277 0956 D318     		add	r3, r2, r3
+ 1278 0958 D422     		mov	r2, #212
+ 1279 095a BA18     		add	r2, r7, r2
+ 1280 095c 1360     		str	r3, [r2]
+ 176:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             i3 = i2 + n2;
+ 1281              		.loc 1 176 0 discriminator 1
+ 1282 095e D423     		mov	r3, #212
+ 1283 0960 FB18     		add	r3, r7, r3
+ 1284 0962 1A68     		ldr	r2, [r3]
+ 1285 0964 E423     		mov	r3, #228
+ 1286 0966 FB18     		add	r3, r7, r3
+ 1287 0968 1B68     		ldr	r3, [r3]
+ 1288 096a D318     		add	r3, r2, r3
+ 1289 096c D022     		mov	r2, #208
+ 1290 096e BA18     		add	r2, r7, r2
+ 1291 0970 1360     		str	r3, [r2]
+ 177:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             i4 = i3 + n2;
+ 1292              		.loc 1 177 0 discriminator 1
+ 1293 0972 D023     		mov	r3, #208
+ 1294 0974 FB18     		add	r3, r7, r3
+ 1295 0976 1A68     		ldr	r2, [r3]
+ 1296 0978 E423     		mov	r3, #228
+ 1297 097a FB18     		add	r3, r7, r3
+ 1298 097c 1B68     		ldr	r3, [r3]
+ 1299 097e D318     		add	r3, r2, r3
+ 1300 0980 CC22     		mov	r2, #204
+ 1301 0982 BA18     		add	r2, r7, r2
+ 1302 0984 1360     		str	r3, [r2]
+ 178:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             i5 = i4 + n2;
+ 1303              		.loc 1 178 0 discriminator 1
+ 1304 0986 CC23     		mov	r3, #204
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 27
+
+
+ 1305 0988 FB18     		add	r3, r7, r3
+ 1306 098a 1A68     		ldr	r2, [r3]
+ 1307 098c E423     		mov	r3, #228
+ 1308 098e FB18     		add	r3, r7, r3
+ 1309 0990 1B68     		ldr	r3, [r3]
+ 1310 0992 D318     		add	r3, r2, r3
+ 1311 0994 C822     		mov	r2, #200
+ 1312 0996 BA18     		add	r2, r7, r2
+ 1313 0998 1360     		str	r3, [r2]
+ 179:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             i6 = i5 + n2;
+ 1314              		.loc 1 179 0 discriminator 1
+ 1315 099a C823     		mov	r3, #200
+ 1316 099c FB18     		add	r3, r7, r3
+ 1317 099e 1A68     		ldr	r2, [r3]
+ 1318 09a0 E423     		mov	r3, #228
+ 1319 09a2 FB18     		add	r3, r7, r3
+ 1320 09a4 1B68     		ldr	r3, [r3]
+ 1321 09a6 D318     		add	r3, r2, r3
+ 1322 09a8 C422     		mov	r2, #196
+ 1323 09aa BA18     		add	r2, r7, r2
+ 1324 09ac 1360     		str	r3, [r2]
+ 180:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             i7 = i6 + n2;
+ 1325              		.loc 1 180 0 discriminator 1
+ 1326 09ae C423     		mov	r3, #196
+ 1327 09b0 FB18     		add	r3, r7, r3
+ 1328 09b2 1A68     		ldr	r2, [r3]
+ 1329 09b4 E423     		mov	r3, #228
+ 1330 09b6 FB18     		add	r3, r7, r3
+ 1331 09b8 1B68     		ldr	r3, [r3]
+ 1332 09ba D318     		add	r3, r2, r3
+ 1333 09bc C022     		mov	r2, #192
+ 1334 09be BA18     		add	r2, r7, r2
+ 1335 09c0 1360     		str	r3, [r2]
+ 181:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             i8 = i7 + n2;
+ 1336              		.loc 1 181 0 discriminator 1
+ 1337 09c2 C023     		mov	r3, #192
+ 1338 09c4 FB18     		add	r3, r7, r3
+ 1339 09c6 1A68     		ldr	r2, [r3]
+ 1340 09c8 E423     		mov	r3, #228
+ 1341 09ca FB18     		add	r3, r7, r3
+ 1342 09cc 1B68     		ldr	r3, [r3]
+ 1343 09ce D318     		add	r3, r2, r3
+ 1344 09d0 BC22     		mov	r2, #188
+ 1345 09d2 BA18     		add	r2, r7, r2
+ 1346 09d4 1360     		str	r3, [r2]
+ 182:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r1 = pSrc[2 * i1] + pSrc[2 * i5];
+ 1347              		.loc 1 182 0 discriminator 1
+ 1348 09d6 E823     		mov	r3, #232
+ 1349 09d8 FB18     		add	r3, r7, r3
+ 1350 09da 1B68     		ldr	r3, [r3]
+ 1351 09dc DB00     		lsl	r3, r3, #3
+ 1352 09de FA68     		ldr	r2, [r7, #12]
+ 1353 09e0 D318     		add	r3, r2, r3
+ 1354 09e2 1968     		ldr	r1, [r3]
+ 1355 09e4 C823     		mov	r3, #200
+ 1356 09e6 FB18     		add	r3, r7, r3
+ 1357 09e8 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 28
+
+
+ 1358 09ea DB00     		lsl	r3, r3, #3
+ 1359 09ec FA68     		ldr	r2, [r7, #12]
+ 1360 09ee D318     		add	r3, r2, r3
+ 1361 09f0 1B68     		ldr	r3, [r3]
+ 1362 09f2 081C     		add	r0, r1, #0
+ 1363 09f4 191C     		add	r1, r3, #0
+ 1364 09f6 FFF7FEFF 		bl	__aeabi_fadd
+ 1365 09fa 031C     		add	r3, r0, #0
+ 1366 09fc B822     		mov	r2, #184
+ 1367 09fe BA18     		add	r2, r7, r2
+ 1368 0a00 1360     		str	r3, [r2]
+ 183:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r5 = pSrc[2 * i1] - pSrc[2 * i5];
+ 1369              		.loc 1 183 0 discriminator 1
+ 1370 0a02 E823     		mov	r3, #232
+ 1371 0a04 FB18     		add	r3, r7, r3
+ 1372 0a06 1B68     		ldr	r3, [r3]
+ 1373 0a08 DB00     		lsl	r3, r3, #3
+ 1374 0a0a FA68     		ldr	r2, [r7, #12]
+ 1375 0a0c D318     		add	r3, r2, r3
+ 1376 0a0e 1968     		ldr	r1, [r3]
+ 1377 0a10 C823     		mov	r3, #200
+ 1378 0a12 FB18     		add	r3, r7, r3
+ 1379 0a14 1B68     		ldr	r3, [r3]
+ 1380 0a16 DB00     		lsl	r3, r3, #3
+ 1381 0a18 FA68     		ldr	r2, [r7, #12]
+ 1382 0a1a D318     		add	r3, r2, r3
+ 1383 0a1c 1B68     		ldr	r3, [r3]
+ 1384 0a1e 081C     		add	r0, r1, #0
+ 1385 0a20 191C     		add	r1, r3, #0
+ 1386 0a22 FFF7FEFF 		bl	__aeabi_fsub
+ 1387 0a26 031C     		add	r3, r0, #0
+ 1388 0a28 B422     		mov	r2, #180
+ 1389 0a2a BA18     		add	r2, r7, r2
+ 1390 0a2c 1360     		str	r3, [r2]
+ 184:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r2 = pSrc[2 * i2] + pSrc[2 * i6];
+ 1391              		.loc 1 184 0 discriminator 1
+ 1392 0a2e D423     		mov	r3, #212
+ 1393 0a30 FB18     		add	r3, r7, r3
+ 1394 0a32 1B68     		ldr	r3, [r3]
+ 1395 0a34 DB00     		lsl	r3, r3, #3
+ 1396 0a36 FA68     		ldr	r2, [r7, #12]
+ 1397 0a38 D318     		add	r3, r2, r3
+ 1398 0a3a 1968     		ldr	r1, [r3]
+ 1399 0a3c C423     		mov	r3, #196
+ 1400 0a3e FB18     		add	r3, r7, r3
+ 1401 0a40 1B68     		ldr	r3, [r3]
+ 1402 0a42 DB00     		lsl	r3, r3, #3
+ 1403 0a44 FA68     		ldr	r2, [r7, #12]
+ 1404 0a46 D318     		add	r3, r2, r3
+ 1405 0a48 1B68     		ldr	r3, [r3]
+ 1406 0a4a 081C     		add	r0, r1, #0
+ 1407 0a4c 191C     		add	r1, r3, #0
+ 1408 0a4e FFF7FEFF 		bl	__aeabi_fadd
+ 1409 0a52 031C     		add	r3, r0, #0
+ 1410 0a54 B022     		mov	r2, #176
+ 1411 0a56 BA18     		add	r2, r7, r2
+ 1412 0a58 1360     		str	r3, [r2]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 29
+
+
+ 185:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r6 = pSrc[2 * i2] - pSrc[2 * i6];
+ 1413              		.loc 1 185 0 discriminator 1
+ 1414 0a5a D423     		mov	r3, #212
+ 1415 0a5c FB18     		add	r3, r7, r3
+ 1416 0a5e 1B68     		ldr	r3, [r3]
+ 1417 0a60 DB00     		lsl	r3, r3, #3
+ 1418 0a62 FA68     		ldr	r2, [r7, #12]
+ 1419 0a64 D318     		add	r3, r2, r3
+ 1420 0a66 1968     		ldr	r1, [r3]
+ 1421 0a68 C423     		mov	r3, #196
+ 1422 0a6a FB18     		add	r3, r7, r3
+ 1423 0a6c 1B68     		ldr	r3, [r3]
+ 1424 0a6e DB00     		lsl	r3, r3, #3
+ 1425 0a70 FA68     		ldr	r2, [r7, #12]
+ 1426 0a72 D318     		add	r3, r2, r3
+ 1427 0a74 1B68     		ldr	r3, [r3]
+ 1428 0a76 081C     		add	r0, r1, #0
+ 1429 0a78 191C     		add	r1, r3, #0
+ 1430 0a7a FFF7FEFF 		bl	__aeabi_fsub
+ 1431 0a7e 031C     		add	r3, r0, #0
+ 1432 0a80 AC22     		mov	r2, #172
+ 1433 0a82 BA18     		add	r2, r7, r2
+ 1434 0a84 1360     		str	r3, [r2]
+ 186:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r3 = pSrc[2 * i3] + pSrc[2 * i7];
+ 1435              		.loc 1 186 0 discriminator 1
+ 1436 0a86 D023     		mov	r3, #208
+ 1437 0a88 FB18     		add	r3, r7, r3
+ 1438 0a8a 1B68     		ldr	r3, [r3]
+ 1439 0a8c DB00     		lsl	r3, r3, #3
+ 1440 0a8e FA68     		ldr	r2, [r7, #12]
+ 1441 0a90 D318     		add	r3, r2, r3
+ 1442 0a92 1968     		ldr	r1, [r3]
+ 1443 0a94 C023     		mov	r3, #192
+ 1444 0a96 FB18     		add	r3, r7, r3
+ 1445 0a98 1B68     		ldr	r3, [r3]
+ 1446 0a9a DB00     		lsl	r3, r3, #3
+ 1447 0a9c FA68     		ldr	r2, [r7, #12]
+ 1448 0a9e D318     		add	r3, r2, r3
+ 1449 0aa0 1B68     		ldr	r3, [r3]
+ 1450 0aa2 081C     		add	r0, r1, #0
+ 1451 0aa4 191C     		add	r1, r3, #0
+ 1452 0aa6 FFF7FEFF 		bl	__aeabi_fadd
+ 1453 0aaa 031C     		add	r3, r0, #0
+ 1454 0aac A822     		mov	r2, #168
+ 1455 0aae BA18     		add	r2, r7, r2
+ 1456 0ab0 1360     		str	r3, [r2]
+ 187:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r7 = pSrc[2 * i3] - pSrc[2 * i7];
+ 1457              		.loc 1 187 0 discriminator 1
+ 1458 0ab2 D023     		mov	r3, #208
+ 1459 0ab4 FB18     		add	r3, r7, r3
+ 1460 0ab6 1B68     		ldr	r3, [r3]
+ 1461 0ab8 DB00     		lsl	r3, r3, #3
+ 1462 0aba FA68     		ldr	r2, [r7, #12]
+ 1463 0abc D318     		add	r3, r2, r3
+ 1464 0abe 1968     		ldr	r1, [r3]
+ 1465 0ac0 C023     		mov	r3, #192
+ 1466 0ac2 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 30
+
+
+ 1467 0ac4 1B68     		ldr	r3, [r3]
+ 1468 0ac6 DB00     		lsl	r3, r3, #3
+ 1469 0ac8 FA68     		ldr	r2, [r7, #12]
+ 1470 0aca D318     		add	r3, r2, r3
+ 1471 0acc 1B68     		ldr	r3, [r3]
+ 1472 0ace 081C     		add	r0, r1, #0
+ 1473 0ad0 191C     		add	r1, r3, #0
+ 1474 0ad2 FFF7FEFF 		bl	__aeabi_fsub
+ 1475 0ad6 031C     		add	r3, r0, #0
+ 1476 0ad8 A422     		mov	r2, #164
+ 1477 0ada BA18     		add	r2, r7, r2
+ 1478 0adc 1360     		str	r3, [r2]
+ 188:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r4 = pSrc[2 * i4] + pSrc[2 * i8];
+ 1479              		.loc 1 188 0 discriminator 1
+ 1480 0ade CC23     		mov	r3, #204
+ 1481 0ae0 FB18     		add	r3, r7, r3
+ 1482 0ae2 1B68     		ldr	r3, [r3]
+ 1483 0ae4 DB00     		lsl	r3, r3, #3
+ 1484 0ae6 FA68     		ldr	r2, [r7, #12]
+ 1485 0ae8 D318     		add	r3, r2, r3
+ 1486 0aea 1968     		ldr	r1, [r3]
+ 1487 0aec BC23     		mov	r3, #188
+ 1488 0aee FB18     		add	r3, r7, r3
+ 1489 0af0 1B68     		ldr	r3, [r3]
+ 1490 0af2 DB00     		lsl	r3, r3, #3
+ 1491 0af4 FA68     		ldr	r2, [r7, #12]
+ 1492 0af6 D318     		add	r3, r2, r3
+ 1493 0af8 1B68     		ldr	r3, [r3]
+ 1494 0afa 081C     		add	r0, r1, #0
+ 1495 0afc 191C     		add	r1, r3, #0
+ 1496 0afe FFF7FEFF 		bl	__aeabi_fadd
+ 1497 0b02 031C     		add	r3, r0, #0
+ 1498 0b04 A022     		mov	r2, #160
+ 1499 0b06 BA18     		add	r2, r7, r2
+ 1500 0b08 1360     		str	r3, [r2]
+ 189:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r8 = pSrc[2 * i4] - pSrc[2 * i8];
+ 1501              		.loc 1 189 0 discriminator 1
+ 1502 0b0a CC23     		mov	r3, #204
+ 1503 0b0c FB18     		add	r3, r7, r3
+ 1504 0b0e 1B68     		ldr	r3, [r3]
+ 1505 0b10 DB00     		lsl	r3, r3, #3
+ 1506 0b12 FA68     		ldr	r2, [r7, #12]
+ 1507 0b14 D318     		add	r3, r2, r3
+ 1508 0b16 1968     		ldr	r1, [r3]
+ 1509 0b18 BC23     		mov	r3, #188
+ 1510 0b1a FB18     		add	r3, r7, r3
+ 1511 0b1c 1B68     		ldr	r3, [r3]
+ 1512 0b1e DB00     		lsl	r3, r3, #3
+ 1513 0b20 FA68     		ldr	r2, [r7, #12]
+ 1514 0b22 D318     		add	r3, r2, r3
+ 1515 0b24 1B68     		ldr	r3, [r3]
+ 1516 0b26 081C     		add	r0, r1, #0
+ 1517 0b28 191C     		add	r1, r3, #0
+ 1518 0b2a FFF7FEFF 		bl	__aeabi_fsub
+ 1519 0b2e 031C     		add	r3, r0, #0
+ 1520 0b30 9C22     		mov	r2, #156
+ 1521 0b32 BA18     		add	r2, r7, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 31
+
+
+ 1522 0b34 1360     		str	r3, [r2]
+ 190:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             t1 = r1 - r3;
+ 1523              		.loc 1 190 0 discriminator 1
+ 1524 0b36 B823     		mov	r3, #184
+ 1525 0b38 FB18     		add	r3, r7, r3
+ 1526 0b3a 1868     		ldr	r0, [r3]
+ 1527 0b3c A823     		mov	r3, #168
+ 1528 0b3e FB18     		add	r3, r7, r3
+ 1529 0b40 1968     		ldr	r1, [r3]
+ 1530 0b42 FFF7FEFF 		bl	__aeabi_fsub
+ 1531 0b46 031C     		add	r3, r0, #0
+ 1532 0b48 9822     		mov	r2, #152
+ 1533 0b4a BA18     		add	r2, r7, r2
+ 1534 0b4c 1360     		str	r3, [r2]
+ 191:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r1 = r1 + r3;
+ 1535              		.loc 1 191 0 discriminator 1
+ 1536 0b4e B823     		mov	r3, #184
+ 1537 0b50 FB18     		add	r3, r7, r3
+ 1538 0b52 1868     		ldr	r0, [r3]
+ 1539 0b54 A823     		mov	r3, #168
+ 1540 0b56 FB18     		add	r3, r7, r3
+ 1541 0b58 1968     		ldr	r1, [r3]
+ 1542 0b5a FFF7FEFF 		bl	__aeabi_fadd
+ 1543 0b5e 031C     		add	r3, r0, #0
+ 1544 0b60 B822     		mov	r2, #184
+ 1545 0b62 BA18     		add	r2, r7, r2
+ 1546 0b64 1360     		str	r3, [r2]
+ 192:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r3 = r2 - r4;
+ 1547              		.loc 1 192 0 discriminator 1
+ 1548 0b66 B023     		mov	r3, #176
+ 1549 0b68 FB18     		add	r3, r7, r3
+ 1550 0b6a 1868     		ldr	r0, [r3]
+ 1551 0b6c A023     		mov	r3, #160
+ 1552 0b6e FB18     		add	r3, r7, r3
+ 1553 0b70 1968     		ldr	r1, [r3]
+ 1554 0b72 FFF7FEFF 		bl	__aeabi_fsub
+ 1555 0b76 031C     		add	r3, r0, #0
+ 1556 0b78 A822     		mov	r2, #168
+ 1557 0b7a BA18     		add	r2, r7, r2
+ 1558 0b7c 1360     		str	r3, [r2]
+ 193:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r2 = r2 + r4;
+ 1559              		.loc 1 193 0 discriminator 1
+ 1560 0b7e B023     		mov	r3, #176
+ 1561 0b80 FB18     		add	r3, r7, r3
+ 1562 0b82 1868     		ldr	r0, [r3]
+ 1563 0b84 A023     		mov	r3, #160
+ 1564 0b86 FB18     		add	r3, r7, r3
+ 1565 0b88 1968     		ldr	r1, [r3]
+ 1566 0b8a FFF7FEFF 		bl	__aeabi_fadd
+ 1567 0b8e 031C     		add	r3, r0, #0
+ 1568 0b90 B022     		mov	r2, #176
+ 1569 0b92 BA18     		add	r2, r7, r2
+ 1570 0b94 1360     		str	r3, [r2]
+ 194:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i1] = r1 + r2;
+ 1571              		.loc 1 194 0 discriminator 1
+ 1572 0b96 E823     		mov	r3, #232
+ 1573 0b98 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 32
+
+
+ 1574 0b9a 1B68     		ldr	r3, [r3]
+ 1575 0b9c DB00     		lsl	r3, r3, #3
+ 1576 0b9e FA68     		ldr	r2, [r7, #12]
+ 1577 0ba0 D418     		add	r4, r2, r3
+ 1578 0ba2 B823     		mov	r3, #184
+ 1579 0ba4 FB18     		add	r3, r7, r3
+ 1580 0ba6 1868     		ldr	r0, [r3]
+ 1581 0ba8 B023     		mov	r3, #176
+ 1582 0baa FB18     		add	r3, r7, r3
+ 1583 0bac 1968     		ldr	r1, [r3]
+ 1584 0bae FFF7FEFF 		bl	__aeabi_fadd
+ 1585 0bb2 031C     		add	r3, r0, #0
+ 1586 0bb4 2360     		str	r3, [r4]
+ 195:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r2 = r1 - r2;
+ 1587              		.loc 1 195 0 discriminator 1
+ 1588 0bb6 B823     		mov	r3, #184
+ 1589 0bb8 FB18     		add	r3, r7, r3
+ 1590 0bba 1868     		ldr	r0, [r3]
+ 1591 0bbc B023     		mov	r3, #176
+ 1592 0bbe FB18     		add	r3, r7, r3
+ 1593 0bc0 1968     		ldr	r1, [r3]
+ 1594 0bc2 FFF7FEFF 		bl	__aeabi_fsub
+ 1595 0bc6 031C     		add	r3, r0, #0
+ 1596 0bc8 B022     		mov	r2, #176
+ 1597 0bca BA18     		add	r2, r7, r2
+ 1598 0bcc 1360     		str	r3, [r2]
+ 196:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s1 = pSrc[2 * i1 + 1] + pSrc[2 * i5 + 1];
+ 1599              		.loc 1 196 0 discriminator 1
+ 1600 0bce E823     		mov	r3, #232
+ 1601 0bd0 FB18     		add	r3, r7, r3
+ 1602 0bd2 1B68     		ldr	r3, [r3]
+ 1603 0bd4 DB00     		lsl	r3, r3, #3
+ 1604 0bd6 0433     		add	r3, r3, #4
+ 1605 0bd8 FA68     		ldr	r2, [r7, #12]
+ 1606 0bda D318     		add	r3, r2, r3
+ 1607 0bdc 1968     		ldr	r1, [r3]
+ 1608 0bde C823     		mov	r3, #200
+ 1609 0be0 FB18     		add	r3, r7, r3
+ 1610 0be2 1B68     		ldr	r3, [r3]
+ 1611 0be4 DB00     		lsl	r3, r3, #3
+ 1612 0be6 0433     		add	r3, r3, #4
+ 1613 0be8 FA68     		ldr	r2, [r7, #12]
+ 1614 0bea D318     		add	r3, r2, r3
+ 1615 0bec 1B68     		ldr	r3, [r3]
+ 1616 0bee 081C     		add	r0, r1, #0
+ 1617 0bf0 191C     		add	r1, r3, #0
+ 1618 0bf2 FFF7FEFF 		bl	__aeabi_fadd
+ 1619 0bf6 031C     		add	r3, r0, #0
+ 1620 0bf8 BB62     		str	r3, [r7, #40]
+ 197:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s5 = pSrc[2 * i1 + 1] - pSrc[2 * i5 + 1];
+ 1621              		.loc 1 197 0 discriminator 1
+ 1622 0bfa E823     		mov	r3, #232
+ 1623 0bfc FB18     		add	r3, r7, r3
+ 1624 0bfe 1B68     		ldr	r3, [r3]
+ 1625 0c00 DB00     		lsl	r3, r3, #3
+ 1626 0c02 0433     		add	r3, r3, #4
+ 1627 0c04 FA68     		ldr	r2, [r7, #12]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 33
+
+
+ 1628 0c06 D318     		add	r3, r2, r3
+ 1629 0c08 1968     		ldr	r1, [r3]
+ 1630 0c0a C823     		mov	r3, #200
+ 1631 0c0c FB18     		add	r3, r7, r3
+ 1632 0c0e 1B68     		ldr	r3, [r3]
+ 1633 0c10 DB00     		lsl	r3, r3, #3
+ 1634 0c12 0433     		add	r3, r3, #4
+ 1635 0c14 FA68     		ldr	r2, [r7, #12]
+ 1636 0c16 D318     		add	r3, r2, r3
+ 1637 0c18 1B68     		ldr	r3, [r3]
+ 1638 0c1a 081C     		add	r0, r1, #0
+ 1639 0c1c 191C     		add	r1, r3, #0
+ 1640 0c1e FFF7FEFF 		bl	__aeabi_fsub
+ 1641 0c22 031C     		add	r3, r0, #0
+ 1642 0c24 9422     		mov	r2, #148
+ 1643 0c26 BA18     		add	r2, r7, r2
+ 1644 0c28 1360     		str	r3, [r2]
+ 198:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s2 = pSrc[2 * i2 + 1] + pSrc[2 * i6 + 1];
+ 1645              		.loc 1 198 0 discriminator 1
+ 1646 0c2a D423     		mov	r3, #212
+ 1647 0c2c FB18     		add	r3, r7, r3
+ 1648 0c2e 1B68     		ldr	r3, [r3]
+ 1649 0c30 DB00     		lsl	r3, r3, #3
+ 1650 0c32 0433     		add	r3, r3, #4
+ 1651 0c34 FA68     		ldr	r2, [r7, #12]
+ 1652 0c36 D318     		add	r3, r2, r3
+ 1653 0c38 1968     		ldr	r1, [r3]
+ 1654 0c3a C423     		mov	r3, #196
+ 1655 0c3c FB18     		add	r3, r7, r3
+ 1656 0c3e 1B68     		ldr	r3, [r3]
+ 1657 0c40 DB00     		lsl	r3, r3, #3
+ 1658 0c42 0433     		add	r3, r3, #4
+ 1659 0c44 FA68     		ldr	r2, [r7, #12]
+ 1660 0c46 D318     		add	r3, r2, r3
+ 1661 0c48 1B68     		ldr	r3, [r3]
+ 1662 0c4a 081C     		add	r0, r1, #0
+ 1663 0c4c 191C     		add	r1, r3, #0
+ 1664 0c4e FFF7FEFF 		bl	__aeabi_fadd
+ 1665 0c52 031C     		add	r3, r0, #0
+ 1666 0c54 7B62     		str	r3, [r7, #36]
+ 199:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s6 = pSrc[2 * i2 + 1] - pSrc[2 * i6 + 1];
+ 1667              		.loc 1 199 0 discriminator 1
+ 1668 0c56 D423     		mov	r3, #212
+ 1669 0c58 FB18     		add	r3, r7, r3
+ 1670 0c5a 1B68     		ldr	r3, [r3]
+ 1671 0c5c DB00     		lsl	r3, r3, #3
+ 1672 0c5e 0433     		add	r3, r3, #4
+ 1673 0c60 FA68     		ldr	r2, [r7, #12]
+ 1674 0c62 D318     		add	r3, r2, r3
+ 1675 0c64 1968     		ldr	r1, [r3]
+ 1676 0c66 C423     		mov	r3, #196
+ 1677 0c68 FB18     		add	r3, r7, r3
+ 1678 0c6a 1B68     		ldr	r3, [r3]
+ 1679 0c6c DB00     		lsl	r3, r3, #3
+ 1680 0c6e 0433     		add	r3, r3, #4
+ 1681 0c70 FA68     		ldr	r2, [r7, #12]
+ 1682 0c72 D318     		add	r3, r2, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 34
+
+
+ 1683 0c74 1B68     		ldr	r3, [r3]
+ 1684 0c76 081C     		add	r0, r1, #0
+ 1685 0c78 191C     		add	r1, r3, #0
+ 1686 0c7a FFF7FEFF 		bl	__aeabi_fsub
+ 1687 0c7e 031C     		add	r3, r0, #0
+ 1688 0c80 9022     		mov	r2, #144
+ 1689 0c82 BA18     		add	r2, r7, r2
+ 1690 0c84 1360     		str	r3, [r2]
+ 200:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s3 = pSrc[2 * i3 + 1] + pSrc[2 * i7 + 1];
+ 1691              		.loc 1 200 0 discriminator 1
+ 1692 0c86 D023     		mov	r3, #208
+ 1693 0c88 FB18     		add	r3, r7, r3
+ 1694 0c8a 1B68     		ldr	r3, [r3]
+ 1695 0c8c DB00     		lsl	r3, r3, #3
+ 1696 0c8e 0433     		add	r3, r3, #4
+ 1697 0c90 FA68     		ldr	r2, [r7, #12]
+ 1698 0c92 D318     		add	r3, r2, r3
+ 1699 0c94 1968     		ldr	r1, [r3]
+ 1700 0c96 C023     		mov	r3, #192
+ 1701 0c98 FB18     		add	r3, r7, r3
+ 1702 0c9a 1B68     		ldr	r3, [r3]
+ 1703 0c9c DB00     		lsl	r3, r3, #3
+ 1704 0c9e 0433     		add	r3, r3, #4
+ 1705 0ca0 FA68     		ldr	r2, [r7, #12]
+ 1706 0ca2 D318     		add	r3, r2, r3
+ 1707 0ca4 1B68     		ldr	r3, [r3]
+ 1708 0ca6 081C     		add	r0, r1, #0
+ 1709 0ca8 191C     		add	r1, r3, #0
+ 1710 0caa FFF7FEFF 		bl	__aeabi_fadd
+ 1711 0cae 031C     		add	r3, r0, #0
+ 1712 0cb0 8C22     		mov	r2, #140
+ 1713 0cb2 BA18     		add	r2, r7, r2
+ 1714 0cb4 1360     		str	r3, [r2]
+ 201:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s7 = pSrc[2 * i3 + 1] - pSrc[2 * i7 + 1];
+ 1715              		.loc 1 201 0 discriminator 1
+ 1716 0cb6 D023     		mov	r3, #208
+ 1717 0cb8 FB18     		add	r3, r7, r3
+ 1718 0cba 1B68     		ldr	r3, [r3]
+ 1719 0cbc DB00     		lsl	r3, r3, #3
+ 1720 0cbe 0433     		add	r3, r3, #4
+ 1721 0cc0 FA68     		ldr	r2, [r7, #12]
+ 1722 0cc2 D318     		add	r3, r2, r3
+ 1723 0cc4 1968     		ldr	r1, [r3]
+ 1724 0cc6 C023     		mov	r3, #192
+ 1725 0cc8 FB18     		add	r3, r7, r3
+ 1726 0cca 1B68     		ldr	r3, [r3]
+ 1727 0ccc DB00     		lsl	r3, r3, #3
+ 1728 0cce 0433     		add	r3, r3, #4
+ 1729 0cd0 FA68     		ldr	r2, [r7, #12]
+ 1730 0cd2 D318     		add	r3, r2, r3
+ 1731 0cd4 1B68     		ldr	r3, [r3]
+ 1732 0cd6 081C     		add	r0, r1, #0
+ 1733 0cd8 191C     		add	r1, r3, #0
+ 1734 0cda FFF7FEFF 		bl	__aeabi_fsub
+ 1735 0cde 031C     		add	r3, r0, #0
+ 1736 0ce0 8822     		mov	r2, #136
+ 1737 0ce2 BA18     		add	r2, r7, r2
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 35
+
+
+ 1738 0ce4 1360     		str	r3, [r2]
+ 202:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s4 = pSrc[2 * i4 + 1] + pSrc[2 * i8 + 1];
+ 1739              		.loc 1 202 0 discriminator 1
+ 1740 0ce6 CC23     		mov	r3, #204
+ 1741 0ce8 FB18     		add	r3, r7, r3
+ 1742 0cea 1B68     		ldr	r3, [r3]
+ 1743 0cec DB00     		lsl	r3, r3, #3
+ 1744 0cee 0433     		add	r3, r3, #4
+ 1745 0cf0 FA68     		ldr	r2, [r7, #12]
+ 1746 0cf2 D318     		add	r3, r2, r3
+ 1747 0cf4 1968     		ldr	r1, [r3]
+ 1748 0cf6 BC23     		mov	r3, #188
+ 1749 0cf8 FB18     		add	r3, r7, r3
+ 1750 0cfa 1B68     		ldr	r3, [r3]
+ 1751 0cfc DB00     		lsl	r3, r3, #3
+ 1752 0cfe 0433     		add	r3, r3, #4
+ 1753 0d00 FA68     		ldr	r2, [r7, #12]
+ 1754 0d02 D318     		add	r3, r2, r3
+ 1755 0d04 1B68     		ldr	r3, [r3]
+ 1756 0d06 081C     		add	r0, r1, #0
+ 1757 0d08 191C     		add	r1, r3, #0
+ 1758 0d0a FFF7FEFF 		bl	__aeabi_fadd
+ 1759 0d0e 031C     		add	r3, r0, #0
+ 1760 0d10 3B62     		str	r3, [r7, #32]
+ 203:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s8 = pSrc[2 * i4 + 1] - pSrc[2 * i8 + 1];
+ 1761              		.loc 1 203 0 discriminator 1
+ 1762 0d12 CC23     		mov	r3, #204
+ 1763 0d14 FB18     		add	r3, r7, r3
+ 1764 0d16 1B68     		ldr	r3, [r3]
+ 1765 0d18 DB00     		lsl	r3, r3, #3
+ 1766 0d1a 0433     		add	r3, r3, #4
+ 1767 0d1c FA68     		ldr	r2, [r7, #12]
+ 1768 0d1e D318     		add	r3, r2, r3
+ 1769 0d20 1968     		ldr	r1, [r3]
+ 1770 0d22 BC23     		mov	r3, #188
+ 1771 0d24 FB18     		add	r3, r7, r3
+ 1772 0d26 1B68     		ldr	r3, [r3]
+ 1773 0d28 DB00     		lsl	r3, r3, #3
+ 1774 0d2a 0433     		add	r3, r3, #4
+ 1775 0d2c FA68     		ldr	r2, [r7, #12]
+ 1776 0d2e D318     		add	r3, r2, r3
+ 1777 0d30 1B68     		ldr	r3, [r3]
+ 1778 0d32 081C     		add	r0, r1, #0
+ 1779 0d34 191C     		add	r1, r3, #0
+ 1780 0d36 FFF7FEFF 		bl	__aeabi_fsub
+ 1781 0d3a 031C     		add	r3, r0, #0
+ 1782 0d3c 8422     		mov	r2, #132
+ 1783 0d3e BA18     		add	r2, r7, r2
+ 1784 0d40 1360     		str	r3, [r2]
+ 204:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             t2 = s1 - s3;
+ 1785              		.loc 1 204 0 discriminator 1
+ 1786 0d42 B86A     		ldr	r0, [r7, #40]
+ 1787 0d44 8C23     		mov	r3, #140
+ 1788 0d46 FB18     		add	r3, r7, r3
+ 1789 0d48 1968     		ldr	r1, [r3]
+ 1790 0d4a FFF7FEFF 		bl	__aeabi_fsub
+ 1791 0d4e 031C     		add	r3, r0, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 36
+
+
+ 1792 0d50 8022     		mov	r2, #128
+ 1793 0d52 BA18     		add	r2, r7, r2
+ 1794 0d54 1360     		str	r3, [r2]
+ 205:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s1 = s1 + s3;
+ 1795              		.loc 1 205 0 discriminator 1
+ 1796 0d56 B86A     		ldr	r0, [r7, #40]
+ 1797 0d58 8C23     		mov	r3, #140
+ 1798 0d5a FB18     		add	r3, r7, r3
+ 1799 0d5c 1968     		ldr	r1, [r3]
+ 1800 0d5e FFF7FEFF 		bl	__aeabi_fadd
+ 1801 0d62 031C     		add	r3, r0, #0
+ 1802 0d64 BB62     		str	r3, [r7, #40]
+ 206:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s3 = s2 - s4;
+ 1803              		.loc 1 206 0 discriminator 1
+ 1804 0d66 786A     		ldr	r0, [r7, #36]
+ 1805 0d68 396A     		ldr	r1, [r7, #32]
+ 1806 0d6a FFF7FEFF 		bl	__aeabi_fsub
+ 1807 0d6e 031C     		add	r3, r0, #0
+ 1808 0d70 8C22     		mov	r2, #140
+ 1809 0d72 BA18     		add	r2, r7, r2
+ 1810 0d74 1360     		str	r3, [r2]
+ 207:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s2 = s2 + s4;
+ 1811              		.loc 1 207 0 discriminator 1
+ 1812 0d76 786A     		ldr	r0, [r7, #36]
+ 1813 0d78 396A     		ldr	r1, [r7, #32]
+ 1814 0d7a FFF7FEFF 		bl	__aeabi_fadd
+ 1815 0d7e 031C     		add	r3, r0, #0
+ 1816 0d80 7B62     		str	r3, [r7, #36]
+ 208:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r1 = t1 + s3;
+ 1817              		.loc 1 208 0 discriminator 1
+ 1818 0d82 9823     		mov	r3, #152
+ 1819 0d84 FB18     		add	r3, r7, r3
+ 1820 0d86 1868     		ldr	r0, [r3]
+ 1821 0d88 8C23     		mov	r3, #140
+ 1822 0d8a FB18     		add	r3, r7, r3
+ 1823 0d8c 1968     		ldr	r1, [r3]
+ 1824 0d8e FFF7FEFF 		bl	__aeabi_fadd
+ 1825 0d92 031C     		add	r3, r0, #0
+ 1826 0d94 B822     		mov	r2, #184
+ 1827 0d96 BA18     		add	r2, r7, r2
+ 1828 0d98 1360     		str	r3, [r2]
+ 209:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             t1 = t1 - s3;
+ 1829              		.loc 1 209 0 discriminator 1
+ 1830 0d9a 9823     		mov	r3, #152
+ 1831 0d9c FB18     		add	r3, r7, r3
+ 1832 0d9e 1868     		ldr	r0, [r3]
+ 1833 0da0 8C23     		mov	r3, #140
+ 1834 0da2 FB18     		add	r3, r7, r3
+ 1835 0da4 1968     		ldr	r1, [r3]
+ 1836 0da6 FFF7FEFF 		bl	__aeabi_fsub
+ 1837 0daa 031C     		add	r3, r0, #0
+ 1838 0dac 9822     		mov	r2, #152
+ 1839 0dae BA18     		add	r2, r7, r2
+ 1840 0db0 1360     		str	r3, [r2]
+ 210:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i1 + 1] = s1 + s2;
+ 1841              		.loc 1 210 0 discriminator 1
+ 1842 0db2 E823     		mov	r3, #232
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 37
+
+
+ 1843 0db4 FB18     		add	r3, r7, r3
+ 1844 0db6 1B68     		ldr	r3, [r3]
+ 1845 0db8 DB00     		lsl	r3, r3, #3
+ 1846 0dba 0433     		add	r3, r3, #4
+ 1847 0dbc FA68     		ldr	r2, [r7, #12]
+ 1848 0dbe D418     		add	r4, r2, r3
+ 1849 0dc0 B86A     		ldr	r0, [r7, #40]
+ 1850 0dc2 796A     		ldr	r1, [r7, #36]
+ 1851 0dc4 FFF7FEFF 		bl	__aeabi_fadd
+ 1852 0dc8 031C     		add	r3, r0, #0
+ 1853 0dca 2360     		str	r3, [r4]
+ 211:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s2 = s1 - s2;
+ 1854              		.loc 1 211 0 discriminator 1
+ 1855 0dcc B86A     		ldr	r0, [r7, #40]
+ 1856 0dce 796A     		ldr	r1, [r7, #36]
+ 1857 0dd0 FFF7FEFF 		bl	__aeabi_fsub
+ 1858 0dd4 031C     		add	r3, r0, #0
+ 1859 0dd6 7B62     		str	r3, [r7, #36]
+ 212:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s1 = t2 - r3;
+ 1860              		.loc 1 212 0 discriminator 1
+ 1861 0dd8 8023     		mov	r3, #128
+ 1862 0dda FB18     		add	r3, r7, r3
+ 1863 0ddc 1868     		ldr	r0, [r3]
+ 1864 0dde A823     		mov	r3, #168
+ 1865 0de0 FB18     		add	r3, r7, r3
+ 1866 0de2 1968     		ldr	r1, [r3]
+ 1867 0de4 FFF7FEFF 		bl	__aeabi_fsub
+ 1868 0de8 031C     		add	r3, r0, #0
+ 1869 0dea BB62     		str	r3, [r7, #40]
+ 213:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             t2 = t2 + r3;
+ 1870              		.loc 1 213 0 discriminator 1
+ 1871 0dec 8023     		mov	r3, #128
+ 1872 0dee FB18     		add	r3, r7, r3
+ 1873 0df0 1868     		ldr	r0, [r3]
+ 1874 0df2 A823     		mov	r3, #168
+ 1875 0df4 FB18     		add	r3, r7, r3
+ 1876 0df6 1968     		ldr	r1, [r3]
+ 1877 0df8 FFF7FEFF 		bl	__aeabi_fadd
+ 1878 0dfc 031C     		add	r3, r0, #0
+ 1879 0dfe 8022     		mov	r2, #128
+ 1880 0e00 BA18     		add	r2, r7, r2
+ 1881 0e02 1360     		str	r3, [r2]
+ 214:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p1 = co5 * r2;
+ 1882              		.loc 1 214 0 discriminator 1
+ 1883 0e04 786D     		ldr	r0, [r7, #84]
+ 1884 0e06 B023     		mov	r3, #176
+ 1885 0e08 FB18     		add	r3, r7, r3
+ 1886 0e0a 1968     		ldr	r1, [r3]
+ 1887 0e0c FFF7FEFF 		bl	__aeabi_fmul
+ 1888 0e10 031C     		add	r3, r0, #0
+ 1889 0e12 FB61     		str	r3, [r7, #28]
+ 215:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p2 = si5 * s2;
+ 1890              		.loc 1 215 0 discriminator 1
+ 1891 0e14 B86B     		ldr	r0, [r7, #56]
+ 1892 0e16 796A     		ldr	r1, [r7, #36]
+ 1893 0e18 FFF7FEFF 		bl	__aeabi_fmul
+ 1894 0e1c 031C     		add	r3, r0, #0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 38
+
+
+ 1895 0e1e BB61     		str	r3, [r7, #24]
+ 216:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p3 = co5 * s2;
+ 1896              		.loc 1 216 0 discriminator 1
+ 1897 0e20 786D     		ldr	r0, [r7, #84]
+ 1898 0e22 796A     		ldr	r1, [r7, #36]
+ 1899 0e24 FFF7FEFF 		bl	__aeabi_fmul
+ 1900 0e28 031C     		add	r3, r0, #0
+ 1901 0e2a 7B61     		str	r3, [r7, #20]
+ 217:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p4 = si5 * r2;
+ 1902              		.loc 1 217 0 discriminator 1
+ 1903 0e2c B86B     		ldr	r0, [r7, #56]
+ 1904 0e2e B023     		mov	r3, #176
+ 1905 0e30 FB18     		add	r3, r7, r3
+ 1906 0e32 1968     		ldr	r1, [r3]
+ 1907 0e34 FFF7FEFF 		bl	__aeabi_fmul
+ 1908 0e38 031C     		add	r3, r0, #0
+ 1909 0e3a 3B61     		str	r3, [r7, #16]
+ 218:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i5]     = p1 + p2;
+ 1910              		.loc 1 218 0 discriminator 1
+ 1911 0e3c C823     		mov	r3, #200
+ 1912 0e3e FB18     		add	r3, r7, r3
+ 1913 0e40 1B68     		ldr	r3, [r3]
+ 1914 0e42 DB00     		lsl	r3, r3, #3
+ 1915 0e44 FA68     		ldr	r2, [r7, #12]
+ 1916 0e46 D418     		add	r4, r2, r3
+ 1917 0e48 F869     		ldr	r0, [r7, #28]
+ 1918 0e4a B969     		ldr	r1, [r7, #24]
+ 1919 0e4c FFF7FEFF 		bl	__aeabi_fadd
+ 1920 0e50 031C     		add	r3, r0, #0
+ 1921 0e52 2360     		str	r3, [r4]
+ 219:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i5 + 1] = p3 - p4;
+ 1922              		.loc 1 219 0 discriminator 1
+ 1923 0e54 C823     		mov	r3, #200
+ 1924 0e56 FB18     		add	r3, r7, r3
+ 1925 0e58 1B68     		ldr	r3, [r3]
+ 1926 0e5a DB00     		lsl	r3, r3, #3
+ 1927 0e5c 0433     		add	r3, r3, #4
+ 1928 0e5e FA68     		ldr	r2, [r7, #12]
+ 1929 0e60 D418     		add	r4, r2, r3
+ 1930 0e62 7869     		ldr	r0, [r7, #20]
+ 1931 0e64 3969     		ldr	r1, [r7, #16]
+ 1932 0e66 FFF7FEFF 		bl	__aeabi_fsub
+ 1933 0e6a 031C     		add	r3, r0, #0
+ 1934 0e6c 2360     		str	r3, [r4]
+ 220:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p1 = co3 * r1;
+ 1935              		.loc 1 220 0 discriminator 1
+ 1936 0e6e F86D     		ldr	r0, [r7, #92]
+ 1937 0e70 B823     		mov	r3, #184
+ 1938 0e72 FB18     		add	r3, r7, r3
+ 1939 0e74 1968     		ldr	r1, [r3]
+ 1940 0e76 FFF7FEFF 		bl	__aeabi_fmul
+ 1941 0e7a 031C     		add	r3, r0, #0
+ 1942 0e7c FB61     		str	r3, [r7, #28]
+ 221:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p2 = si3 * s1;
+ 1943              		.loc 1 221 0 discriminator 1
+ 1944 0e7e 386C     		ldr	r0, [r7, #64]
+ 1945 0e80 B96A     		ldr	r1, [r7, #40]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 39
+
+
+ 1946 0e82 FFF7FEFF 		bl	__aeabi_fmul
+ 1947 0e86 031C     		add	r3, r0, #0
+ 1948 0e88 BB61     		str	r3, [r7, #24]
+ 222:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p3 = co3 * s1;
+ 1949              		.loc 1 222 0 discriminator 1
+ 1950 0e8a F86D     		ldr	r0, [r7, #92]
+ 1951 0e8c B96A     		ldr	r1, [r7, #40]
+ 1952 0e8e FFF7FEFF 		bl	__aeabi_fmul
+ 1953 0e92 031C     		add	r3, r0, #0
+ 1954 0e94 7B61     		str	r3, [r7, #20]
+ 223:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p4 = si3 * r1;
+ 1955              		.loc 1 223 0 discriminator 1
+ 1956 0e96 386C     		ldr	r0, [r7, #64]
+ 1957 0e98 B823     		mov	r3, #184
+ 1958 0e9a FB18     		add	r3, r7, r3
+ 1959 0e9c 1968     		ldr	r1, [r3]
+ 1960 0e9e FFF7FEFF 		bl	__aeabi_fmul
+ 1961 0ea2 031C     		add	r3, r0, #0
+ 1962 0ea4 3B61     		str	r3, [r7, #16]
+ 224:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i3]     = p1 + p2;
+ 1963              		.loc 1 224 0 discriminator 1
+ 1964 0ea6 D023     		mov	r3, #208
+ 1965 0ea8 FB18     		add	r3, r7, r3
+ 1966 0eaa 1B68     		ldr	r3, [r3]
+ 1967 0eac DB00     		lsl	r3, r3, #3
+ 1968 0eae FA68     		ldr	r2, [r7, #12]
+ 1969 0eb0 D418     		add	r4, r2, r3
+ 1970 0eb2 F869     		ldr	r0, [r7, #28]
+ 1971 0eb4 B969     		ldr	r1, [r7, #24]
+ 1972 0eb6 FFF7FEFF 		bl	__aeabi_fadd
+ 1973 0eba 031C     		add	r3, r0, #0
+ 1974 0ebc 2360     		str	r3, [r4]
+ 225:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i3 + 1] = p3 - p4;
+ 1975              		.loc 1 225 0 discriminator 1
+ 1976 0ebe D023     		mov	r3, #208
+ 1977 0ec0 FB18     		add	r3, r7, r3
+ 1978 0ec2 1B68     		ldr	r3, [r3]
+ 1979 0ec4 DB00     		lsl	r3, r3, #3
+ 1980 0ec6 0433     		add	r3, r3, #4
+ 1981 0ec8 FA68     		ldr	r2, [r7, #12]
+ 1982 0eca D418     		add	r4, r2, r3
+ 1983 0ecc 7869     		ldr	r0, [r7, #20]
+ 1984 0ece 3969     		ldr	r1, [r7, #16]
+ 1985 0ed0 FFF7FEFF 		bl	__aeabi_fsub
+ 1986 0ed4 031C     		add	r3, r0, #0
+ 1987 0ed6 2360     		str	r3, [r4]
+ 226:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p1 = co7 * t1;
+ 1988              		.loc 1 226 0 discriminator 1
+ 1989 0ed8 F86C     		ldr	r0, [r7, #76]
+ 1990 0eda 9823     		mov	r3, #152
+ 1991 0edc FB18     		add	r3, r7, r3
+ 1992 0ede 1968     		ldr	r1, [r3]
+ 1993 0ee0 FFF7FEFF 		bl	__aeabi_fmul
+ 1994 0ee4 031C     		add	r3, r0, #0
+ 1995 0ee6 FB61     		str	r3, [r7, #28]
+ 227:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p2 = si7 * t2;
+ 1996              		.loc 1 227 0 discriminator 1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 40
+
+
+ 1997 0ee8 386B     		ldr	r0, [r7, #48]
+ 1998 0eea 8023     		mov	r3, #128
+ 1999 0eec FB18     		add	r3, r7, r3
+ 2000 0eee 1968     		ldr	r1, [r3]
+ 2001 0ef0 FFF7FEFF 		bl	__aeabi_fmul
+ 2002 0ef4 031C     		add	r3, r0, #0
+ 2003 0ef6 BB61     		str	r3, [r7, #24]
+ 228:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p3 = co7 * t2;
+ 2004              		.loc 1 228 0 discriminator 1
+ 2005 0ef8 F86C     		ldr	r0, [r7, #76]
+ 2006 0efa 8023     		mov	r3, #128
+ 2007 0efc FB18     		add	r3, r7, r3
+ 2008 0efe 1968     		ldr	r1, [r3]
+ 2009 0f00 FFF7FEFF 		bl	__aeabi_fmul
+ 2010 0f04 031C     		add	r3, r0, #0
+ 2011 0f06 7B61     		str	r3, [r7, #20]
+ 229:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p4 = si7 * t1;
+ 2012              		.loc 1 229 0 discriminator 1
+ 2013 0f08 386B     		ldr	r0, [r7, #48]
+ 2014 0f0a 9823     		mov	r3, #152
+ 2015 0f0c FB18     		add	r3, r7, r3
+ 2016 0f0e 1968     		ldr	r1, [r3]
+ 2017 0f10 FFF7FEFF 		bl	__aeabi_fmul
+ 2018 0f14 031C     		add	r3, r0, #0
+ 2019 0f16 3B61     		str	r3, [r7, #16]
+ 230:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i7]     = p1 + p2;
+ 2020              		.loc 1 230 0 discriminator 1
+ 2021 0f18 C023     		mov	r3, #192
+ 2022 0f1a FB18     		add	r3, r7, r3
+ 2023 0f1c 1B68     		ldr	r3, [r3]
+ 2024 0f1e DB00     		lsl	r3, r3, #3
+ 2025 0f20 FA68     		ldr	r2, [r7, #12]
+ 2026 0f22 D418     		add	r4, r2, r3
+ 2027 0f24 F869     		ldr	r0, [r7, #28]
+ 2028 0f26 B969     		ldr	r1, [r7, #24]
+ 2029 0f28 FFF7FEFF 		bl	__aeabi_fadd
+ 2030 0f2c 031C     		add	r3, r0, #0
+ 2031 0f2e 2360     		str	r3, [r4]
+ 231:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i7 + 1] = p3 - p4;
+ 2032              		.loc 1 231 0 discriminator 1
+ 2033 0f30 C023     		mov	r3, #192
+ 2034 0f32 FB18     		add	r3, r7, r3
+ 2035 0f34 1B68     		ldr	r3, [r3]
+ 2036 0f36 DB00     		lsl	r3, r3, #3
+ 2037 0f38 0433     		add	r3, r3, #4
+ 2038 0f3a FA68     		ldr	r2, [r7, #12]
+ 2039 0f3c D418     		add	r4, r2, r3
+ 2040 0f3e 7869     		ldr	r0, [r7, #20]
+ 2041 0f40 3969     		ldr	r1, [r7, #16]
+ 2042 0f42 FFF7FEFF 		bl	__aeabi_fsub
+ 2043 0f46 031C     		add	r3, r0, #0
+ 2044 0f48 2360     		str	r3, [r4]
+ 232:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r1 = (r6 - r8) * C81;
+ 2045              		.loc 1 232 0 discriminator 1
+ 2046 0f4a AC23     		mov	r3, #172
+ 2047 0f4c FB18     		add	r3, r7, r3
+ 2048 0f4e 1868     		ldr	r0, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 41
+
+
+ 2049 0f50 9C23     		mov	r3, #156
+ 2050 0f52 FB18     		add	r3, r7, r3
+ 2051 0f54 1968     		ldr	r1, [r3]
+ 2052 0f56 FFF7FEFF 		bl	__aeabi_fsub
+ 2053 0f5a 031C     		add	r3, r0, #0
+ 2054 0f5c 181C     		add	r0, r3, #0
+ 2055 0f5e DC23     		mov	r3, #220
+ 2056 0f60 FB18     		add	r3, r7, r3
+ 2057 0f62 1968     		ldr	r1, [r3]
+ 2058 0f64 FFF7FEFF 		bl	__aeabi_fmul
+ 2059 0f68 031C     		add	r3, r0, #0
+ 2060 0f6a B822     		mov	r2, #184
+ 2061 0f6c BA18     		add	r2, r7, r2
+ 2062 0f6e 1360     		str	r3, [r2]
+ 233:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r6 = (r6 + r8) * C81;
+ 2063              		.loc 1 233 0 discriminator 1
+ 2064 0f70 AC23     		mov	r3, #172
+ 2065 0f72 FB18     		add	r3, r7, r3
+ 2066 0f74 1868     		ldr	r0, [r3]
+ 2067 0f76 9C23     		mov	r3, #156
+ 2068 0f78 FB18     		add	r3, r7, r3
+ 2069 0f7a 1968     		ldr	r1, [r3]
+ 2070 0f7c FFF7FEFF 		bl	__aeabi_fadd
+ 2071 0f80 031C     		add	r3, r0, #0
+ 2072 0f82 181C     		add	r0, r3, #0
+ 2073 0f84 DC23     		mov	r3, #220
+ 2074 0f86 FB18     		add	r3, r7, r3
+ 2075 0f88 1968     		ldr	r1, [r3]
+ 2076 0f8a FFF7FEFF 		bl	__aeabi_fmul
+ 2077 0f8e 031C     		add	r3, r0, #0
+ 2078 0f90 AC22     		mov	r2, #172
+ 2079 0f92 BA18     		add	r2, r7, r2
+ 2080 0f94 1360     		str	r3, [r2]
+ 234:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s1 = (s6 - s8) * C81;
+ 2081              		.loc 1 234 0 discriminator 1
+ 2082 0f96 9023     		mov	r3, #144
+ 2083 0f98 FB18     		add	r3, r7, r3
+ 2084 0f9a 1868     		ldr	r0, [r3]
+ 2085 0f9c 8423     		mov	r3, #132
+ 2086 0f9e FB18     		add	r3, r7, r3
+ 2087 0fa0 1968     		ldr	r1, [r3]
+ 2088 0fa2 FFF7FEFF 		bl	__aeabi_fsub
+ 2089 0fa6 031C     		add	r3, r0, #0
+ 2090 0fa8 181C     		add	r0, r3, #0
+ 2091 0faa DC23     		mov	r3, #220
+ 2092 0fac FB18     		add	r3, r7, r3
+ 2093 0fae 1968     		ldr	r1, [r3]
+ 2094 0fb0 FFF7FEFF 		bl	__aeabi_fmul
+ 2095 0fb4 031C     		add	r3, r0, #0
+ 2096 0fb6 BB62     		str	r3, [r7, #40]
+ 235:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s6 = (s6 + s8) * C81;
+ 2097              		.loc 1 235 0 discriminator 1
+ 2098 0fb8 9023     		mov	r3, #144
+ 2099 0fba FB18     		add	r3, r7, r3
+ 2100 0fbc 1868     		ldr	r0, [r3]
+ 2101 0fbe 8423     		mov	r3, #132
+ 2102 0fc0 FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 42
+
+
+ 2103 0fc2 1968     		ldr	r1, [r3]
+ 2104 0fc4 FFF7FEFF 		bl	__aeabi_fadd
+ 2105 0fc8 031C     		add	r3, r0, #0
+ 2106 0fca 181C     		add	r0, r3, #0
+ 2107 0fcc DC23     		mov	r3, #220
+ 2108 0fce FB18     		add	r3, r7, r3
+ 2109 0fd0 1968     		ldr	r1, [r3]
+ 2110 0fd2 FFF7FEFF 		bl	__aeabi_fmul
+ 2111 0fd6 031C     		add	r3, r0, #0
+ 2112 0fd8 9022     		mov	r2, #144
+ 2113 0fda BA18     		add	r2, r7, r2
+ 2114 0fdc 1360     		str	r3, [r2]
+ 236:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             t1 = r5 - r1;
+ 2115              		.loc 1 236 0 discriminator 1
+ 2116 0fde B423     		mov	r3, #180
+ 2117 0fe0 FB18     		add	r3, r7, r3
+ 2118 0fe2 1868     		ldr	r0, [r3]
+ 2119 0fe4 B823     		mov	r3, #184
+ 2120 0fe6 FB18     		add	r3, r7, r3
+ 2121 0fe8 1968     		ldr	r1, [r3]
+ 2122 0fea FFF7FEFF 		bl	__aeabi_fsub
+ 2123 0fee 031C     		add	r3, r0, #0
+ 2124 0ff0 9822     		mov	r2, #152
+ 2125 0ff2 BA18     		add	r2, r7, r2
+ 2126 0ff4 1360     		str	r3, [r2]
+ 237:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r5 = r5 + r1;
+ 2127              		.loc 1 237 0 discriminator 1
+ 2128 0ff6 B423     		mov	r3, #180
+ 2129 0ff8 FB18     		add	r3, r7, r3
+ 2130 0ffa 1868     		ldr	r0, [r3]
+ 2131 0ffc B823     		mov	r3, #184
+ 2132 0ffe FB18     		add	r3, r7, r3
+ 2133 1000 1968     		ldr	r1, [r3]
+ 2134 1002 FFF7FEFF 		bl	__aeabi_fadd
+ 2135 1006 031C     		add	r3, r0, #0
+ 2136 1008 B422     		mov	r2, #180
+ 2137 100a BA18     		add	r2, r7, r2
+ 2138 100c 1360     		str	r3, [r2]
+ 238:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r8 = r7 - r6;
+ 2139              		.loc 1 238 0 discriminator 1
+ 2140 100e A423     		mov	r3, #164
+ 2141 1010 FB18     		add	r3, r7, r3
+ 2142 1012 1868     		ldr	r0, [r3]
+ 2143 1014 AC23     		mov	r3, #172
+ 2144 1016 FB18     		add	r3, r7, r3
+ 2145 1018 1968     		ldr	r1, [r3]
+ 2146 101a FFF7FEFF 		bl	__aeabi_fsub
+ 2147 101e 031C     		add	r3, r0, #0
+ 2148 1020 9C22     		mov	r2, #156
+ 2149 1022 BA18     		add	r2, r7, r2
+ 2150 1024 1360     		str	r3, [r2]
+ 239:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r7 = r7 + r6;
+ 2151              		.loc 1 239 0 discriminator 1
+ 2152 1026 A423     		mov	r3, #164
+ 2153 1028 FB18     		add	r3, r7, r3
+ 2154 102a 1868     		ldr	r0, [r3]
+ 2155 102c AC23     		mov	r3, #172
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 43
+
+
+ 2156 102e FB18     		add	r3, r7, r3
+ 2157 1030 1968     		ldr	r1, [r3]
+ 2158 1032 FFF7FEFF 		bl	__aeabi_fadd
+ 2159 1036 031C     		add	r3, r0, #0
+ 2160 1038 A422     		mov	r2, #164
+ 2161 103a BA18     		add	r2, r7, r2
+ 2162 103c 1360     		str	r3, [r2]
+ 240:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             t2 = s5 - s1;
+ 2163              		.loc 1 240 0 discriminator 1
+ 2164 103e 9423     		mov	r3, #148
+ 2165 1040 FB18     		add	r3, r7, r3
+ 2166 1042 1868     		ldr	r0, [r3]
+ 2167 1044 B96A     		ldr	r1, [r7, #40]
+ 2168 1046 FFF7FEFF 		bl	__aeabi_fsub
+ 2169 104a 031C     		add	r3, r0, #0
+ 2170 104c 8022     		mov	r2, #128
+ 2171 104e BA18     		add	r2, r7, r2
+ 2172 1050 1360     		str	r3, [r2]
+ 241:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s5 = s5 + s1;
+ 2173              		.loc 1 241 0 discriminator 1
+ 2174 1052 9423     		mov	r3, #148
+ 2175 1054 FB18     		add	r3, r7, r3
+ 2176 1056 1868     		ldr	r0, [r3]
+ 2177 1058 B96A     		ldr	r1, [r7, #40]
+ 2178 105a FFF7FEFF 		bl	__aeabi_fadd
+ 2179 105e 031C     		add	r3, r0, #0
+ 2180 1060 9422     		mov	r2, #148
+ 2181 1062 BA18     		add	r2, r7, r2
+ 2182 1064 1360     		str	r3, [r2]
+ 242:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s8 = s7 - s6;
+ 2183              		.loc 1 242 0 discriminator 1
+ 2184 1066 8823     		mov	r3, #136
+ 2185 1068 FB18     		add	r3, r7, r3
+ 2186 106a 1868     		ldr	r0, [r3]
+ 2187 106c 9023     		mov	r3, #144
+ 2188 106e FB18     		add	r3, r7, r3
+ 2189 1070 1968     		ldr	r1, [r3]
+ 2190 1072 FFF7FEFF 		bl	__aeabi_fsub
+ 2191 1076 031C     		add	r3, r0, #0
+ 2192 1078 8422     		mov	r2, #132
+ 2193 107a BA18     		add	r2, r7, r2
+ 2194 107c 1360     		str	r3, [r2]
+ 243:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s7 = s7 + s6;
+ 2195              		.loc 1 243 0 discriminator 1
+ 2196 107e 8823     		mov	r3, #136
+ 2197 1080 FB18     		add	r3, r7, r3
+ 2198 1082 1868     		ldr	r0, [r3]
+ 2199 1084 9023     		mov	r3, #144
+ 2200 1086 FB18     		add	r3, r7, r3
+ 2201 1088 1968     		ldr	r1, [r3]
+ 2202 108a FFF7FEFF 		bl	__aeabi_fadd
+ 2203 108e 031C     		add	r3, r0, #0
+ 2204 1090 8822     		mov	r2, #136
+ 2205 1092 BA18     		add	r2, r7, r2
+ 2206 1094 1360     		str	r3, [r2]
+ 244:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r1 = r5 + s7;
+ 2207              		.loc 1 244 0 discriminator 1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 44
+
+
+ 2208 1096 B423     		mov	r3, #180
+ 2209 1098 FB18     		add	r3, r7, r3
+ 2210 109a 1868     		ldr	r0, [r3]
+ 2211 109c 8823     		mov	r3, #136
+ 2212 109e FB18     		add	r3, r7, r3
+ 2213 10a0 1968     		ldr	r1, [r3]
+ 2214 10a2 FFF7FEFF 		bl	__aeabi_fadd
+ 2215 10a6 031C     		add	r3, r0, #0
+ 2216 10a8 B822     		mov	r2, #184
+ 2217 10aa BA18     		add	r2, r7, r2
+ 2218 10ac 1360     		str	r3, [r2]
+ 245:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r5 = r5 - s7;
+ 2219              		.loc 1 245 0 discriminator 1
+ 2220 10ae B423     		mov	r3, #180
+ 2221 10b0 FB18     		add	r3, r7, r3
+ 2222 10b2 1868     		ldr	r0, [r3]
+ 2223 10b4 8823     		mov	r3, #136
+ 2224 10b6 FB18     		add	r3, r7, r3
+ 2225 10b8 1968     		ldr	r1, [r3]
+ 2226 10ba FFF7FEFF 		bl	__aeabi_fsub
+ 2227 10be 031C     		add	r3, r0, #0
+ 2228 10c0 B422     		mov	r2, #180
+ 2229 10c2 BA18     		add	r2, r7, r2
+ 2230 10c4 1360     		str	r3, [r2]
+ 246:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             r6 = t1 + s8;
+ 2231              		.loc 1 246 0 discriminator 1
+ 2232 10c6 9823     		mov	r3, #152
+ 2233 10c8 FB18     		add	r3, r7, r3
+ 2234 10ca 1868     		ldr	r0, [r3]
+ 2235 10cc 8423     		mov	r3, #132
+ 2236 10ce FB18     		add	r3, r7, r3
+ 2237 10d0 1968     		ldr	r1, [r3]
+ 2238 10d2 FFF7FEFF 		bl	__aeabi_fadd
+ 2239 10d6 031C     		add	r3, r0, #0
+ 2240 10d8 AC22     		mov	r2, #172
+ 2241 10da BA18     		add	r2, r7, r2
+ 2242 10dc 1360     		str	r3, [r2]
+ 247:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             t1 = t1 - s8;
+ 2243              		.loc 1 247 0 discriminator 1
+ 2244 10de 9823     		mov	r3, #152
+ 2245 10e0 FB18     		add	r3, r7, r3
+ 2246 10e2 1868     		ldr	r0, [r3]
+ 2247 10e4 8423     		mov	r3, #132
+ 2248 10e6 FB18     		add	r3, r7, r3
+ 2249 10e8 1968     		ldr	r1, [r3]
+ 2250 10ea FFF7FEFF 		bl	__aeabi_fsub
+ 2251 10ee 031C     		add	r3, r0, #0
+ 2252 10f0 9822     		mov	r2, #152
+ 2253 10f2 BA18     		add	r2, r7, r2
+ 2254 10f4 1360     		str	r3, [r2]
+ 248:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s1 = s5 - r7;
+ 2255              		.loc 1 248 0 discriminator 1
+ 2256 10f6 9423     		mov	r3, #148
+ 2257 10f8 FB18     		add	r3, r7, r3
+ 2258 10fa 1868     		ldr	r0, [r3]
+ 2259 10fc A423     		mov	r3, #164
+ 2260 10fe FB18     		add	r3, r7, r3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 45
+
+
+ 2261 1100 1968     		ldr	r1, [r3]
+ 2262 1102 FFF7FEFF 		bl	__aeabi_fsub
+ 2263 1106 031C     		add	r3, r0, #0
+ 2264 1108 BB62     		str	r3, [r7, #40]
+ 249:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s5 = s5 + r7;
+ 2265              		.loc 1 249 0 discriminator 1
+ 2266 110a 9423     		mov	r3, #148
+ 2267 110c FB18     		add	r3, r7, r3
+ 2268 110e 1868     		ldr	r0, [r3]
+ 2269 1110 A423     		mov	r3, #164
+ 2270 1112 FB18     		add	r3, r7, r3
+ 2271 1114 1968     		ldr	r1, [r3]
+ 2272 1116 FFF7FEFF 		bl	__aeabi_fadd
+ 2273 111a 031C     		add	r3, r0, #0
+ 2274 111c 9422     		mov	r2, #148
+ 2275 111e BA18     		add	r2, r7, r2
+ 2276 1120 1360     		str	r3, [r2]
+ 250:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             s6 = t2 - r8;
+ 2277              		.loc 1 250 0 discriminator 1
+ 2278 1122 8023     		mov	r3, #128
+ 2279 1124 FB18     		add	r3, r7, r3
+ 2280 1126 1868     		ldr	r0, [r3]
+ 2281 1128 9C23     		mov	r3, #156
+ 2282 112a FB18     		add	r3, r7, r3
+ 2283 112c 1968     		ldr	r1, [r3]
+ 2284 112e FFF7FEFF 		bl	__aeabi_fsub
+ 2285 1132 031C     		add	r3, r0, #0
+ 2286 1134 9022     		mov	r2, #144
+ 2287 1136 BA18     		add	r2, r7, r2
+ 2288 1138 1360     		str	r3, [r2]
+ 251:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             t2 = t2 + r8;
+ 2289              		.loc 1 251 0 discriminator 1
+ 2290 113a 8023     		mov	r3, #128
+ 2291 113c FB18     		add	r3, r7, r3
+ 2292 113e 1868     		ldr	r0, [r3]
+ 2293 1140 9C23     		mov	r3, #156
+ 2294 1142 FB18     		add	r3, r7, r3
+ 2295 1144 1968     		ldr	r1, [r3]
+ 2296 1146 FFF7FEFF 		bl	__aeabi_fadd
+ 2297 114a 031C     		add	r3, r0, #0
+ 2298 114c 8022     		mov	r2, #128
+ 2299 114e BA18     		add	r2, r7, r2
+ 2300 1150 1360     		str	r3, [r2]
+ 252:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p1 = co2 * r1;
+ 2301              		.loc 1 252 0 discriminator 1
+ 2302 1152 386E     		ldr	r0, [r7, #96]
+ 2303 1154 B823     		mov	r3, #184
+ 2304 1156 FB18     		add	r3, r7, r3
+ 2305 1158 1968     		ldr	r1, [r3]
+ 2306 115a FFF7FEFF 		bl	__aeabi_fmul
+ 2307 115e 031C     		add	r3, r0, #0
+ 2308 1160 FB61     		str	r3, [r7, #28]
+ 253:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p2 = si2 * s1;
+ 2309              		.loc 1 253 0 discriminator 1
+ 2310 1162 786C     		ldr	r0, [r7, #68]
+ 2311 1164 B96A     		ldr	r1, [r7, #40]
+ 2312 1166 FFF7FEFF 		bl	__aeabi_fmul
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 46
+
+
+ 2313 116a 031C     		add	r3, r0, #0
+ 2314 116c BB61     		str	r3, [r7, #24]
+ 254:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p3 = co2 * s1;
+ 2315              		.loc 1 254 0 discriminator 1
+ 2316 116e 386E     		ldr	r0, [r7, #96]
+ 2317 1170 B96A     		ldr	r1, [r7, #40]
+ 2318 1172 FFF7FEFF 		bl	__aeabi_fmul
+ 2319 1176 031C     		add	r3, r0, #0
+ 2320 1178 7B61     		str	r3, [r7, #20]
+ 255:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p4 = si2 * r1;
+ 2321              		.loc 1 255 0 discriminator 1
+ 2322 117a 786C     		ldr	r0, [r7, #68]
+ 2323 117c B823     		mov	r3, #184
+ 2324 117e FB18     		add	r3, r7, r3
+ 2325 1180 1968     		ldr	r1, [r3]
+ 2326 1182 FFF7FEFF 		bl	__aeabi_fmul
+ 2327 1186 031C     		add	r3, r0, #0
+ 2328 1188 3B61     		str	r3, [r7, #16]
+ 256:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i2]     = p1 + p2;
+ 2329              		.loc 1 256 0 discriminator 1
+ 2330 118a D423     		mov	r3, #212
+ 2331 118c FB18     		add	r3, r7, r3
+ 2332 118e 1B68     		ldr	r3, [r3]
+ 2333 1190 DB00     		lsl	r3, r3, #3
+ 2334 1192 FA68     		ldr	r2, [r7, #12]
+ 2335 1194 D418     		add	r4, r2, r3
+ 2336 1196 F869     		ldr	r0, [r7, #28]
+ 2337 1198 B969     		ldr	r1, [r7, #24]
+ 2338 119a FFF7FEFF 		bl	__aeabi_fadd
+ 2339 119e 031C     		add	r3, r0, #0
+ 2340 11a0 2360     		str	r3, [r4]
+ 257:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i2 + 1] = p3 - p4;
+ 2341              		.loc 1 257 0 discriminator 1
+ 2342 11a2 D423     		mov	r3, #212
+ 2343 11a4 FB18     		add	r3, r7, r3
+ 2344 11a6 1B68     		ldr	r3, [r3]
+ 2345 11a8 DB00     		lsl	r3, r3, #3
+ 2346 11aa 0433     		add	r3, r3, #4
+ 2347 11ac FA68     		ldr	r2, [r7, #12]
+ 2348 11ae D418     		add	r4, r2, r3
+ 2349 11b0 7869     		ldr	r0, [r7, #20]
+ 2350 11b2 3969     		ldr	r1, [r7, #16]
+ 2351 11b4 FFF7FEFF 		bl	__aeabi_fsub
+ 2352 11b8 031C     		add	r3, r0, #0
+ 2353 11ba 2360     		str	r3, [r4]
+ 258:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p1 = co8 * r5;
+ 2354              		.loc 1 258 0 discriminator 1
+ 2355 11bc B86C     		ldr	r0, [r7, #72]
+ 2356 11be B423     		mov	r3, #180
+ 2357 11c0 FB18     		add	r3, r7, r3
+ 2358 11c2 1968     		ldr	r1, [r3]
+ 2359 11c4 FFF7FEFF 		bl	__aeabi_fmul
+ 2360 11c8 031C     		add	r3, r0, #0
+ 2361 11ca FB61     		str	r3, [r7, #28]
+ 259:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p2 = si8 * s5;
+ 2362              		.loc 1 259 0 discriminator 1
+ 2363 11cc F86A     		ldr	r0, [r7, #44]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 47
+
+
+ 2364 11ce 9423     		mov	r3, #148
+ 2365 11d0 FB18     		add	r3, r7, r3
+ 2366 11d2 1968     		ldr	r1, [r3]
+ 2367 11d4 FFF7FEFF 		bl	__aeabi_fmul
+ 2368 11d8 031C     		add	r3, r0, #0
+ 2369 11da BB61     		str	r3, [r7, #24]
+ 260:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p3 = co8 * s5;
+ 2370              		.loc 1 260 0 discriminator 1
+ 2371 11dc B86C     		ldr	r0, [r7, #72]
+ 2372 11de 9423     		mov	r3, #148
+ 2373 11e0 FB18     		add	r3, r7, r3
+ 2374 11e2 1968     		ldr	r1, [r3]
+ 2375 11e4 FFF7FEFF 		bl	__aeabi_fmul
+ 2376 11e8 031C     		add	r3, r0, #0
+ 2377 11ea 7B61     		str	r3, [r7, #20]
+ 261:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p4 = si8 * r5;
+ 2378              		.loc 1 261 0 discriminator 1
+ 2379 11ec F86A     		ldr	r0, [r7, #44]
+ 2380 11ee B423     		mov	r3, #180
+ 2381 11f0 FB18     		add	r3, r7, r3
+ 2382 11f2 1968     		ldr	r1, [r3]
+ 2383 11f4 FFF7FEFF 		bl	__aeabi_fmul
+ 2384 11f8 031C     		add	r3, r0, #0
+ 2385 11fa 3B61     		str	r3, [r7, #16]
+ 262:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i8]     = p1 + p2;
+ 2386              		.loc 1 262 0 discriminator 1
+ 2387 11fc BC23     		mov	r3, #188
+ 2388 11fe FB18     		add	r3, r7, r3
+ 2389 1200 1B68     		ldr	r3, [r3]
+ 2390 1202 DB00     		lsl	r3, r3, #3
+ 2391 1204 FA68     		ldr	r2, [r7, #12]
+ 2392 1206 D418     		add	r4, r2, r3
+ 2393 1208 F869     		ldr	r0, [r7, #28]
+ 2394 120a B969     		ldr	r1, [r7, #24]
+ 2395 120c FFF7FEFF 		bl	__aeabi_fadd
+ 2396 1210 031C     		add	r3, r0, #0
+ 2397 1212 2360     		str	r3, [r4]
+ 263:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i8 + 1] = p3 - p4;
+ 2398              		.loc 1 263 0 discriminator 1
+ 2399 1214 BC23     		mov	r3, #188
+ 2400 1216 FB18     		add	r3, r7, r3
+ 2401 1218 1B68     		ldr	r3, [r3]
+ 2402 121a DB00     		lsl	r3, r3, #3
+ 2403 121c 0433     		add	r3, r3, #4
+ 2404 121e FA68     		ldr	r2, [r7, #12]
+ 2405 1220 D418     		add	r4, r2, r3
+ 2406 1222 7869     		ldr	r0, [r7, #20]
+ 2407 1224 3969     		ldr	r1, [r7, #16]
+ 2408 1226 FFF7FEFF 		bl	__aeabi_fsub
+ 2409 122a 031C     		add	r3, r0, #0
+ 2410 122c 2360     		str	r3, [r4]
+ 264:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p1 = co6 * r6;
+ 2411              		.loc 1 264 0 discriminator 1
+ 2412 122e 386D     		ldr	r0, [r7, #80]
+ 2413 1230 AC23     		mov	r3, #172
+ 2414 1232 FB18     		add	r3, r7, r3
+ 2415 1234 1968     		ldr	r1, [r3]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 48
+
+
+ 2416 1236 FFF7FEFF 		bl	__aeabi_fmul
+ 2417 123a 031C     		add	r3, r0, #0
+ 2418 123c FB61     		str	r3, [r7, #28]
+ 265:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p2 = si6 * s6;
+ 2419              		.loc 1 265 0 discriminator 1
+ 2420 123e 786B     		ldr	r0, [r7, #52]
+ 2421 1240 9023     		mov	r3, #144
+ 2422 1242 FB18     		add	r3, r7, r3
+ 2423 1244 1968     		ldr	r1, [r3]
+ 2424 1246 FFF7FEFF 		bl	__aeabi_fmul
+ 2425 124a 031C     		add	r3, r0, #0
+ 2426 124c BB61     		str	r3, [r7, #24]
+ 266:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p3 = co6 * s6;
+ 2427              		.loc 1 266 0 discriminator 1
+ 2428 124e 386D     		ldr	r0, [r7, #80]
+ 2429 1250 9023     		mov	r3, #144
+ 2430 1252 FB18     		add	r3, r7, r3
+ 2431 1254 1968     		ldr	r1, [r3]
+ 2432 1256 FFF7FEFF 		bl	__aeabi_fmul
+ 2433 125a 031C     		add	r3, r0, #0
+ 2434 125c 7B61     		str	r3, [r7, #20]
+ 267:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p4 = si6 * r6;
+ 2435              		.loc 1 267 0 discriminator 1
+ 2436 125e 786B     		ldr	r0, [r7, #52]
+ 2437 1260 AC23     		mov	r3, #172
+ 2438 1262 FB18     		add	r3, r7, r3
+ 2439 1264 1968     		ldr	r1, [r3]
+ 2440 1266 FFF7FEFF 		bl	__aeabi_fmul
+ 2441 126a 031C     		add	r3, r0, #0
+ 2442 126c 3B61     		str	r3, [r7, #16]
+ 268:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i6]     = p1 + p2;
+ 2443              		.loc 1 268 0 discriminator 1
+ 2444 126e C423     		mov	r3, #196
+ 2445 1270 FB18     		add	r3, r7, r3
+ 2446 1272 1B68     		ldr	r3, [r3]
+ 2447 1274 DB00     		lsl	r3, r3, #3
+ 2448 1276 FA68     		ldr	r2, [r7, #12]
+ 2449 1278 D418     		add	r4, r2, r3
+ 2450 127a F869     		ldr	r0, [r7, #28]
+ 2451 127c B969     		ldr	r1, [r7, #24]
+ 2452 127e FFF7FEFF 		bl	__aeabi_fadd
+ 2453 1282 031C     		add	r3, r0, #0
+ 2454 1284 2360     		str	r3, [r4]
+ 269:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i6 + 1] = p3 - p4;
+ 2455              		.loc 1 269 0 discriminator 1
+ 2456 1286 C423     		mov	r3, #196
+ 2457 1288 FB18     		add	r3, r7, r3
+ 2458 128a 1B68     		ldr	r3, [r3]
+ 2459 128c DB00     		lsl	r3, r3, #3
+ 2460 128e 0433     		add	r3, r3, #4
+ 2461 1290 FA68     		ldr	r2, [r7, #12]
+ 2462 1292 D418     		add	r4, r2, r3
+ 2463 1294 7869     		ldr	r0, [r7, #20]
+ 2464 1296 3969     		ldr	r1, [r7, #16]
+ 2465 1298 FFF7FEFF 		bl	__aeabi_fsub
+ 2466 129c 031C     		add	r3, r0, #0
+ 2467 129e 2360     		str	r3, [r4]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 49
+
+
+ 270:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p1 = co4 * t1;
+ 2468              		.loc 1 270 0 discriminator 1
+ 2469 12a0 B86D     		ldr	r0, [r7, #88]
+ 2470 12a2 9823     		mov	r3, #152
+ 2471 12a4 FB18     		add	r3, r7, r3
+ 2472 12a6 1968     		ldr	r1, [r3]
+ 2473 12a8 FFF7FEFF 		bl	__aeabi_fmul
+ 2474 12ac 031C     		add	r3, r0, #0
+ 2475 12ae FB61     		str	r3, [r7, #28]
+ 271:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p2 = si4 * t2;
+ 2476              		.loc 1 271 0 discriminator 1
+ 2477 12b0 F86B     		ldr	r0, [r7, #60]
+ 2478 12b2 8023     		mov	r3, #128
+ 2479 12b4 FB18     		add	r3, r7, r3
+ 2480 12b6 1968     		ldr	r1, [r3]
+ 2481 12b8 FFF7FEFF 		bl	__aeabi_fmul
+ 2482 12bc 031C     		add	r3, r0, #0
+ 2483 12be BB61     		str	r3, [r7, #24]
+ 272:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p3 = co4 * t2;
+ 2484              		.loc 1 272 0 discriminator 1
+ 2485 12c0 B86D     		ldr	r0, [r7, #88]
+ 2486 12c2 8023     		mov	r3, #128
+ 2487 12c4 FB18     		add	r3, r7, r3
+ 2488 12c6 1968     		ldr	r1, [r3]
+ 2489 12c8 FFF7FEFF 		bl	__aeabi_fmul
+ 2490 12cc 031C     		add	r3, r0, #0
+ 2491 12ce 7B61     		str	r3, [r7, #20]
+ 273:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             p4 = si4 * t1;
+ 2492              		.loc 1 273 0 discriminator 1
+ 2493 12d0 F86B     		ldr	r0, [r7, #60]
+ 2494 12d2 9823     		mov	r3, #152
+ 2495 12d4 FB18     		add	r3, r7, r3
+ 2496 12d6 1968     		ldr	r1, [r3]
+ 2497 12d8 FFF7FEFF 		bl	__aeabi_fmul
+ 2498 12dc 031C     		add	r3, r0, #0
+ 2499 12de 3B61     		str	r3, [r7, #16]
+ 274:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i4]     = p1 + p2;
+ 2500              		.loc 1 274 0 discriminator 1
+ 2501 12e0 CC23     		mov	r3, #204
+ 2502 12e2 FB18     		add	r3, r7, r3
+ 2503 12e4 1B68     		ldr	r3, [r3]
+ 2504 12e6 DB00     		lsl	r3, r3, #3
+ 2505 12e8 FA68     		ldr	r2, [r7, #12]
+ 2506 12ea D418     		add	r4, r2, r3
+ 2507 12ec F869     		ldr	r0, [r7, #28]
+ 2508 12ee B969     		ldr	r1, [r7, #24]
+ 2509 12f0 FFF7FEFF 		bl	__aeabi_fadd
+ 2510 12f4 031C     		add	r3, r0, #0
+ 2511 12f6 2360     		str	r3, [r4]
+ 275:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             pSrc[2 * i4 + 1] = p3 - p4;
+ 2512              		.loc 1 275 0 discriminator 1
+ 2513 12f8 CC23     		mov	r3, #204
+ 2514 12fa FB18     		add	r3, r7, r3
+ 2515 12fc 1B68     		ldr	r3, [r3]
+ 2516 12fe DB00     		lsl	r3, r3, #3
+ 2517 1300 0433     		add	r3, r3, #4
+ 2518 1302 FA68     		ldr	r2, [r7, #12]
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 50
+
+
+ 2519 1304 D418     		add	r4, r2, r3
+ 2520 1306 7869     		ldr	r0, [r7, #20]
+ 2521 1308 3969     		ldr	r1, [r7, #16]
+ 2522 130a FFF7FEFF 		bl	__aeabi_fsub
+ 2523 130e 031C     		add	r3, r0, #0
+ 2524 1310 2360     		str	r3, [r4]
+ 276:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 277:Source\TransformFunctions/arm_cfft_radix8_f32.c ****             i1 += n1;
+ 2525              		.loc 1 277 0 discriminator 1
+ 2526 1312 E823     		mov	r3, #232
+ 2527 1314 FB18     		add	r3, r7, r3
+ 2528 1316 1A68     		ldr	r2, [r3]
+ 2529 1318 D823     		mov	r3, #216
+ 2530 131a FB18     		add	r3, r7, r3
+ 2531 131c 1B68     		ldr	r3, [r3]
+ 2532 131e D318     		add	r3, r2, r3
+ 2533 1320 E822     		mov	r2, #232
+ 2534 1322 BA18     		add	r2, r7, r2
+ 2535 1324 1360     		str	r3, [r2]
+ 278:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          } while (i1 < fftLen);
+ 2536              		.loc 1 278 0 discriminator 1
+ 2537 1326 0A23     		mov	r3, #10
+ 2538 1328 FB18     		add	r3, r7, r3
+ 2539 132a 1A88     		ldrh	r2, [r3]
+ 2540 132c E823     		mov	r3, #232
+ 2541 132e FB18     		add	r3, r7, r3
+ 2542 1330 1B68     		ldr	r3, [r3]
+ 2543 1332 9A42     		cmp	r2, r3
+ 2544 1334 01D9     		bls	.LCB2328
+ 2545 1336 FFF708FB 		bl	.L5	@far jump
+ 2546              	.LCB2328:
+ 279:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 280:Source\TransformFunctions/arm_cfft_radix8_f32.c ****          j++;
+ 2547              		.loc 1 280 0
+ 2548 133a E023     		mov	r3, #224
+ 2549 133c FB18     		add	r3, r7, r3
+ 2550 133e 1B68     		ldr	r3, [r3]
+ 2551 1340 0133     		add	r3, r3, #1
+ 2552 1342 E022     		mov	r2, #224
+ 2553 1344 BA18     		add	r2, r7, r2
+ 2554 1346 1360     		str	r3, [r2]
+ 281:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       } while (j < n2);
+ 2555              		.loc 1 281 0
+ 2556 1348 E023     		mov	r3, #224
+ 2557 134a FB18     		add	r3, r7, r3
+ 2558 134c 1A68     		ldr	r2, [r3]
+ 2559 134e E423     		mov	r3, #228
+ 2560 1350 FB18     		add	r3, r7, r3
+ 2561 1352 1B68     		ldr	r3, [r3]
+ 2562 1354 9A42     		cmp	r2, r3
+ 2563 1356 01D2     		bcs	.LCB2343
+ 2564 1358 FFF76CFA 		bl	.L6	@far jump
+ 2565              	.LCB2343:
+ 282:Source\TransformFunctions/arm_cfft_radix8_f32.c **** 
+ 283:Source\TransformFunctions/arm_cfft_radix8_f32.c ****       twidCoefModifier <<= 3;
+ 2566              		.loc 1 283 0
+ 2567 135c 0823     		mov	r3, #8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 51
+
+
+ 2568 135e FB18     		add	r3, r7, r3
+ 2569 1360 0822     		mov	r2, #8
+ 2570 1362 BA18     		add	r2, r7, r2
+ 2571 1364 1288     		ldrh	r2, [r2]
+ 2572 1366 D200     		lsl	r2, r2, #3
+ 2573 1368 1A80     		strh	r2, [r3]
+ 284:Source\TransformFunctions/arm_cfft_radix8_f32.c ****    } while (n2 > 7);
+ 2574              		.loc 1 284 0
+ 2575 136a E423     		mov	r3, #228
+ 2576 136c FB18     		add	r3, r7, r3
+ 2577 136e 1B68     		ldr	r3, [r3]
+ 2578 1370 072B     		cmp	r3, #7
+ 2579 1372 01D9     		bls	.LCB2355
+ 2580 1374 FEF75DFE 		bl	.L7	@far jump
+ 2581              	.LCB2355:
+ 2582              	.L1:
+ 285:Source\TransformFunctions/arm_cfft_radix8_f32.c **** }
+ 2583              		.loc 1 285 0
+ 2584 1378 BD46     		mov	sp, r7
+ 2585 137a 3DB0     		add	sp, sp, #244
+ 2586              		@ sp needed
+ 2587 137c 90BD     		pop	{r4, r7, pc}
+ 2588              		.cfi_endproc
+ 2589              	.LFE82:
+ 2590              		.size	arm_radix8_butterfly_f32, .-arm_radix8_butterfly_f32
+ 2591 137e C046     		.text
+ 2592              	.Letext0:
+ 2593              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 2594              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.0\\psoc creator\\import\\gnu\\arm\\4.9.
+ 2595              		.file 4 ".\\Include/arm_math.h"
+ 2596              		.section	.debug_info,"",%progbits
+ 2597              	.Ldebug_info0:
+ 2598 0000 3B040000 		.4byte	0x43b
+ 2599 0004 0400     		.2byte	0x4
+ 2600 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 2601 000a 04       		.byte	0x4
+ 2602 000b 01       		.uleb128 0x1
+ 2603 000c 3B010000 		.4byte	.LASF23
+ 2604 0010 01       		.byte	0x1
+ 2605 0011 C2000000 		.4byte	.LASF24
+ 2606 0015 DB010000 		.4byte	.LASF25
+ 2607 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 2608 001d 00000000 		.4byte	0
+ 2609 0021 00000000 		.4byte	.Ldebug_line0
+ 2610 0025 02       		.uleb128 0x2
+ 2611 0026 01       		.byte	0x1
+ 2612 0027 06       		.byte	0x6
+ 2613 0028 80000000 		.4byte	.LASF0
+ 2614 002c 02       		.uleb128 0x2
+ 2615 002d 01       		.byte	0x1
+ 2616 002e 08       		.byte	0x8
+ 2617 002f 72000000 		.4byte	.LASF1
+ 2618 0033 02       		.uleb128 0x2
+ 2619 0034 02       		.byte	0x2
+ 2620 0035 05       		.byte	0x5
+ 2621 0036 00000000 		.4byte	.LASF2
+ 2622 003a 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 52
+
+
+ 2623 003b 23000000 		.4byte	.LASF5
+ 2624 003f 02       		.byte	0x2
+ 2625 0040 2B       		.byte	0x2b
+ 2626 0041 45000000 		.4byte	0x45
+ 2627 0045 02       		.uleb128 0x2
+ 2628 0046 02       		.byte	0x2
+ 2629 0047 07       		.byte	0x7
+ 2630 0048 F2000000 		.4byte	.LASF3
+ 2631 004c 02       		.uleb128 0x2
+ 2632 004d 04       		.byte	0x4
+ 2633 004e 05       		.byte	0x5
+ 2634 004f 53000000 		.4byte	.LASF4
+ 2635 0053 03       		.uleb128 0x3
+ 2636 0054 18000000 		.4byte	.LASF6
+ 2637 0058 02       		.byte	0x2
+ 2638 0059 41       		.byte	0x41
+ 2639 005a 5E000000 		.4byte	0x5e
+ 2640 005e 02       		.uleb128 0x2
+ 2641 005f 04       		.byte	0x4
+ 2642 0060 07       		.byte	0x7
+ 2643 0061 1B010000 		.4byte	.LASF7
+ 2644 0065 02       		.uleb128 0x2
+ 2645 0066 08       		.byte	0x8
+ 2646 0067 05       		.byte	0x5
+ 2647 0068 0A000000 		.4byte	.LASF8
+ 2648 006c 02       		.uleb128 0x2
+ 2649 006d 08       		.byte	0x8
+ 2650 006e 07       		.byte	0x7
+ 2651 006f 8C000000 		.4byte	.LASF9
+ 2652 0073 04       		.uleb128 0x4
+ 2653 0074 04       		.byte	0x4
+ 2654 0075 05       		.byte	0x5
+ 2655 0076 696E7400 		.ascii	"int\000"
+ 2656 007a 02       		.uleb128 0x2
+ 2657 007b 04       		.byte	0x4
+ 2658 007c 07       		.byte	0x7
+ 2659 007d AC000000 		.4byte	.LASF10
+ 2660 0081 03       		.uleb128 0x3
+ 2661 0082 B9000000 		.4byte	.LASF11
+ 2662 0086 03       		.byte	0x3
+ 2663 0087 21       		.byte	0x21
+ 2664 0088 3A000000 		.4byte	0x3a
+ 2665 008c 03       		.uleb128 0x3
+ 2666 008d A3000000 		.4byte	.LASF12
+ 2667 0091 03       		.byte	0x3
+ 2668 0092 2D       		.byte	0x2d
+ 2669 0093 53000000 		.4byte	0x53
+ 2670 0097 02       		.uleb128 0x2
+ 2671 0098 04       		.byte	0x4
+ 2672 0099 07       		.byte	0x7
+ 2673 009a CD010000 		.4byte	.LASF13
+ 2674 009e 02       		.uleb128 0x2
+ 2675 009f 01       		.byte	0x1
+ 2676 00a0 08       		.byte	0x8
+ 2677 00a1 16010000 		.4byte	.LASF14
+ 2678 00a5 02       		.uleb128 0x2
+ 2679 00a6 08       		.byte	0x8
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 53
+
+
+ 2680 00a7 04       		.byte	0x4
+ 2681 00a8 2D010000 		.4byte	.LASF15
+ 2682 00ac 02       		.uleb128 0x2
+ 2683 00ad 04       		.byte	0x4
+ 2684 00ae 04       		.byte	0x4
+ 2685 00af 4D000000 		.4byte	.LASF16
+ 2686 00b3 02       		.uleb128 0x2
+ 2687 00b4 08       		.byte	0x8
+ 2688 00b5 04       		.byte	0x4
+ 2689 00b6 66000000 		.4byte	.LASF17
+ 2690 00ba 05       		.uleb128 0x5
+ 2691 00bb 5C000000 		.4byte	.LASF18
+ 2692 00bf 04       		.byte	0x4
+ 2693 00c0 A501     		.2byte	0x1a5
+ 2694 00c2 AC000000 		.4byte	0xac
+ 2695 00c6 06       		.uleb128 0x6
+ 2696 00c7 04       		.byte	0x4
+ 2697 00c8 BA000000 		.4byte	0xba
+ 2698 00cc 06       		.uleb128 0x6
+ 2699 00cd 04       		.byte	0x4
+ 2700 00ce D2000000 		.4byte	0xd2
+ 2701 00d2 07       		.uleb128 0x7
+ 2702 00d3 BA000000 		.4byte	0xba
+ 2703 00d7 08       		.uleb128 0x8
+ 2704 00d8 34000000 		.4byte	.LASF26
+ 2705 00dc 01       		.byte	0x1
+ 2706 00dd 2D       		.byte	0x2d
+ 2707 00de 00000000 		.4byte	.LFB82
+ 2708 00e2 7E130000 		.4byte	.LFE82-.LFB82
+ 2709 00e6 01       		.uleb128 0x1
+ 2710 00e7 9C       		.byte	0x9c
+ 2711 00e8 09       		.uleb128 0x9
+ 2712 00e9 D6010000 		.4byte	.LASF19
+ 2713 00ed 01       		.byte	0x1
+ 2714 00ee 2E       		.byte	0x2e
+ 2715 00ef C6000000 		.4byte	0xc6
+ 2716 00f3 03       		.uleb128 0x3
+ 2717 00f4 91       		.byte	0x91
+ 2718 00f5 8C7E     		.sleb128 -244
+ 2719 00f7 09       		.uleb128 0x9
+ 2720 00f8 34010000 		.4byte	.LASF20
+ 2721 00fc 01       		.byte	0x1
+ 2722 00fd 2F       		.byte	0x2f
+ 2723 00fe 81000000 		.4byte	0x81
+ 2724 0102 03       		.uleb128 0x3
+ 2725 0103 91       		.byte	0x91
+ 2726 0104 8A7E     		.sleb128 -246
+ 2727 0106 09       		.uleb128 0x9
+ 2728 0107 2E000000 		.4byte	.LASF21
+ 2729 010b 01       		.byte	0x1
+ 2730 010c 30       		.byte	0x30
+ 2731 010d CC000000 		.4byte	0xcc
+ 2732 0111 03       		.uleb128 0x3
+ 2733 0112 91       		.byte	0x91
+ 2734 0113 847E     		.sleb128 -252
+ 2735 0115 09       		.uleb128 0x9
+ 2736 0116 05010000 		.4byte	.LASF22
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 54
+
+
+ 2737 011a 01       		.byte	0x1
+ 2738 011b 31       		.byte	0x31
+ 2739 011c 81000000 		.4byte	0x81
+ 2740 0120 03       		.uleb128 0x3
+ 2741 0121 91       		.byte	0x91
+ 2742 0122 887E     		.sleb128 -248
+ 2743 0124 0A       		.uleb128 0xa
+ 2744 0125 69613100 		.ascii	"ia1\000"
+ 2745 0129 01       		.byte	0x1
+ 2746 012a 33       		.byte	0x33
+ 2747 012b 8C000000 		.4byte	0x8c
+ 2748 012f 02       		.uleb128 0x2
+ 2749 0130 91       		.byte	0x91
+ 2750 0131 6C       		.sleb128 -20
+ 2751 0132 0A       		.uleb128 0xa
+ 2752 0133 69613200 		.ascii	"ia2\000"
+ 2753 0137 01       		.byte	0x1
+ 2754 0138 33       		.byte	0x33
+ 2755 0139 8C000000 		.4byte	0x8c
+ 2756 013d 03       		.uleb128 0x3
+ 2757 013e 91       		.byte	0x91
+ 2758 013f F87E     		.sleb128 -136
+ 2759 0141 0A       		.uleb128 0xa
+ 2760 0142 69613300 		.ascii	"ia3\000"
+ 2761 0146 01       		.byte	0x1
+ 2762 0147 33       		.byte	0x33
+ 2763 0148 8C000000 		.4byte	0x8c
+ 2764 014c 03       		.uleb128 0x3
+ 2765 014d 91       		.byte	0x91
+ 2766 014e F47E     		.sleb128 -140
+ 2767 0150 0A       		.uleb128 0xa
+ 2768 0151 69613400 		.ascii	"ia4\000"
+ 2769 0155 01       		.byte	0x1
+ 2770 0156 33       		.byte	0x33
+ 2771 0157 8C000000 		.4byte	0x8c
+ 2772 015b 03       		.uleb128 0x3
+ 2773 015c 91       		.byte	0x91
+ 2774 015d F07E     		.sleb128 -144
+ 2775 015f 0A       		.uleb128 0xa
+ 2776 0160 69613500 		.ascii	"ia5\000"
+ 2777 0164 01       		.byte	0x1
+ 2778 0165 33       		.byte	0x33
+ 2779 0166 8C000000 		.4byte	0x8c
+ 2780 016a 03       		.uleb128 0x3
+ 2781 016b 91       		.byte	0x91
+ 2782 016c EC7E     		.sleb128 -148
+ 2783 016e 0A       		.uleb128 0xa
+ 2784 016f 69613600 		.ascii	"ia6\000"
+ 2785 0173 01       		.byte	0x1
+ 2786 0174 33       		.byte	0x33
+ 2787 0175 8C000000 		.4byte	0x8c
+ 2788 0179 03       		.uleb128 0x3
+ 2789 017a 91       		.byte	0x91
+ 2790 017b E87E     		.sleb128 -152
+ 2791 017d 0A       		.uleb128 0xa
+ 2792 017e 69613700 		.ascii	"ia7\000"
+ 2793 0182 01       		.byte	0x1
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 55
+
+
+ 2794 0183 33       		.byte	0x33
+ 2795 0184 8C000000 		.4byte	0x8c
+ 2796 0188 03       		.uleb128 0x3
+ 2797 0189 91       		.byte	0x91
+ 2798 018a E47E     		.sleb128 -156
+ 2799 018c 0A       		.uleb128 0xa
+ 2800 018d 693100   		.ascii	"i1\000"
+ 2801 0190 01       		.byte	0x1
+ 2802 0191 34       		.byte	0x34
+ 2803 0192 8C000000 		.4byte	0x8c
+ 2804 0196 02       		.uleb128 0x2
+ 2805 0197 91       		.byte	0x91
+ 2806 0198 68       		.sleb128 -24
+ 2807 0199 0A       		.uleb128 0xa
+ 2808 019a 693200   		.ascii	"i2\000"
+ 2809 019d 01       		.byte	0x1
+ 2810 019e 34       		.byte	0x34
+ 2811 019f 8C000000 		.4byte	0x8c
+ 2812 01a3 02       		.uleb128 0x2
+ 2813 01a4 91       		.byte	0x91
+ 2814 01a5 54       		.sleb128 -44
+ 2815 01a6 0A       		.uleb128 0xa
+ 2816 01a7 693300   		.ascii	"i3\000"
+ 2817 01aa 01       		.byte	0x1
+ 2818 01ab 34       		.byte	0x34
+ 2819 01ac 8C000000 		.4byte	0x8c
+ 2820 01b0 02       		.uleb128 0x2
+ 2821 01b1 91       		.byte	0x91
+ 2822 01b2 50       		.sleb128 -48
+ 2823 01b3 0A       		.uleb128 0xa
+ 2824 01b4 693400   		.ascii	"i4\000"
+ 2825 01b7 01       		.byte	0x1
+ 2826 01b8 34       		.byte	0x34
+ 2827 01b9 8C000000 		.4byte	0x8c
+ 2828 01bd 02       		.uleb128 0x2
+ 2829 01be 91       		.byte	0x91
+ 2830 01bf 4C       		.sleb128 -52
+ 2831 01c0 0A       		.uleb128 0xa
+ 2832 01c1 693500   		.ascii	"i5\000"
+ 2833 01c4 01       		.byte	0x1
+ 2834 01c5 34       		.byte	0x34
+ 2835 01c6 8C000000 		.4byte	0x8c
+ 2836 01ca 02       		.uleb128 0x2
+ 2837 01cb 91       		.byte	0x91
+ 2838 01cc 48       		.sleb128 -56
+ 2839 01cd 0A       		.uleb128 0xa
+ 2840 01ce 693600   		.ascii	"i6\000"
+ 2841 01d1 01       		.byte	0x1
+ 2842 01d2 34       		.byte	0x34
+ 2843 01d3 8C000000 		.4byte	0x8c
+ 2844 01d7 02       		.uleb128 0x2
+ 2845 01d8 91       		.byte	0x91
+ 2846 01d9 44       		.sleb128 -60
+ 2847 01da 0A       		.uleb128 0xa
+ 2848 01db 693700   		.ascii	"i7\000"
+ 2849 01de 01       		.byte	0x1
+ 2850 01df 34       		.byte	0x34
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 56
+
+
+ 2851 01e0 8C000000 		.4byte	0x8c
+ 2852 01e4 02       		.uleb128 0x2
+ 2853 01e5 91       		.byte	0x91
+ 2854 01e6 40       		.sleb128 -64
+ 2855 01e7 0A       		.uleb128 0xa
+ 2856 01e8 693800   		.ascii	"i8\000"
+ 2857 01eb 01       		.byte	0x1
+ 2858 01ec 34       		.byte	0x34
+ 2859 01ed 8C000000 		.4byte	0x8c
+ 2860 01f1 03       		.uleb128 0x3
+ 2861 01f2 91       		.byte	0x91
+ 2862 01f3 BC7F     		.sleb128 -68
+ 2863 01f5 0A       		.uleb128 0xa
+ 2864 01f6 696400   		.ascii	"id\000"
+ 2865 01f9 01       		.byte	0x1
+ 2866 01fa 35       		.byte	0x35
+ 2867 01fb 8C000000 		.4byte	0x8c
+ 2868 01ff 03       		.uleb128 0x3
+ 2869 0200 91       		.byte	0x91
+ 2870 0201 FC7E     		.sleb128 -132
+ 2871 0203 0A       		.uleb128 0xa
+ 2872 0204 6E3100   		.ascii	"n1\000"
+ 2873 0207 01       		.byte	0x1
+ 2874 0208 36       		.byte	0x36
+ 2875 0209 8C000000 		.4byte	0x8c
+ 2876 020d 02       		.uleb128 0x2
+ 2877 020e 91       		.byte	0x91
+ 2878 020f 58       		.sleb128 -40
+ 2879 0210 0A       		.uleb128 0xa
+ 2880 0211 6E3200   		.ascii	"n2\000"
+ 2881 0214 01       		.byte	0x1
+ 2882 0215 36       		.byte	0x36
+ 2883 0216 8C000000 		.4byte	0x8c
+ 2884 021a 02       		.uleb128 0x2
+ 2885 021b 91       		.byte	0x91
+ 2886 021c 64       		.sleb128 -28
+ 2887 021d 0A       		.uleb128 0xa
+ 2888 021e 6A00     		.ascii	"j\000"
+ 2889 0220 01       		.byte	0x1
+ 2890 0221 36       		.byte	0x36
+ 2891 0222 8C000000 		.4byte	0x8c
+ 2892 0226 02       		.uleb128 0x2
+ 2893 0227 91       		.byte	0x91
+ 2894 0228 60       		.sleb128 -32
+ 2895 0229 0A       		.uleb128 0xa
+ 2896 022a 723100   		.ascii	"r1\000"
+ 2897 022d 01       		.byte	0x1
+ 2898 022e 38       		.byte	0x38
+ 2899 022f BA000000 		.4byte	0xba
+ 2900 0233 03       		.uleb128 0x3
+ 2901 0234 91       		.byte	0x91
+ 2902 0235 B87F     		.sleb128 -72
+ 2903 0237 0A       		.uleb128 0xa
+ 2904 0238 723200   		.ascii	"r2\000"
+ 2905 023b 01       		.byte	0x1
+ 2906 023c 38       		.byte	0x38
+ 2907 023d BA000000 		.4byte	0xba
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 57
+
+
+ 2908 0241 03       		.uleb128 0x3
+ 2909 0242 91       		.byte	0x91
+ 2910 0243 B07F     		.sleb128 -80
+ 2911 0245 0A       		.uleb128 0xa
+ 2912 0246 723300   		.ascii	"r3\000"
+ 2913 0249 01       		.byte	0x1
+ 2914 024a 38       		.byte	0x38
+ 2915 024b BA000000 		.4byte	0xba
+ 2916 024f 03       		.uleb128 0x3
+ 2917 0250 91       		.byte	0x91
+ 2918 0251 A87F     		.sleb128 -88
+ 2919 0253 0A       		.uleb128 0xa
+ 2920 0254 723400   		.ascii	"r4\000"
+ 2921 0257 01       		.byte	0x1
+ 2922 0258 38       		.byte	0x38
+ 2923 0259 BA000000 		.4byte	0xba
+ 2924 025d 03       		.uleb128 0x3
+ 2925 025e 91       		.byte	0x91
+ 2926 025f A07F     		.sleb128 -96
+ 2927 0261 0A       		.uleb128 0xa
+ 2928 0262 723500   		.ascii	"r5\000"
+ 2929 0265 01       		.byte	0x1
+ 2930 0266 38       		.byte	0x38
+ 2931 0267 BA000000 		.4byte	0xba
+ 2932 026b 03       		.uleb128 0x3
+ 2933 026c 91       		.byte	0x91
+ 2934 026d B47F     		.sleb128 -76
+ 2935 026f 0A       		.uleb128 0xa
+ 2936 0270 723600   		.ascii	"r6\000"
+ 2937 0273 01       		.byte	0x1
+ 2938 0274 38       		.byte	0x38
+ 2939 0275 BA000000 		.4byte	0xba
+ 2940 0279 03       		.uleb128 0x3
+ 2941 027a 91       		.byte	0x91
+ 2942 027b AC7F     		.sleb128 -84
+ 2943 027d 0A       		.uleb128 0xa
+ 2944 027e 723700   		.ascii	"r7\000"
+ 2945 0281 01       		.byte	0x1
+ 2946 0282 38       		.byte	0x38
+ 2947 0283 BA000000 		.4byte	0xba
+ 2948 0287 03       		.uleb128 0x3
+ 2949 0288 91       		.byte	0x91
+ 2950 0289 A47F     		.sleb128 -92
+ 2951 028b 0A       		.uleb128 0xa
+ 2952 028c 723800   		.ascii	"r8\000"
+ 2953 028f 01       		.byte	0x1
+ 2954 0290 38       		.byte	0x38
+ 2955 0291 BA000000 		.4byte	0xba
+ 2956 0295 03       		.uleb128 0x3
+ 2957 0296 91       		.byte	0x91
+ 2958 0297 9C7F     		.sleb128 -100
+ 2959 0299 0A       		.uleb128 0xa
+ 2960 029a 743100   		.ascii	"t1\000"
+ 2961 029d 01       		.byte	0x1
+ 2962 029e 39       		.byte	0x39
+ 2963 029f BA000000 		.4byte	0xba
+ 2964 02a3 03       		.uleb128 0x3
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 58
+
+
+ 2965 02a4 91       		.byte	0x91
+ 2966 02a5 987F     		.sleb128 -104
+ 2967 02a7 0A       		.uleb128 0xa
+ 2968 02a8 743200   		.ascii	"t2\000"
+ 2969 02ab 01       		.byte	0x1
+ 2970 02ac 39       		.byte	0x39
+ 2971 02ad BA000000 		.4byte	0xba
+ 2972 02b1 03       		.uleb128 0x3
+ 2973 02b2 91       		.byte	0x91
+ 2974 02b3 807F     		.sleb128 -128
+ 2975 02b5 0A       		.uleb128 0xa
+ 2976 02b6 733100   		.ascii	"s1\000"
+ 2977 02b9 01       		.byte	0x1
+ 2978 02ba 3A       		.byte	0x3a
+ 2979 02bb BA000000 		.4byte	0xba
+ 2980 02bf 03       		.uleb128 0x3
+ 2981 02c0 91       		.byte	0x91
+ 2982 02c1 A87E     		.sleb128 -216
+ 2983 02c3 0A       		.uleb128 0xa
+ 2984 02c4 733200   		.ascii	"s2\000"
+ 2985 02c7 01       		.byte	0x1
+ 2986 02c8 3A       		.byte	0x3a
+ 2987 02c9 BA000000 		.4byte	0xba
+ 2988 02cd 03       		.uleb128 0x3
+ 2989 02ce 91       		.byte	0x91
+ 2990 02cf A47E     		.sleb128 -220
+ 2991 02d1 0A       		.uleb128 0xa
+ 2992 02d2 733300   		.ascii	"s3\000"
+ 2993 02d5 01       		.byte	0x1
+ 2994 02d6 3A       		.byte	0x3a
+ 2995 02d7 BA000000 		.4byte	0xba
+ 2996 02db 03       		.uleb128 0x3
+ 2997 02dc 91       		.byte	0x91
+ 2998 02dd 8C7F     		.sleb128 -116
+ 2999 02df 0A       		.uleb128 0xa
+ 3000 02e0 733400   		.ascii	"s4\000"
+ 3001 02e3 01       		.byte	0x1
+ 3002 02e4 3A       		.byte	0x3a
+ 3003 02e5 BA000000 		.4byte	0xba
+ 3004 02e9 03       		.uleb128 0x3
+ 3005 02ea 91       		.byte	0x91
+ 3006 02eb A07E     		.sleb128 -224
+ 3007 02ed 0A       		.uleb128 0xa
+ 3008 02ee 733500   		.ascii	"s5\000"
+ 3009 02f1 01       		.byte	0x1
+ 3010 02f2 3A       		.byte	0x3a
+ 3011 02f3 BA000000 		.4byte	0xba
+ 3012 02f7 03       		.uleb128 0x3
+ 3013 02f8 91       		.byte	0x91
+ 3014 02f9 947F     		.sleb128 -108
+ 3015 02fb 0A       		.uleb128 0xa
+ 3016 02fc 733600   		.ascii	"s6\000"
+ 3017 02ff 01       		.byte	0x1
+ 3018 0300 3A       		.byte	0x3a
+ 3019 0301 BA000000 		.4byte	0xba
+ 3020 0305 03       		.uleb128 0x3
+ 3021 0306 91       		.byte	0x91
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 59
+
+
+ 3022 0307 907F     		.sleb128 -112
+ 3023 0309 0A       		.uleb128 0xa
+ 3024 030a 733700   		.ascii	"s7\000"
+ 3025 030d 01       		.byte	0x1
+ 3026 030e 3A       		.byte	0x3a
+ 3027 030f BA000000 		.4byte	0xba
+ 3028 0313 03       		.uleb128 0x3
+ 3029 0314 91       		.byte	0x91
+ 3030 0315 887F     		.sleb128 -120
+ 3031 0317 0A       		.uleb128 0xa
+ 3032 0318 733800   		.ascii	"s8\000"
+ 3033 031b 01       		.byte	0x1
+ 3034 031c 3A       		.byte	0x3a
+ 3035 031d BA000000 		.4byte	0xba
+ 3036 0321 03       		.uleb128 0x3
+ 3037 0322 91       		.byte	0x91
+ 3038 0323 847F     		.sleb128 -124
+ 3039 0325 0A       		.uleb128 0xa
+ 3040 0326 703100   		.ascii	"p1\000"
+ 3041 0329 01       		.byte	0x1
+ 3042 032a 3B       		.byte	0x3b
+ 3043 032b BA000000 		.4byte	0xba
+ 3044 032f 03       		.uleb128 0x3
+ 3045 0330 91       		.byte	0x91
+ 3046 0331 9C7E     		.sleb128 -228
+ 3047 0333 0A       		.uleb128 0xa
+ 3048 0334 703200   		.ascii	"p2\000"
+ 3049 0337 01       		.byte	0x1
+ 3050 0338 3B       		.byte	0x3b
+ 3051 0339 BA000000 		.4byte	0xba
+ 3052 033d 03       		.uleb128 0x3
+ 3053 033e 91       		.byte	0x91
+ 3054 033f 987E     		.sleb128 -232
+ 3055 0341 0A       		.uleb128 0xa
+ 3056 0342 703300   		.ascii	"p3\000"
+ 3057 0345 01       		.byte	0x1
+ 3058 0346 3B       		.byte	0x3b
+ 3059 0347 BA000000 		.4byte	0xba
+ 3060 034b 03       		.uleb128 0x3
+ 3061 034c 91       		.byte	0x91
+ 3062 034d 947E     		.sleb128 -236
+ 3063 034f 0A       		.uleb128 0xa
+ 3064 0350 703400   		.ascii	"p4\000"
+ 3065 0353 01       		.byte	0x1
+ 3066 0354 3B       		.byte	0x3b
+ 3067 0355 BA000000 		.4byte	0xba
+ 3068 0359 03       		.uleb128 0x3
+ 3069 035a 91       		.byte	0x91
+ 3070 035b 907E     		.sleb128 -240
+ 3071 035d 0A       		.uleb128 0xa
+ 3072 035e 636F3200 		.ascii	"co2\000"
+ 3073 0362 01       		.byte	0x1
+ 3074 0363 3C       		.byte	0x3c
+ 3075 0364 BA000000 		.4byte	0xba
+ 3076 0368 03       		.uleb128 0x3
+ 3077 0369 91       		.byte	0x91
+ 3078 036a E07E     		.sleb128 -160
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 60
+
+
+ 3079 036c 0A       		.uleb128 0xa
+ 3080 036d 636F3300 		.ascii	"co3\000"
+ 3081 0371 01       		.byte	0x1
+ 3082 0372 3C       		.byte	0x3c
+ 3083 0373 BA000000 		.4byte	0xba
+ 3084 0377 03       		.uleb128 0x3
+ 3085 0378 91       		.byte	0x91
+ 3086 0379 DC7E     		.sleb128 -164
+ 3087 037b 0A       		.uleb128 0xa
+ 3088 037c 636F3400 		.ascii	"co4\000"
+ 3089 0380 01       		.byte	0x1
+ 3090 0381 3C       		.byte	0x3c
+ 3091 0382 BA000000 		.4byte	0xba
+ 3092 0386 03       		.uleb128 0x3
+ 3093 0387 91       		.byte	0x91
+ 3094 0388 D87E     		.sleb128 -168
+ 3095 038a 0A       		.uleb128 0xa
+ 3096 038b 636F3500 		.ascii	"co5\000"
+ 3097 038f 01       		.byte	0x1
+ 3098 0390 3C       		.byte	0x3c
+ 3099 0391 BA000000 		.4byte	0xba
+ 3100 0395 03       		.uleb128 0x3
+ 3101 0396 91       		.byte	0x91
+ 3102 0397 D47E     		.sleb128 -172
+ 3103 0399 0A       		.uleb128 0xa
+ 3104 039a 636F3600 		.ascii	"co6\000"
+ 3105 039e 01       		.byte	0x1
+ 3106 039f 3C       		.byte	0x3c
+ 3107 03a0 BA000000 		.4byte	0xba
+ 3108 03a4 03       		.uleb128 0x3
+ 3109 03a5 91       		.byte	0x91
+ 3110 03a6 D07E     		.sleb128 -176
+ 3111 03a8 0A       		.uleb128 0xa
+ 3112 03a9 636F3700 		.ascii	"co7\000"
+ 3113 03ad 01       		.byte	0x1
+ 3114 03ae 3C       		.byte	0x3c
+ 3115 03af BA000000 		.4byte	0xba
+ 3116 03b3 03       		.uleb128 0x3
+ 3117 03b4 91       		.byte	0x91
+ 3118 03b5 CC7E     		.sleb128 -180
+ 3119 03b7 0A       		.uleb128 0xa
+ 3120 03b8 636F3800 		.ascii	"co8\000"
+ 3121 03bc 01       		.byte	0x1
+ 3122 03bd 3C       		.byte	0x3c
+ 3123 03be BA000000 		.4byte	0xba
+ 3124 03c2 03       		.uleb128 0x3
+ 3125 03c3 91       		.byte	0x91
+ 3126 03c4 C87E     		.sleb128 -184
+ 3127 03c6 0A       		.uleb128 0xa
+ 3128 03c7 73693200 		.ascii	"si2\000"
+ 3129 03cb 01       		.byte	0x1
+ 3130 03cc 3D       		.byte	0x3d
+ 3131 03cd BA000000 		.4byte	0xba
+ 3132 03d1 03       		.uleb128 0x3
+ 3133 03d2 91       		.byte	0x91
+ 3134 03d3 C47E     		.sleb128 -188
+ 3135 03d5 0A       		.uleb128 0xa
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 61
+
+
+ 3136 03d6 73693300 		.ascii	"si3\000"
+ 3137 03da 01       		.byte	0x1
+ 3138 03db 3D       		.byte	0x3d
+ 3139 03dc BA000000 		.4byte	0xba
+ 3140 03e0 03       		.uleb128 0x3
+ 3141 03e1 91       		.byte	0x91
+ 3142 03e2 C07E     		.sleb128 -192
+ 3143 03e4 0A       		.uleb128 0xa
+ 3144 03e5 73693400 		.ascii	"si4\000"
+ 3145 03e9 01       		.byte	0x1
+ 3146 03ea 3D       		.byte	0x3d
+ 3147 03eb BA000000 		.4byte	0xba
+ 3148 03ef 03       		.uleb128 0x3
+ 3149 03f0 91       		.byte	0x91
+ 3150 03f1 BC7E     		.sleb128 -196
+ 3151 03f3 0A       		.uleb128 0xa
+ 3152 03f4 73693500 		.ascii	"si5\000"
+ 3153 03f8 01       		.byte	0x1
+ 3154 03f9 3D       		.byte	0x3d
+ 3155 03fa BA000000 		.4byte	0xba
+ 3156 03fe 03       		.uleb128 0x3
+ 3157 03ff 91       		.byte	0x91
+ 3158 0400 B87E     		.sleb128 -200
+ 3159 0402 0A       		.uleb128 0xa
+ 3160 0403 73693600 		.ascii	"si6\000"
+ 3161 0407 01       		.byte	0x1
+ 3162 0408 3D       		.byte	0x3d
+ 3163 0409 BA000000 		.4byte	0xba
+ 3164 040d 03       		.uleb128 0x3
+ 3165 040e 91       		.byte	0x91
+ 3166 040f B47E     		.sleb128 -204
+ 3167 0411 0A       		.uleb128 0xa
+ 3168 0412 73693700 		.ascii	"si7\000"
+ 3169 0416 01       		.byte	0x1
+ 3170 0417 3D       		.byte	0x3d
+ 3171 0418 BA000000 		.4byte	0xba
+ 3172 041c 03       		.uleb128 0x3
+ 3173 041d 91       		.byte	0x91
+ 3174 041e B07E     		.sleb128 -208
+ 3175 0420 0A       		.uleb128 0xa
+ 3176 0421 73693800 		.ascii	"si8\000"
+ 3177 0425 01       		.byte	0x1
+ 3178 0426 3D       		.byte	0x3d
+ 3179 0427 BA000000 		.4byte	0xba
+ 3180 042b 03       		.uleb128 0x3
+ 3181 042c 91       		.byte	0x91
+ 3182 042d AC7E     		.sleb128 -212
+ 3183 042f 0A       		.uleb128 0xa
+ 3184 0430 43383100 		.ascii	"C81\000"
+ 3185 0434 01       		.byte	0x1
+ 3186 0435 3E       		.byte	0x3e
+ 3187 0436 D2000000 		.4byte	0xd2
+ 3188 043a 02       		.uleb128 0x2
+ 3189 043b 91       		.byte	0x91
+ 3190 043c 5C       		.sleb128 -36
+ 3191 043d 00       		.byte	0
+ 3192 043e 00       		.byte	0
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 62
+
+
+ 3193              		.section	.debug_abbrev,"",%progbits
+ 3194              	.Ldebug_abbrev0:
+ 3195 0000 01       		.uleb128 0x1
+ 3196 0001 11       		.uleb128 0x11
+ 3197 0002 01       		.byte	0x1
+ 3198 0003 25       		.uleb128 0x25
+ 3199 0004 0E       		.uleb128 0xe
+ 3200 0005 13       		.uleb128 0x13
+ 3201 0006 0B       		.uleb128 0xb
+ 3202 0007 03       		.uleb128 0x3
+ 3203 0008 0E       		.uleb128 0xe
+ 3204 0009 1B       		.uleb128 0x1b
+ 3205 000a 0E       		.uleb128 0xe
+ 3206 000b 55       		.uleb128 0x55
+ 3207 000c 17       		.uleb128 0x17
+ 3208 000d 11       		.uleb128 0x11
+ 3209 000e 01       		.uleb128 0x1
+ 3210 000f 10       		.uleb128 0x10
+ 3211 0010 17       		.uleb128 0x17
+ 3212 0011 00       		.byte	0
+ 3213 0012 00       		.byte	0
+ 3214 0013 02       		.uleb128 0x2
+ 3215 0014 24       		.uleb128 0x24
+ 3216 0015 00       		.byte	0
+ 3217 0016 0B       		.uleb128 0xb
+ 3218 0017 0B       		.uleb128 0xb
+ 3219 0018 3E       		.uleb128 0x3e
+ 3220 0019 0B       		.uleb128 0xb
+ 3221 001a 03       		.uleb128 0x3
+ 3222 001b 0E       		.uleb128 0xe
+ 3223 001c 00       		.byte	0
+ 3224 001d 00       		.byte	0
+ 3225 001e 03       		.uleb128 0x3
+ 3226 001f 16       		.uleb128 0x16
+ 3227 0020 00       		.byte	0
+ 3228 0021 03       		.uleb128 0x3
+ 3229 0022 0E       		.uleb128 0xe
+ 3230 0023 3A       		.uleb128 0x3a
+ 3231 0024 0B       		.uleb128 0xb
+ 3232 0025 3B       		.uleb128 0x3b
+ 3233 0026 0B       		.uleb128 0xb
+ 3234 0027 49       		.uleb128 0x49
+ 3235 0028 13       		.uleb128 0x13
+ 3236 0029 00       		.byte	0
+ 3237 002a 00       		.byte	0
+ 3238 002b 04       		.uleb128 0x4
+ 3239 002c 24       		.uleb128 0x24
+ 3240 002d 00       		.byte	0
+ 3241 002e 0B       		.uleb128 0xb
+ 3242 002f 0B       		.uleb128 0xb
+ 3243 0030 3E       		.uleb128 0x3e
+ 3244 0031 0B       		.uleb128 0xb
+ 3245 0032 03       		.uleb128 0x3
+ 3246 0033 08       		.uleb128 0x8
+ 3247 0034 00       		.byte	0
+ 3248 0035 00       		.byte	0
+ 3249 0036 05       		.uleb128 0x5
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 63
+
+
+ 3250 0037 16       		.uleb128 0x16
+ 3251 0038 00       		.byte	0
+ 3252 0039 03       		.uleb128 0x3
+ 3253 003a 0E       		.uleb128 0xe
+ 3254 003b 3A       		.uleb128 0x3a
+ 3255 003c 0B       		.uleb128 0xb
+ 3256 003d 3B       		.uleb128 0x3b
+ 3257 003e 05       		.uleb128 0x5
+ 3258 003f 49       		.uleb128 0x49
+ 3259 0040 13       		.uleb128 0x13
+ 3260 0041 00       		.byte	0
+ 3261 0042 00       		.byte	0
+ 3262 0043 06       		.uleb128 0x6
+ 3263 0044 0F       		.uleb128 0xf
+ 3264 0045 00       		.byte	0
+ 3265 0046 0B       		.uleb128 0xb
+ 3266 0047 0B       		.uleb128 0xb
+ 3267 0048 49       		.uleb128 0x49
+ 3268 0049 13       		.uleb128 0x13
+ 3269 004a 00       		.byte	0
+ 3270 004b 00       		.byte	0
+ 3271 004c 07       		.uleb128 0x7
+ 3272 004d 26       		.uleb128 0x26
+ 3273 004e 00       		.byte	0
+ 3274 004f 49       		.uleb128 0x49
+ 3275 0050 13       		.uleb128 0x13
+ 3276 0051 00       		.byte	0
+ 3277 0052 00       		.byte	0
+ 3278 0053 08       		.uleb128 0x8
+ 3279 0054 2E       		.uleb128 0x2e
+ 3280 0055 01       		.byte	0x1
+ 3281 0056 3F       		.uleb128 0x3f
+ 3282 0057 19       		.uleb128 0x19
+ 3283 0058 03       		.uleb128 0x3
+ 3284 0059 0E       		.uleb128 0xe
+ 3285 005a 3A       		.uleb128 0x3a
+ 3286 005b 0B       		.uleb128 0xb
+ 3287 005c 3B       		.uleb128 0x3b
+ 3288 005d 0B       		.uleb128 0xb
+ 3289 005e 27       		.uleb128 0x27
+ 3290 005f 19       		.uleb128 0x19
+ 3291 0060 11       		.uleb128 0x11
+ 3292 0061 01       		.uleb128 0x1
+ 3293 0062 12       		.uleb128 0x12
+ 3294 0063 06       		.uleb128 0x6
+ 3295 0064 40       		.uleb128 0x40
+ 3296 0065 18       		.uleb128 0x18
+ 3297 0066 9642     		.uleb128 0x2116
+ 3298 0068 19       		.uleb128 0x19
+ 3299 0069 00       		.byte	0
+ 3300 006a 00       		.byte	0
+ 3301 006b 09       		.uleb128 0x9
+ 3302 006c 05       		.uleb128 0x5
+ 3303 006d 00       		.byte	0
+ 3304 006e 03       		.uleb128 0x3
+ 3305 006f 0E       		.uleb128 0xe
+ 3306 0070 3A       		.uleb128 0x3a
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 64
+
+
+ 3307 0071 0B       		.uleb128 0xb
+ 3308 0072 3B       		.uleb128 0x3b
+ 3309 0073 0B       		.uleb128 0xb
+ 3310 0074 49       		.uleb128 0x49
+ 3311 0075 13       		.uleb128 0x13
+ 3312 0076 02       		.uleb128 0x2
+ 3313 0077 18       		.uleb128 0x18
+ 3314 0078 00       		.byte	0
+ 3315 0079 00       		.byte	0
+ 3316 007a 0A       		.uleb128 0xa
+ 3317 007b 34       		.uleb128 0x34
+ 3318 007c 00       		.byte	0
+ 3319 007d 03       		.uleb128 0x3
+ 3320 007e 08       		.uleb128 0x8
+ 3321 007f 3A       		.uleb128 0x3a
+ 3322 0080 0B       		.uleb128 0xb
+ 3323 0081 3B       		.uleb128 0x3b
+ 3324 0082 0B       		.uleb128 0xb
+ 3325 0083 49       		.uleb128 0x49
+ 3326 0084 13       		.uleb128 0x13
+ 3327 0085 02       		.uleb128 0x2
+ 3328 0086 18       		.uleb128 0x18
+ 3329 0087 00       		.byte	0
+ 3330 0088 00       		.byte	0
+ 3331 0089 00       		.byte	0
+ 3332              		.section	.debug_aranges,"",%progbits
+ 3333 0000 1C000000 		.4byte	0x1c
+ 3334 0004 0200     		.2byte	0x2
+ 3335 0006 00000000 		.4byte	.Ldebug_info0
+ 3336 000a 04       		.byte	0x4
+ 3337 000b 00       		.byte	0
+ 3338 000c 0000     		.2byte	0
+ 3339 000e 0000     		.2byte	0
+ 3340 0010 00000000 		.4byte	.LFB82
+ 3341 0014 7E130000 		.4byte	.LFE82-.LFB82
+ 3342 0018 00000000 		.4byte	0
+ 3343 001c 00000000 		.4byte	0
+ 3344              		.section	.debug_ranges,"",%progbits
+ 3345              	.Ldebug_ranges0:
+ 3346 0000 00000000 		.4byte	.LFB82
+ 3347 0004 7E130000 		.4byte	.LFE82
+ 3348 0008 00000000 		.4byte	0
+ 3349 000c 00000000 		.4byte	0
+ 3350              		.section	.debug_line,"",%progbits
+ 3351              	.Ldebug_line0:
+ 3352 0000 F6040000 		.section	.debug_str,"MS",%progbits,1
+ 3352      02005601 
+ 3352      00000201 
+ 3352      FB0E0D00 
+ 3352      01010101 
+ 3353              	.LASF2:
+ 3354 0000 73686F72 		.ascii	"short int\000"
+ 3354      7420696E 
+ 3354      7400
+ 3355              	.LASF8:
+ 3356 000a 6C6F6E67 		.ascii	"long long int\000"
+ 3356      206C6F6E 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 65
+
+
+ 3356      6720696E 
+ 3356      7400
+ 3357              	.LASF6:
+ 3358 0018 5F5F7569 		.ascii	"__uint32_t\000"
+ 3358      6E743332 
+ 3358      5F7400
+ 3359              	.LASF5:
+ 3360 0023 5F5F7569 		.ascii	"__uint16_t\000"
+ 3360      6E743136 
+ 3360      5F7400
+ 3361              	.LASF21:
+ 3362 002e 70436F65 		.ascii	"pCoef\000"
+ 3362      6600
+ 3363              	.LASF26:
+ 3364 0034 61726D5F 		.ascii	"arm_radix8_butterfly_f32\000"
+ 3364      72616469 
+ 3364      78385F62 
+ 3364      75747465 
+ 3364      72666C79 
+ 3365              	.LASF16:
+ 3366 004d 666C6F61 		.ascii	"float\000"
+ 3366      7400
+ 3367              	.LASF4:
+ 3368 0053 6C6F6E67 		.ascii	"long int\000"
+ 3368      20696E74 
+ 3368      00
+ 3369              	.LASF18:
+ 3370 005c 666C6F61 		.ascii	"float32_t\000"
+ 3370      7433325F 
+ 3370      7400
+ 3371              	.LASF17:
+ 3372 0066 6C6F6E67 		.ascii	"long double\000"
+ 3372      20646F75 
+ 3372      626C6500 
+ 3373              	.LASF1:
+ 3374 0072 756E7369 		.ascii	"unsigned char\000"
+ 3374      676E6564 
+ 3374      20636861 
+ 3374      7200
+ 3375              	.LASF0:
+ 3376 0080 7369676E 		.ascii	"signed char\000"
+ 3376      65642063 
+ 3376      68617200 
+ 3377              	.LASF9:
+ 3378 008c 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 3378      206C6F6E 
+ 3378      6720756E 
+ 3378      7369676E 
+ 3378      65642069 
+ 3379              	.LASF12:
+ 3380 00a3 75696E74 		.ascii	"uint32_t\000"
+ 3380      33325F74 
+ 3380      00
+ 3381              	.LASF10:
+ 3382 00ac 756E7369 		.ascii	"unsigned int\000"
+ 3382      676E6564 
+ 3382      20696E74 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 66
+
+
+ 3382      00
+ 3383              	.LASF11:
+ 3384 00b9 75696E74 		.ascii	"uint16_t\000"
+ 3384      31365F74 
+ 3384      00
+ 3385              	.LASF24:
+ 3386 00c2 536F7572 		.ascii	"Source\\TransformFunctions\\arm_cfft_radix8_f32.c\000"
+ 3386      63655C54 
+ 3386      72616E73 
+ 3386      666F726D 
+ 3386      46756E63 
+ 3387              	.LASF3:
+ 3388 00f2 73686F72 		.ascii	"short unsigned int\000"
+ 3388      7420756E 
+ 3388      7369676E 
+ 3388      65642069 
+ 3388      6E7400
+ 3389              	.LASF22:
+ 3390 0105 74776964 		.ascii	"twidCoefModifier\000"
+ 3390      436F6566 
+ 3390      4D6F6469 
+ 3390      66696572 
+ 3390      00
+ 3391              	.LASF14:
+ 3392 0116 63686172 		.ascii	"char\000"
+ 3392      00
+ 3393              	.LASF7:
+ 3394 011b 6C6F6E67 		.ascii	"long unsigned int\000"
+ 3394      20756E73 
+ 3394      69676E65 
+ 3394      6420696E 
+ 3394      7400
+ 3395              	.LASF15:
+ 3396 012d 646F7562 		.ascii	"double\000"
+ 3396      6C6500
+ 3397              	.LASF20:
+ 3398 0134 6666744C 		.ascii	"fftLen\000"
+ 3398      656E00
+ 3399              	.LASF23:
+ 3400 013b 474E5520 		.ascii	"GNU C 4.9.3 20150303 (release) [ARM/embedded-4_9-br"
+ 3400      4320342E 
+ 3400      392E3320 
+ 3400      32303135 
+ 3400      30333033 
+ 3401 016e 616E6368 		.ascii	"anch revision 221220] -mcpu=cortex-m0plus -mthumb -"
+ 3401      20726576 
+ 3401      6973696F 
+ 3401      6E203232 
+ 3401      31323230 
+ 3402 01a1 67202D4F 		.ascii	"g -O0 -ffunction-sections -ffat-lto-objects\000"
+ 3402      30202D66 
+ 3402      66756E63 
+ 3402      74696F6E 
+ 3402      2D736563 
+ 3403              	.LASF13:
+ 3404 01cd 73697A65 		.ascii	"sizetype\000"
+ 3404      74797065 
+ARM GAS  C:\Users\fneves\AppData\Local\Temp\cc3bFriP.s 			page 67
+
+
+ 3404      00
+ 3405              	.LASF19:
+ 3406 01d6 70537263 		.ascii	"pSrc\000"
+ 3406      00
+ 3407              	.LASF25:
+ 3408 01db 433A5C55 		.ascii	"C:\\Users\\fneves\\Documents\\PSoC Creator\\wp_1\\e"
+ 3408      73657273 
+ 3408      5C666E65 
+ 3408      7665735C 
+ 3408      446F6375 
+ 3409 0208 6E67696E 		.ascii	"ngine_speed_sensor.cydsn\000"
+ 3409      655F7370 
+ 3409      6565645F 
+ 3409      73656E73 
+ 3409      6F722E63 
+ 3410              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 4.9.3 20150303 (release) [ARM/embedded-4_9-br
